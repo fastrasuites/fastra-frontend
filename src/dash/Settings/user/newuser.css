@@ -1,0 +1,273 @@
+.newuser {
+  width: 100%;
+  height: 100%;
+  font-family: Product Sans;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  background-color: white;
+  overflow: auto;
+}
+
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.newuser1 {
+  width: 95%;
+  height: 100%;
+}
+
+.newuser2 {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  gap: 30rem;
+  margin-top: 5rem;
+}
+
+.newuser2a {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 50%;
+  height: 100%;
+}
+
+.newuserhed {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.newuserauto {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.newuser2b {
+  display: flex;
+  gap: 1.5rem;
+  height: 100%;
+  width: 20%;
+  align-items: center;
+  justify-content: end;
+}
+
+.newuserbpg {
+  color: #a9b3bc;
+}
+
+.newuserbnav {
+  border: 1.2px solid #e2e6e9;
+  width: 25%;
+  height: 40%;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.nr {
+  width: 80%;
+  height: 80%;
+  color: gray;
+}
+
+.sep {
+  width: 2%;
+  height: 100%;
+  border-left: 1px solid #e2e6e9;
+}
+
+.newuserclk {
+  width: 20%;
+  display: flex;
+  gap: 0.5rem;
+}
+.nutogclk {
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: 1px solid #e2e6e9;
+  background-color: white;
+  cursor: pointer;
+}
+
+.newuser3 {
+  width: 100%;
+  height: 79%;
+  padding: 24px 0px 0px 0px;
+  border-radius: 4px 0px 0px 0px;
+  border: 1px solid #e2e6e9;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.newuserform {
+  width: 95%;
+  height: 100%;
+  overflow: auto;
+}
+
+.newuser3a {
+  width: 100%;
+  height: 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #3b7ced;
+}
+
+.newuser3e {
+  width: 40%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: end;
+}
+
+.newuser3btn {
+  background-color: #3b7ced;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.newuser3but {
+  color: #3b7ced;
+  border: none;
+  padding: 10px;
+  background: transparent;
+}
+
+.newuser3b {
+  width: 100%;
+  height: 16.5%;
+  display: flex;
+  gap: 3rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin: 1.5rem 0;
+}
+
+.newuser3ba {
+  width: 25%;
+  height: 90%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 1.5rem;
+}
+.newuser3c {
+  width: 100%;
+  height: 16.5%;
+  display: flex;
+  gap: 3rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin: 1.5rem 0;
+}
+
+.newuser3ca {
+  width: 25%;
+  height: 90%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 1.5rem;
+}
+
+.newuser3cb {
+  width: 95%;
+  margin-top: 0.1rem;
+  cursor: pointer;
+  outline: none;
+  border: 2px solid #e2e6e9;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 0.1rem;
+}
+
+.newuser3a2 {
+  width: 100%;
+  height: 5%;
+  color: #3b7ced;
+  margin: 1rem 0;
+}
+
+.newuser3d {
+  width: 100%;
+  height: 16.5%;
+  display: flex;
+  gap: 3rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin: 1.5rem 0;
+}
+.newuser3d2 {
+  width: 100%;
+  height: 16.5%;
+  display: flex;
+  gap: 3rem;
+  margin: 1.5rem 0;
+}
+
+.newuser3da {
+  width: 25%;
+  height: 90%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 1.5rem;
+}
+
+.newuser3f {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin: 1rem 0;
+}
+.newuser3g {
+  width: 100%;
+  height: 16.5%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin: 1.5rem 0;
+}
+.checkbox {
+  width: 12%;
+  display: flex;
+  justify-content: space-between;
+}
+/* Remove the spinner buttons from number input fields */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  -webkit-appearance: none;
+  appearance: none;
+}

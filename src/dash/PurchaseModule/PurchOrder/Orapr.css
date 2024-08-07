@@ -1,0 +1,266 @@
+.orapr {
+  width: 100%;
+  height: 100%;
+  font-family: Product Sans;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  background-color: white;
+  overflow: auto;
+}
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.orapr1 {
+  width: 95%;
+  height: 100%;
+}
+
+.orapr2 {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  gap: 30rem;
+  margin-top: 3rem;
+}
+
+.orapr2a {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 50%;
+  height: 100%;
+}
+
+.oraprhed {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.oraprauto {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.orapr3 {
+  width: 100%;
+  height: 79%;
+  padding: 24px 0px 0px 0px;
+  border-radius: 4px 0px 0px 0px;
+  border: 1px solid #e2e6e9;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.oraprform {
+  width: 95%;
+  height: 100%;
+}
+
+.orapr3a {
+  width: 100%;
+  height: 10%;
+  margin-top: -1rem;
+}
+.orapr3ae {
+  width: 100%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #3b7ced;
+}
+.orapr3but {
+  color: #3b7ced;
+  border: none;
+  padding: 10px;
+  background: transparent;
+}
+
+.orapr3b {
+  width: 100%;
+  height: 5%;
+  display: flex;
+  gap: 4rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin-top: 1rem;
+}
+
+.orapr3ba {
+  width: 5%;
+  height: 90%;
+  line-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.orapr3bb {
+  width: 15%;
+  height: 90%;
+  line-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.orapr3c {
+  width: 100%;
+  color: #3b7ced;
+  margin: 1rem 0;
+  font-size: 1.2rem;
+}
+
+.orapr3e {
+  width: 40%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: flex-end;
+}
+
+.orapr3btn {
+  background-color: #3b7ced;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  outline: none;
+}
+
+.oraprclk {
+  width: 50%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.oraprclka {
+  width: 30%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.togclk {
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: 1px solid #e2e6e9;
+  background-color: white;
+  cursor: pointer;
+}
+
+.receipt {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: 15px; 
+}
+
+.receipt svg {
+  margin-right: 5px;
+}
+
+/* New styles for table inputs */
+.orapr3d table input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #e2e6e9;
+  padding: 5px;
+  background: none;
+  outline: none;
+}
+
+.orapr3d table input:focus {
+  outline: none;
+  border-bottom: 1px solid #e2e6e9;
+}
+
+.orapr4 {
+  width: 100%;
+  height: 79%;
+  padding: 24px 0px 0px 0px;
+  border-radius: 4px 0px 0px 0px;
+  border: 1px solid #e2e6e9;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.oraprform2 {
+  width: 95%;
+  height: 100%;
+}
+
+.orapr4a {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  margin-top: -1rem;
+  color: #3b7ced;
+  justify-content: space-between;
+}
+
+.orapr4ab {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: flex-end;
+}
+
+.orapr4pg {
+  color: #a9b3bc;
+}
+
+.orapr4nav {
+  border: 1px solid #e2e6e9;
+  width: 20%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.nr {
+  width: 80%;
+  height: 80%;
+  color: gray;
+}
+
+.sep {
+  width: 2%;
+  height: 100%;
+  border-left: 1px solid #e2e6e9;
+}
+
+.orapr4b {
+  width: 100%;
+  height: 13%;
+  display: flex;
+  gap: 2rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin-top: 1rem;
+}
+
+.orapr4ba {
+  width: 15%;
+  height: 90%;
+  line-height: 1.5rem;
+}

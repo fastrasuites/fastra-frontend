@@ -1,0 +1,224 @@
+.Var {
+  width: 100%;
+  height: 100%;
+  font-family: Product Sans;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  background-color: white;
+  overflow: auto;
+}
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.Var1 {
+  width: 95%;
+  height: 100%;
+}
+
+.Var2 {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  gap: 30rem;
+  margin-top: 3rem;
+}
+
+.Var2a {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 50%;
+  height: 100%;
+}
+
+.Varhed {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.Varauto {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.Var2b {
+  display: flex;
+  gap: 1.5rem;
+  height: 100%;
+  width: 20%;
+  align-items: center;
+  justify-content: end;
+}
+
+.Varbpg {
+  color: #a9b3bc;
+}
+
+.Varbnav {
+  border: 1.2px solid #e2e6e9;
+  width: 25%;
+  height: 40%;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.nr {
+  width: 80%;
+  height: 80%;
+  color: gray;
+}
+
+.sep {
+  width: 2%;
+  height: 100%;
+  border-left: 1px solid #e2e6e9;
+}
+
+.Var3 {
+  width: 100%;
+  height: 79%;
+  padding: 24px 0px 0px 0px;
+  border-radius: 4px 0px 0px 0px;
+  border: 1px solid #e2e6e9;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  margin-top: -0.5rem;
+}
+
+.Varform {
+  width: 95%;
+  height: 100%;
+}
+
+.Var3a {
+  width: 100%;
+  height: 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -0.5rem;
+  color: #3b7ced;
+}
+
+.Var3but {
+  color: #3b7ced;
+  border: none;
+  padding: 10px;
+  background: transparent;
+}
+
+.Var3b {
+  width: 100%;
+  height: 5%;
+  display: flex;
+  gap: 4rem;
+  /* align-items: center; */
+  border-bottom: 1px solid #e2e6e9;
+  margin-top: -0.5rem;
+}
+
+.Var3ba {
+  width: 5%;
+  height: 90%;
+  line-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.Var3bb {
+  width: 15%;
+  height: 90%;
+  line-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+.Var3bc {
+  width: 15%;
+  height: 90%;
+  line-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.Var3c {
+  width: 100%;
+  height: 16.5%;
+  display: flex;
+  gap: 3rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin-top: 0.5rem;
+}
+
+.Var3ca {
+  width: 25%;
+  height: 90%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 1.5rem;
+}
+
+.Var3cb {
+  width: 95%;
+  margin-top: 0.1rem;
+  cursor: pointer;
+  outline: none;
+  border: 2px solid #e2e6e9;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 0.5rem;
+}
+
+.Var3d {
+  width: 100%;
+  height: 50%;
+}
+
+.Var3e {
+  width: 100%;
+  height: 8%;
+  margin-top: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.5rem;
+}
+
+.Var3btn {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* New styles for table inputs */
+.Var3d table input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #e2e6e9;
+  padding: 5px;
+  background: none;
+  outline: none;
+}
+
+.Var3d table input:focus {
+  outline: none;
+  border-bottom: 1px solid #e2e6e9;
+}

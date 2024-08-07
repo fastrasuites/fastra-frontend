@@ -1,0 +1,288 @@
+.con {
+  height: 180vh;
+  width: 100%;
+  background-image: url("../image/bg.svg");
+  background-size: contain;
+  margin: 0;
+  padding: 0;
+  font-family: Product Sans;
+}
+
+.conhead {
+  width: 100%;
+  height: 6%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  @media screen and (max-width: 969px) and (min-width: 959px) {
+    width: 100%;
+    height: 10%;
+  }
+}
+
+.conwrap {
+  width: 100%;
+  height: 95%;
+  display: flex;
+  align-items: center;
+  list-style: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  @media screen and (max-width: 969px) and (min-width: 959px) {
+    width: 100%;
+    height: 95%;
+  }
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  @media screen and (max-width: 958px) and (min-width: 665px) {
+    width: 100%;
+    height: 95%;
+  }
+}
+
+.conhom {
+  width: 15%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 29.11px;
+  text-align: left;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    width: 22%;
+    gap: 1.2rem;
+    font-size: 16px;
+  }
+  @media screen and (max-width: 799px) and (min-width: 540px) {
+    width: 25%;
+    gap: 0.5rem;
+  }
+}
+.navli {
+  position: absolute;
+  top: 4.5rem;
+  left: -100%;
+  height: 4%;
+  width: 20%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  transition: left 1.5s ease-in-out;
+  gap: 1rem;
+  @media screen and (max-width: 830px) and (min-width: 500px) {
+    width: 40%;
+  }
+  @media screen and (max-width: 499px) and (min-width: 300px) {
+    width: 60%;
+  }
+}
+.navli.active {
+  left: 1.7rem;
+}
+.navig {
+  font-size: 1rem;
+  text-decoration: none;
+  color: #3b7ced;
+
+  :link {
+    text-decoration: none;
+    color: #3b7ced;
+    :visited {
+      text-decoration: none;
+      color: #3b7ced;
+      :hover {
+        text-decoration: none;
+        color: #3b7ced;
+      }
+    }
+  }
+}
+.conav {
+  color: #3b7ced;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    margin-right: -1rem;
+  }
+}
+
+.consash {
+  width: 60%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19.41px;
+  opacity: 40%;
+  @media screen and (max-width: 958px) and (min-width: 665px) {
+    width: 50%;
+  }
+  @media screen and (max-width: 664px) and (min-width: 540px) {
+    width: 40%;
+  }
+  @media screen and (max-width: 539px) and (min-width: 420px) {
+    width: 30%;
+  }
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    width: 25%;
+  }
+}
+
+.consashtag {
+  width: 90%;
+}
+
+.consashput {
+  width: 100%;
+  height: 100%;
+  outline: none;
+  border: none;
+
+  :focus {
+    outline: none;
+  }
+}
+.consarch {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    gap: 1rem;
+  }
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    font-size: 8px;
+    gap: 0.1rem;
+    margin-left: 0.3rem;
+  }
+}
+.cosashnav {
+  width: 22px;
+  height: 22px;
+  color: #3b7ced;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.conlert {
+  width: 5%;
+  height: 100%;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    width: 7%;
+  }
+}
+
+.conbell-icon-container {
+  position: relative;
+}
+
+.conotification-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 5px;
+  font-size: 10px;
+}
+
+.condmin {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  @media screen and (max-width: 969px) and (min-width: 959px) {
+    gap: 1rem;
+    margin-left: 1rem;
+    margin-right: 0.5rem;
+  }
+  @media screen and (max-width: 958px) and (min-width: 665px) {
+    gap: 0.5rem;
+    width: 25%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+  }
+  @media screen and (max-width: 664px) and (min-width: 540px) {
+    width: 30%;
+    gap: 0.5rem;
+    margin-left: 1rem;
+  }
+  @media screen and (max-width: 539px) and (min-width: 421px) {
+    width: 40%;
+    gap: 0.5rem;
+  }
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    margin-left: 2.5rem;
+    width: 25%;
+    gap: 0.3rem;
+  }
+}
+
+.condminname {
+  margin-top: -0.6rem;
+}
+.condminimg {
+  width: 40px;
+  height: 40px;
+  @media screen and (max-width: 419px) and (min-width: 300px) {
+    width: 30px;
+    height: 30px;
+    margin-left: -1rem;
+  }
+}
+.cond1 {
+  font-family: Product Sans Medium;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24.26px;
+  text-align: left;
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    margin-right: -1rem;
+    font-size: 16px;
+  }
+}
+.cond2 {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 12.13px;
+  text-align: left;
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    font-size: 9px;
+  }
+}
+
+.conbody {
+  width: 100%;
+  height: 94%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.conbod {
+  width: 95%;
+  height: 6%;
+  margin-top: 1rem;
+  background-color: purple;
+}
+.concard {
+  width: 95%;
+  height: 90%;
+}

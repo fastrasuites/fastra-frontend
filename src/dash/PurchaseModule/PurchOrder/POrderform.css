@@ -1,0 +1,215 @@
+.newpod {
+  width: 100%;
+  height: 100%;
+  font-family: Product Sans;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  background-color: white;
+  overflow: auto;
+}
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.newpod1 {
+  width: 95%;
+  height: 100%;
+}
+
+.newpod2 {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  gap: 25rem;
+  margin-top: 5rem;
+}
+
+.newpod2a {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 50%;
+  height: 100%;
+}
+
+.rprhed {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.rprauto {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.newpod2b {
+  display: flex;
+  gap: 1.5rem;
+  height: 100%;
+  width: 20%;
+  align-items: center;
+  justify-content: end;
+}
+
+.rprbpg {
+  color: #a9b3bc;
+}
+
+.rprbnav {
+  border: 1.2px solid #e2e6e9;
+  width: 25%;
+  height: 40%;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.nr {
+  width: 80%;
+  height: 80%;
+  color: gray;
+}
+
+.sep {
+  width: 2%;
+  height: 100%;
+  border-left: 1px solid #e2e6e9;
+}
+
+.newpod3 {
+  width: 100%;
+  height: 79%;
+  padding: 24px 0px 0px 0px;
+  border-radius: 4px 0px 0px 0px;
+  border: 1px solid #e2e6e9;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.newform {
+  width: 95%;
+  height: 100%;
+}
+
+.newpod3a {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #3b7ced;
+  margin-top: -1rem;
+}
+
+.new3but {
+  color: #3b7ced;
+  border: none;
+  padding: 10px;
+  background: transparent;
+}
+.newpod3b {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  gap: 4rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.newpod3ba {
+  width: 5%;
+  height: 90%;
+  line-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.newpod3bb {
+  width: 20%;
+  height: 90%;
+  line-height: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.newpod3c {
+  width: 100%;
+  height: 16.5%;
+  display: flex;
+  gap: 3rem;
+  border-bottom: 1px solid #e2e6e9;
+  margin: 1.5rem 0;
+}
+
+.newpod3ca {
+  width: 25%;
+  height: 90%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 1.5rem;
+  margin-top: -0.5rem;
+}
+
+.newpod3cb {
+  width: 95%;
+  margin-top: 0.1rem;
+  cursor: pointer;
+  outline: none;
+  border: 2px solid #e2e6e9;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 1rem;
+}
+
+.newpod3d {
+  width: 100%;
+  height: 50%;
+}
+
+.newpod3e {
+  width: 40%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: end;
+}
+
+.new3btn {
+  background-color: #3b7ced;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* New styles for table inputs */
+.newpod3d table input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #e2e6e9;
+  padding: 5px;
+  background: none;
+  outline: none;
+}
+
+.newpod3d table input:focus {
+  outline: none;
+  border-bottom: 1px solid #e2e6e9;
+}

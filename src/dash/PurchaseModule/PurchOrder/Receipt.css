@@ -1,0 +1,224 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.receipt-container {
+  background-color: #fff;
+  min-height: 90vh;
+  width: 100%;
+  padding: 40px;
+  box-sizing: border-box;
+  background-image: url("../../../image/bg.svg");
+  background-size: contain;
+}
+
+.newpodr2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 100px;
+  margin-bottom: 20px;
+}
+
+.receipt-container2 {
+  background-color: white;
+  min-height: 40vh;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.newpod2a {
+  display: flex;
+  align-items: center;
+}
+
+.new-purchase-order {
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.rprauto {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+  color: #5f6368;
+}
+
+.rprauto img {
+  margin-left: 5px;
+}
+
+.newpod2b {
+  display: flex;
+  align-items: center;
+}
+
+.rprbpg {
+  margin-right: 10px;
+  color: #5f6368;
+}
+
+.rprbnav {
+  display: flex;
+  align-items: center;
+}
+
+.nr {
+  cursor: pointer;
+  color: #5f6368;
+}
+
+.sep {
+  width: 1px;
+  height: 20px;
+  background-color: #dadce0;
+  margin: 0 10px;
+}
+
+.receipt-header {
+  color: #bfc2c9;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.receipt-header button :active {
+  background-color: transparent;
+  border: 2px solid #1a73e8;
+  color: #1a73e8;
+}
+
+.receipt-actions button,
+.receipt-status button {
+  background-color: white;
+  border: 1px solid #dadce0;
+  padding: 8px 16px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.validate-button {
+    
+  border-color: #1a73e8;
+  color: #1a73e8;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.receipt-text{
+  width: 60%;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 400;
+  justify-content: space-between;
+}
+.status-active {
+  border-color: #e8c21a;
+  color: #e8da1a;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.validate-button:hover,
+.validate-button:focus,
+.status-active:hover,
+.status-active:focus {
+
+  border-color: #1a73e8;
+  outline: none;
+}
+
+.receipt-info {
+  width: 70%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 50px;
+}
+
+.receipt-left h3 {
+  font-size: 24px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.outlined-star {
+  margin-right: 10px;
+  color: #5f6368;
+}
+
+.receipt-left p {
+  transform: scale(0.79);
+  margin: 5px 0;
+}
+
+.receipt-left span {
+  margin-left: 15px;
+  color: #5f6368;
+}
+
+.receipt-right {
+  width: 40%;
+}
+
+.divider {
+  border-top: 1px solid #dadce0;
+  margin-bottom: 50px;
+}
+
+.receipt-tabs {
+  margin-bottom: 20px;
+  display: flex;
+}
+
+.receipt-tabs button {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+}
+
+.tab-active {
+  color: #1a73e8 !important;
+  border-bottom: 2px solid #1a73e8;
+}
+
+.MuiTableContainer-root {
+  box-shadow: none !important;
+  border: 1px solid #dadce0;
+}
+
+.MuiTableHead-root .MuiTableCell-root {
+  font-weight: bold;
+  color: #5f6368;
+}
+
+.MuiTableBody-root .MuiTableCell-root {
+  border-bottom: 1px solid #dadce0;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #F0B401;
+  margin-left: 10px;
+}
+
+.delete-button:hover {
+  color: #d93025;
+}
