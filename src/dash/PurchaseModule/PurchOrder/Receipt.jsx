@@ -6,7 +6,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { FaCaretLeft, FaCaretRight, FaTrash, FaRegStar } from "react-icons/fa";
+import { FaCaretLeft, FaCaretRight, FaTrashAlt, FaRegStar } from "react-icons/fa";
 import autosave from "../../../image/autosave.svg";
 import "./Receipt.css";
 
@@ -144,7 +144,7 @@ const Receipt = ({ formData, onClose }) => {
                       className="delete-button"
                       onClick={() => handleDeleteRow(index)}
                     >
-                      <FaTrash />
+                      <FaTrashAlt />
                     </button>
                   </TableCell>
                 </TableRow>
