@@ -3,6 +3,8 @@ import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import uploadIcon from "../../../image/uploadIcon.svg"; // Ensure to have this icon in your project
+import resetAvatar from "../../../image/resetImage.png";
+import AccessRight from "./AccessRight";
 import "./newuser.css";
 
 const fetchLanguages = async () => {
@@ -55,6 +57,7 @@ export default function NewUser({ onClose, onSaveAndSubmit }) {
   const [error, setError] = useState(null);
   const [languageOptions, setLanguageOptions] = useState([]);
   const [timezoneOptions, setTimezoneOptions] = useState([]);
+  const [showAccessRight, setShowAccessRight] = useState(false);
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -157,7 +160,7 @@ export default function NewUser({ onClose, onSaveAndSubmit }) {
       <div className="newuser1">
         <div className="newuser2">
           <div className="newuser2a">
-            <p className="newuserhed">New User</p>
+            {!showAccessRight && <p className="newuserhed"> New User</p>}
             <div className="newuserauto">
               <p>Autosaved</p>
               <img src={autosave} alt="Autosaved" />
@@ -172,176 +175,249 @@ export default function NewUser({ onClose, onSaveAndSubmit }) {
           </div>
         </div>
         <div className="newuserclk">
-          <p className="nutogclk">Basic Setting</p>
-          <p className="nutogclk">Access Right</p>
+          <button
+            className="nutogclk"
+            onClick={() => setShowAccessRight(false)}
+          >
+            Basic Setting
+          </button>
+          <button className="nutogclk" onClick={() => setShowAccessRight(true)}>
+            Access Right
+          </button>
         </div>
+        {showAccessRight ? (
+          <div className="newuser3">
+            {/* <AccessRight /> */}
+            <form action="" className="newuserform" onSubmit={handleSubmit}>
+              <div className="newuser3a">
+                <p style={{ fontSize: "20px", fontWeight: "500px" }}>
+                  Access Rights
+                </p>
+                <div className="newuser3e">
+                  <button
+                    type="button"
+                    className="newuser3but"
+                    onClick={onClose}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="newuser3btn"
+                    style={{ display: "flex", justifyContent: "center" }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
 
-        <div className="newuser3">
-          <form className="newuserform" onSubmit={handleSubmit}>
-            <div className="newuser3a">
-              <p style={{ fontSize: "20px" }}>Basic Information</p>
-              <div className="newuser3e">
-                <button type="button" className="newuser3but" onClick={onClose}>
-                  Cancel
-                </button>
+              <section className="user-detail">
+                <figure className="reset-avatar">
+                  <img src={resetAvatar} alt="reset avatar" />
+                </figure>
+                <div className="name-email">
+                  <div>
+                    <label htmlFor="name" className="name-label">
+                      Name
+                    </label>
+
+                    <input
+                      type="text"
+                      id="name"
+                      required
+                      className="name-input"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="name" className="name-label">
+                      Email
+                    </label>
+
+                    <input
+                      type="email"
+                      id="email"
+                      required
+                      className="name-input"
+                    />
+                  </div>
+                </div>
+              </section>
+            </form>
+          </div>
+        ) : (
+          <div className="newuser3">
+            <form className="newuserform" onSubmit={handleSubmit}>
+              <div className="newuser3a">
+                <p style={{ fontSize: "20px" }}>Basic Information</p>
+                <div className="newuser3e">
+                  <button
+                    type="button"
+                    className="newuser3but"
+                    onClick={onClose}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="newuser3btn"
+                    style={{ display: "flex", justifyContent: "center" }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+              <div className="newuser3b">
+                <div className="newuser3ba">
+                  <div
+                    className="image-upload"
+                    onClick={() =>
+                      document.getElementById("imageInput").click()
+                    }
+                  >
+                    <input
+                      type="file"
+                      accept=".png, .jpg, .jpeg"
+                      onChange={handleImageChange}
+                      id="imageInput"
+                      name="image"
+                      style={{ display: "none" }}
+                      required
+                    />
+                    {formState.image ? (
+                      <img
+                        src={formState.image}
+                        alt="Preview"
+                        className="image-preview"
+                      />
+                    ) : (
+                      <div className="image-upload-text">
+                        <img src={uploadIcon} alt="Upload" />
+                        <span style={{ fontSize: "10px" }}>
+                          Click to upload
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="newuser3ba">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="FirstName LastName"
+                    className="newuser3cb"
+                    value={formState.name}
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="newuser3ba">
+                  <label>Role</label>
+                  <Select
+                    options={roleOptions}
+                    name="role"
+                    styles={customStyles}
+                    value={roleOptions.find(
+                      (option) => option.value === formState.role
+                    )}
+                    onChange={(selectedOption) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        role: selectedOption ? selectedOption.value : "",
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="newuser3a2">
+                <p style={{ fontSize: "20px" }}>Contact Information</p>
+              </div>
+              <div className="newuser3d">
+                <div className="newuser3da">
+                  <label>Email</label>
+                  <input
+                    type="text"
+                    name="mail"
+                    placeholder="Enter your company email address"
+                    className="newuser3cb"
+                    value={formState.mail}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="newuser3da">
+                  <label>Phone Number</label>
+                  <input
+                    type="text"
+                    name="number"
+                    placeholder="Enter your company phone number"
+                    className="newuser3cb"
+                    value={formState.number}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className="newuser3a2">
+                <p style={{ fontSize: "20px" }}>Companies</p>
+              </div>
+              <div className="newuser3f">
+                <p>Company name</p>
                 <button
-                  type="submit"
                   className="newuser3btn"
                   style={{ display: "flex", justifyContent: "center" }}
                 >
-                  Save
+                  Add Company
                 </button>
               </div>
-            </div>
-            <div className="newuser3b">
-              <div className="newuser3ba">
-                <div
-                  className="image-upload"
-                  onClick={() => document.getElementById("imageInput").click()}
-                >
-                  <input
-                    type="file"
-                    accept=".png, .jpg, .jpeg"
-                    onChange={handleImageChange}
-                    id="imageInput"
-                    name="image"
-                    style={{ display: "none" }}
-                    required
+
+              <div className="newuser3a2">
+                <p style={{ fontSize: "20px" }}>Preference</p>
+              </div>
+              <div className="newuser3d2">
+                <div className="newuser3da">
+                  <label>Language</label>
+                  <Select
+                    options={languageOptions}
+                    name="language"
+                    styles={customStyles}
+                    value={languageOptions.find(
+                      (option) => option.value === formState.language
+                    )}
+                    onChange={(selectedOption) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        language: selectedOption ? selectedOption.value : "",
+                      }))
+                    }
                   />
-                  {formState.image ? (
-                    <img
-                      src={formState.image}
-                      alt="Preview"
-                      className="image-preview"
-                    />
-                  ) : (
-                    <div className="image-upload-text">
-                      <img src={uploadIcon} alt="Upload" />
-                      <span style={{ fontSize: "10px" }}>Click to upload</span>
-                    </div>
-                  )}
+                </div>
+                <div className="newuser3da">
+                  <label>Timezone</label>
+                  <Select
+                    options={timezoneOptions}
+                    name="timezone"
+                    styles={customStyles}
+                    value={timezoneOptions.find(
+                      (option) => option.value === formState.timezone
+                    )}
+                    onChange={(selectedOption) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        timezone: selectedOption ? selectedOption.value : "",
+                      }))
+                    }
+                    menuPlacement="auto"
+                  />
                 </div>
               </div>
-              <div className="newuser3ba">
-                <label>Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="FirstName LastName"
-                  className="newuser3cb"
-                  value={formState.name}
-                  onChange={(e) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="newuser3ba">
-                <label>Role</label>
-                <Select
-                  options={roleOptions}
-                  name="role"
-                  styles={customStyles}
-                  value={roleOptions.find(
-                    (option) => option.value === formState.role
-                  )}
-                  onChange={(selectedOption) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      role: selectedOption ? selectedOption.value : "",
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="newuser3a2">
-              <p style={{ fontSize: "20px" }}>Contact Information</p>
-            </div>
-            <div className="newuser3d">
-              <div className="newuser3da">
-                <label>Email</label>
-                <input
-                  type="text"
-                  name="mail"
-                  placeholder="Enter your company email address"
-                  className="newuser3cb"
-                  value={formState.mail}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="newuser3da">
-                <label>Phone Number</label>
-                <input
-                  type="text"
-                  name="number"
-                  placeholder="Enter your company phone number"
-                  className="newuser3cb"
-                  value={formState.number}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="newuser3a2">
-              <p style={{ fontSize: "20px" }}>Companies</p>
-            </div>
-            <div className="newuser3f">
-              <p>Company name</p>
-              <button
-                className="newuser3btn"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                Add Company
-              </button>
-            </div>
-
-            <div className="newuser3a2">
-              <p style={{ fontSize: "20px" }}>Preference</p>
-            </div>
-            <div className="newuser3d2">
-              <div className="newuser3da">
-                <label>Language</label>
-                <Select
-                  options={languageOptions}
-                  name="language"
-                  styles={customStyles}
-                  value={languageOptions.find(
-                    (option) => option.value === formState.language
-                  )}
-                  onChange={(selectedOption) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      language: selectedOption ? selectedOption.value : "",
-                    }))
-                  }
-                />
-              </div>
-              <div className="newuser3da">
-                <label>Timezone</label>
-                <Select
-                  options={timezoneOptions}
-                  name="timezone"
-                  styles={customStyles}
-                  value={timezoneOptions.find(
-                    (option) => option.value === formState.timezone
-                  )}
-                  onChange={(selectedOption) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      timezone: selectedOption ? selectedOption.value : "",
-                    }))
-                  }
-                  menuPlacement="auto"
-                />
-              </div>
-              
-              </div>
               <div className="newuser3g">
-                <p style={{fontWeight: 'bold'}}>Notification</p>
-                <div className="checkbox-group" style={{lineHeight: '2rem'}}>
+                <p style={{ fontWeight: "bold" }}>Notification</p>
+                <div className="checkbox-group" style={{ lineHeight: "2rem" }}>
                   <div className="checkbox">
                     <label>In-app notification</label>
                     <input
@@ -361,9 +437,10 @@ export default function NewUser({ onClose, onSaveAndSubmit }) {
                     />
                   </div>
                 </div>
-            </div>
-          </form>
-        </div>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -60,7 +60,10 @@ export default function User() {
     <div className="user-page" id="user">
       {showNewUser ? (
         <div className="overlay">
-          <NewUser onClose={handleCloseNewUser} onSaveAndSubmit={handleSaveAndSubmit} />
+          <NewUser
+            onClose={handleCloseNewUser}
+            onSaveAndSubmit={handleSaveAndSubmit}
+          />
         </div>
       ) : (
         <div className="user1">

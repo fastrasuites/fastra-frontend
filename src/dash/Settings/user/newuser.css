@@ -103,6 +103,10 @@
   border: 1px solid #e2e6e9;
   background-color: white;
   cursor: pointer;
+  font-size: medium;
+}
+.nutogclk:focus {
+  color: #3b7ced;
 }
 
 .newuser3 {
@@ -129,6 +133,8 @@
   justify-content: space-between;
   align-items: center;
   color: #3b7ced;
+  padding-bottom: 5px;
+  border-bottom: #e2e6e9 solid 1.2px;
 }
 
 .newuser3e {
@@ -270,4 +276,39 @@ input[type="number"] {
   -moz-appearance: textfield;
   -webkit-appearance: none;
   appearance: none;
+}
+
+.user-detail {
+  margin-top: 51px;
+  height: i64px;
+  /* border: red solid; */
+  /* width: 148px; */
+  display: flex;
+  gap: 42px;
+}
+.name-email {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* border: solid 2px; */
+}
+.name-label {
+  display: block;
+  margin-bottom: 8px;
+  font-family: Product Sans;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19.41px;
+  text-align: left;
+  color: #1a1a1a;
+}
+.name-input {
+  width: 400px;
+  /* height: 48px; */
+  padding: 20px 24px 20px 24px;
+  border-radius: 4px 0px 0px 0px;
+  /* border: 1px 0px 0px 0px; */
+  opacity: 0px;
+
+  border: 1px solid #7a8a98;
 }
