@@ -3,7 +3,7 @@ import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import uploadIcon from "../../../image/uploadIcon.svg"; // Ensure to have this icon in your project
-import resetAvatar from "../../../image/resetImage.png";
+
 import AccessRight from "./AccessRight";
 import "./newuser.css";
 
@@ -187,62 +187,7 @@ export default function NewUser({ onClose, onSaveAndSubmit }) {
         </div>
         {showAccessRight ? (
           <div className="newuser3">
-            {/* <AccessRight /> */}
-            <form action="" className="newuserform" onSubmit={handleSubmit}>
-              <div className="newuser3a">
-                <p style={{ fontSize: "20px", fontWeight: "500px" }}>
-                  Access Rights
-                </p>
-                <div className="newuser3e">
-                  <button
-                    type="button"
-                    className="newuser3but"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="newuser3btn"
-                    style={{ display: "flex", justifyContent: "center" }}
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-
-              <section className="user-detail">
-                <figure className="reset-avatar">
-                  <img src={resetAvatar} alt="reset avatar" />
-                </figure>
-                <div className="name-email">
-                  <div>
-                    <label htmlFor="name" className="name-label">
-                      Name
-                    </label>
-
-                    <input
-                      type="text"
-                      id="name"
-                      required
-                      className="name-input"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="name" className="name-label">
-                      Email
-                    </label>
-
-                    <input
-                      type="email"
-                      id="email"
-                      required
-                      className="name-input"
-                    />
-                  </div>
-                </div>
-              </section>
-            </form>
+            <AccessRight handleSubmit={handleSubmit} />
           </div>
         ) : (
           <div className="newuser3">
