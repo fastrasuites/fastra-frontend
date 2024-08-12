@@ -107,6 +107,7 @@
 }
 .nutogclk:focus {
   color: #3b7ced;
+  border: #3b7ced solid 1px;
 }
 
 .newuser3 {

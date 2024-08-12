@@ -17,6 +17,16 @@
   flex-direction: row;
   gap: 42px;
 }
+.image-figure {
+  width: 180px;
+  height: 180px;
+  border: none;
+}
+.reset-avatar {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
 .name-email {
   display: flex;
   flex-direction: column;
@@ -44,8 +54,13 @@
 .name-input {
   border: 1px solid #7a8a98;
   padding: 20px 24px 20px 24px;
-  border-radius: 4px 0px 0px 0px;
+  border-radius: 4px;
   flex: 1;
+}
+.email-input:focus,
+.name-input:focus {
+  outline: #3b7ced solid 1px;
+  border: none;
 }
 @media (max-width: 768px) {
   .user-detail {

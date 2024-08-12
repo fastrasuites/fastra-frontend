@@ -81,9 +81,14 @@ const AccessRight = ({ handleSubmit, onClose }) => {
       </div>
 
       <section className="user-detail">
-        <figure className="reset-avatar">
+        <figure className="image-figure">
           <label htmlFor="image-file">
-            <img src={imageFile} alt="reset avatar" id="" />
+            <img
+              src={imageFile}
+              alt="reset avatar"
+              id=""
+              className="reset-avatar"
+            />
           </label>
           <input
             type="file"
