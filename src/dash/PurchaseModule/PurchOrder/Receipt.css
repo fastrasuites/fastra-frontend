@@ -13,6 +13,7 @@ html {
   box-sizing: border-box;
   background-image: url("../../../image/bg.svg");
   background-size: contain;
+  position: relative;
 }
 
 .newpodr2 {
@@ -108,7 +109,6 @@ html {
 }
 
 .validate-button {
-    
   border-color: #1a73e8;
   color: #1a73e8;
   padding: 8px 16px;
@@ -116,7 +116,7 @@ html {
   cursor: pointer;
   font-weight: bold;
 }
-.receipt-text{
+.receipt-text {
   width: 60%;
   display: flex;
   align-items: center;
@@ -137,7 +137,6 @@ html {
 .validate-button:focus,
 .status-active:hover,
 .status-active:focus {
-
   border-color: #1a73e8;
   outline: none;
 }
@@ -215,7 +214,7 @@ html {
   background: none;
   border: none;
   cursor: pointer;
-  color: #F0B401;
+  color: #f0b401;
   margin-left: 10px;
 }
 

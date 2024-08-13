@@ -6,11 +6,18 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { FaCaretLeft, FaCaretRight, FaTrashAlt, FaRegStar } from "react-icons/fa";
+import {
+  FaCaretLeft,
+  FaCaretRight,
+  FaTrashAlt,
+  FaRegStar,
+} from "react-icons/fa";
 import autosave from "../../../image/autosave.svg";
 import "./Receipt.css";
+import PrintConfigPopup from "./PrintConfigPopup";
 
 const Receipt = ({ formData, onClose }) => {
+  const [showPrintConfig, setShowPrintConfig] = useState(false);
   const [page, setPage] = useState(0);
   const rows = formData && formData.rows ? formData.rows : [];
 
@@ -43,6 +50,10 @@ const Receipt = ({ formData, onClose }) => {
     // Implement delete functionality here
   };
 
+  const handlePrintButton = () => {
+    setShowPrintConfig(true);
+  };
+  console.log(showPrintConfig);
   return (
     <div id="receipt" className="receipt-container">
       <div className="newpodr2">
@@ -68,7 +79,7 @@ const Receipt = ({ formData, onClose }) => {
       <div className="receipt-header">
         <div className="receipt-actions">
           <button className="validate-button">Validate</button>
-          <button>Print</button>
+          <button onClick={handlePrintButton}>Print</button>
           <button onClick={onClose}>Cancel</button>
         </div>
         <div className="receipt-status">
@@ -89,23 +100,21 @@ const Receipt = ({ formData, onClose }) => {
         </div>
         <div className="receipt-right">
           {/* <div className="receipt-dates"> */}
-            <div className="receipt-text">
-              <p>Scheduled Date: </p>
-              <p className="status-active">
-                {formData ? formatDate(formData.date) : ""}
-              </p>
-            </div>
-            <div className="receipt-text" >
-              <p>Deadline:</p>
-              <p className="">
-                {formData ? formatDate(formData.date) : ""}
-              </p>
+          <div className="receipt-text">
+            <p>Scheduled Date: </p>
+            <p className="status-active">
+              {formData ? formatDate(formData.date) : ""}
+            </p>
+          </div>
+          <div className="receipt-text">
+            <p>Deadline:</p>
+            <p className="">{formData ? formatDate(formData.date) : ""}</p>
           </div>
           {""}
-            <div className="receipt-text">
-              <p>Source Document: </p>
-              <p className="">{formData ? formData.id : ""}</p>
-            </div>
+          <div className="receipt-text">
+            <p>Source Document: </p>
+            <p className="">{formData ? formData.id : ""}</p>
+          </div>
           {/* </div> */}
         </div>
       </div>
@@ -164,6 +173,12 @@ const Receipt = ({ formData, onClose }) => {
           </Table>
         </TableContainer>
       </div>
+      {showPrintConfig && (
+        <PrintConfigPopup
+          showPrintConfig={showPrintConfig}
+          setShowPrintConfig={setShowPrintConfig}
+        />
+      )}
     </div>
   );
 };

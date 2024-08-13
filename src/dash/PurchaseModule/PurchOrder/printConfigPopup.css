@@ -1,0 +1,125 @@
+.popup {
+  position: absolute;
+  /* height: 100vh; */
+  /* width: 100%; */
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.1);
+  /* z-index: 10; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  /* Style your popup */
+  width: 90%;
+
+  background: white;
+  /* color: red; */
+}
+.popup-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  padding-inline: 52px;
+  padding-block: 1rem;
+}
+.popup-heading > h3 {
+  font-family: Product Sans;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 29.11px;
+  text-align: left;
+}
+.closeIcon {
+  padding: 4px;
+}
+.closeIcon:hover {
+  background-color: red;
+}
+.form-and-preview {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.popup-form {
+  padding: 52px;
+  /* outline: solid purple 2px; */
+}
+.preview-section {
+  min-width: 394px;
+  filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.1));
+  /* outline: solid seagreen; */
+}
+.form-field {
+  display: inline-flex;
+  gap: 30px;
+  margin-bottom: 48px;
+}
+.field-desc {
+  color: #1a1a1a;
+  width: 132px;
+  /* border: solid red; */
+}
+
+input[type="radio"] {
+  margin-right: 10px;
+  margin-bottom: 12px;
+}
+.circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 3px;
+  /* border: solid seagreen; */
+}
+.grey {
+  background-color: #8c9aa6;
+  margin-right: 12px;
+}
+.black {
+  background-color: black;
+}
+.input-label {
+  color: #7a8a98;
+}
+.form-field fieldset {
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .popup-heading {
+    padding-inline: 1rem;
+    padding-block: 0.5rem;
+  }
+  .popup-heading > h3 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 29.11px;
+    text-align: left;
+  }
+  .closeIcon {
+    padding: 4px;
+    width: "16";
+    height: "16";
+  }
+  .form-and-preview {
+    flex-direction: column;
+    gap: 16px;
+    /* justify-content: space-between; */
+  }
+  .preview-section {
+    min-width: 100%;
+    filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.1));
+    outline: solid seagreen;
+  }
+}
+
+@media print {
+  .print-preview {
+    /* Apply styles that will be used when printing */
+  }
+}
