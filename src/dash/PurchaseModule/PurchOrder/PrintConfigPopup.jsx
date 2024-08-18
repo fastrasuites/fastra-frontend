@@ -1,24 +1,30 @@
 import React, { useState } from "react";
 
 import "./printConfigPopup.css";
+import { useRef } from "react";
+import Receipt3 from "./Receipt3";
 
-const PrintConfigPopup = ({ onClose, setShowPrintConfig }) => {
-  const [paperSize, setPaperSize] = useState("A4");
-  const [orientation, setOrientation] = useState("portrait");
-  const [margins, setMargins] = useState({
-    top: 10,
-    bottom: 10,
-    left: 10,
-    right: 10,
-  });
+const PrintConfigPopup = ({
+  onClose,
+  setShowPrintConfig,
+  setLightFont,
+  setDarkFont,
+  setBoxedBorder,
+  setStrippedBorder,
+  lightFont,
+  darkFont,
+  boxedBorder,
+  strippedBorder,
+  closeModal,
+}) => {
+  const printPreviewRef = useRef();
 
   const handlePrint = () => {
     // Logic to apply configuration to print style and trigger print
+    // printPreviewRef.current.print();
     window.print();
   };
-  const handleClosePopup = () => {
-    setShowPrintConfig(false);
-  };
+
   return (
     // <div className="modal-container">
     <div className="popup">
@@ -26,7 +32,7 @@ const PrintConfigPopup = ({ onClose, setShowPrintConfig }) => {
         <header className="popup-heading">
           <h3>Configure your document layout</h3>
           <svg
-            onClick={handleClosePopup}
+            onClick={closeModal}
             role="button"
             className="closeIcon"
             width="24"
@@ -51,25 +57,57 @@ const PrintConfigPopup = ({ onClose, setShowPrintConfig }) => {
               <p className="field-desc">Layout</p>
               <fieldset>
                 <div>
-                  <input type="radio" name="layout" id="light" checked />
+                  <input
+                    type="radio"
+                    name="font"
+                    onChange={() => {
+                      setLightFont(true);
+                      setDarkFont(false);
+                    }}
+                    id="light"
+                  />
                   <label htmlFor="light" className="input-label">
                     Light
                   </label>
                 </div>
                 <div>
-                  <input type="radio" name="layout" id="boxed" />
+                  <input
+                    type="radio"
+                    name="border"
+                    onChange={() => {
+                      setBoxedBorder(true);
+                      setStrippedBorder(false);
+                    }}
+                    id="boxed"
+                  />
                   <label htmlFor="boxed" className="input-label">
                     Boxed
                   </label>
                 </div>
                 <div>
-                  <input type="radio" name="layout" id="bold" />
+                  <input
+                    type="radio"
+                    name="font"
+                    onChange={() => {
+                      setLightFont(false);
+                      setDarkFont(true);
+                    }}
+                    id="bold"
+                  />
                   <label htmlFor="bold" className="input-label">
                     Bold
                   </label>
                 </div>
                 <div>
-                  <input type="radio" name="layout" id="striped" />
+                  <input
+                    type="radio"
+                    name="border"
+                    onChange={() => {
+                      setBoxedBorder(false);
+                      setStrippedBorder(true);
+                    }}
+                    id="striped"
+                  />
                   <label htmlFor="striped" className="input-label">
                     Striped
                   </label>
@@ -85,31 +123,14 @@ const PrintConfigPopup = ({ onClose, setShowPrintConfig }) => {
             <div className="form-field">
               <p className="field-desc">Colors</p>
               <fieldset>
-                <span className="grey circle"></span>
-                <span className="black circle"></span>
+                <input type="color" name="" id="" className="" style={{}} />
+                <input type="color" name="" id="" className="" />
               </fieldset>
             </div>
 
             <div className="form-field">
               <p className="field-desc">Layout Background</p>
               <p className="input-label">Blank</p>
-            </div>
-
-            <div className="form-field">
-              <p className="field-desc">Company Tagline</p>
-              <div>
-                <input
-                  type="search"
-                  name="layout"
-                  style={{
-                    outline: "none",
-                    border: "none",
-                    marginBottom: "20px",
-                  }}
-                  placeholder="Type '/' to get commands"
-                />
-                <div style={{ borderBottom: "1px solid" }}></div>
-              </div>
             </div>
 
             <div className="form-field">
@@ -126,76 +147,45 @@ const PrintConfigPopup = ({ onClose, setShowPrintConfig }) => {
                 +234 12 211 11234 infor@yourcompany.com http://www.example.com
               </p>
             </div>
-
-            <br />
-            {/*             
-            <label>
-              Paper Size:
-              <select
-                value={paperSize}
-                onChange={(e) => setPaperSize(e.target.value)}
-              >
-                <option value="A4">A4</option>
-                <option value="Letter">Letter</option>
-              </select>
-            </label>
-            <label>
-              Orientation:
-              <select
-                value={orientation}
-                onChange={(e) => setOrientation(e.target.value)}
-              >
-                <option value="portrait">Portrait</option>
-                <option value="landscape">Landscape</option>
-              </select>
-            </label>
-            <label>
-              Margins (mm):
-              <input
-                type="number"
-                value={margins.top}
-                onChange={(e) =>
-                  setMargins({ ...margins, top: e.target.value })
-                }
-                placeholder="Top"
-              />
-              <input
-                type="number"
-                value={margins.bottom}
-                onChange={(e) =>
-                  setMargins({ ...margins, bottom: e.target.value })
-                }
-                placeholder="Bottom"
-              />
-              <input
-                type="number"
-                value={margins.left}
-                onChange={(e) =>
-                  setMargins({ ...margins, left: e.target.value })
-                }
-                placeholder="Left"
-              />
-              <input
-                type="number"
-                value={margins.right}
-                onChange={(e) =>
-                  setMargins({ ...margins, right: e.target.value })
-                }
-                placeholder="Right"
-              />
-            </label> */}
           </form>
 
+          {/* Render a preview of the printable content here */}
           <div className="preview-section">
-            {/* Render a preview of the printable content here */}
-            <h4>Print Preview</h4>
-            <div className="print-preview">{/* Content to preview */}</div>
+            <div className="print-preview" ref={printPreviewRef}>
+              {/* Content to preview */}
+              <Receipt3
+                lightFont={lightFont}
+                darkFont={darkFont}
+                boxedBorder={boxedBorder}
+                strippedBorder={strippedBorder}
+              />
+            </div>
           </div>
         </div>
 
         <div className="popup-actions">
-          <button onClick={handlePrint}>Print</button>
-          <button onClick={onClose}>Cancel</button>
+          <button
+            onClick={handlePrint}
+            style={{
+              backgroundColor: "#0671E0",
+              border: "solid #0671E0 1px",
+              color: "white",
+            }}
+            className="ft-btn"
+          >
+            Print
+          </button>
+          <button
+            onClick={closeModal}
+            className="ft-btn"
+            style={{
+              backgroundColor: "white",
+              border: "solid #89939E 1px",
+              color: "#89939E",
+            }}
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>

@@ -15,11 +15,35 @@ import {
 import autosave from "../../../image/autosave.svg";
 import "./Receipt.css";
 import PrintConfigPopup from "./PrintConfigPopup";
+import Receipt3 from "./Receipt3";
 
 const Receipt = ({ formData, onClose }) => {
-  const [showPrintConfig, setShowPrintConfig] = useState(false);
+  // ===== Lifted states to control print receipt configuration ======
+  const [lightFont, setLightFont] = useState(false);
+  const [darkFont, setDarkFont] = useState(false);
+  const [boxedBorder, setBoxedBorder] = useState(false);
+  const [strippedBorder, setStrippedBorder] = useState(false);
+  // End =============================================================
+
+  // =====Control opening and closing of print preview PrintConfigPopup =======
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+  // End ======================================================================
+
+  const [hideReceipt3, setHideReceipt3] = useState(true);
+
+  const [printReceipt, setPrintReceipt] = useState(true);
   const [page, setPage] = useState(0);
   const rows = formData && formData.rows ? formData.rows : [];
+
+  console.log(formData);
+  // console.log(formData.rows);
+
+  if (printReceipt) {
+    // window.print();
+    setPrintReceipt(false);
+  }
 
   const formatDate = (date) => {
     const options = {
@@ -50,10 +74,6 @@ const Receipt = ({ formData, onClose }) => {
     // Implement delete functionality here
   };
 
-  const handlePrintButton = () => {
-    setShowPrintConfig(true);
-  };
-  console.log(showPrintConfig);
   return (
     <div id="receipt" className="receipt-container">
       <div className="newpodr2">
@@ -79,7 +99,7 @@ const Receipt = ({ formData, onClose }) => {
       <div className="receipt-header">
         <div className="receipt-actions">
           <button className="validate-button">Validate</button>
-          <button onClick={handlePrintButton}>Print</button>
+          <button onClick={openModal}>Print</button>
           <button onClick={onClose}>Cancel</button>
         </div>
         <div className="receipt-status">
@@ -173,11 +193,29 @@ const Receipt = ({ formData, onClose }) => {
           </Table>
         </TableContainer>
       </div>
-      {showPrintConfig && (
+      {isModalOpen && (
         <PrintConfigPopup
-          showPrintConfig={showPrintConfig}
-          setShowPrintConfig={setShowPrintConfig}
+          setLightFont={setLightFont}
+          setDarkFont={setDarkFont}
+          setBoxedBorder={setBoxedBorder}
+          setStrippedBorder={setStrippedBorder}
+          lightFont={lightFont}
+          darkFont={darkFont}
+          boxedBorder={boxedBorder}
+          strippedBorder={strippedBorder}
+          closeModal={closeModal} // Pass close function to the modal
         />
+      )}
+      {hideReceipt3 ? (
+        <Receipt3
+          formData={formData}
+          lightFont={lightFont}
+          darkFont={darkFont}
+          boxedBorder={boxedBorder}
+          strippedBorder={strippedBorder}
+        />
+      ) : (
+        ""
       )}
     </div>
   );

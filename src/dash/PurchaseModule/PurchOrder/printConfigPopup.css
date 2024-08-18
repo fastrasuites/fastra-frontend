@@ -14,11 +14,15 @@
 }
 
 .popup-content {
+  overflow-y: auto;
   /* Style your popup */
   width: 90%;
 
   background: white;
-  /* color: red; */
+  /* margin-top: 100px; */
+  /* margin-bottom: 100px; */
+  height: 70vh;
+  border-radius: 20px;
 }
 .popup-heading {
   display: flex;
@@ -42,23 +46,30 @@
 }
 .form-and-preview {
   display: flex;
-  gap: 10px;
+  /* gap: 10px; */
   justify-content: space-between;
 }
 
 .popup-form {
+  /* border: solid 1px; */
   padding: 52px;
   /* outline: solid purple 2px; */
 }
 .preview-section {
-  min-width: 394px;
-  filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.1));
+  padding-inline: 10px;
+  padding-bottom: 20px;
+  min-width: 294px;
+  margin-block: 52px;
+  margin-right: 52px;
+  /* filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.1)); */
+  box-shadow: 0px -5px 16px 8px rgba(0, 0, 0, 0.1);
   /* outline: solid seagreen; */
+  border-radius: 5px;
 }
 .form-field {
-  display: inline-flex;
+  display: flex;
   gap: 30px;
-  margin-bottom: 48px;
+  margin-bottom: 32px;
 }
 .field-desc {
   color: #1a1a1a;
@@ -70,6 +81,14 @@ input[type="radio"] {
   margin-right: 10px;
   margin-bottom: 12px;
 }
+input[type="color"] {
+  margin-right: 10px;
+  border: none;
+  outline: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
 .circle {
   width: 32px;
   height: 32px;
@@ -77,17 +96,33 @@ input[type="radio"] {
   /* border: solid seagreen; */
 }
 .grey {
-  background-color: #8c9aa6;
+  background: #8c9aa6;
   margin-right: 12px;
 }
 .black {
-  background-color: black;
+  background: #000000;
 }
 .input-label {
   color: #7a8a98;
 }
 .form-field fieldset {
   border: none;
+}
+.ft-btn {
+  padding: 16px 32px 16px 32px;
+  gap: 10px;
+  border-radius: 4px 0px 0px 0px;
+  opacity: 0px;
+  cursor: pointer;
+}
+.popup-actions {
+  padding-block: 10px;
+  padding-left: 50px;
+  border-top: #1a1a1a solid 1px;
+  display: flex;
+  gap: 5px;
+  /* background-color: green; */
+  /* width: 100%; */
 }
 
 @media (max-width: 768px) {
@@ -113,8 +148,13 @@ input[type="radio"] {
   }
   .preview-section {
     min-width: 100%;
-    filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.1));
-    outline: solid seagreen;
+    /* filter: drop-shadow(0px -4px 4px rgba(0, 0, 0, 0.1)); */
+    /* outline: solid seagreen; */
+  }
+
+  .ft-btn {
+    cursor: pointer;
+    padding: 8px 16px 8px 1px;
   }
 }
 
