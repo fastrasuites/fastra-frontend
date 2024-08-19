@@ -80,6 +80,7 @@
 input[type="radio"] {
   margin-right: 10px;
   margin-bottom: 12px;
+  cursor: pointer;
 }
 input[type="color"] {
   margin-right: 10px;
@@ -87,6 +88,7 @@ input[type="color"] {
   outline: none;
   width: 20px;
   height: 20px;
+  cursor: pointer;
   cursor: pointer;
 }
 .circle {
@@ -104,6 +106,7 @@ input[type="color"] {
 }
 .input-label {
   color: #7a8a98;
+  cursor: pointer;
 }
 .form-field fieldset {
   border: none;

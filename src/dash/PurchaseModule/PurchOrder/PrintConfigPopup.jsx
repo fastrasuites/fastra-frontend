@@ -16,8 +16,15 @@ const PrintConfigPopup = ({
   boxedBorder,
   strippedBorder,
   closeModal,
+  onInvoiceNumberColorChange,
+  invoiceNumberTextColor,
 }) => {
   const printPreviewRef = useRef();
+
+  // Handler for invoice Number color input change
+  const handleInvoiceNumberColorChange = (event) => {
+    onInvoiceNumberColorChange(event.target.value);
+  };
 
   const handlePrint = () => {
     // Logic to apply configuration to print style and trigger print
@@ -120,10 +127,18 @@ const PrintConfigPopup = ({
               <p className="input-label">Product Sans</p>
             </div>
 
+            {/* input color controller */}
             <div className="form-field">
               <p className="field-desc">Colors</p>
               <fieldset>
-                <input type="color" name="" id="" className="" style={{}} />
+                <input
+                  type="color"
+                  name=""
+                  id=""
+                  className=""
+                  value={invoiceNumberTextColor}
+                  onChange={handleInvoiceNumberColorChange}
+                />
                 <input type="color" name="" id="" className="" />
               </fieldset>
             </div>
@@ -158,6 +173,7 @@ const PrintConfigPopup = ({
                 darkFont={darkFont}
                 boxedBorder={boxedBorder}
                 strippedBorder={strippedBorder}
+                invoiceNumberTextColor={invoiceNumberTextColor}
               />
             </div>
           </div>

@@ -14,6 +14,7 @@ const Receipt3 = ({
   darkFont,
   boxedBorder,
   strippedBorder,
+  invoiceNumberTextColor,
 }) => {
   const [isboldLayout, setIsBoldLayout] = useState(false);
   const [toggle] = useState(false);
@@ -118,7 +119,8 @@ const Receipt3 = ({
       {/* Invoice Details */}
       <div className="invoice-detail" style={{ marginBottom: "5px" }}>
         <p style={{ fontWeight: "700", marginBottom: "5px" }}>
-          Invoice <span style={{ color: "purple" }}>WH/IN/00006</span>{" "}
+          Invoice{" "}
+          <span style={{ color: invoiceNumberTextColor }}>WH/IN/00006</span>{" "}
         </p>
         <div
           style={{
@@ -141,9 +143,7 @@ const Receipt3 = ({
       <TableContainer component={Paper}>
         <Table
           style={{
-            border: `${
-              strippedBorder ? "solid 2px #1a1a1a" : "solid 2px #8c9aa6;"
-            }`,
+            border: `${boxedBorder ? "solid 2px #1a1a1a" : ""}`,
           }}
         >
           <TableHead>
@@ -182,7 +182,7 @@ const Receipt3 = ({
             ))}
             <TableRow
               style={{
-                border: `${boxedBorder ? "solid 2px black" : "solid 2px "}`,
+                border: `${boxedBorder ? "solid 2px black" : ""}`,
               }}
             >
               <TableCell colSpan={4} align="right">

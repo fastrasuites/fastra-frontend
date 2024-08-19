@@ -23,6 +23,10 @@ const Receipt = ({ formData, onClose }) => {
   const [darkFont, setDarkFont] = useState(false);
   const [boxedBorder, setBoxedBorder] = useState(false);
   const [strippedBorder, setStrippedBorder] = useState(false);
+  const [invoiceNumberTextColor, setInvoiceNumberTextColor] =
+    useState("#1a4ee2");
+  const [invoiceTableHeadTextColor, setInvoiceTableHeadTextColor] =
+    useState("grey");
   // End =============================================================
 
   // =====Control opening and closing of print preview PrintConfigPopup =======
@@ -36,6 +40,12 @@ const Receipt = ({ formData, onClose }) => {
   const [printReceipt, setPrintReceipt] = useState(true);
   const [page, setPage] = useState(0);
   const rows = formData && formData.rows ? formData.rows : [];
+
+  const handleInvoiceNumberColorChange = (color) => {
+    setInvoiceNumberTextColor(color);
+  };
+
+  // const handleTableHead
 
   console.log(formData);
   // console.log(formData.rows);
@@ -204,15 +214,18 @@ const Receipt = ({ formData, onClose }) => {
           boxedBorder={boxedBorder}
           strippedBorder={strippedBorder}
           closeModal={closeModal} // Pass close function to the modal
+          onInvoiceNumberColorChange={handleInvoiceNumberColorChange}
+          invoiceNumberTextColor={invoiceNumberTextColor}
         />
       )}
-      {hideReceipt3 ? (
+      {!hideReceipt3 ? (
         <Receipt3
           formData={formData}
           lightFont={lightFont}
           darkFont={darkFont}
           boxedBorder={boxedBorder}
           strippedBorder={strippedBorder}
+          invoiceNumberTextColor={invoiceNumberTextColor}
         />
       ) : (
         ""
