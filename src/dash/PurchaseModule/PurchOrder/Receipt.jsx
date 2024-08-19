@@ -45,7 +45,9 @@ const Receipt = ({ formData, onClose }) => {
     setInvoiceNumberTextColor(color);
   };
 
-  // const handleTableHead
+  const handleTableHeadTextColorChange = (color) => {
+    setInvoiceTableHeadTextColor(color);
+  };
 
   console.log(formData);
   // console.log(formData.rows);
@@ -216,6 +218,8 @@ const Receipt = ({ formData, onClose }) => {
           closeModal={closeModal} // Pass close function to the modal
           onInvoiceNumberColorChange={handleInvoiceNumberColorChange}
           invoiceNumberTextColor={invoiceNumberTextColor}
+          onInvoiceTableHeadColorChange={handleTableHeadTextColorChange}
+          invoiceTableHeadTextColor={invoiceTableHeadTextColor}
         />
       )}
       {!hideReceipt3 ? (
@@ -226,6 +230,7 @@ const Receipt = ({ formData, onClose }) => {
           boxedBorder={boxedBorder}
           strippedBorder={strippedBorder}
           invoiceNumberTextColor={invoiceNumberTextColor}
+          invoiceTableHeadTextColor={invoiceTableHeadTextColor}
         />
       ) : (
         ""

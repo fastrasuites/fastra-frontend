@@ -15,6 +15,7 @@ const Receipt3 = ({
   boxedBorder,
   strippedBorder,
   invoiceNumberTextColor,
+  invoiceTableHeadTextColor,
 }) => {
   const [isboldLayout, setIsBoldLayout] = useState(false);
   const [toggle] = useState(false);
@@ -148,15 +149,28 @@ const Receipt3 = ({
         >
           <TableHead>
             <TableRow>
-              <TableCell style={{ color: "red" }}>Product Name</TableCell>
-              <TableCell style={{ color: "red" }}>Description</TableCell>
-              <TableCell align="right" style={{ color: "red" }}>
+              <TableCell style={{ color: invoiceTableHeadTextColor }}>
+                Product Name
+              </TableCell>
+              <TableCell style={{ color: invoiceTableHeadTextColor }}>
+                Description
+              </TableCell>
+              <TableCell
+                align="right"
+                style={{ color: invoiceTableHeadTextColor }}
+              >
                 QTY
               </TableCell>
-              <TableCell align="right" style={{ color: "red" }}>
+              <TableCell
+                align="right"
+                style={{ color: invoiceTableHeadTextColor }}
+              >
                 Estimated Unit Price
               </TableCell>
-              <TableCell align="right" style={{ color: "red" }}>
+              <TableCell
+                align="right"
+                style={{ color: invoiceTableHeadTextColor }}
+              >
                 Total Price
               </TableCell>
               <TableCell />

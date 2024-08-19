@@ -18,12 +18,18 @@ const PrintConfigPopup = ({
   closeModal,
   onInvoiceNumberColorChange,
   invoiceNumberTextColor,
+  onInvoiceTableHeadColorChange,
+  invoiceTableHeadTextColor,
 }) => {
   const printPreviewRef = useRef();
 
   // Handler for invoice Number color input change
   const handleInvoiceNumberColorChange = (event) => {
     onInvoiceNumberColorChange(event.target.value);
+  };
+
+  const handleInvoiceTableHeadColorChange = (event) => {
+    onInvoiceTableHeadColorChange(event.target.value);
   };
 
   const handlePrint = () => {
@@ -139,7 +145,14 @@ const PrintConfigPopup = ({
                   value={invoiceNumberTextColor}
                   onChange={handleInvoiceNumberColorChange}
                 />
-                <input type="color" name="" id="" className="" />
+                <input
+                  type="color"
+                  name=""
+                  id=""
+                  className=""
+                  value={invoiceTableHeadTextColor}
+                  onChange={handleInvoiceTableHeadColorChange}
+                />
               </fieldset>
             </div>
 
@@ -174,6 +187,7 @@ const PrintConfigPopup = ({
                 boxedBorder={boxedBorder}
                 strippedBorder={strippedBorder}
                 invoiceNumberTextColor={invoiceNumberTextColor}
+                invoiceTableHeadTextColor={invoiceTableHeadTextColor}
               />
             </div>
           </div>
