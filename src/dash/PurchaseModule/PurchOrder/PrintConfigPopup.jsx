@@ -195,7 +195,7 @@ const PrintConfigPopup = ({
 
         <div className="popup-actions">
           <button
-            onClick={handlePrint}
+            // onClick={handlePrint}
             style={{
               backgroundColor: "#0671E0",
               border: "solid #0671E0 1px",
