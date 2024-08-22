@@ -1,9 +1,9 @@
 .sidebar {
   position: fixed;
   top: 10.5%;
-  left: 0; /* Change this to 0 */
+  left: 0; 
   width: 100px;
-  height: 84.5%;
+  height: 85.5%;
   background-color: #172b4d;
   display: flex;
   flex-direction: column;
