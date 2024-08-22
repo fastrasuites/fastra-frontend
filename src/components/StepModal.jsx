@@ -15,15 +15,14 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
       <Box
         sx={{
           position: "absolute",
-          top: "15%",
+          top: "10%",
           left: "15%",
           width: "70%",
-          height: "70%",
+          height: "75%",
           bgcolor: "white",
           borderRadius: "10px",
           paddingLeft: "16px",
-          boxShadow: "24",
-          // border: "solid 2px red",
+          outline: "none",
         }}
       >
         <Button
@@ -52,7 +51,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
           <Box
             sx={{
               position: "absolute",
-              left: "30px",
+              left: "32px",
               top: "0",
               buttom: "10px",
               width: "4px",
@@ -71,6 +70,8 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               bgcolor: "#E2E6E9",
               color: "#3B7CED",
               fontWeight: "900",
+              lineHeight: "58.22px",
+              fontSize: "48px",
               borderRadius: "50%",
               display: "flex",
               justifyContent: "center",
@@ -92,6 +93,8 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               bgcolor: "#E2E6E9",
               color: "#3B7CED",
               fontWeight: "900",
+              lineHeight: "58.22px",
+              fontSize: "48px",
               borderRadius: "50%",
               display: "flex",
               justifyContent: "center",
@@ -102,25 +105,27 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
           >
             2
           </Box>
+          {/* Step 1  -------------------------------- */}
           <div style={{ marginLeft: "120px", paddingTop: "70px" }}>
             <Typography
               sx={{
                 color: "#3B7CED",
                 marginBottom: "14px",
                 textAlign: "left",
+                fontSize: "20px",
+                fontWeight: "700",
+                lineHeight: "24.26px",
               }}
             >
               3 SIMPLE STEPS
             </Typography>
             <Typography
               sx={{
-                // backgroundColor: "",
                 fontWeight: "900",
                 fontSize: "40px",
                 textAlign: "left",
                 color: "#1A1A1A",
-                padding: "5px",
-                marginBottom: "1rem",
+                marginBottom: "4px",
               }}
             >
               Step 1: Company Settings
@@ -133,11 +138,10 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 lineHeight: "16.98px",
                 textAlign: "left",
                 color: "#7A8A98",
-                marginBottom: "60px",
+                marginBottom: "40px",
               }}
             >
-              Awesome! Just a few steps to start having an Amazing Fastra
-              Experience
+              A company set-up will ease your journey using this platform.
             </Typography>
             <Button
               onClick={handleSetUpCompany}
@@ -161,9 +165,76 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 },
               }}
             >
-              Set up Your Company
+              Set up Your Company!
             </Button>
           </div>
+          {/* End Step 1 ------------------------------ */}
+
+          {/* Step 2 ---------------------------------- */}
+          <div style={{ marginLeft: "120px", paddingTop: "70px" }}>
+            <Typography
+              sx={{
+                color: "#3B7CED",
+                marginBottom: "16px",
+                textAlign: "left",
+                fontSize: "20px",
+                fontWeight: "700",
+                lineHeight: "24.26px",
+              }}
+            >
+              3 SIMPLE STEPS
+            </Typography>
+            <Typography
+              sx={{
+                fontWeight: "900",
+                fontSize: "40px",
+                textAlign: "left",
+                color: "#1A1A1A",
+                marginBottom: "4px",
+              }}
+            >
+              Step 2: User Creation
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "Product Sans",
+                fontSize: "14px",
+                fontWeight: "400",
+                lineHeight: "16.98px",
+                textAlign: "left",
+                color: "#7A8A98",
+                marginBottom: "40px",
+              }}
+            >
+              Awesome! Just a few steps to start having an Amazing Fastra
+              Experience
+            </Typography>
+            {/* <Button
+              onClick={handleSetUpCompany}
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "start",
+                alignItems: "center",
+                padding: "16px 20px",
+                background: "#3B7CED",
+                boxShadow: "0px 32px 24px rgba(26, 26, 26, 0.08)",
+                borderRadius: "4px",
+                fontStyle: "normal",
+                fontWeight: "400",
+                fontSize: "18px",
+                lineHeight: "24px",
+                textAlign: "center",
+                color: "#FFFFFF",
+                "&:hover": {
+                  background: "#3367CC",
+                },
+              }}
+            >
+              Set up Your Company
+            </Button> */}
+          </div>
+          {/* End step 2 ------------------------------ */}
         </Box>
       </Box>
     </Modal>
