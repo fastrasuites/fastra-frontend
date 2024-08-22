@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Navbar from "../components/nav/Navbar";
-import RegForm from "./RegForm";
-import Footer from "../components/nav/Footer";
+import RegistrationForm from "./RegistrationForm";
+
 
 export default function Register() {
   return (
@@ -10,11 +10,9 @@ export default function Register() {
         <Navbar />
       </Rn>
       <Rg>
-        <RegForm />
+        <RegistrationForm />
       </Rg>
-      <Rf>
-        <Footer />
-      </Rf>
+     
     </Regcont>
   );
 }
@@ -30,8 +28,4 @@ const Rn = styled.div`
 const Rg = styled.div`
   width: 100%;
   height: 90%;
-`;
-const Rf = styled.div`
-  width: 100%;
-  height: 50vh;
 `;
