@@ -1,15 +1,19 @@
 .registration-container {
+  font-family: Product Sans;
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #fff;
+  background-image: url('../image/background.png'); 
+  background-size: cover;
+  background-position: center;
 }
 
 .registration-form-wrapper {
   width: 25%;
   min-width: 300px;
+  background-color: #fff;
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -33,8 +37,9 @@
 
 .form-label {
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 400;
   margin-top: 1rem;
+  margin-bottom: 0.5rem;
   display: block;
 }
 
@@ -84,7 +89,7 @@
 }
 
 .login-link {
-  text-align: center;
+  text-align: left;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
