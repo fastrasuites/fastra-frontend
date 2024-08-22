@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import "./Rfq.css";
 import SearchIcon from "../../../image/search.svg";
@@ -18,26 +18,49 @@ export default function Rfq() {
   const [viewMode, setViewMode] = useState("list");
   const [items, setItems] = useState(() => {
     const storedItems = JSON.parse(localStorage.getItem("rfqs")) || [];
+    console.log("Initial items:", storedItems);
     return storedItems;
   });
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(items);
   const [selectedItem, setSelectedItem] = useState(null);
   const [initialFormData, setInitialFormData] = useState(null);
+  const [, forceUpdate] = useState();
 
   const location = useLocation();
   const locationFormData = location.state?.formData;
 
+  const updateCounts = useCallback((currentItems) => {
+    console.log("Updating counts with items:", currentItems);
+    const vendorSelected = currentItems.filter(
+      (item) => item.status === "Vendor selected"
+    ).length;
+    const awaitingVendorSelection = currentItems.filter(
+      (item) => item.status === "Awaiting vendor selection"
+    ).length;
+    const cancelled = currentItems.filter(
+      (item) => item.status === "Cancelled"
+    ).length;
+
+    console.log("New counts:", {
+      vendorSelected,
+      awaitingVendorSelection,
+      cancelled,
+    });
+
+    setVendorSelectedCount(vendorSelected);
+    setAwaitingVendorSelectionCount(awaitingVendorSelection);
+    setCancelledCount(cancelled);
+    setFilteredItems(currentItems);
+
+    // Force a re-render
+    forceUpdate({});
+  }, []);
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (items) {
-        const vendorsData = getVendors(items); // If needed later
-        const categoriesData = getCategories(items); // If needed later
-        updateCounts(items);
-      }
-    };
-    fetchData();
-  }, [items]);
+    console.log("Items changed, updating counts");
+    updateCounts(items);
+  }, [items, updateCounts]);
 
   useEffect(() => {
     if (locationFormData) {
@@ -46,23 +69,8 @@ export default function Rfq() {
     }
   }, [locationFormData]);
 
-  const updateCounts = (items) => {
-    const vendorSelectedCount = items.filter(
-      (item) => item.status === "Vendor selected"
-    ).length;
-    const awaitingVendorSelectionCount = items.filter(
-      (item) => item.status === "Awaiting vendor selection"
-    ).length;
-    const cancelledCount = items.filter(
-      (item) => item.status === "Cancelled"
-    ).length;
-    setVendorSelectedCount(vendorSelectedCount);
-    setAwaitingVendorSelectionCount(awaitingVendorSelectionCount);
-    setCancelledCount(cancelledCount);
-    setFilteredItems(items);
-  };
-
   const handleSaveAndSubmit = (data) => {
+    console.log("Saving new item:", data);
     const updatedItems = [...items, data];
     setItems(updatedItems);
     localStorage.setItem("rfqs", JSON.stringify(updatedItems));
@@ -70,23 +78,14 @@ export default function Rfq() {
     updateCounts(updatedItems);
   };
 
-  const handleFormDataChange = (data) => {
-    // This function should update the form data if needed
-  };
 
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-  };
+    const handleFormDataChange = (data) => {
+      // This function should update the form data if needed
+    };
 
-  const handleNewRfq = () => {
-    setIsFormVisible(true);
-  };
-
-  const handleFormClose = () => {
-    setIsFormVisible(false);
-  };
 
   const handleUpdateStatus = (id, status) => {
+    console.log("Updating status:", id, status);
     const updatedItems = items.map((item) =>
       item.id === id ? { ...item, status: status } : item
     );
@@ -126,6 +125,19 @@ export default function Rfq() {
 
   const handleCardClick = (item) => {
     setSelectedItem(item);
+  };
+
+
+  const toggleViewMode = (mode) => {
+    setViewMode(mode);
+  };
+
+  const handleNewRfq = () => {
+    setIsFormVisible(true);
+  };
+
+  const handleFormClose = () => {
+    setIsFormVisible(false);
   };
 
   const formatDate = (dateString) => {

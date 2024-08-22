@@ -193,6 +193,23 @@
   text-decoration: none;
   background: #335db2;
 }
+.butn3 {
+  margin-top: 1rem;
+  background: #3b7ced;
+  color: #fff;
+  padding: 12px;
+  width: 70%;
+  border: none;
+  border-radius: 0.5rem;
+  text-decoration: none;
+}
+.verification{
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  padding:20px;
+  
+}
 .cfm {
   font-size: 10.5px;
 }

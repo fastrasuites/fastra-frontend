@@ -1,47 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+import axios from "axios";
 import "./RegForm.css";
 import { Formik, Form, Field } from "formik";
-import { Link } from "react-router-dom";
-import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function RegForm() {
-const [data, setData] = useState({
-  userName: "",
-  companyName: "",
-  databaseName: "", // Add this line
-  companyEmail: "",
-  password: "",
-  confirmPassword: "",
-});
+  const [data, setData] = useState({
+    userName: "",
+    companyName: "",
+    companyEmail: "",
+    password: "",
+    confirmPassword: "",
+    frontend_url: window.location.host,
+  });
 
-const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
 
-const makeRequest = async (formData) => {
-  const registrationData = {
-    schema_name: formData.databaseName.toLowerCase().replace(/\s+/g, "-"),
-    company_name: formData.companyName,
-    user: {
-      username: formData.userName,
-      password1: formData.password,
-      password2: formData.confirmPassword,
-      email: formData.companyEmail,
-    },
+  const makeRequest = async (formData) => {
+    // Log formData to check values
+    console.log("Form data to be sent:", formData);
+
+    const registrationData = {
+      schema_name: formData.companyName.toLowerCase().replace(/\s+/g, "-"),
+      company_name: formData.companyName,
+      user: {
+        username: formData.userName,
+        password1: formData.password,
+        password2: formData.confirmPassword,
+        email: formData.companyEmail,
+      },
+      frontend_url:formData.frontend_url,
+    };
+
+    try {
+      const response = await axios.post(
+        "https://fastrav1-production.up.railway.app/register/",
+        registrationData
+      );
+      console.log("Registration response:", response.data);
+      setData((prev) => ({ ...prev, ...formData }));
+      setCurrentStep(2);
+    } catch (error) {
+      console.error(
+        "Registration error:",
+        error.response?.data || error.message
+      );
+    }
   };
-
-  try {
-    const response = await axios.post(
-      "https://fastrav1-production.up.railway.app/register/",
-      registrationData
-    );
-    console.log("Registration response:", response.data); // Add this line for debugging
-    setData((prev) => ({ ...prev, ...formData }));
-    setCurrentStep(2); // Move to StepThree regardless of the response
-  } catch (error) {
-    console.error("Registration error:", error.response?.data || error.message);
-    // Handle errors as needed
-  }
-};
 
   const handleNextStep = (newData, final = false) => {
     setData((prev) => ({ ...prev, ...newData }));
@@ -56,7 +62,7 @@ const makeRequest = async (formData) => {
   const steps = [
     <StepOne next={handleNextStep} data={data} />,
     <StepTwo next={handleNextStep} data={data} />,
-    <StepThree data={data} />,
+    <StepThree />,
   ];
 
   return (
@@ -66,13 +72,13 @@ const makeRequest = async (formData) => {
   );
 }
 
-const StepOne = (props) => {
+// StepOne Component - User and Company Details
+const StepOne = ({ next, data }) => {
   const handleSubmit = async (values) => {
     try {
-      await props.next(values);
+      await next(values);
     } catch (error) {
       console.error("Registration failed:", error);
-      // Handle error appropriately
     }
   };
 
@@ -80,7 +86,6 @@ const StepOne = (props) => {
     const errors = {};
     if (!values.userName) errors.userName = "Username is Required";
     if (!values.companyName) errors.companyName = "Company Name is Required";
-    if (!values.databaseName) errors.databaseName = "Database Name is Required";
     if (!values.companyEmail) {
       errors.companyEmail = "Company Email is Required";
     } else if (
@@ -90,9 +95,10 @@ const StepOne = (props) => {
     }
     return errors;
   };
+
   return (
     <Formik
-      initialValues={props.data}
+      initialValues={data}
       onSubmit={handleSubmit}
       validate={validateForm}
     >
@@ -100,19 +106,19 @@ const StepOne = (props) => {
         <Form className="fom" method="POST">
           <p className="reg">Register</p>
           <p className="reg1">Enter your details to register</p>
-          <p className="lbl">Username</p>
+          <label className="lbl">Username</label>
           <Field
             className={
               touched.userName && errors.userName ? "inpt is-invalid" : "inpt"
             }
             name="userName"
-            type="name"
+            type="text"
             placeholder="Create your username"
           />
           {touched.userName && errors.userName && (
             <div className="error">{errors.userName}</div>
           )}
-          <p className="lbl">Company name</p>
+          <label className="lbl">Company Name</label>
           <Field
             className={
               touched.companyName && errors.companyName
@@ -120,27 +126,13 @@ const StepOne = (props) => {
                 : "inpt"
             }
             name="companyName"
-            type="name"
+            type="text"
             placeholder="Enter your company name"
           />
           {touched.companyName && errors.companyName && (
             <div className="error">{errors.companyName}</div>
           )}
-          <p className="lbl">Database name</p>
-          <Field
-            className={
-              touched.databaseName && errors.databaseName
-                ? "inpt is-invalid"
-                : "inpt"
-            }
-            name="databaseName"
-            type="name"
-            placeholder="Enter your database name"
-          />
-          {touched.databaseName && errors.databaseName && (
-            <div className="error">{errors.databaseName}</div>
-          )}
-          <p className="lbl">Company email</p>
+          <label className="lbl">Company Email</label>
           <Field
             className={
               touched.companyEmail && errors.companyEmail
@@ -149,7 +141,7 @@ const StepOne = (props) => {
             }
             name="companyEmail"
             type="email"
-            placeholder="Enter your company email here"
+            placeholder="Enter your company email"
           />
           {touched.companyEmail && errors.companyEmail && (
             <div className="error">{errors.companyEmail}</div>
@@ -157,30 +149,17 @@ const StepOne = (props) => {
           <button className="butn" type="submit">
             Continue
           </button>
-          <Link to="/login" className="goin">
-            Already have an account?
-          </Link>
         </Form>
       )}
     </Formik>
   );
 };
 
-const StepTwo = (props) => {
+const StepTwo = ({ next, data }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
-  };
-
-  const validatePassword = (password) => {
-    return {
-      length: password.length >= 8,
-      number: /\d/.test(password),
-      specialCharacter: /[!@#$%^&*]/.test(password),
-      lowercase: /[a-z]/.test(password),
-      uppercase: /[A-Z]/.test(password),
-    };
   };
 
   const validateForm = (values) => {
@@ -208,15 +187,15 @@ const StepTwo = (props) => {
 
   return (
     <Formik
-      initialValues={props.data}
-      onSubmit={(values) => props.next(values, true)}
+      initialValues={data}
+      onSubmit={(values) => next(values, true)}
       validate={validateForm}
     >
       {({ errors, touched, values }) => (
         <Form className="fom2">
           <p className="reg2">Password</p>
           <p className="reg3">Create a password for your account</p>
-          <p className="lbl2">Password</p>
+          <label className="lbl2">Password</label>
           <Field
             className={
               touched.password && errors.password ? "inpt1 is-invalid" : "inpt1"
@@ -254,7 +233,7 @@ const StepTwo = (props) => {
               At least one uppercase letter
             </li>
           </ul>
-          <p className="lbl2">Confirm Password</p>
+          <label className="lbl2">Confirm Password</label>
           <Field
             className={
               touched.confirmPassword && errors.confirmPassword
@@ -269,7 +248,7 @@ const StepTwo = (props) => {
             <div className="error">{errors.confirmPassword}</div>
           )}
           <button className="butn2" type="submit">
-            Register
+            Continue
           </button>
         </Form>
       )}
@@ -277,15 +256,55 @@ const StepTwo = (props) => {
   );
 };
 
-const StepThree = (props) => {
+const StepThree = () => {
   return (
-    <div className="fom4">
-      <p className="reg4">Registration Successful</p>
-      <p className="cfm">
-        Your account has been created successfully. A verification email has
-        been sent to {props.data.companyEmail}. Please check your inbox (and
-        spam folder) and click on the verification link to activate your
-        account.
+    <div className="success">
+      <h2>Registration Successful!</h2>
+      <p>A confirmation email has been sent to your provided email address.</p>
+      <p>Please click the link in the email to verify your account.</p>
+    </div>
+  );
+};
+
+// New Component for Email Verification Success Page
+const EmailVerification = () => {
+  const history = useHistory();
+
+  useEffect(() => {
+    const verifyEmail = async () => {
+      try {
+        const token = new URLSearchParams(window.location.search).get("token");
+
+        if (!token) {
+          console.error("Token not found in URL");
+          return;
+        }
+
+        const response = await axios.get(
+          "https://fastrav1-production.up.railway.app/email-verify/",
+          { params: { token } }
+        );
+        console.log("Email verification response:", response.data);
+        setTimeout(() => {
+          history.push("/login");
+        }, 3000); // Redirect after 3 seconds
+      } catch (error) {
+        console.error(
+          "Email verification error:",
+          error.response?.data || error.message
+        );
+      }
+    };
+
+    verifyEmail();
+  }, [history]);
+
+  return (
+    <div className="verification">
+      <h2>Email Verification</h2>
+      <p>
+        Your email has been verified successfully. You will be redirected to the
+        login page shortly.
       </p>
     </div>
   );
