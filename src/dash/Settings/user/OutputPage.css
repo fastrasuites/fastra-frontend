@@ -1,0 +1,121 @@
+.settings-container {
+  width: 90%;
+  height: 79%;
+  padding: 24px 0px 0px 0px;
+  background-color: white;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-tabs .tab-button {
+  background-color: #f0f0f0;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.header-tabs {
+  background-color: #007bff;
+  color: white;
+}
+
+.access-rights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+.action-buttons button {
+  padding: 8px 16px;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  border: 1px solid #007bff;
+}
+
+.cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px 0;
+}
+
+.user-avatar {
+  max-width: 20%;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+
+.user-email {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.tabs-container {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+
+
+.tab-content {
+  margin-top: 20px;
+}
+
+.application-accesses {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.application-accesses td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.purchase-rights {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+  background-color: white;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.purchase-right-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.purchase-right-item input[type="checkbox"] {
+  transform: scale(1.5);
+}

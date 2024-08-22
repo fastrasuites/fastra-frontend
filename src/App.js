@@ -39,13 +39,45 @@ import Newprod from "../src/dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
 
-
 function App() {
   const location = useLocation();
-  const noHeaderRoutes = ["/", "/login", "/dashboard", "/fogpas", "/contact", "/settings", "/company", "/apk", "/user"];
-  const noHeadRoutes = ["/", "/login", "/dashboard", "/fogpas", "/contact", "/purchase", "/npr", "/papr", "/crfq", "/rfq"
-    , "/newrfq", "/rapr", "/pod", "/newPurchaseOrder", "/orapr", "/vend", "/vendetails", "/Newvendor", "/varcat", "/edit", "/prod", "/prodetails"
-    , "/Newprod", "/procat","/pedit"
+  const noHeaderRoutes = [
+    "/",
+    "/login",
+    "/dashboard",
+    "/fogpas",
+    "/contact",
+    "/settings",
+    "/company",
+    "/apk",
+    "/user",
+  ];
+  const noHeadRoutes = [
+    "/",
+    "/login",
+    "/dashboard",
+    "/fogpas",
+    "/contact",
+    "/purchase",
+    "/npr",
+    "/papr",
+    "/crfq",
+    "/rfq",
+    "/newrfq",
+    "/rapr",
+    "/pod",
+    "/newPurchaseOrder",
+    "/orapr",
+    "/vend",
+    "/vendetails",
+    "/Newvendor",
+    "/varcat",
+    "/edit",
+    "/prod",
+    "/prodetails",
+    "/Newprod",
+    "/procat",
+    "/pedit",
   ];
   return (
     <div className="App">

@@ -103,6 +103,11 @@
   border: 1px solid #e2e6e9;
   background-color: white;
   cursor: pointer;
+  font-size: medium;
+}
+.nutogclk:focus {
+  color: #3b7ced;
+  border: #3b7ced solid 1px;
 }
 
 .newuser3 {
@@ -129,6 +134,8 @@
   justify-content: space-between;
   align-items: center;
   color: #3b7ced;
+  padding-bottom: 5px;
+  border-bottom: #e2e6e9 solid 1.2px;
 }
 
 .newuser3e {
@@ -271,3 +278,5 @@ input[type="number"] {
   -webkit-appearance: none;
   appearance: none;
 }
+
+/* Access right content */

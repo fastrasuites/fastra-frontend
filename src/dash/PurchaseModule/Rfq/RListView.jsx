@@ -10,19 +10,6 @@ import {
   Checkbox,
 } from "@mui/material";
 
-const getStatusText = (status) => {
-  switch (status) {
-    case "Approved":
-      return "Vendor selected";
-    case "Pending":
-      return "Awaiting vendor selection";
-    case "Rejected":
-      return "Cancelled";
-    default:
-      return "Unknown status";
-  }
-};
-
 const getStatusColor = (status) => {
   switch (status) {
     case "Vendor selected":
@@ -119,7 +106,7 @@ const RListView = ({ items = [], onCardClick }) => {
                 backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
                 "&:last-child td, &:last-child th": { border: 0 },
               }}
-              onClick={() => onCardClick(item)} // Call the onCardClick function when a row is clicked
+              onClick={() => onCardClick(item)}
             >
               <TableCell padding="checkbox">
                 <Checkbox
@@ -191,7 +178,7 @@ const RListView = ({ items = [], onCardClick }) => {
                   fontSize: "12px",
                   display: "flex",
                   alignItems: "center",
-                  color: getStatusColor(getStatusText(item.status)),
+                  color: getStatusColor(item.status),
                 }}
               >
                 <div
@@ -199,11 +186,11 @@ const RListView = ({ items = [], onCardClick }) => {
                     width: "6px",
                     height: "6px",
                     borderRadius: "50%",
-                    backgroundColor: getStatusColor(getStatusText(item.status)),
+                    backgroundColor: getStatusColor(item.status),
                     marginRight: "8px",
                   }}
                 ></div>
-                {getStatusText(item.status)}
+                {item.status}
               </TableCell>
             </TableRow>
           ))}
