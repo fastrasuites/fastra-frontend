@@ -7,7 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import Receipt from "./Receipt"; 
+import Receipt from "./Receipt";
 import autosave from "../../../image/autosave.svg";
 import { FaCaretLeft, FaCaretRight, FaReceipt } from "react-icons/fa";
 import "./Orapr.css";
@@ -67,6 +67,7 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
       setTotalPrice(total);
     }
   }, [currentFormData]);
+  console.log(currentFormData);
 
   const handleDeselect = () => {
     const updatedFormData = {
@@ -93,12 +94,14 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
     return `${formattedHours}:${formattedMinutes}${ampm}`;
   };
 
- const toggleReceipt = () => {
+  const toggleReceipt = () => {
     setShowReceipt(!showReceipt);
   };
 
   if (showReceipt) {
-    return <Receipt formData={formData} onClose={() => setShowReceipt(false)} />;
+    return (
+      <Receipt formData={formData} onClose={() => setShowReceipt(false)} />
+    );
   }
 
   return (

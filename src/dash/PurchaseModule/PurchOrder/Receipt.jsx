@@ -6,13 +6,56 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { FaCaretLeft, FaCaretRight, FaTrashAlt, FaRegStar } from "react-icons/fa";
+import {
+  FaCaretLeft,
+  FaCaretRight,
+  FaTrashAlt,
+  FaRegStar,
+} from "react-icons/fa";
 import autosave from "../../../image/autosave.svg";
 import "./Receipt.css";
+import PrintConfigPopup from "./PrintConfigPopup";
+import Receipt3 from "./Receipt3";
 
 const Receipt = ({ formData, onClose }) => {
+  // ===== Lifted states to control print receipt configuration ======
+  const [lightFont, setLightFont] = useState(false);
+  const [darkFont, setDarkFont] = useState(false);
+  const [boxedBorder, setBoxedBorder] = useState(false);
+  const [strippedBorder, setStrippedBorder] = useState(false);
+  const [invoiceNumberTextColor, setInvoiceNumberTextColor] =
+    useState("#1a4ee2");
+  const [invoiceTableHeadTextColor, setInvoiceTableHeadTextColor] =
+    useState("grey");
+  // End =============================================================
+
+  // =====Control opening and closing of print preview PrintConfigPopup =======
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+  // End ======================================================================
+
+  const [hideReceipt3, setHideReceipt3] = useState(true);
+
+  const [printReceipt, setPrintReceipt] = useState(true);
   const [page, setPage] = useState(0);
   const rows = formData && formData.rows ? formData.rows : [];
+
+  const handleInvoiceNumberColorChange = (color) => {
+    setInvoiceNumberTextColor(color);
+  };
+
+  const handleTableHeadTextColorChange = (color) => {
+    setInvoiceTableHeadTextColor(color);
+  };
+
+  console.log(formData);
+  // console.log(formData.rows);
+
+  if (printReceipt) {
+    // window.print();
+    setPrintReceipt(false);
+  }
 
   const formatDate = (date) => {
     const options = {
@@ -68,7 +111,7 @@ const Receipt = ({ formData, onClose }) => {
       <div className="receipt-header">
         <div className="receipt-actions">
           <button className="validate-button">Validate</button>
-          <button>Print</button>
+          <button onClick={openModal}>Print</button>
           <button onClick={onClose}>Cancel</button>
         </div>
         <div className="receipt-status">
@@ -89,23 +132,21 @@ const Receipt = ({ formData, onClose }) => {
         </div>
         <div className="receipt-right">
           {/* <div className="receipt-dates"> */}
-            <div className="receipt-text">
-              <p>Scheduled Date: </p>
-              <p className="status-active">
-                {formData ? formatDate(formData.date) : ""}
-              </p>
-            </div>
-            <div className="receipt-text" >
-              <p>Deadline:</p>
-              <p className="">
-                {formData ? formatDate(formData.date) : ""}
-              </p>
+          <div className="receipt-text">
+            <p>Scheduled Date: </p>
+            <p className="status-active">
+              {formData ? formatDate(formData.date) : ""}
+            </p>
+          </div>
+          <div className="receipt-text">
+            <p>Deadline:</p>
+            <p className="">{formData ? formatDate(formData.date) : ""}</p>
           </div>
           {""}
-            <div className="receipt-text">
-              <p>Source Document: </p>
-              <p className="">{formData ? formData.id : ""}</p>
-            </div>
+          <div className="receipt-text">
+            <p>Source Document: </p>
+            <p className="">{formData ? formData.id : ""}</p>
+          </div>
           {/* </div> */}
         </div>
       </div>
@@ -164,6 +205,36 @@ const Receipt = ({ formData, onClose }) => {
           </Table>
         </TableContainer>
       </div>
+      {isModalOpen && (
+        <PrintConfigPopup
+          setLightFont={setLightFont}
+          setDarkFont={setDarkFont}
+          setBoxedBorder={setBoxedBorder}
+          setStrippedBorder={setStrippedBorder}
+          lightFont={lightFont}
+          darkFont={darkFont}
+          boxedBorder={boxedBorder}
+          strippedBorder={strippedBorder}
+          closeModal={closeModal} // Pass close function to the modal
+          onInvoiceNumberColorChange={handleInvoiceNumberColorChange}
+          invoiceNumberTextColor={invoiceNumberTextColor}
+          onInvoiceTableHeadColorChange={handleTableHeadTextColorChange}
+          invoiceTableHeadTextColor={invoiceTableHeadTextColor}
+        />
+      )}
+      {!hideReceipt3 ? (
+        <Receipt3
+          formData={formData}
+          lightFont={lightFont}
+          darkFont={darkFont}
+          boxedBorder={boxedBorder}
+          strippedBorder={strippedBorder}
+          invoiceNumberTextColor={invoiceNumberTextColor}
+          invoiceTableHeadTextColor={invoiceTableHeadTextColor}
+        />
+      ) : (
+        ""
+      )}
     </div>
   );
 };

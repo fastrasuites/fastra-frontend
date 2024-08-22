@@ -1,15 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaBell } from "react-icons/fa";
 import SearchIcon from "../image/search.svg";
 import "./Dashboard.css";
 import admin from "../image/admin.svg";
 import DashCard from "./DashCard";
 import Sidebar from ".././components/Sidebar";
+import StepModal from "../components/StepModal";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+
+  // ---------------------------------------------------------------
+  // Open and close pop modal on  following user logged in to set company account
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleNextStep = () => {
+    // Logic to handle the next step
+  };
+  //End ---------------------------------------------------------------------------
 
   const handleSearch = () => {
     // You can perform search operations here based on the search query
@@ -69,12 +90,21 @@ export default function Dashboard() {
         </ul>
       </div>
       {showMenu && <Sidebar />}
+      {/*  */}
 
       <div className="dashbody">
         <div className="bocard">
           <DashCard />
         </div>
       </div>
+
+      {/* controls the Step modal following user logged in to set up company account */}
+      <StepModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        step={1}
+        onNextStep={handleNextStep}
+      />
     </div>
   );
 }

@@ -65,7 +65,7 @@ export default function POrderform({
     }
 
     localStorage.setItem("lastGeneratedID", newID);
-    console.log(`Generated new ID: ${newID}`);
+    // console.log(`Generated new ID: ${newID}`);
     return newID;
   };
 
@@ -262,7 +262,7 @@ export default function POrderform({
     printWindow.document.write("</body></html>");
     printWindow.document.close();
     printWindow.print();
-    printWindow.addEventListener('afterprint', onClose);
+    printWindow.addEventListener("afterprint", onClose);
   };
 
   return (

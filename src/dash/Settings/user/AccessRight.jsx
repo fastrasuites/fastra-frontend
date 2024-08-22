@@ -6,15 +6,24 @@ import SessionsTabContent from "./accessRightContent/SessionsTabContent";
 import AllowedIpTabContent from "./accessRightContent/AllowedIpTabContent";
 import PreferencesTabContent from "./accessRightContent/PreferencesTabContent";
 import SalesPreferenceTabContent from "./accessRightContent/SalesPreferenceTabContent";
+<<<<<<< HEAD
 import OutputPage from "./OutPut";
 
+=======
+
+// Tabs components
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
 export const TabButtons = ({ tabsAndContent, activeTab, setActiveTab }) => {
   return (
     <div style={{ marginTop: "60px" }}>
       {tabsAndContent.map((item, index) => (
         <button
           key={item.name}
+<<<<<<< HEAD
           className={`${activeTab === index ? "active" : ""} access-right-tab`}
+=======
+          className={`${activeTab === index && "active"} access-right-tab`}
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
           onClick={(e) => {
             e.preventDefault();
             setActiveTab(index);
@@ -27,6 +36,7 @@ export const TabButtons = ({ tabsAndContent, activeTab, setActiveTab }) => {
   );
 };
 
+<<<<<<< HEAD
 const TabContent = ({
   tabsAndContent,
   activeTab,
@@ -70,6 +80,13 @@ const AccessRight = ({ onClose }) => {
   const [showOutput, setShowOutput] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
+=======
+const TabContent = ({ tabsAndContent, activeTab }) => {
+  return <section>{tabsAndContent[activeTab].content}</section>;
+};
+
+const AccessRight = ({ handleSubmit, onClose }) => {
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
   const tabsAndContent = [
     {
       name: "Access rights",
@@ -93,6 +110,7 @@ const AccessRight = ({ onClose }) => {
     },
   ];
 
+<<<<<<< HEAD
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
     if (files) {
@@ -130,6 +148,19 @@ const AccessRight = ({ onClose }) => {
     <form onSubmit={handleSubmit} className="newuserform">
       <div className="newuser3a">
         <p style={{ fontSize: "20px", fontWeight: "500" }}>Access Rights</p>
+=======
+  const [imageFile, setImageFile] = useState(null);
+  const handleChange = (e) => {
+    console.log(e.target.files);
+    setImageFile(URL.createObjectURL(e.target.files[0]));
+  };
+
+  const [activeTab, setActiveTab] = useState(0);
+  return (
+    <form action="" className="newuserform">
+      <div className="newuser3a">
+        <p style={{ fontSize: "20px", fontWeight: "500px" }}>Access Rights</p>
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
         <div className="newuser3e">
           <button type="button" className="newuser3but" onClick={onClose}>
             Cancel
@@ -143,12 +174,22 @@ const AccessRight = ({ onClose }) => {
           </button>
         </div>
       </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
       <section className="user-detail">
         <figure className="image-figure">
           <label htmlFor="image-file">
             <img
+<<<<<<< HEAD
               src={formData.imageFile}
               alt="reset avatar"
+=======
+              src={imageFile}
+              alt="reset avatar"
+              id=""
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
               className="reset-avatar"
             />
           </label>
@@ -165,6 +206,7 @@ const AccessRight = ({ onClose }) => {
             <label htmlFor="name" className="name-label">
               Name
             </label>
+<<<<<<< HEAD
             <input
               type="text"
               name="name"
@@ -173,6 +215,11 @@ const AccessRight = ({ onClose }) => {
               className="name-input"
             />
           </div>
+=======
+            <input type="text" className="name-input" />
+          </div>
+
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
           <div className="email-input-wrapper">
             <label htmlFor="email" className="email-label">
               Email
@@ -180,18 +227,27 @@ const AccessRight = ({ onClose }) => {
             <input
               type="email"
               name="email"
+<<<<<<< HEAD
               value={formData.email}
               onChange={handleChange}
+=======
+              id="email"
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
               className="email-input"
             />
           </div>
         </div>
       </section>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
       <TabButtons
         tabsAndContent={tabsAndContent}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
+<<<<<<< HEAD
       <TabContent
         tabsAndContent={tabsAndContent}
         activeTab={activeTab}
@@ -199,6 +255,9 @@ const AccessRight = ({ onClose }) => {
         setFormData={setFormData}
         isEditing={false}
       />
+=======
+      <TabContent tabsAndContent={tabsAndContent} activeTab={activeTab} />
+>>>>>>> 39b8b530684ba80709355ee0e96fcd29a95d4bc7
     </form>
   );
 };
