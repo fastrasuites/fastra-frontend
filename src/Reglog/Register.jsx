@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Navbar from "../components/nav/Navbar";
-import RegForm from "./RegForm";
+import RegistrationForm from "./RegistrationForm";
 import Footer from "../components/nav/Footer";
 
 export default function Register() {
@@ -10,7 +10,7 @@ export default function Register() {
         <Navbar />
       </Rn>
       <Rg>
-        <RegForm />
+        <RegistrationForm />
       </Rg>
       <Rf>
         <Footer />
