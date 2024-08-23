@@ -8,8 +8,6 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState("");
   const history = useHistory();
 
@@ -27,18 +25,13 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isFormValid) {
+    if (email && password) {
       try {
         const response = await axios.post(
           "https://fastrav1-production.up.railway.app/login/",
-          {
-            email: email,
-            password: password,
-          }
+          { email, password }
         );
-        // Handle success response
         console.log(response.data);
-        // Redirect to dashboard
         history.push("/dashboard");
       } catch (error) {
         setError("Invalid credentials");
@@ -47,70 +40,66 @@ export default function LoginForm() {
     }
   };
 
-  const isEmailValid = email.trim() !== "";
-  const isPasswordValid = password.trim() !== "";
-  const isFormValid = isEmailValid && isPasswordValid;
-
   return (
-    <div className="lf">
-      <div className="lfwrap">
-        <h2 className="title">Login</h2>
-        <p className="paragraph">Enter your log in details below</p>
-        <div className="cont">
-          <div className="inputcont">
-            <label htmlFor="email" className="styled-label">
+    <div className="login-container">
+      <div className="login-form">
+        <h1 className="login-title">Login</h1>
+        <p className="login-subtitle">Enter your login details below</p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email" className="form-label">
               Email
             </label>
             <input
+              type="email"
               id="email"
-              className="input"
-              placeholder="Enter your email here"
+              className="form-input"
+              placeholder="Enter your Email here"
               value={email}
               onChange={handleEmailChange}
-              onBlur={() => setEmailTouched(true)}
+              required
             />
-            {emailTouched && !isEmailValid && (
-              <div className="error-text">Email is required</div>
-            )}
           </div>
-          <div className="inputcont">
-            <label htmlFor="password" className="styled-label">
+
+          <div className="form-group">
+            <label htmlFor="password" className="form-label">
               Password
             </label>
-            <div className="password-container">
+            <div className="password-input-container">
               <input
-                id="password"
-                className="password-input"
-                placeholder="Enter your password here"
                 type={showPassword ? "text" : "password"}
+                id="password"
+                className="form-input"
+                placeholder="Enter your Password"
                 value={password}
                 onChange={handlePasswordChange}
-                onBlur={() => setPasswordTouched(true)}
+                required
               />
-              <button className="togbut" onClick={togglePasswordVisibility}>
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={togglePasswordVisibility}
+              >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
             </div>
-            {passwordTouched && !isPasswordValid && (
-              <div className="error-text">Password is required</div>
-            )}
           </div>
-          {error && <div className="error-text">{error}</div>}
-          <button
-            className={`button ${isFormValid ? "" : "disabled"}`}
-            onClick={handleSubmit}
-            disabled={!isFormValid}
-          >
+
+          {error && <p className="error-message">{error}</p>}
+
+          <button type="submit" className="login-button">
             Login
           </button>
-          <div className="loglink">
-            <p>
-              <Link to="/">Don't have an account</Link>
-            </p>
-            <p>
-              <Link to="/fogpas">Forget password</Link>
-            </p>
-          </div>
+        </form>
+
+        <div className="login-links">
+          <Link to="/register" className="register-link">
+            Don't have an account
+          </Link>
+          <Link to="/forgot-password" className="forgot-password-link">
+            Forget Password
+          </Link>
         </div>
       </div>
     </div>
