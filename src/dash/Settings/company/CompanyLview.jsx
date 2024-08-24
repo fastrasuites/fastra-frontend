@@ -10,7 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 
-const ListView = ({ companies }) => {
+const ListView = ({ companies, onItemClick }) => {
   const [selected, setSelected] = React.useState([]);
 
   const handleSelectAll = (event) => {
@@ -88,6 +88,7 @@ const ListView = ({ companies }) => {
           {companies.map((company, index) => (
             <TableRow
               key={company.id}
+              onClick={() => onItemClick(companies)}
               sx={{
                 backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
                 "&:last-child td, &:last-child th": { border: 0 },

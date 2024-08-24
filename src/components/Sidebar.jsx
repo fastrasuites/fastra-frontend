@@ -1,58 +1,61 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import {
-  FaTachometerAlt,
-  FaBook,
-  FaDollarSign,
-  FaIndustry,
-  FaWarehouse,
-  FaUsers,
-  FaAddressBook,
-  FaCogs,
-} from "react-icons/fa";
-import './sidebar.css';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { FaHome, FaMoneyBillAlt, FaBoxes, FaUserCircle, FaUsersCog, FaSignOutAlt } from 'react-icons/fa';
+import "./sidebar.css"
 
 const Sidebar = () => {
   return (
-    <div className="sidebar-container">
+    <div className="sidebar">
       <div className="sidebar-header">
         <img src="logo.png" alt="Logo" className="sidebar-logo" />
-        <span className="sidebar-title">fastra suite</span>
+        <h3 className="sidebar-title">fastra suite</h3>
       </div>
       <div className="sidebar-menu">
-        <Link to="/dashboard" className="sidebar-item" activeClassName="selected">
-          <FaTachometerAlt className="sidebar-icon" />
-          <span>Dashboard</span>
+        <Link to="/home" className="sidebar-item">
+          <FaHome className="sidebar-icon" />
+          <span>Home</span>
         </Link>
-        <Link to="/books" className="sidebar-item" activeClassName="selected">
-          <FaBook className="sidebar-icon" />
-          <span>Books</span>
+        <Link to="/accounts" className="sidebar-item">
+          <FaMoneyBillAlt className="sidebar-icon" />
+          <span>Accounts</span>
         </Link>
-        <Link to="/sell" className="sidebar-item" activeClassName="selected">
-          <FaDollarSign className="sidebar-icon" />
-          <span>Sell</span>
+        <Link to="/purchase" className="sidebar-item">
+          <FaBoxes className="sidebar-icon" />
+          <span>Purchase</span>
         </Link>
-        <Link to="/source" className="sidebar-item" activeClassName="selected">
-          <FaIndustry className="sidebar-icon" />
-          <span>Source</span>
+        <Link to="/sales" className="sidebar-item">
+          <FaMoneyBillAlt className="sidebar-icon" />
+          <span>Sales</span>
         </Link>
-        <Link to="/stock" className="sidebar-item" activeClassName="selected">
-          <FaWarehouse className="sidebar-icon" />
-          <span>Stock</span>
+        <Link to="/inventory" className="sidebar-item">
+          <FaBoxes className="sidebar-icon" />
+          <span>Inventory</span>
         </Link>
-        <Link to="/talent" className="sidebar-item" activeClassName="selected">
-          <FaUsers className="sidebar-icon" />
-          <span>Talent</span>
+        <Link to="/hr" className="sidebar-item">
+          <FaUserCircle className="sidebar-icon" />
+          <span>HR</span>
         </Link>
-        <Link to="/contact" className="sidebar-item" activeClassName="selected">
-          <FaAddressBook className="sidebar-icon" />
+        <Link to="/logistics" className="sidebar-item">
+          <FaBoxes className="sidebar-icon" />
+          <span>Logistics</span>
+        </Link>
+        <Link to="/contacts" className="sidebar-item">
+          <FaUsersCog className="sidebar-icon" />
           <span>Contacts</span>
+        </Link>
+        <Link to="/apps" className="sidebar-item">
+          <FaBoxes className="sidebar-icon" />
+          <span>Apps</span>
+        </Link>
+        <Link to="/settings" className="sidebar-item">
+          <FaUsersCog className="sidebar-icon" />
+          <span>Settings</span>
         </Link>
       </div>
       <div className="sidebar-footer">
-        <Link to="/settings" className="sidebar-item" activeClassName="selected">
-          <FaCogs className="sidebar-icon" />
-          <span>Settings</span>
+        <Link to="/logout" className="sidebar-item">
+          <FaSignOutAlt className="sidebar-icon" />
+          <span>Logout</span>
         </Link>
       </div>
     </div>
