@@ -7,6 +7,8 @@ import uploadIcon from "../../../image/uploadIcon.svg"; // Ensure to have this i
 import AccessRight from "./AccessRight";
 import "./newuser.css";
 
+import { useHistory } from "react-router-dom";
+
 const fetchLanguages = async () => {
   const apiKey = "YOUR_GOOGLE_CLOUD_API_KEY"; // Replace with your API key
   const url = `https://translation.googleapis.com/language/translate/v2/languages?key=${apiKey}&target=en`;
@@ -40,7 +42,7 @@ const fetchTimezones = async () => {
   }
 };
 
-export default function NewUser({ onClose, onSaveAndSubmit }) {
+export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
   const [formState, setFormState] = useState({
     name: "",
     role: "",
@@ -113,11 +115,20 @@ export default function NewUser({ onClose, onSaveAndSubmit }) {
     }
   };
 
+  const history = useHistory();
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted", formState); // Debugging statement
     handleSaveAndSubmit(formState);
     onClose();
+
+    if (fromStepModal) {
+      // detect if true a user came from dashboard popup, then navigate back for the next step
+      history.push({ pathname: "/dashboard", state: { step: 3 } });
+    } else {
+      console.log("Submit form and don't navigate");
+      // Stay here or do something else
+    }
   };
 
   const roleOptions = [

@@ -5,6 +5,7 @@ import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import NewUser from "./NewUser";
 import UserListView from "./UserListView"; // Import UserListView
+import { useLocation } from "react-router-dom";
 
 export default function User() {
   const [users, setUsers] = useState([]);
@@ -12,6 +13,14 @@ export default function User() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewUser, setShowNewUser] = useState(false);
   const [viewMode, setViewMode] = useState("list"); // Set default view mode to "list"
+
+  // openForm prop is from working for dashboard modal
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.openForm) {
+      setShowNewUser(true);
+    }
+  }, [location.openForm]);
 
   useEffect(() => {
     const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
@@ -63,6 +72,7 @@ export default function User() {
           <NewUser
             onClose={handleCloseNewUser}
             onSaveAndSubmit={handleSaveAndSubmit}
+            fromStepModal={location.state?.openForm}
           />
         </div>
       ) : (

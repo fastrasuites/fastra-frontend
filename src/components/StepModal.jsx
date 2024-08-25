@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Modal, Box, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 const StepModal = ({ open, onClose, step, onNextStep }) => {
-  // const navigate = useNavigate();
+  const history = useHistory();
 
   const handleSetUpCompany = () => {
     onClose();
-    // navigate("/company");
+    if (step === 1) {
+      history.push("/company", { openForm: true });
+    } else if (step === 2) {
+      history.push("/user", { openForm: true });
+    } else {
+      alert(" Humm! The last stage is not ready. Please use the skip button.");
+    }
   };
 
   return (
@@ -81,7 +87,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               border: "10px solid white",
             }}
           >
-            1
+            {step}
           </Box>
           <Box
             sx={{
@@ -103,7 +109,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               border: "10px solid white",
             }}
           >
-            2
+            {step + 1 <= 3 ? step + 1 : ""}
           </Box>
           {/* Step 1  -------------------------------- */}
           <div style={{ marginLeft: "120px", paddingTop: "70px" }}>
@@ -128,7 +134,13 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 marginBottom: "4px",
               }}
             >
-              Step 1: Company Settings
+              {step === 1
+                ? "Step 1: Company Setting"
+                : step === 2
+                ? "Step 2: User Creation"
+                : step === 3
+                ? "step 3: Project Creation"
+                : "Registration Successful"}
             </Typography>
             <Typography
               sx={{
@@ -141,7 +153,13 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 marginBottom: "40px",
               }}
             >
-              A company set-up will ease your journey using this platform.
+              {step === 1
+                ? "A company set-up will ease your journey using this platform."
+                : step === 2
+                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
+                : step === 3
+                ? "Now at the last step, Enjoy seamless Experience Here."
+                : ""}
             </Typography>
             <Button
               onClick={handleSetUpCompany}
@@ -165,7 +183,13 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 },
               }}
             >
-              Set up Your Company!
+              {step === 1
+                ? "Set up your Company!"
+                : step === 2
+                ? "Start User Creation!"
+                : step === 3
+                ? "Start Project Creation!"
+                : "You are done"}
             </Button>
           </div>
           {/* End Step 1 ------------------------------ */}
@@ -193,7 +217,11 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 marginBottom: "4px",
               }}
             >
-              Step 2: User Creation
+              {step === 1
+                ? "Step 2: User Creation"
+                : step === 2
+                ? "step 3: Project Creation"
+                : "Registration Successful"}
             </Typography>
             <Typography
               sx={{
@@ -206,33 +234,12 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 marginBottom: "40px",
               }}
             >
-              Awesome! Just a few steps to start having an Amazing Fastra
-              Experience
+              {step === 1
+                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
+                : step === 2
+                ? "Now at the last step, Enjoy seamless Experience Here."
+                : ""}
             </Typography>
-            {/* <Button
-              onClick={handleSetUpCompany}
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "start",
-                alignItems: "center",
-                padding: "16px 20px",
-                background: "#3B7CED",
-                boxShadow: "0px 32px 24px rgba(26, 26, 26, 0.08)",
-                borderRadius: "4px",
-                fontStyle: "normal",
-                fontWeight: "400",
-                fontSize: "18px",
-                lineHeight: "24px",
-                textAlign: "center",
-                color: "#FFFFFF",
-                "&:hover": {
-                  background: "#3367CC",
-                },
-              }}
-            >
-              Set up Your Company
-            </Button> */}
           </div>
           {/* End step 2 ------------------------------ */}
         </Box>

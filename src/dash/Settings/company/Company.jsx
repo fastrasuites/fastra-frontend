@@ -4,7 +4,8 @@ import SearchIcon from "../../../image/search.svg";
 import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import NewCompany from "./NewCompanyForm";
-import ListView from "./CompanyLview"; 
+import ListView from "./CompanyLview";
+import { useLocation, useHistory } from "react-router-dom";
 
 export default function Company() {
   const [companies, setCompanies] = useState([]);
@@ -12,6 +13,17 @@ export default function Company() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewCompany, setShowNewCompany] = useState(false);
   const [viewMode, setViewMode] = useState("list");
+
+  // Used by Popup from Dashboad----------------------------------
+  const location = useLocation();
+  const history = useHistory();
+
+  useEffect(() => {
+    if (location.state?.openForm) {
+      setShowNewCompany(true);
+    }
+  }, [location.state]);
+  // End ---------------------------------------------------------
 
   useEffect(() => {
     const storedCompanies = JSON.parse(localStorage.getItem("companies")) || [];
@@ -63,6 +75,7 @@ export default function Company() {
           <NewCompany
             onClose={handleCloseNewCompany}
             onSaveAndSubmit={handleSaveAndSubmit}
+            fromStepModal={location.state?.openForm}
           />
         </div>
       ) : (
