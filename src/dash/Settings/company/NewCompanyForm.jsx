@@ -4,8 +4,13 @@ import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import uploadIcon from "../../../image/uploadIcon.svg";
 import "./NewCompanyForm.css";
+import { useHistory } from "react-router-dom";
 
-export default function NewCompany({ onClose, onSaveAndSubmit }) {
+export default function NewCompany({
+  onClose,
+  onSaveAndSubmit,
+  fromStepModal,
+}) {
   const [formState, setFormState] = useState({
     companyName: "",
     email: "",
@@ -58,10 +63,20 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
     }
   };
 
+  const history = useHistory();
+
   const handleSubmit = (e) => {
+    console.log("submitted");
     e.preventDefault();
     onSaveAndSubmit(formState);
+
     onClose();
+    if (fromStepModal) {
+      history.push({ pathname: "./dashboard", state: { step: 2 } });
+    } else {
+      // Handle form submission without navigating
+      console.log("Form submitted without navigating.");
+    }
   };
 
   const currencyOptions = [

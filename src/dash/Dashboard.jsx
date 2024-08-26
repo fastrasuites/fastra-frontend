@@ -6,6 +6,7 @@ import admin from "../image/admin.svg";
 import DashCard from "./DashCard";
 import Sidebar from ".././components/Sidebar";
 import StepModal from "../components/StepModal";
+import { useLocation } from "react-router-dom";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,21 +16,34 @@ export default function Dashboard() {
   // ---------------------------------------------------------------
   // Open and close pop modal on  following user logged in to set company account
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (location.state?.step) {
+      setCurrentStep(location.state.step);
       setIsModalOpen(true);
-    }, 2000);
+    } else {
+      const timer = setTimeout(() => {
+        setIsModalOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  // const handleNextStep = () => {
+  //   if (currentStep === 1) {
+  //     setCurrentStep(2);
+  //   } else if (currentStep === 2) {
+  //     setCurrentStep(3);
+  //   } else if (currentStep === 3) {
+  //     setCurrentStep("");
+  //   }
+  // };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
 
-  const handleNextStep = () => {
-    // Logic to handle the next step
-  };
   //End ---------------------------------------------------------------------------
 
   const handleSearch = () => {
@@ -102,8 +116,8 @@ export default function Dashboard() {
       <StepModal
         open={isModalOpen}
         onClose={handleCloseModal}
-        step={1}
-        onNextStep={handleNextStep}
+        step={currentStep}
+        // onNextStep={handleNextStep}
       />
     </div>
   );

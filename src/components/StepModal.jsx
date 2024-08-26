@@ -1,58 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Modal, Box, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+import "./stepModal.css";
 
 const StepModal = ({ open, onClose, step, onNextStep }) => {
-  // const navigate = useNavigate();
+  const history = useHistory();
 
   const handleSetUpCompany = () => {
     onClose();
-    // navigate("/company");
+    if (step === 1) {
+      history.push("/company", { openForm: true });
+    } else if (step === 2) {
+      history.push("/user", { openForm: true });
+    } else {
+      alert(" Humm! The last stage is not ready. Please use the skip button.");
+    }
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "15%",
-          left: "15%",
-          width: "70%",
-          height: "70%",
-          bgcolor: "white",
-          borderRadius: "10px",
-          paddingLeft: "16px",
-          boxShadow: "24",
-          // border: "solid 2px red",
-        }}
-      >
-        <Button
-          onClick={onClose}
-          sx={{
-            position: "absolute",
-            top: "30px",
-            right: "5%",
-            zIndex: "99",
-            borderRadius: "5px",
-            textTransform: "none",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "16px 32px",
-            bgcolor: "#FFFFFF",
-            border: "2px solid #7A8A98",
-            cursor: "pointer",
-            "&:hover": { border: "2px solid #3367CC", bgcolor: "#FFFFFF" },
-          }}
-        >
+    <Modal open={open} onClose={onClose} className="modal">
+      <Box className="modal-content-wrapper">
+        <button className="btn-skip" onClick={onClose}>
           Skip
-        </Button>
+        </button>
         <Box sx={{ position: "relative", height: "100%" }}>
           <Box
             sx={{
               position: "absolute",
-              left: "30px",
+              left: "32px",
               top: "0",
               buttom: "10px",
               width: "4px",
@@ -71,6 +46,8 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               bgcolor: "#E2E6E9",
               color: "#3B7CED",
               fontWeight: "900",
+              lineHeight: "58.22px",
+              fontSize: "48px",
               borderRadius: "50%",
               display: "flex",
               justifyContent: "center",
@@ -80,7 +57,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               border: "10px solid white",
             }}
           >
-            1
+            {step}
           </Box>
           <Box
             sx={{
@@ -92,6 +69,8 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               bgcolor: "#E2E6E9",
               color: "#3B7CED",
               fontWeight: "900",
+              lineHeight: "58.22px",
+              fontSize: "48px",
               borderRadius: "50%",
               display: "flex",
               justifyContent: "center",
@@ -100,31 +79,31 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               border: "10px solid white",
             }}
           >
-            2
+            {step + 1 <= 3 ? step + 1 : ""}
           </Box>
+          {/* Step 1  -------------------------------- */}
           <div style={{ marginLeft: "120px", paddingTop: "70px" }}>
             <Typography
               sx={{
                 color: "#3B7CED",
                 marginBottom: "14px",
                 textAlign: "left",
+                fontSize: "20px",
+                fontWeight: "700",
+                lineHeight: "24.26px",
               }}
             >
               3 SIMPLE STEPS
             </Typography>
-            <Typography
-              sx={{
-                // backgroundColor: "",
-                fontWeight: "900",
-                fontSize: "40px",
-                textAlign: "left",
-                color: "#1A1A1A",
-                padding: "5px",
-                marginBottom: "1rem",
-              }}
-            >
-              Step 1: Company Settings
-            </Typography>
+            <p className="heading-text">
+              {step === 1
+                ? "Step 1: Company Setting"
+                : step === 2
+                ? "Step 2: User Creation"
+                : step === 3
+                ? "step 3: Project Creation"
+                : "Registration Successful"}
+            </p>
             <Typography
               sx={{
                 fontFamily: "Product Sans",
@@ -133,11 +112,16 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 lineHeight: "16.98px",
                 textAlign: "left",
                 color: "#7A8A98",
-                marginBottom: "60px",
+                marginBottom: "40px",
               }}
             >
-              Awesome! Just a few steps to start having an Amazing Fastra
-              Experience
+              {step === 1
+                ? "A company set-up will ease your journey using this platform."
+                : step === 2
+                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
+                : step === 3
+                ? "Now at the last step, Enjoy seamless Experience Here."
+                : ""}
             </Typography>
             <Button
               onClick={handleSetUpCompany}
@@ -156,14 +140,71 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 lineHeight: "24px",
                 textAlign: "center",
                 color: "#FFFFFF",
+                marginBottom: "72px",
                 "&:hover": {
                   background: "#3367CC",
                 },
               }}
             >
-              Set up Your Company
+              {step === 1
+                ? "Set up your Company!"
+                : step === 2
+                ? "Start User Creation!"
+                : step === 3
+                ? "Start Project Creation!"
+                : "You are done"}
             </Button>
+
+            {/* End Step 1 ------------------------------ */}
+
+            {/* Step 2 ---------------------------------- */}
+
+            <Typography
+              sx={{
+                color: "#3B7CED",
+                marginBottom: "16px",
+                textAlign: "left",
+                fontSize: "20px",
+                fontWeight: "700",
+                lineHeight: "24.26px",
+              }}
+            >
+              3 SIMPLE STEPS
+            </Typography>
+            <Typography
+              sx={{
+                fontWeight: "900",
+                fontSize: "40px",
+                textAlign: "left",
+                color: "#1A1A1A",
+                marginBottom: "4px",
+              }}
+            >
+              {step === 1
+                ? "Step 2: User Creation"
+                : step === 2
+                ? "step 3: Project Creation"
+                : "Registration Successful"}
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "Product Sans",
+                fontSize: "14px",
+                fontWeight: "400",
+                lineHeight: "16.98px",
+                textAlign: "left",
+                color: "#7A8A98",
+                marginBottom: "40px",
+              }}
+            >
+              {step === 1
+                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
+                : step === 2
+                ? "Now at the last step, Enjoy seamless Experience Here."
+                : ""}
+            </Typography>
           </div>
+          {/* End step 2 ------------------------------ */}
         </Box>
       </Box>
     </Modal>
