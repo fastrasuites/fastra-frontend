@@ -25,28 +25,20 @@ export default function Dashboard() {
     } else {
       const timer = setTimeout(() => {
         setIsModalOpen(true);
-      }, 2000);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [location.state]);
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setIsModalOpen(true);
-  //   }, 500);
-
-  //   return () => clearTimeout(timer);
-  // }, []);
-
-  const handleNextStep = () => {
-    if (currentStep === 1) {
-      setCurrentStep(2);
-    } else if (currentStep === 2) {
-      setCurrentStep(3);
-    } else if (currentStep === 3) {
-      setCurrentStep("");
-    }
-  };
+  // const handleNextStep = () => {
+  //   if (currentStep === 1) {
+  //     setCurrentStep(2);
+  //   } else if (currentStep === 2) {
+  //     setCurrentStep(3);
+  //   } else if (currentStep === 3) {
+  //     setCurrentStep("");
+  //   }
+  // };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -125,7 +117,7 @@ export default function Dashboard() {
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-        onNextStep={handleNextStep}
+        // onNextStep={handleNextStep}
       />
     </div>
   );

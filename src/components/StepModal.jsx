@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Box, Typography, Button } from "@mui/material";
 import { useHistory } from "react-router-dom";
+import "./stepModal.css";
 
 const StepModal = ({ open, onClose, step, onNextStep }) => {
   const history = useHistory();
@@ -17,42 +18,11 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <Box
-        sx={{
-          position: "absolute",
-          top: "10%",
-          left: "15%",
-          width: "70%",
-          height: "75%",
-          bgcolor: "white",
-          borderRadius: "10px",
-          paddingLeft: "16px",
-          outline: "none",
-        }}
-      >
-        <Button
-          onClick={onClose}
-          sx={{
-            position: "absolute",
-            top: "30px",
-            right: "5%",
-            zIndex: "99",
-            borderRadius: "5px",
-            textTransform: "none",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "16px 32px",
-            bgcolor: "#FFFFFF",
-            border: "2px solid #7A8A98",
-            cursor: "pointer",
-            "&:hover": { border: "2px solid #3367CC", bgcolor: "#FFFFFF" },
-          }}
-        >
+    <Modal open={open} onClose={onClose} className="modal">
+      <Box className="modal-content-wrapper">
+        <button className="btn-skip" onClick={onClose}>
           Skip
-        </Button>
+        </button>
         <Box sx={{ position: "relative", height: "100%" }}>
           <Box
             sx={{
@@ -125,15 +95,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
             >
               3 SIMPLE STEPS
             </Typography>
-            <Typography
-              sx={{
-                fontWeight: "900",
-                fontSize: "40px",
-                textAlign: "left",
-                color: "#1A1A1A",
-                marginBottom: "4px",
-              }}
-            >
+            <p className="heading-text">
               {step === 1
                 ? "Step 1: Company Setting"
                 : step === 2
@@ -141,7 +103,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 : step === 3
                 ? "step 3: Project Creation"
                 : "Registration Successful"}
-            </Typography>
+            </p>
             <Typography
               sx={{
                 fontFamily: "Product Sans",
@@ -178,6 +140,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 lineHeight: "24px",
                 textAlign: "center",
                 color: "#FFFFFF",
+                marginBottom: "72px",
                 "&:hover": {
                   background: "#3367CC",
                 },
@@ -191,11 +154,11 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 ? "Start Project Creation!"
                 : "You are done"}
             </Button>
-          </div>
-          {/* End Step 1 ------------------------------ */}
 
-          {/* Step 2 ---------------------------------- */}
-          <div style={{ marginLeft: "120px", paddingTop: "70px" }}>
+            {/* End Step 1 ------------------------------ */}
+
+            {/* Step 2 ---------------------------------- */}
+
             <Typography
               sx={{
                 color: "#3B7CED",
