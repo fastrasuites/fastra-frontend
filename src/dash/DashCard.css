@@ -64,6 +64,8 @@
   font-size: 16px;
   font-weight: 500;
   line-height: 19.41px;
+  font-family: "Product Sans";
+  color: black;
   /* text-align: left; */
 }
 .cardesc {

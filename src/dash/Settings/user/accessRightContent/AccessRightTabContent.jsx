@@ -5,7 +5,7 @@ import Select from "react-select";
 const SubHeading = ({ text }) => {
   return (
     <>
-      <h3>{text}</h3>
+      <h3 className="sub-heading">{text}</h3>
     </>
   );
 };
