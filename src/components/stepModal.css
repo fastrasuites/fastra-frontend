@@ -202,8 +202,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* margin-top: 10px;
-    margin-left: 10px; */
     border: 10px solid white;
   }
 }
+/* @media screen and (max-width: 680px) and (orientation: landscape) {
+  .modal-content-wrapper {
+    overflow-y: scroll;
+  }
+} */
