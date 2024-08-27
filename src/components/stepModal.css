@@ -1,11 +1,10 @@
 .modal-content-wrapper {
   font-family: "Product Sans", sans-serif;
   position: absolute;
-  top: 10%;
+  top: 50%;
   left: 50%;
-  /* height: 475px; */
   width: 70%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   background-color: white;
   border-radius: 10px;
   padding-left: 16px;
@@ -36,8 +35,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  /* margin-top: 10px;
-  margin-left: 10px; */
   border: 10px solid white;
 }
 .numbered-circle-one {
@@ -61,7 +58,6 @@
 }
 .btn-skip:hover {
   border: 2px solid #3367cc;
-  /* background-color: #FFFFFF; */
 }
 .modal-main-content {
   margin-left: 120px;
@@ -117,9 +113,6 @@
 }
 
 @media screen and (max-width: 53em) {
-  .modal-content-wrapper {
-    /* height: 400px; */
-  }
   .numbered-circle-two {
     bottom: 5px;
   }
@@ -156,7 +149,6 @@
 
 @media screen and (max-width: 680px) {
   .modal-content-wrapper {
-    top: 10%;
     width: 88%;
     padding-inline: 8px;
   }
@@ -205,8 +197,10 @@
     border: 10px solid white;
   }
 }
-/* @media screen and (max-width: 680px) and (orientation: landscape) {
+
+@media screen and (width > 678px) and (width<1020px) and (height<= 600px) {
   .modal-content-wrapper {
-    overflow-y: scroll;
+    max-height: 340px;
+    overflow-y: auto;
   }
-} */
+}
