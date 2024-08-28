@@ -46,7 +46,8 @@ export default function LoginForm() {
         <h1 className="login-title">Login</h1>
         <p className="login-subtitle">Enter your login details below</p>
 
-        <form onSubmit={handleSubmit}>
+        <div className="group-container">
+          <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email" className="form-label">
               Email
@@ -100,7 +101,7 @@ export default function LoginForm() {
           <Link to="/forgot-password" className="forgot-password-link">
             Forget Password
           </Link>
-        </div>
+        </div></div>
       </div>
     </div>
   );
