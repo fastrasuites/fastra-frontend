@@ -8,6 +8,7 @@ import usergroupIcon from "../image/user-group.svg";
 import logoutIcon from "../image/logout-03.svg";
 
 import "./profileMenuDropdown.css";
+import { position } from "@chakra-ui/react";
 
 const users = [
   {
@@ -66,10 +67,11 @@ const ProfileMenuDropdown = () => {
   };
 
   return (
-    <div>
+    <div className="">
       <UserCard handleClickOpen={handleClickOpen} users={users} />
 
       <Dialog
+        className="profile-dialog"
         open={open}
         onClose={handleClose}
         PaperProps={{
@@ -78,10 +80,9 @@ const ProfileMenuDropdown = () => {
             border: "solid 2px #E2E6E9",
             padding: 0,
             minWidth: 240,
-            right: "2%",
-            top: "50px",
+            right: "1%",
+            top: "55px",
             position: "absolute",
-            marginInline: "0px",
           },
         }}
       >
