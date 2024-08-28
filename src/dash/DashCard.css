@@ -38,7 +38,7 @@
   row-gap: 32px;
   transition: transform 0.1s ease;
   /* cursor: pointer; */
-  margin-top: 1rem;
+  margin-top: 2rem;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   @media screen and (max-width: 1375px) {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -62,7 +62,7 @@
 .cardhed {
   margin-bottom: 1.5rem;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 520;
   line-height: 19.41px;
   font-family: "Product Sans";
   color: black;

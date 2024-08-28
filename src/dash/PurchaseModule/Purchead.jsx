@@ -5,6 +5,7 @@ import "./Purchead.css";
 import admin from "../../image/admin.svg";
 import { NavLink } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
+import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 
 export default function Purchead() {
   const [notifications, setNotifications] = useState(0);
@@ -74,7 +75,14 @@ export default function Purchead() {
             >
               Purchase Orders
             </NavLink>
-            <div className="prodrop" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <div
+              className="prodrop"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <NavLink
                 exact
                 to="/vend"
@@ -100,7 +108,14 @@ export default function Purchead() {
                 </div>
               )}
             </div>
-            <div className="prodrop" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <div
+              className="prodrop"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <NavLink
                 exact
                 to="/prod"
@@ -136,12 +151,14 @@ export default function Purchead() {
             )}
           </div>
         </li>
-        <li className="puradmin">
+        {/* PROFILE MENU DROPDOWN */}
+        <ProfileMenuDropdown />
+        {/* <li className="puradmin">
           <img src={admin} alt="admin" className="puradminimg" />
           <div className="puradminname">
             <p className="purad">Administrator</p>
           </div>
-        </li>
+        </li> */}
       </ul>
       {showMenu && <Sidebar />}
     </div>

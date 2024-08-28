@@ -7,6 +7,7 @@ import DashCard from "./DashCard";
 import Sidebar from ".././components/Sidebar";
 import StepModal from "../components/StepModal";
 import { useLocation } from "react-router-dom";
+import ProfileMenuDropdown from "../components/ProfileMenuDropdown";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -94,13 +95,14 @@ export default function Dashboard() {
               )}
             </div>
           </li>
-          <li className="admin">
+          <ProfileMenuDropdown />
+          {/* <li className="admin">
             <img src={admin} alt="admin" className="adminimg" />
             <div className="adminname">
               <p className="ad1">Administrator</p>
               <p className="ad2">info@companyname.com</p>
             </div>
-          </li>
+          </li> */}
         </ul>
       </div>
       {showMenu && <Sidebar />}

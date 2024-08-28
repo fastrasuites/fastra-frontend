@@ -38,7 +38,6 @@ import ProductDetails from "../src/dash/PurchaseModule/Product/ProductDetails";
 import Newprod from "../src/dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
-import { maxWidth } from "@mui/system";
 
 function App() {
   const location = useLocation();
