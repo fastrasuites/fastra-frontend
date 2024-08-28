@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 import admin from "../../image/admin.svg";
 import Sidebar from "../../components/Sidebar";
 import "./sethead.css";
+import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 
 export default function Sethead() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -68,12 +69,13 @@ export default function Sethead() {
             )}
           </div>
         </li>
-        <li className="setadmin">
+        <ProfileMenuDropdown />
+        {/* <li className="setadmin">
           <img src={admin} alt="admin" className="setadminimg" />
           <div className="setadminname">
             <p className="setad">Administrator</p>
           </div>
-        </li>
+        </li> */}
       </ul>
       {sidebarOpen && <Sidebar />}
     </div>

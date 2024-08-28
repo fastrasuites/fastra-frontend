@@ -1,0 +1,73 @@
+.icon-and-profile {
+  background-color: white;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "Product Sans";
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+}
+.profile {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+}
+.profile p {
+  font-family: "Product Sans";
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16.98px;
+  text-align: left;
+  color: #1a1a1a;
+}
+.profile small {
+  font-family: "Product Sans";
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 12.13px;
+  text-align: left;
+  color: #7a8a98;
+}
+.avata {
+  width: 32px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.link-to-config {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  /* width: 208px; */
+  height: 40px;
+  padding: 8px;
+  gap: 12px;
+  border-radius: 8px;
+  color: #7a8a98;
+  font-family: "Product Sans";
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14.56px;
+  letter-spacing: 0.5px;
+}
+.link-to-config:hover {
+  opacity: 0px;
+  background: #f1f2f4;
+}
+
+.config-wrapper {
+  margin-top: 24px;
+}
+
+@media (width <= 768px) {
+  #profile {
+    display: none;
+  }
+}
