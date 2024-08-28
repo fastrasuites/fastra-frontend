@@ -79,35 +79,58 @@ const CompanyDetails = ({ next }) => {
     >
       {({ errors, touched }) => (
         <Form className="registration-form">
-          <h2 className="form-title">Register</h2>
-          <p className="form-subtitle">Enter your details to register</p>
+          <div className="f-group">
+            <div className="">
+              <h2 className="form-title">Register</h2>
+              <p className="form-subtitle">Enter your details to register</p>
+            </div>
 
-          <label className="form-label">Company name</label>
-          <Field
-            className={`form-input ${
-              touched.companyName && errors.companyName ? "is-invalid" : ""
-            }`}
-            name="companyName"
-            type="text"
-            placeholder="Enter your company name"
-          />
-          {touched.companyName && errors.companyName && (
-            <div className="error-message">{errors.companyName}</div>
-          )}
+            <div className="sub-group">
+              <div >
+                <label className="form-label" htmlFor="companyName">
+                  Company name
+                </label>
+                <Field
+                  className={`form-input ${
+                    touched.companyName && errors.companyName
+                      ? "is-invalid"
+                      : ""
+                  }`}
+                  name="companyName"
+                  id="companyName"
+                  type="text"
+                  placeholder="Enter your company name"
+                />
+                {touched.companyName && errors.companyName && (
+                  <div className="error-message">{errors.companyName}</div>
+                )}
+                {/* Example of how the company name should look */}
+                <p className="company-name-example">
+                  companyname.fastrasuites.com
+                </p>
+              </div>
 
-          <label className="form-label">Company email</label>
-          <Field
-            className={`form-input ${
-              touched.companyEmail && errors.companyEmail ? "is-invalid" : ""
-            }`}
-            name="companyEmail"
-            type="email"
-            placeholder="Enter your company email"
-          />
-          {touched.companyEmail && errors.companyEmail && (
-            <div className="error-message">{errors.companyEmail}</div>
-          )}
-
+              <div>
+                <label className="form-label" htmlFor="companyEmail">
+                  Company email
+                </label>
+                <Field
+                  className={`form-input ${
+                    touched.companyEmail && errors.companyEmail
+                      ? "is-invalid"
+                      : ""
+                  }`}
+                  name="companyEmail"
+                  id="companyEmail"
+                  type="email"
+                  placeholder="Enter your company email"
+                />
+                {touched.companyEmail && errors.companyEmail && (
+                  <div className="error-message">{errors.companyEmail}</div>
+                )}
+              </div>
+            </div>
+          </div>
           <button className="submit-button" type="submit">
             Continue
           </button>
