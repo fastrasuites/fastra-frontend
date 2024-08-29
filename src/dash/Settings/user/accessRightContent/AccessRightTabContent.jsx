@@ -63,7 +63,7 @@ const AccessRightTabContent = () => {
       }}
     >
       {/* Multi Company */}
-      <section>
+      {/* <section>
         <section style={{ marginBottom: "24px" }}>
           <SubHeading text="Multi Companies" />
         </section>
@@ -88,10 +88,10 @@ const AccessRightTabContent = () => {
             />
           </div>
         </section>
-      </section>
+      </section> */}
 
       {/* Allowed Operating Unit */}
-      <section>
+      {/* <section>
         <section style={{ marginBottom: "24px" }}>
           <SubHeading text="Allowed Operating Units" />
         </section>
@@ -116,7 +116,7 @@ const AccessRightTabContent = () => {
             />
           </div>
         </section>
-      </section>
+      </section> */}
 
       {/* Application */}
       <section>
@@ -151,7 +151,7 @@ const AccessRightTabContent = () => {
       </section>
 
       {/* Purchase */}
-      <section className>
+      {/* <section className>
         <section style={{ marginBottom: "24px" }}>
           <SubHeading text="Purchase" />
         </section>
@@ -190,9 +190,9 @@ const AccessRightTabContent = () => {
               id="send-rfq"
               className="input-checkbox"
             />
-          </div>
+          </div> */}
 
-          <div className="checkbox-control">
+          {/* <div className="checkbox-control">
             <label htmlFor="vendor" className="checkbox-label">
               Create and Edit Vendor Information
             </label>
@@ -225,8 +225,8 @@ const AccessRightTabContent = () => {
               className="input-checkbox"
             />
           </div>
-        </section>
-      </section>
+        </section> */}
+      {/* </section> */}
     </div>
   );
 };

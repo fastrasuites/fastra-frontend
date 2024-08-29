@@ -1,11 +1,10 @@
 .Company-page {
   width: 100%;
   height: 100%;
-  font-family: Product Sans;
   overflow: auto;
 }
 
-.Company1 {
+.company-body {
   width: 100%;
   height: 90%;
   display: flex;
@@ -13,59 +12,61 @@
   top: 10%;
   justify-content: center;
 }
-
-.Company2 {
+ 
+.company-details {
   width: 95%;
   height: 95%;
   position: absolute;
   top: 5%;
 }
 
-.Company3 {
-  width: 100%;
-  height: 10%;
+.company-header{
+  /* width: 100%; */
+  padding: 5px;
+  /* height: 10%; */
   display: flex;
   align-items: center;
-  gap: 27rem;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 2.5rem;
+  background-color: transparent;
 
-  @media screen and (max-width: 1200px) and (min-width: 451px) {
+  /* @media screen and (max-width: 1200px) and (min-width: 451px) {
     gap: 0;
   }
 
   @media screen and (max-width: 450px) {
     gap: 1rem;
-  }
+  } */
 }
 
-.Company3a {
+.header-activity-1 {
   display: flex;
-  align-items: center;
-  gap: 2rem;
-  width: 50%;
-  height: 100%;
-
+  align-items: left;
+  gap: 20px;
+  background-color: transparent;
   @media screen and (max-width: 1200px) and (min-width: 540px) {
     width: 70%;
     gap: 1rem;
   }
 
-  @media screen and (max-width: 539px) {
+  /* @media screen and (max-width: 539px) {
     gap: 0.5rem;
-  }
+  } */
 }
 
-.Company3abtn {
+.btn {
   background: #3b7ced;
   color: white;
-  padding: 12px;
-  border-radius: 4px 0px 0px 0px;
+  padding: 12px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   border: none;
-
-  @media screen and (max-width: 647px) and (min-width: 562px) {
+  font-size: 20px;
+  font-weight: 530;
+  border-radius: 5px;
+  /* @media screen and (max-width: 647px) and (min-width: 562px) {
     font-size: 11px;
   }
 
@@ -75,26 +76,41 @@
 
   @media screen and (max-width: 561px) {
     padding: 10px;
-  }
+  } */
 }
 
-.Company3abtn:hover {
-  background: #335db2;
-}
 
-.Companysash {
-  width: 50%;
-  height: 50%;
-  border-radius: 4px;
-  background-color: white;
-  border: 1px solid #e2e6e9;
+.search-box {
+background-color: #ffffff;
+border-radius: 5px;
+display: flex;
+flex-grow: 1;
+align-items: center;
+border: 1px solid #dae0e8;
 
-  @media screen and (max-width: 450px) {
+  /* @media screen and (max-width: 450px) {
     gap: 0;
-  }
+  } */
 }
-
-.Companys1 {
+.search-box .icon {
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.5 ease-in-out;
+  color: #242424;
+}
+.search-box .icon:hover{
+  transition: 0.7 ease-in-out !important;
+}
+.search-box input {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  width: 250px;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+/* .Companys1 {
   display: flex;
   width: 100%;
   height: 100%;
@@ -122,16 +138,15 @@
   @media screen and (max-width: 450px) {
     font-size: xx-small;
   }
-}
+} */
 
-.Company3b {
+
+.header-activity-2 {
   display: flex;
-  gap: 1.5rem;
-  height: 100%;
-  width: 20%;
   align-items: center;
-  justify-content: end;
-
+  gap: 20px;
+  background-color: transparent;
+/* 
   @media screen and (max-width: 1200px) and (min-width: 401px) {
     width: 45%;
     gap: 1rem;
@@ -140,62 +155,67 @@
   @media screen and (max-width: 400px) {
     width: 45%;
     gap: 0.5rem;
-  }
+  } */
 }
-
-.Company3bpage {
+.pagination {
+  margin: 0 10px;
   color: #a9b3bc;
+  font-size: 15px;
+  text-align: center;
+  display: flex;
 
-  @media screen and (max-width: 500px) {
+  /* @media screen and (max-width: 500px) {
     font-size: 12px;
-  }
+  } */
 }
 
-.Company3bnav {
+.pagination-btn {
   border: 1.2px solid #e2e6e9;
-  width: 25%;
-  height: 50%;
   display: flex;
   align-items: center;
   background-color: white;
   border-radius: 4px;
 
-  @media screen and (max-width: 400px) {
+  /* @media screen and (max-width: 400px) {
     height: 35%;
-  }
+  } */
+}
+.pagination-btn button {
+  border: 1px solid #ccc;
+  padding: 12px;
+  outline: none;
+}
+.pagination-btn button .icon {
+font-size: 25px !important;
 }
 
-.lr {
-  width: 80%;
-  height: 80%;
-  color: gray;
-}
-
-.Company3bview {
-  border: 1.2px solid #e2e6e9;
-  width: 25%;
-  height: 50%;
+.view-toggle {
+  border: 1px solid #e2e6e9;
   display: flex;
   align-items: center;
-  background-color: white;
+  background-color: transparent;
   border-radius: 4px;
 
-  @media screen and (max-width: 400px) {
+  /* @media screen and (max-width: 400px) {
     height: 35%;
+  } */
+}
+.view-toggle button {
+  border: 1px solid #ccc;
+  padding: 12px;
+  outline: none;
+}
+.view-toggle button .icon {
+  font-size: 25px !important;
+  color: #357fe7;
   }
-}
-
-.grid {
-  width: 50%;
-  height: 50%;
-  color: #3b7ced;
-}
-
-.stroke {
-  width: 2%;
-  height: 100%;
-  border-left: 1px solid #e2e6e9;
-}
+  .view-toggle button .icon:hover{
+    color: #0056b3;
+  }
+  .view-toggle button .icon:active{
+    color: #0056b3;
+    transition: color 0.3s ease-in-out;
+  }
 .Company4 {
   width: 100%;
   height: 53%;

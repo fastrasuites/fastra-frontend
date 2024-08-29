@@ -1,0 +1,73 @@
+/* General styles for larger screens */
+.signature-block {
+    display: grid;
+    align-items: center;
+    margin-bottom: 40px;
+    gap: 40px;
+  }
+  
+  .signature {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    align-items: center;
+  }
+  
+  .signature-canvas {
+    border: 1px solid #000;
+    border-radius: 4px;
+  }
+  
+  .signatory-btn {
+    margin: 10px 5px;
+    padding: 10px 16px;
+    font-weight: 500;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4285f4;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .signatory-btn:hover {
+    background-color: #357ae8;
+  }
+  
+  /* Responsive styles for smaller screens */
+  @media (max-width: 768px) {
+    .signature-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+  
+    .signature {
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+  
+    .signatory-btn {
+      width: 40%; /* Full-width buttons on small screens */
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  
+    .signature-canvas {
+      width: 100%; /* Full-width canvas on small screens */
+      max-width: 100%;
+      height: auto; /* Maintain aspect ratio */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .signatory-btn {
+      font-size: 13px; 
+      font-weight: 500;
+      padding: 12px;
+    }
+  }
+  

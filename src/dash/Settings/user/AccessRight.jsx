@@ -63,16 +63,16 @@ const AccessRight = ({ handleSubmit, onClose }) => {
 
   const [activeTab, setActiveTab] = useState(0);
   return (
-    <form action="" className="newuserform">
-      <div className="newuser3a">
-        <p style={{ fontSize: "20px", fontWeight: "500px" }}>Access Rights</p>
-        <div className="newuser3e">
-          <button type="button" className="newuser3but" onClick={onClose}>
+    <div className="registration-form">
+       <form className="registration-info" onSubmit={handleSubmit}>
+       <div className="registration-header-info">
+        <h2 style={{ fontSize: "20px", fontWeight: "500px" }}>Access Rights</h2>
+        <div className="reg-action-btn">
+          <button type="button" className="cancel-btn" onClick={onClose}>
             Cancel
           </button>
           <button
             type="submit"
-            className="newuser3btn"
             style={{ display: "flex", justifyContent: "center" }}
           >
             Save
@@ -80,7 +80,7 @@ const AccessRight = ({ handleSubmit, onClose }) => {
         </div>
       </div>
 
-      <section className="user-detail">
+      <section className="registration-basic-info">
         <figure className="image-figure">
           <label htmlFor="image-file">
             <img
@@ -105,8 +105,7 @@ const AccessRight = ({ handleSubmit, onClose }) => {
             </label>
             <input type="text" className="name-input" />
           </div>
-
-          <div className="email-input-wrapper">
+          <div className="email-input-wrapper" style={{marginTop: "10px"}}>
             <label htmlFor="email" className="email-label">
               Email
             </label>
@@ -126,7 +125,8 @@ const AccessRight = ({ handleSubmit, onClose }) => {
         setActiveTab={setActiveTab}
       />
       <TabContent tabsAndContent={tabsAndContent} activeTab={activeTab} />
-    </form>
+       </form>
+    </div>
   );
 };
 

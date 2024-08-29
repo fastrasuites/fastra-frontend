@@ -1,7 +1,7 @@
 import React from "react";
 
 const AllowedIpTabContent = () => {
-  return <div>AllowedIpTabContent</div>;
+  return <div style={{marginTop: "5%"}}>AllowedIpTabContent</div>;
 };
 
 export default AllowedIpTabContent;

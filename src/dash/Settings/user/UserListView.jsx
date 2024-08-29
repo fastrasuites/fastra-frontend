@@ -43,7 +43,7 @@ const UserListView = ({ users }) => {
   };
 
   if (users.length === 0) {
-    return <p>No companies available. Please add some companies.</p>;
+    return <p className="p-text">No companies available. Please add some companies.</p>;
   }
 
   return (

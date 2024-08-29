@@ -1,7 +1,7 @@
 import React from "react";
 
 const PreferencesTabContent = () => {
-  return <div>PreferencesTabContent</div>;
+  return <div style={{marginTop: "5%"}}>PreferencesTabContent</div>;
 };
 
 export default PreferencesTabContent;

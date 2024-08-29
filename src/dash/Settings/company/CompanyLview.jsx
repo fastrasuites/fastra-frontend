@@ -47,7 +47,7 @@ const ListView = ({ companies }) => {
   }
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
+    <TableContainer component={Paper} sx={{ boxShadow: "none", marginTop: "2rem" }}>
       <Table
         sx={{
           "&.MuiTable-root": {
@@ -103,10 +103,11 @@ const ListView = ({ companies }) => {
               <TableCell
                 sx={{
                   color: "#7a8a98",
-                  fontSize: "12px",
+                  fontSize: "14px",
                   display: "flex",
                   alignItems: "center",
                 }}
+                data-label="Company Name"
               >
                 <img
                   src={company.image || "default-image-url"}
@@ -120,13 +121,22 @@ const ListView = ({ companies }) => {
                 />
                 {company.companyName || "N/A"}
               </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+              <TableCell
+                sx={{ color: "#7a8a98", fontSize: "14px" }}
+                data-label="Email"
+              >
                 {company.email || "N/A"}
               </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+              <TableCell
+                sx={{ color: "#7a8a98", fontSize: "14px", fontWeight: "500" }}
+                data-label="Phone Number"
+              >
                 {company.phoneNumber || "N/A"}
               </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+              <TableCell
+                sx={{ color: "#7a8a98", fontSize: "14px" }}
+                data-label="Registration Number"
+              >
                 {company.registrationNumber || "N/A"}
               </TableCell>
             </TableRow>
