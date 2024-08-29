@@ -101,8 +101,8 @@
 
 .error-message {
   color: #d32f2f;
-  font-size: 14px;
-  margin-top: 8px;
+  font-size: 12px;
+
 }
 
 .group-container {
@@ -115,4 +115,108 @@ form {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 480px) {
+  .login-form {
+    width: 90%;
+    height: auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: none;
+    
+  }
+
+  .login-title {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .login-subtitle {
+    font-size: 12px;
+    margin-bottom: 18px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+
+  .form-input {
+    padding: 16px;
+    font-size: 14px;
+  }
+  .password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  padding: 14px;
+
+}
+
+  .login-button {
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  .login-links {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .register-link,
+  .forgot-password-link {
+    margin-bottom: 8px;
+  }
+}
+
+/* Tablets (481px to 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .login-form {
+    width: 80%;
+    padding: 30px;
+  }
+
+  .login-title {
+    font-size: 26px;
+  }
+
+  .login-subtitle {
+    font-size: 13px;
+  }
+
+  .form-input {
+    padding: 18px 22px;
+    font-size: 13px;
+  }
+
+  .login-button {
+    padding: 11px;
+    font-size: 15px;
+  }
+}
+
+/* Desktops (769px and above) */
+@media (min-width: 769px) {
+  .login-form {
+    width: 480px;
+    padding: 40px;
+  }
+
+  .login-title {
+    font-size: 28px;
+  }
+
+  .login-subtitle {
+    font-size: 14px;
+  }
+
+  .form-input {
+    padding: 20px 24px;
+    font-size: 14px;
+  }
+
+  .login-button {
+    padding: 12px;
+    font-size: 16px;
+  }
 }
