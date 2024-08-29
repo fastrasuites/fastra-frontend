@@ -58,8 +58,11 @@
   letter-spacing: 0.5px;
 }
 .link-to-config:hover {
-  opacity: 0px;
   background: #f1f2f4;
+}
+
+.css-1ty026z {
+  padding: 16px;
 }
 
 .config-wrapper {
