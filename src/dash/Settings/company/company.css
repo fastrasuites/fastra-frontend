@@ -1,0 +1,309 @@
+.Company-page {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.company-body {
+  width: 100%;
+  height: 90%;
+  display: flex;
+  position: absolute;
+  top: 10%;
+  justify-content: center;
+}
+ 
+.company-details {
+  width: 95%;
+  height: 95%;
+  position: absolute;
+  top: 5%;
+}
+
+.company-header{
+  /* width: 100%; */
+  padding: 5px;
+  /* height: 10%; */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2.5rem;
+  background-color: transparent;
+
+  /* @media screen and (max-width: 1200px) and (min-width: 451px) {
+    gap: 0;
+  }
+
+  @media screen and (max-width: 450px) {
+    gap: 1rem;
+  } */
+}
+
+.header-activity-1 {
+  display: flex;
+  align-items: left;
+  gap: 20px;
+  background-color: transparent;
+  @media screen and (max-width: 1200px) and (min-width: 540px) {
+    width: 70%;
+    gap: 1rem;
+  }
+
+  /* @media screen and (max-width: 539px) {
+    gap: 0.5rem;
+  } */
+}
+
+.btn {
+  background: #3b7ced;
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  font-size: 20px;
+  font-weight: 530;
+  border-radius: 5px;
+  /* @media screen and (max-width: 647px) and (min-width: 562px) {
+    font-size: 11px;
+  }
+
+  @media screen and (max-width: 561px) {
+    font-size: 10px;
+  }
+
+  @media screen and (max-width: 561px) {
+    padding: 10px;
+  } */
+}
+
+
+.search-box {
+background-color: #ffffff;
+border-radius: 5px;
+display: flex;
+flex-grow: 1;
+align-items: center;
+border: 1px solid #dae0e8;
+
+  /* @media screen and (max-width: 450px) {
+    gap: 0;
+  } */
+}
+.search-box .icon {
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.5 ease-in-out;
+  color: #242424;
+}
+.search-box .icon:hover{
+  transition: 0.7 ease-in-out !important;
+}
+.search-box input {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  width: 250px;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+/* .Companys1 {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.Companys2 {
+  width: 40%;
+  height: 40%;
+}
+
+.Companys3 {
+  width: 140%;
+  height: 50%;
+  outline: none;
+  border: none;
+  opacity: 60%;
+
+  :focus {
+    outline: none;
+  }
+
+  @media screen and (max-width: 450px) {
+    font-size: xx-small;
+  }
+} */
+
+
+.header-activity-2 {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: transparent;
+/* 
+  @media screen and (max-width: 1200px) and (min-width: 401px) {
+    width: 45%;
+    gap: 1rem;
+  }
+
+  @media screen and (max-width: 400px) {
+    width: 45%;
+    gap: 0.5rem;
+  } */
+}
+.pagination {
+  margin: 0 10px;
+  color: #a9b3bc;
+  font-size: 15px;
+  text-align: center;
+  display: flex;
+
+  /* @media screen and (max-width: 500px) {
+    font-size: 12px;
+  } */
+}
+
+.pagination-btn {
+  border: 1.2px solid #e2e6e9;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+
+  /* @media screen and (max-width: 400px) {
+    height: 35%;
+  } */
+}
+.pagination-btn button {
+  border: 1px solid #ccc;
+  padding: 12px;
+  outline: none;
+}
+.pagination-btn button .icon {
+font-size: 25px !important;
+}
+
+.view-toggle {
+  border: 1px solid #e2e6e9;
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+  border-radius: 4px;
+
+  /* @media screen and (max-width: 400px) {
+    height: 35%;
+  } */
+}
+.view-toggle button {
+  border: 1px solid #ccc;
+  padding: 12px;
+  outline: none;
+}
+.view-toggle button .icon {
+  font-size: 25px !important;
+  color: #357fe7;
+  }
+  .view-toggle button .icon:hover{
+    color: #0056b3;
+  }
+  .view-toggle button .icon:active{
+    color: #0056b3;
+    transition: color 0.3s ease-in-out;
+  }
+.Company4 {
+  width: 100%;
+  height: 53%;
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2.8rem;
+  @media screen and (max-width: 344px) {
+    justify-content: center;
+  }
+}
+.Company4gv {
+  width: 35%;
+  height: 70%;
+  background-color: white;
+  border: 1px solid #e2e6e9;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  line-height: 16px;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.7rem;
+  cursor: pointer;
+  @media screen and (max-width: 1200px) and (min-width: 954px) {
+    width: 21%;
+  }
+  @media screen and (max-width: 953px) and (min-width: 892px) {
+    width: 29.5%;
+  }
+  @media screen and (max-width: 891px) and (min-width: 829px) {
+    width: 29.2%;
+  }
+  @media screen and (max-width: 828px) and (min-width: 767px) {
+    width: 20%;
+  }
+  @media screen and (max-width: 766px) and (min-width: 711px) {
+    width: 28.5%;
+  }
+  @media screen and (max-width: 710px) and (min-width: 671px) {
+    width: 28.2%;
+  }
+  @media screen and (max-width: 710px) and (min-width: 645px) {
+    width: 28%;
+  }
+  @media screen and (max-width: 645px) and (min-width: 613px) {
+    width: 27.7%;
+  }
+  @media screen and (max-width: 645px) and (min-width: 547px) {
+    width: 27%;
+  }
+  @media screen and (max-width: 546px) and (min-width: 508px) {
+    width: 26.5%;
+  }
+  @media screen and (max-width: 507px) and (min-width: 345px) {
+    width: 42%;
+  }
+  @media screen and (max-width: 344px) {
+    width: 70%;
+  }
+}
+.Companyname {
+  font-weight: bold;
+}
+.Companyrole,
+.Companymail,
+.Companynum {
+  color: #080809;
+  font-size: 14px;
+}
+.cirmage {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid #e2e6e9;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}

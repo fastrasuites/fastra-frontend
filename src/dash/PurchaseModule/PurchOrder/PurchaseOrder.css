@@ -1,0 +1,375 @@
+.purchaseOrder {
+  height: 180vh;
+  width: 100%;
+  background-image: url("../../../image/bg.svg");
+  background-size: contain;
+  margin: 0;
+  padding: 0;
+  font-family: Product Sans;
+}
+
+.purchaseOrder1 {
+  width: 100%;
+  height: 90%;
+  display: flex;
+  position: absolute;
+  top: 10%;
+  justify-content: center;
+}
+
+.purchaseOrder2 {
+  width: 95%;
+  height: 95%;
+  position: absolute;
+  top: 5%;
+}
+
+.purchaseOrderlist {
+  width: 40%;
+  height: 20%;
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  color: white;
+  @media screen and (max-width: 1200px) and (min-width: 850px) {
+    width: 55%;
+  }
+  @media screen and (max-width: 849px) and (min-width: 680px) {
+    width: 65%;
+  }
+  @media screen and (max-width: 679px) and (min-width: 580px) {
+    width: 75%;
+  }
+  @media screen and (max-width: 579px) /*and (min-width: 800px) */ {
+    width: 95%;
+  }
+  @media screen and (max-width: 449px) {
+    font-size: 0.8rem;
+  }
+  @media screen and (max-width: 420px) {
+    width: 100%;
+    gap: 1rem;
+  }
+}
+
+.purchaseOrderl1 {
+  background: linear-gradient(225deg, #2ba24c 0%, #103c1c 100%);
+  width: 35%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 2.5rem;
+  border-radius: 5px;
+}
+
+.purchaseOrderl3 {
+  background: linear-gradient(225deg, #e43e2b 0%, #7e2218 100%);
+  width: 24%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 2.5rem;
+  text-align: center;
+  border-radius: 5px;
+  @media screen and (max-width: 420px) {
+    width: 26%;
+  }
+}
+
+.purchaseOrderl2 {
+  background: linear-gradient(225deg, #f0b501 0%, #8a6801 100%);
+  width: 52%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  line-height: 2.5rem;
+  text-align: center;
+  border-radius: 5px;
+}
+
+.plnum {
+  font-size: 2rem;
+  @media screen and (max-width: 449px) {
+    font-size: 1.5rem;
+  }
+}
+
+.purchaseOrder3 {
+  width: 100%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  gap: 30rem;
+  margin-top: 2.5rem;
+  @media screen and (max-width: 1200px) and (min-width: 451px) {
+    gap: 0;
+  }
+  @media screen and (max-width: 450px) {
+    gap: 1rem;
+  }
+}
+
+.r3a {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 50%;
+  height: 100%;
+  @media screen and (max-width: 1200px) and (min-width: 540px) {
+    width: 70%;
+    gap: 1rem;
+  }
+  @media screen and (max-width: 539px) {
+    gap: 0.5rem;
+  }
+}
+
+.r3abtn {
+  background: #3b7ced;
+  color: white;
+  padding: 12px;
+  border-radius: 4px 0px 0px 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  @media screen and (max-width: 647px) and (min-width: 562px) {
+    font-size: 11px;
+  }
+  @media screen and (max-width: 561px) {
+    font-size: 10px;
+  }
+  @media screen and (max-width: 561px) {
+    padding: 10px;
+  }
+}
+
+.r3abtn:hover {
+  background: #335db2;
+}
+
+.purchaseOrdersash {
+  width: 50%;
+  height: 50%;
+  border-radius: 4px;
+  background-color: white;
+  border: 1px solid #e2e6e9;
+  @media screen and (max-width: 450px) {
+    gap: 0;
+  }
+}
+
+.rs1 {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.rs2 {
+  width: 40%;
+  height: 40%;
+}
+
+.rs3 {
+  width: 140%;
+  height: 50%;
+  outline: none;
+  border: none;
+  opacity: 60%;
+
+  :focus {
+    outline: none;
+  }
+  @media screen and (max-width: 450px) {
+    font-size: xx-small;
+  }
+}
+
+.r3b {
+  display: flex;
+  gap: 1.5rem;
+  height: 100%;
+  width: 20%;
+  align-items: center;
+  justify-content: end;
+  @media screen and (max-width: 1200px) and (min-width: 401px) {
+    width: 45%;
+    gap: 1rem;
+  }
+  @media screen and (max-width: 400px) {
+    width: 45%;
+    gap: 0.5rem;
+  }
+}
+
+.r3bpage {
+  color: #a9b3bc;
+  @media screen and (max-width: 500px) {
+    font-size: 12px;
+  }
+}
+
+.r3bnav {
+  border: 1.2px solid #e2e6e9;
+  width: 25%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+  @media screen and (max-width: 400px) {
+    height: 35%;
+  }
+}
+
+.lr {
+  width: 80%;
+  height: 80%;
+  color: gray;
+}
+
+.r3bview {
+  border: 1.2px solid #e2e6e9;
+  width: 25%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+  @media screen and (max-width: 400px) {
+    height: 35%;
+  }
+}
+
+.grid {
+  width: 50%;
+  height: 50%;
+  color: #3b7ced;
+}
+
+.stroke {
+  width: 2%;
+  height: 100%;
+  border-left: 1px solid #e2e6e9;
+}
+
+.purchaseOrder4 {
+  width: 100%;
+  height: 53%;
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2.8rem;
+  @media screen and (max-width: 344px) {
+    justify-content: center;
+  }
+}
+
+.purchaseOrder4gv {
+  width: 16.5%;
+  height: 60%;
+  background-color: white;
+  border: 1px solid #e2e6e9;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.4rem;
+  @media screen and (max-width: 1200px) and (min-width: 954px) {
+    width: 21%;
+  }
+  @media screen and (max-width: 953px) and (min-width: 892px) {
+    width: 29.5%;
+  }
+  @media screen and (max-width: 891px) and (min-width: 829px) {
+    width: 29.2%;
+  }
+  @media screen and (max-width: 828px) and (min-width: 767px) {
+    width: 20%;
+  }
+  @media screen and (max-width: 766px) and (min-width: 711px) {
+    width: 28.5%;
+  }
+  @media screen and (max-width: 710px) and (min-width: 671px) {
+    width: 28.2%;
+  }
+  @media screen and (max-width: 710px) and (min-width: 645px) {
+    width: 28%;
+  }
+  @media screen and (max-width: 645px) and (min-width: 613px) {
+    width: 27.7%;
+  }
+  @media screen and (max-width: 645px) and (min-width: 547px) {
+    width: 27%;
+  }
+  @media screen and (max-width: 546px) and (min-width: 508px) {
+    width: 26.5%;
+  }
+  @media screen and (max-width: 507px) and (min-width: 345px) {
+    width: 42%;
+  }
+  @media screen and (max-width: 344px) {
+    width: 70%;
+  }
+}
+
+.cardate {
+  color: #7a8a98;
+  font-size: 12px;
+}
+
+.vendname {
+  color: #7a8a98;
+  font-size: 14px;
+  text-align: center;
+  gap: 0.2rem;
+}
+
+.status {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.purchaseOrder4lv {
+  width: 100%;
+  height: 53%;
+  margin-top: 1.5rem;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+  /* overflow-y: auto; */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

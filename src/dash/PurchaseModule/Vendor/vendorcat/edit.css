@@ -1,0 +1,54 @@
+.edit-vendor-container {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.edit-vendor-title {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.edit-vendor-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-vendor-field {
+  margin-bottom: 10px;
+}
+
+.edit-vendor-label {
+  font-weight: bold;
+}
+
+.edit-vendor-input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.edit-vendor-buttons {
+  margin-top: 20px;
+}
+
+.edit-vendor-edit-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.edit-vendor-cancel-btn {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}

@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+/* @font-face {
+  font-family: "Product Sans";
+  src: url("./font/ProductSansRegular.ttf");
+} */
+* { padding: 0; margin: 0; box-sizing: border-box; font-family: "PT Sans", sans-serif !important; }
+
+body {
+  background-image: url('./assets/background.png');    
+  background-color: #f7f7f7;                        
+  background-size: cover;                           
+  background-position: center;                      
+  background-repeat: no-repeat;                   
+  margin: 0;                                      
+  width: 100%;                                 
+  height: 100vh;                                
+  font-family: "PT Sans", sans-serif !important; 
+  -webkit-font-smoothing: antialiased; /* Improve font rendering on WebKit browsers */
+  -moz-osx-font-smoothing: grayscale; /* Improve font rendering on Firefox and others */
+}
+
+
+/* code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+} */

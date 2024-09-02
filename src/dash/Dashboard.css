@@ -1,0 +1,240 @@
+.dash {
+  height: 180vh;
+  width: 100%;
+  background-image: url("../image/bg.svg");
+  background-size: contain;
+  margin: 0;
+  padding: 0;
+  font-family: "Product Sans";
+}
+
+.dashhead {
+  width: 100%;
+  height: 6%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+}
+
+.headwrap {
+  width: 100%;
+  height: 95%;
+  display: flex;
+  align-items: center;
+  list-style: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  @media screen and (max-width: 969px) and (min-width: 959px) {
+    width: 100%;
+    height: 95%;
+  }
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  @media screen and (max-width: 958px) and (min-width: 665px) {
+    width: 100%;
+    height: 95%;
+  }
+}
+
+.hom {
+  width: 15%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 29.11px;
+  text-align: left;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    width: 22%;
+    gap: 1.2rem;
+    font-size: 16px;
+  }
+  @media screen and (max-width: 799px) and (min-width: 540px) {
+    width: 25%;
+    gap: 0.5rem;
+  }
+}
+
+.dashnav {
+  color: #3b7ced;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    margin-right: -1rem;
+  }
+}
+
+.sash {
+  width: 60%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19.41px;
+  opacity: 40%;
+  @media screen and (max-width: 958px) and (min-width: 665px) {
+    width: 50%;
+  }
+  @media screen and (max-width: 664px) and (min-width: 540px) {
+    width: 40%;
+  }
+  @media screen and (max-width: 539px) and (min-width: 420px) {
+    width: 30%;
+  }
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    width: 25%;
+  }
+}
+
+.sashtag {
+  width: 90%;
+}
+
+.sashput {
+  width: 100%;
+  height: 100%;
+  outline: none;
+  border: none;
+
+  :focus {
+    outline: none;
+  }
+}
+.sarch {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    gap: 1rem;
+  }
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    font-size: 8px;
+    gap: 0.1rem;
+    margin-left: 0.3rem;
+  }
+}
+.sashnav {
+  width: 22px;
+  height: 22px;
+  color: #3b7ced;
+  @media screen and (max-width: 539px) and (min-width: 300px) {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.alert {
+  width: 5%;
+  height: 100%;
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    width: 7%;
+  }
+}
+
+.bell-icon-container {
+  position: relative;
+}
+
+.notification-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 5px;
+  font-size: 10px;
+}
+
+.admin {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  @media screen and (max-width: 969px) and (min-width: 959px) {
+    gap: 1rem;
+    margin-left: 1rem;
+    margin-right: 0.5rem;
+  }
+  @media screen and (max-width: 958px) and (min-width: 665px) {
+    gap: 0.5rem;
+    width: 25%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+  }
+  @media screen and (max-width: 664px) and (min-width: 540px) {
+    width: 30%;
+    gap: 0.5rem;
+    margin-left: 1rem;
+  }
+  @media screen and (max-width: 539px) and (min-width: 421px) {
+    width: 40%;
+    gap: 0.5rem;
+  }
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    margin-left: 2.5rem;
+    width: 25%;
+    gap: 0.3rem;
+  }
+}
+
+.adminname {
+  margin-top: -0.6rem;
+}
+.adminimg {
+  width: 40px;
+  height: 40px;
+  @media screen and (max-width: 419px) and (min-width: 300px) {
+    width: 30px;
+    height: 30px;
+    margin-left: -1rem;
+  }
+}
+.ad1 {
+  font-family: Product Sans Medium;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24.26px;
+  text-align: left;
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    margin-right: -1rem;
+    font-size: 16px;
+  }
+}
+.ad2 {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 12.13px;
+  text-align: left;
+  @media screen and (max-width: 420px) and (min-width: 300px) {
+    font-size: 9px;
+  }
+}
+
+.dashbody {
+  width: 100%;
+  height: 94%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bocard {
+  width: 95%;
+  height: 100%;
+}
