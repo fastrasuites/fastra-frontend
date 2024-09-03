@@ -1,32 +1,39 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
 import axios from "axios";
-import "./RegistrationForm.css";
 import { Formik, Form, Field } from "formik";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import "./RegistrationForm.css";
 
 export default function RegistrationForm() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({
+    companyName: "",
+    companyEmail: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [apiError, setApiError] = useState(null);
 
   const handleNextStep = (newData, final = false) => {
+    setFormData((prev) => ({ ...prev, ...newData })); // Update state with new data
+
     if (final) {
-      makeRequest(newData);
+      makeRequest({ ...formData, ...newData }); // Send complete data on final step
     } else {
       setCurrentStep((prev) => prev + 1);
     }
   };
 
-  const makeRequest = async (formData) => {
+  const makeRequest = async (finalData) => {
     const registrationData = {
-      schema_name: formData.companyName.toLowerCase().replace(/\s+/g, "-"),
-      company_name: formData.companyName,
+      schema_name: finalData.companyName.toLowerCase().replace(/\s+/g, "-"),
+      company_name: finalData.companyName,
       user: {
-        password1: formData.password,
-        password2: formData.confirmPassword,
-        email: formData.companyEmail,
+        password1: finalData.password,
+        password2: finalData.confirmPassword,
+        email: finalData.companyEmail,
       },
-      frontend_url: window.location.host,
+      frontend_url: window.location.origin,
     };
 
     try {
@@ -74,7 +81,7 @@ const CompanyDetails = ({ next }) => {
   return (
     <Formik
       initialValues={{ companyName: "", companyEmail: "" }}
-      onSubmit={next}
+      onSubmit={(values) => next(values)}
       validate={validateForm}
     >
       {({ errors, touched }) => (
@@ -86,7 +93,7 @@ const CompanyDetails = ({ next }) => {
             </div>
 
             <div className="sub-group">
-              <div >
+              <div>
                 <label className="form-label" htmlFor="companyName">
                   Company name
                 </label>
@@ -104,7 +111,6 @@ const CompanyDetails = ({ next }) => {
                 {touched.companyName && errors.companyName && (
                   <div className="error-message">{errors.companyName}</div>
                 )}
-                {/* Example of how the company name should look */}
                 <p className="company-name-example">
                   companyname.fastrasuites.com
                 </p>
