@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url('../image/background.png'); 
+  background-image: url("../image/background.png");
   background-size: cover;
   background-position: center;
 }
@@ -22,15 +22,12 @@
   box-sizing: border-box;
 }
 
-.registration-form 
-{
+.registration-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
   flex-grow: 1;
 }
-
-
 
 .form-title {
   font-size: 24px;
@@ -42,7 +39,7 @@
 .form-subtitle {
   font-size: 14px;
   color: #666;
-  margin-bottom: 16px; 
+  margin-bottom: 16px;
 }
 
 .form-label {
@@ -54,18 +51,18 @@
 
 .form-input {
   width: 100%;
-  padding: 20px 24px ;
+  padding: 20px 24px;
   font-size: 14px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  margin-bottom: 12px; 
+  margin-bottom: 12px;
 }
-.f-group{
+.f-group {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
-.sub-group{
+.sub-group {
   display: flex;
   flex-direction: column;
   gap: 25px;
@@ -74,11 +71,10 @@
   outline: none;
   border-color: #4285f4;
 }
-.company-name-example{
+.company-name-example {
   font-size: 12px;
-  color: #8C9AA6;
+  color: #8c9aa6;
   font-weight: 400;
-
 }
 
 .password-input-container {
@@ -99,7 +95,7 @@
 .password-criteria {
   list-style-type: none;
   padding: 0;
-  margin: 8px 0 12px; 
+  margin: 8px 0 12px;
 }
 
 .password-criteria li {
@@ -143,7 +139,7 @@
 
 .login-link {
   text-align: left;
-  margin-top: 16px; 
+  margin-top: 16px;
   font-size: 14px;
 }
 
@@ -168,6 +164,10 @@
 
 .confirmation-container {
   text-align: center;
+  padding: 40px;
+  /* box-shadow: 16px 16px 64px 0px #1a1a1a29; */
+  border-radius: 16px;
+  font-family: "Product Sans";
 }
 
 .confirmation-title {
@@ -175,23 +175,31 @@
   font-weight: 600;
   margin-bottom: 16px;
   color: #333;
+  text-align: left;
+  letter-spacing: 1.1px;
 }
 
 .confirmation-message {
   font-size: 14px;
-  color: #666;
+  color: #7a8a98;
   margin-bottom: 24px;
+  font-family: "Product Sans";
+  line-height: 16.98px;
+  text-align: left;
 }
 
 .confirmation-button {
   padding: 12px 24px;
-  background-color: #4285f4;
+  background-color: #3b7ced;
   color: #ffffff;
   border: none;
   border-radius: 4px;
   font-size: 16px;
-  font-weight: 500;
+  letter-spacing: 1.1px;
+  font-weight: 520;
   cursor: pointer;
+  width: 100%;
+  box-shadow: 0px 32px 24px 0px #1a1a1a14;
 }
 
 .confirmation-button:hover {
@@ -222,12 +230,12 @@
     padding: auto;
   }
 
-.f-group{
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  transform: scale(0.80);
-}
+  .f-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transform: scale(0.8);
+  }
 
   .submit-button {
     font-size: 14px;

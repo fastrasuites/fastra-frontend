@@ -255,14 +255,19 @@ const PasswordSetup = ({ next, apiError }) => {
 };
 
 const ConfirmationStep = () => {
+  const handleEmailClientOpen = () => {
+    window.location.href = "mailto:";
+  };
   return (
     <div className="confirmation-container">
       <h2 className="confirmation-title">Confirmation</h2>
       <p className="confirmation-message">
         We sent a confirmation link to your email, click on that link to
-        proceed.
+        proceed. Use the "Continue" button to open your default email client.
       </p>
-      <button className="confirmation-button">Continue</button>
+      <button className="confirmation-button" onClick={handleEmailClientOpen}>
+        Continue
+      </button>
     </div>
   );
 };
