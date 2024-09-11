@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+// import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
-import uploadIcon from "../../../image/uploadIcon.svg"; // Ensure to have this icon in your project
+import uploadIcon from "../../../image/uploadIcon.svg"; 
+import "../../../shared/signature.css";
+import SignatureCanvas from 'react-signature-canvas';
 
 import AccessRight from "./AccessRight";
-import "./newuser.css";
+// import "./newuser.css";
 
 import { useHistory } from "react-router-dom";
 
@@ -131,6 +133,47 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
     }
   };
 
+  const Signature = () => {
+    const sigCanvas = useRef(null);
+
+    const clearSignature = () => {
+      sigCanvas.current.clear();
+    };
+
+    const saveSignature = () => {
+      if (!sigCanvas.current.isEmpty()) {
+        const dataURL = sigCanvas.current.getTrimmedCanvas().toDataURL("image/png");
+        console.log("Signature saved", dataURL);
+        // Here you can save the image dataURL to a file or use it in your backend.
+      }
+    };
+
+    return (
+      <div className="signature-block">
+        <div className="signature">
+        <div>
+        <SignatureCanvas 
+          ref={sigCanvas}
+          canvasProps={{
+            width: "400",
+            height: "150",
+            className: "signature-canvas",
+          }}
+        />
+        <div>
+          <button className="signatory-btn" onClick={clearSignature}>Clear</button>
+          <button className="signatory-btn" onClick={saveSignature}>Save Signature</button>
+        </div>
+        </div>
+        <div>
+          <input type="file" accept="image/*" />
+          <button className="signatory-btn">Upload Signature</button>
+        </div>
+      </div>
+      </div>
+    );
+  };
+
   const roleOptions = [
     { value: "Admin", label: "Administrator" },
     { value: "Usr", label: "User" },
@@ -166,33 +209,26 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
   return (
     <div
       id="newuser"
-      className={`newuser ${showForm ? "fade-in" : "fade-out"}`}
+      className={`registration-page ${showForm ? "fade-in" : "fade-out"}`}
     >
-      <div className="newuser1">
-        <div className="newuser2">
-          <div className="newuser2a">
-            {!showAccessRight && <p className="newuserhed"> New User</p>}
-            <div className="newuserauto">
+      -<div className="form-header" style={{ marginTop: "3rem" }}>
+        <div className="form-header-details">
+          <div className="form-header-activity">
+            {!showAccessRight && <h2 className="header-text"> New User</h2>}
+            <div className="autosave" style={{ marginLeft: "18px" }}>
               <p>Autosaved</p>
               <img src={autosave} alt="Autosaved" />
             </div>
           </div>
-          <div className="newuser2b">
-            <div className="newuserbnav">
-              <FaCaretLeft className="nr" />
-              <div className="sep"></div>
-              <FaCaretRight className="nr" />
-            </div>
-          </div>
         </div>
-        <div className="newuserclk">
+        <div className="settings">
           <button
             className="nutogclk"
             onClick={() => setShowAccessRight(false)}
           >
             Basic Setting
           </button>
-          <button className="nutogclk" onClick={() => setShowAccessRight(true)}>
+          <button className="access-btn" onClick={() => setShowAccessRight(true)}>
             Access Right
           </button>
         </div>
@@ -201,28 +237,27 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
             <AccessRight handleSubmit={handleSubmit} />
           </div>
         ) : (
-          <div className="newuser3">
-            <form className="newuserform" onSubmit={handleSubmit}>
-              <div className="newuser3a">
-                <p style={{ fontSize: "20px" }}>Basic Information</p>
-                <div className="newuser3e">
+          <div className="registration-form">
+            <form className="registration-info" onSubmit={handleSubmit}>
+              <div className="registration-header-info">
+                <h2 style={{ fontSize: "20px", marginTop: "3%" }}>Basic Information</h2>
+                <div className="reg-action-btn">
                   <button
                     type="button"
-                    className="newuser3but"
+                    className="cancel-btn"
                     onClick={onClose}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="newuser3btn"
                     style={{ display: "flex", justifyContent: "center" }}
                   >
                     Save
                   </button>
                 </div>
               </div>
-              <div className="newuser3b">
+              <div className="registration-basic-info">
                 <div className="newuser3ba">
                   <div
                     className="image-upload"
@@ -255,13 +290,13 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                     )}
                   </div>
                 </div>
-                <div className="newuser3ba">
+                <div className="form-group">
                   <label>Name</label>
                   <input
                     type="text"
                     name="name"
                     placeholder="FirstName LastName"
-                    className="newuser3cb"
+                    className="form-control"
                     value={formState.name}
                     onChange={(e) =>
                       setFormState((prev) => ({
@@ -271,7 +306,7 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                     }
                   />
                 </div>
-                <div className="newuser3ba">
+                <div className="form-group">
                   <label>Role</label>
                   <Select
                     options={roleOptions}
@@ -289,58 +324,62 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                   />
                 </div>
               </div>
-
-              <div className="newuser3a2">
-                <p style={{ fontSize: "20px" }}>Contact Information</p>
+              <hr />
+              <div className="registration-contact-info">
+                <h2 style={{ fontSize: "20px" }}>Contact Information</h2>
               </div>
-              <div className="newuser3d">
-                <div className="newuser3da">
+              <div className="registration-contact-info-grouped">
+                <div className="form-group">
                   <label>Email</label>
                   <input
                     type="text"
                     name="mail"
                     placeholder="Enter your company email address"
-                    className="newuser3cb"
+                    className="form-control"
                     value={formState.mail}
                     onChange={handleChange}
                   />
                 </div>
-                <div className="newuser3da">
+                <div className="form-group">
                   <label>Phone Number</label>
                   <input
                     type="text"
                     name="number"
                     placeholder="Enter your company phone number"
-                    className="newuser3cb"
+                    className="form-control"
                     value={formState.number}
                     onChange={handleChange}
                   />
                 </div>
               </div>
-
-              <div className="newuser3a2">
-                <p style={{ fontSize: "20px" }}>Companies</p>
+              <hr />
+              <div className="registration-contact-info">
+                <h2 style={{ fontSize: "20px" }}>Companies</h2>
               </div>
-              <div className="newuser3f">
-                <p>Company name</p>
-                <button
-                  className="newuser3btn"
-                  style={{ display: "flex", justifyContent: "center" }}
-                >
-                  Add Company
-                </button>
+              <div className="registration-contact-info-grouped">
+                <div className="form-group">
+                  <label>Company name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Company name"
+                    value={formState.companyName}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
-
-              <div className="newuser3a2">
-                <p style={{ fontSize: "20px" }}>Preference</p>
+              <hr />
+              <div className="registration-contact-info">
+                <h2 style={{ fontSize: "20px" }}>Preferences</h2>
               </div>
-              <div className="newuser3d2">
-                <div className="newuser3da">
+              <div className="registration-contact-info-grouped">
+                <div className="form-group">
                   <label>Language</label>
                   <Select
                     options={languageOptions}
                     name="language"
                     styles={customStyles}
+                    className="select-box"
                     value={languageOptions.find(
                       (option) => option.value === formState.language
                     )}
@@ -352,7 +391,7 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                     }
                   />
                 </div>
-                <div className="newuser3da">
+                <div className="form-group">
                   <label>Timezone</label>
                   <Select
                     options={timezoneOptions}
@@ -371,8 +410,8 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                   />
                 </div>
               </div>
-              <div className="newuser3g">
-                <p style={{ fontWeight: "bold" }}>Notification</p>
+              <h3 style={{ fontWeight: "490", color: "#000" }}>Notifications</h3><br />
+              <div className="registration-contact-info">
                 <div className="checkbox-group" style={{ lineHeight: "2rem" }}>
                   <div className="checkbox">
                     <label>In-app notification</label>
@@ -384,7 +423,7 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                     />
                   </div>
                   <div className="checkbox">
-                    <label>Email notification</label>
+                    <label>Email notification</label>&nbsp;
                     <input
                       type="checkbox"
                       name="emailNotification"
@@ -394,6 +433,26 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                   </div>
                 </div>
               </div>
+              <br /><hr /><br /><br /><br />
+              <h2 style={{color: "#4285f4", marginBottom: "30px"}}>Signature</h2>
+              <Signature />
+              <br />
+                    {/* shows only on mobile devices */}
+              <div className="reg-action-btn" id="reg-action-btn">
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={onClose}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={{ display: "flex", justifyContent: "center" }}
+                  >
+                    Save
+                  </button>
+                </div>
             </form>
           </div>
         )}

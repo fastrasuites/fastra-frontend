@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./company.css";
-import SearchIcon from "../../../image/search.svg";
-import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
+import { BsCaretLeftFill } from "react-icons/bs";
+import { BsCaretRightFill } from "react-icons/bs";
+import { FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import NewCompany from "./NewCompanyForm";
-import ListView from "./CompanyLview";
-import { useLocation, useHistory } from "react-router-dom";
+import ListView from "./CompanyLview"; 
+import { CiSearch } from "react-icons/ci";
 
 export default function Company() {
   const [companies, setCompanies] = useState([]);
@@ -13,17 +14,6 @@ export default function Company() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewCompany, setShowNewCompany] = useState(false);
   const [viewMode, setViewMode] = useState("list");
-
-  // Used by Popup from Dashboad----------------------------------
-  const location = useLocation();
-  const history = useHistory();
-
-  useEffect(() => {
-    if (location.state?.openForm) {
-      setShowNewCompany(true);
-    }
-  }, [location.state]);
-  // End ---------------------------------------------------------
 
   useEffect(() => {
     const storedCompanies = JSON.parse(localStorage.getItem("companies")) || [];
@@ -69,25 +59,27 @@ export default function Company() {
   };
 
   return (
-    <div className="Company-page" id="Company">
+    <div className="content-page" id="Company">
       {showNewCompany ? (
         <div className="overlay">
           <NewCompany
             onClose={handleCloseNewCompany}
             onSaveAndSubmit={handleSaveAndSubmit}
-            fromStepModal={location.state?.openForm}
           />
         </div>
       ) : (
-        <div className="Company1">
-          <div className="Company2">
-            <div className="Company3">
-              <div className="Company3a">
-                <button className="Company3abtn" onClick={handleNewCompany}>
+        <div className="content-body">
+          <div className="content-details">
+            <div className="content-header">
+              <div className="header-activity-1">
+                <button className="btn" onClick={handleNewCompany}>
                   New Company
                 </button>
-                <div className="Companysash">
-                  <label
+                <div className="search-box">
+                <CiSearch className="icon" onClick={handleSearch} />
+                  <input type="text" value={searchQuery} placeholder="Search ..." onChange={(e) => setSearchQuery(e.target.value)}  />
+                  
+                  {/* <label
                     htmlFor="searchInput"
                     className="Companys1"
                     onClick={handleSearch}
@@ -101,28 +93,29 @@ export default function Company() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="Companys3"
                     />
-                  </label>
+                  </label> */}
                 </div>
+               
               </div>
-              <div className="Company3b">
-                <p className="Company3bpage">
+        
+
+              <div className="header-activity-2">
+                <p className="pagination">
                   1-{filteredCompanies.length} of {filteredCompanies.length}
                 </p>
-                <div className="Company3bnav">
-                  <FaCaretLeft className="lr" />
-                  <div className="stroke"></div>
-                  <FaCaretRight className="lr" />
+                <div className="pagination-btn">
+                  <button><BsCaretLeftFill className="icon" /></button>
+                  <button><BsCaretRightFill className="icon" /></button>
                 </div>
-                <div className="Company3bview">
-                  <IoGrid
-                    className={`grid ${viewMode === "grid" ? "active" : ""}`}
-                    onClick={() => toggleViewMode("grid")}
-                  />
-                  <div className="stroke"></div>
-                  <FaBars
-                    className={`grid ${viewMode === "list" ? "active" : ""}`}
+                <div className="view-toggle">
+                 <button> <IoGrid
+                    className={`icon ${viewMode === "grid" ? "active" : ""}`}
+                    onClick={() => toggleViewMode("grid")} 
+                  /></button>
+                 <button> <FaBars
+                    className={`icon ${viewMode === "list" ? "active" : ""}`}
                     onClick={() => toggleViewMode("list")}
-                  />
+                  /></button>
                 </div>
               </div>
             </div>

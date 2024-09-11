@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import "./user.css";
-import SearchIcon from "../../../image/search.svg";
-import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
+
+import { BsCaretLeftFill } from "react-icons/bs";
+import { BsCaretRightFill } from "react-icons/bs";
+import { CiSearch } from "react-icons/ci";
+import { FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import NewUser from "./NewUser";
 import UserListView from "./UserListView"; // Import UserListView
@@ -65,8 +67,9 @@ export default function User() {
     setViewMode(mode);
   };
 
-  return (
-    <div className="user-page" id="user">
+ 
+    return (
+    <div className="content-page" id="user">
       {showNewUser ? (
         <div className="overlay">
           <NewUser
@@ -76,15 +79,17 @@ export default function User() {
           />
         </div>
       ) : (
-        <div className="user1">
-          <div className="user2">
-            <div className="user3">
-              <div className="user3a">
-                <button className="user3abtn" onClick={handleNewUser}>
+        <div className="content-body">
+          <div className="content-details">
+            <div className="content-header">
+              <div className="header-activity-1">
+                <button className="btn" onClick={handleNewUser}>
                   New User
                 </button>
-                <div className="usersash">
-                  <label
+                <div className="search-box">
+                <CiSearch className="icon" onClick={handleSearch} />
+                <input type="text" placeholder="Search ..." onChange={(e) => setSearchQuery(e.target.value)}  />
+                  {/* <label
                     htmlFor="searchInput"
                     className="users1"
                     onClick={handleSearch}
@@ -98,26 +103,24 @@ export default function User() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="users3"
                     />
-                  </label>
+                  </label> */}
                 </div>
               </div>
-              <div className="user3b">
-                <p className="user3bpage">1-2 of {filteredUsers.length}</p>
-                <div className="user3bnav">
-                  <FaCaretLeft className="lr" />
-                  <div className="stroke"></div>
-                  <FaCaretRight className="lr" />
+              <div className="header-activity-2">
+                <p className="pagination">1-2 of {filteredUsers.length}</p>
+                <div className="pagination-btn">
+                <button><BsCaretLeftFill className="icon" /></button>
+                <button><BsCaretRightFill className="icon" /></button>
                 </div>
-                <div className="user3bview">
-                  <IoGrid
-                    className={`grid ${viewMode === "grid" ? "active" : ""}`}
+                <div className="view-toggle">
+                 <button><IoGrid
+                    className={`icon ${viewMode === "grid" ? "active" : ""}`}
                     onClick={() => toggleViewMode("grid")}
-                  />
-                  <div className="stroke"></div>
-                  <FaBars
-                    className={`grid ${viewMode === "list" ? "active" : ""}`}
+                  /> </button>
+                 <button> <FaBars
+                    className={`icon ${viewMode === "list" ? "active" : ""}`}
                     onClick={() => toggleViewMode("list")}
-                  />
+                  /></button>
                 </div>
               </div>
             </div>

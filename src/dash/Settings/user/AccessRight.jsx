@@ -6,7 +6,6 @@ import SessionsTabContent from "./accessRightContent/SessionsTabContent";
 import AllowedIpTabContent from "./accessRightContent/AllowedIpTabContent";
 import PreferencesTabContent from "./accessRightContent/PreferencesTabContent";
 import SalesPreferenceTabContent from "./accessRightContent/SalesPreferenceTabContent";
-import OutputPage from "./OutPut"; // Ensure this path is correct
 
 // Tabs components
 export const TabButtons = ({ tabsAndContent, activeTab, setActiveTab }) => {
@@ -15,7 +14,7 @@ export const TabButtons = ({ tabsAndContent, activeTab, setActiveTab }) => {
       {tabsAndContent.map((item, index) => (
         <button
           key={item.name}
-          className={`${activeTab === index ? "active" : ""} access-right-tab`}
+          className={`${activeTab === index && "active"} access-right-tab`}
           onClick={(e) => {
             e.preventDefault();
             setActiveTab(index);
@@ -28,49 +27,11 @@ export const TabButtons = ({ tabsAndContent, activeTab, setActiveTab }) => {
   );
 };
 
-const TabContent = ({
-  tabsAndContent,
-  activeTab,
-  formData,
-  setFormData,
-  isEditing,
-}) => {
-  return (
-    <section>
-      {React.cloneElement(tabsAndContent[activeTab].content, {
-        formData,
-        setFormData,
-        isEditing,
-      })}
-    </section>
-  );
+const TabContent = ({ tabsAndContent, activeTab }) => {
+  return <section>{tabsAndContent[activeTab].content}</section>;
 };
 
-const AccessRight = ({ onClose }) => {
-  const [formData, setFormData] = useState({
-    imageFile: resetAvatar,
-    name: "",
-    email: "",
-    accessRights: {
-      HR: "",
-      Sales: "",
-      ProjectCosting: "",
-      Project: "",
-    },
-    purchaseRights: {
-      Right1: false,
-      Right2: false,
-      // Add more purchase rights as needed
-    },
-    sessions: [],
-    allowedIPs: [],
-    preferences: {},
-    salesPreferences: {},
-  });
-
-  const [showOutput, setShowOutput] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
-
+const AccessRight = ({ handleSubmit, onClose }) => {
   const tabsAndContent = [
     {
       name: "Access rights",
@@ -94,62 +55,38 @@ const AccessRight = ({ onClose }) => {
     },
   ];
 
+  const [imageFile, setImageFile] = useState(null);
   const handleChange = (e) => {
-    const { name, value, files, type, checked } = e.target;
-    if (files) {
-      setFormData({ ...formData, imageFile: URL.createObjectURL(files[0]) });
-    } else if (type === "checkbox") {
-      setFormData({
-        ...formData,
-        purchaseRights: { ...formData.purchaseRights, [name]: checked },
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    console.log(e.target.files);
+    setImageFile(URL.createObjectURL(e.target.files[0]));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setShowOutput(true);
-  };
-
-  const handleBack = () => {
-    setShowOutput(false);
-  };
-
-  if (showOutput) {
-    return (
-      <OutputPage
-        formData={formData}
-        onBack={handleBack}
-        onSave={setFormData}
-      />
-    );
-  }
-
+  const [activeTab, setActiveTab] = useState(0);
   return (
-    <form onSubmit={handleSubmit} className="newuserform">
-      <div className="newuser3a">
-        <p style={{ fontSize: "20px", fontWeight: "500" }}>Access Rights</p>
-        <div className="newuser3e">
-          <button type="button" className="newuser3but" onClick={onClose}>
+    <div className="registration-form">
+       <form className="registration-info" onSubmit={handleSubmit}>
+       <div className="registration-header-info">
+        <h2 style={{ fontSize: "20px", fontWeight: "500px" }}>Access Rights</h2>
+        <div className="reg-action-btn">
+          <button type="button" className="cancel-btn" onClick={onClose}>
             Cancel
           </button>
           <button
             type="submit"
-            className="newuser3btn"
             style={{ display: "flex", justifyContent: "center" }}
           >
             Save
           </button>
         </div>
       </div>
-      <section className="user-detail">
+
+      <section className="registration-basic-info">
         <figure className="image-figure">
           <label htmlFor="image-file">
             <img
-              src={formData.imageFile}
+              src={imageFile}
               alt="reset avatar"
+              id=""
               className="reset-avatar"
             />
           </label>
@@ -166,41 +103,30 @@ const AccessRight = ({ onClose }) => {
             <label htmlFor="name" className="name-label">
               Name
             </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="name-input"
-            />
+            <input type="text" className="name-input" />
           </div>
-          <div className="email-input-wrapper">
+          <div className="email-input-wrapper" style={{marginTop: "10px"}}>
             <label htmlFor="email" className="email-label">
               Email
             </label>
             <input
               type="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              id="email"
               className="email-input"
             />
           </div>
         </div>
       </section>
+
       <TabButtons
         tabsAndContent={tabsAndContent}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
-      <TabContent
-        tabsAndContent={tabsAndContent}
-        activeTab={activeTab}
-        formData={formData}
-        setFormData={setFormData}
-        isEditing={false}
-      />
-    </form>
+      <TabContent tabsAndContent={tabsAndContent} activeTab={activeTab} />
+       </form>
+    </div>
   );
 };
 
