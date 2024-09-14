@@ -1,61 +1,94 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaHome, FaMoneyBillAlt, FaBoxes, FaUserCircle, FaUsersCog, FaSignOutAlt } from 'react-icons/fa';
-import "./sidebar.css"
+import React from "react";
+import { Link } from "react-router-dom";
+import "./sidebar.css";
+import arrowLeft from "../image/sidebar/arrow-left.svg";
+import home from "../image/sidebar/home.svg";
+import accounts from "../image/sidebar/accounts.svg";
+import purchase from "../image/sidebar/purchase.svg";
+import sales from "../image/sidebar/sales.svg";
+import inventory from "../image/sidebar/inventory.svg";
+import hr from "../image/sidebar/hr.svg";
+import logistics from "../image/sidebar/logistics.svg";
+import contacts from "../image/sidebar/contacts.svg";
+import apps from "../image/sidebar/apps.svg";
+import settings from "../image/sidebar/settings.svg";
 
-const Sidebar = () => {
+const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <img src="logo.png" alt="Logo" className="sidebar-logo" />
-        <h3 className="sidebar-title">fastra suite</h3>
-      </div>
+    <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
       <div className="sidebar-menu">
-        <Link to="/home" className="sidebar-item">
-          <FaHome className="sidebar-icon" />
+        <span className="sidebar-item" onClick={handleCloseSidebar}>
+          <img src={arrowLeft} alt="" className="sidebar-icon" />
+        </span>
+        <Link to="/home" className="sidebar-item" onClick={handleCloseSidebar}>
+          <img src={home} alt="" className="sidebar-icon" />
           <span>Home</span>
         </Link>
-        <Link to="/accounts" className="sidebar-item">
-          <FaMoneyBillAlt className="sidebar-icon" />
+        <Link
+          to="/accounts"
+          className="sidebar-item"
+          onClick={handleCloseSidebar}
+        >
+          <img src={accounts} alt="" className="sidebar-icon" />
           <span>Accounts</span>
         </Link>
-        <Link to="/purchase" className="sidebar-item">
-          <FaBoxes className="sidebar-icon" />
+        <Link
+          to="/purchase"
+          className="sidebar-item"
+          onClick={handleCloseSidebar}
+        >
+          <img src={purchase} alt="" className="sidebar-icon" />
           <span>Purchase</span>
         </Link>
-        <Link to="/sales" className="sidebar-item">
-          <FaMoneyBillAlt className="sidebar-icon" />
+        <Link to="/sales" className="sidebar-item" onClick={handleCloseSidebar}>
+          <img src={sales} alt="" className="sidebar-icon" />
           <span>Sales</span>
         </Link>
-        <Link to="/inventory" className="sidebar-item">
-          <FaBoxes className="sidebar-icon" />
+        <Link
+          to="/inventory"
+          className="sidebar-item"
+          onClick={handleCloseSidebar}
+        >
+          <img src={inventory} alt="" className="sidebar-icon" />
           <span>Inventory</span>
         </Link>
-        <Link to="/hr" className="sidebar-item">
-          <FaUserCircle className="sidebar-icon" />
+        <Link to="/hr" className="sidebar-item" onClick={handleCloseSidebar}>
+          <img src={hr} alt="hr" className="sidebar-icon" />
           <span>HR</span>
         </Link>
-        <Link to="/logistics" className="sidebar-item">
-          <FaBoxes className="sidebar-icon" />
+        <Link
+          to="/logistics"
+          className="sidebar-item"
+          onClick={handleCloseSidebar}
+        >
+          <img src={logistics} alt="logistics" className="sidebar-icon" />
           <span>Logistics</span>
         </Link>
-        <Link to="/contacts" className="sidebar-item">
-          <FaUsersCog className="sidebar-icon" />
+        <Link
+          to="/contacts"
+          className="sidebar-item"
+          onClick={handleCloseSidebar}
+        >
+          <img src={contacts} alt="contacts" className="sidebar-icon" />
           <span>Contacts</span>
         </Link>
-        <Link to="/apps" className="sidebar-item">
-          <FaBoxes className="sidebar-icon" />
+        <hr
+          style={{
+            border: "solid 2px #0d3c8c",
+            marginBottom: "8px",
+          }}
+        />
+        <Link to="/apps" className="sidebar-item" onClick={handleCloseSidebar}>
+          <img src={apps} alt="apps" className="apps" />
           <span>Apps</span>
         </Link>
-        <Link to="/settings" className="sidebar-item">
-          <FaUsersCog className="sidebar-icon" />
+        <Link
+          to="/settings"
+          className="sidebar-item"
+          onClick={handleCloseSidebar}
+        >
+          <img src={settings} alt="setting" />
           <span>Settings</span>
-        </Link>
-      </div>
-      <div className="sidebar-footer">
-        <Link to="/logout" className="sidebar-item">
-          <FaSignOutAlt className="sidebar-icon" />
-          <span>Logout</span>
         </Link>
       </div>
     </div>

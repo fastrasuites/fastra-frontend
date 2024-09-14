@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FaBars, FaTimes, FaBell } from "react-icons/fa";
+import { useState } from "react";
+import { FaBars, FaBell } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import admin from "../../image/admin.svg";
 import Sidebar from "../../components/Sidebar";
@@ -15,19 +15,26 @@ export default function Sethead() {
     setShowMenu(false);
   };
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+  const handleOpenSidebar = () => {
+    console.log("clicked to open sidebar from settings header");
+    setSidebarOpen(true);
+  };
+
+  const handleCloseSidebar = () => {
+    console.log("clicked to close sidebar");
+    setSidebarOpen(false);
   };
 
   return (
     <div className="sethead">
       <ul className="setwrap">
-        <li className="sethom" onClick={toggleSidebar}>
-          {sidebarOpen ? (
-            <FaTimes className="setnav" />
-          ) : (
-            <FaBars className="setnav" />
-          )}
+        <li className="sethom">
+          <FaBars
+            className="setnav"
+            onClick={handleOpenSidebar}
+            style={{ cursor: "pointer" }}
+          />
+
           <p style={{ fontWeight: "700" }}>Settings</p>
         </li>
         <li className="setlst">
@@ -77,7 +84,10 @@ export default function Sethead() {
           </div>
         </li> */}
       </ul>
-      {sidebarOpen && <Sidebar />}
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        handleCloseSidebar={handleCloseSidebar}
+      />
     </div>
   );
 }

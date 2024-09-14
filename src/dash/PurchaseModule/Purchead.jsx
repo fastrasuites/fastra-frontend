@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaBars, FaTimes, FaBell } from "react-icons/fa";
+import { FaBars, FaBell } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
 import "./Purchead.css";
 import admin from "../../image/admin.svg";
@@ -9,18 +9,28 @@ import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 
 export default function Purchead() {
   const [notifications, setNotifications] = useState(0);
-  const [showMenu, setShowMenu] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // const [showMenu, setShowMenu] = useState(false);
   const [showVendorDropdown, setShowVendorDropdown] = useState(false);
   const [showProductDropdown, setShowProductDropdown] = useState(false);
 
-  const toggleMenu = () => {
-    setShowMenu(!showMenu);
-  };
+  // const toggleMenu = () => {
+  //   setShowMenu(!showMenu);
+  // };
 
   const handleLinkClick = () => {
-    setShowMenu(false);
+    setSidebarOpen(false);
     setShowVendorDropdown(false);
     setShowProductDropdown(false);
+  };
+  const handleOpenSidebar = () => {
+    console.log("clicked to open sidebar from settings header");
+    setSidebarOpen(true);
+  };
+
+  const handleCloseSidebar = () => {
+    console.log("clicked to close sidebar");
+    setSidebarOpen(false);
   };
 
   const toggleVendorDropdown = (e) => {
@@ -38,12 +48,13 @@ export default function Purchead() {
   return (
     <div className="purhead">
       <ul className="purwrap">
-        <li className="purhom" onClick={toggleMenu}>
-          {showMenu ? (
-            <FaTimes className="purnav" />
-          ) : (
-            <FaBars className="purnav" />
-          )}
+        <li className="purhom">
+          <FaBars
+            className="purnav"
+            onClick={handleOpenSidebar}
+            style={{ cursor: "pointer" }}
+          />
+
           <p>Purchase</p>
         </li>
         <li className="purlst">
@@ -160,7 +171,10 @@ export default function Purchead() {
           </div>
         </li> */}
       </ul>
-      {showMenu && <Sidebar />}
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        handleCloseSidebar={handleCloseSidebar}
+      />
     </div>
   );
 }
