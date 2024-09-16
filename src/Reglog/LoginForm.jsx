@@ -48,60 +48,61 @@ export default function LoginForm() {
 
         <div className="group-container">
           <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              className="form-input"
-              placeholder="Enter your Email here"
-              value={email}
-              onChange={handleEmailChange}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-            <div className="password-input-container">
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">
+                Email
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                id="password"
+                type="email"
+                id="email"
                 className="form-input"
-                placeholder="Enter your Password"
-                value={password}
-                onChange={handlePasswordChange}
+                placeholder="Enter your Email here"
+                value={email}
+                onChange={handleEmailChange}
                 required
               />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={togglePasswordVisibility}
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
             </div>
+
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              <div className="password-input-container">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className="form-input"
+                  placeholder="Enter your Password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+            </div>
+
+            {error && <p className="error-message">{error}</p>}
+
+            <button type="submit" className="login-button">
+              Login
+            </button>
+          </form>
+
+          <div className="login-links">
+            <Link to="/register" className="register-link">
+              Don't have an account
+            </Link>
+            <Link to="/fogpas" className="forgot-password-link">
+              Forget Password
+            </Link>
           </div>
-
-          {error && <p className="error-message">{error}</p>}
-
-          <button type="submit" className="login-button">
-            Login
-          </button>
-        </form>
-
-        <div className="login-links">
-          <Link to="/register" className="register-link">
-            Don't have an account
-          </Link>
-          <Link to="/forgot-password" className="forgot-password-link">
-            Forget Password
-          </Link>
-        </div></div>
+        </div>
       </div>
     </div>
   );
