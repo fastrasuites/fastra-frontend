@@ -1,120 +1,195 @@
-import styled from "styled-components";
-import Navbar from "../components/nav/Navbar";
-import Footer from "../components/nav/Footer";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Navbar from "../components/nav/Navbar";
+import styled from "styled-components";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./ForgetPassword.css";
 
 export default function ForgetPassword() {
-  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [step, setStep] = useState(0);
+  const [code, setCode] = useState(["", "", "", ""]);
+  const [timer, setTimer] = useState(30); // 30 seconds countdown
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleEmailOrUsernameChange = (e) => {
-    setEmailOrUsername(e.target.value);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Start countdown timer
+  useEffect(() => {
+    if (timer > 0) {
+      const countdown = setInterval(() => setTimer(timer - 1), 1000);
+      return () => clearInterval(countdown);
+    }
+  }, [timer]);
+  // Send email to backend
+  const handleEmailSubmit = async () => {
     try {
       const response = await axios.post(
-        "https://fastrav1-production.up.railway.app/request-password-reset/",
-        {
-          email: emailOrUsername,
-        }
+        "https://fastrav1-production.up.railway.app/send-reset-code",
+        { email }
       );
-      // Handle success response
-      setSuccessMessage("Password reset email has been sent.");
-      setError("");
+      setStep(1); // Move to next step (Enter code)
+      toast.success("Verification code sent!");
     } catch (error) {
-      setError("Error requesting password reset. Email may not be verified.");
-      console.error("Error requesting password reset:", error);
+      setError("Failed to send code. Please try again.");
+    }
+  };
+
+  // Verify the 4-digit code
+  const handleVerifyCode = async () => {
+    try {
+      const codeString = code.join(""); // Combine code array to string
+      const response = await axios.post(
+        "https://fastrav1-production.up.railway.app/verify-code",
+        { email, code: codeString }
+      );
+      setStep(2); // Move to next step (Reset password)
+    } catch (error) {
+      setError("Invalid code. Please try again.");
+    }
+  };
+
+  // Resend the code
+  const handleResendCode = async () => {
+    setTimer(30); // Reset the timer
+    await handleEmailSubmit();
+  };
+
+  // Submit the new password
+  const handlePasswordReset = async () => {
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    try {
+      const response = await axios.post(
+        "https://fastrav1-production.up.railway.app/reset-password",
+        { email, newPassword }
+      );
+      toast.success("Password reset successfully!");
+      setStep(3); // Move to success message
+    } catch (error) {
+      setError("Failed to reset password.");
     }
   };
 
   return (
-    <Fp id="fogpas">
-      <Fpn>
+    <FogPasContainer>
+      <FogPasNavBar>
         <Navbar />
-      </Fpn>
-      <Fpg>
-        <div className="fpform">
-          <label>Email or Username</label>
-          <input
-            type="text"
-            placeholder="Enter your Email or Username"
-            className="fpinput"
-            value={emailOrUsername}
-            onChange={handleEmailOrUsernameChange}
-          />
-          <button className="fpbut" onClick={handleSubmit}>
-            Reset Password
-          </button>
-          {error && <ErrorText>{error}</ErrorText>}
-          {successMessage && <SuccessText>{successMessage}</SuccessText>}
+      </FogPasNavBar>
+      <div className="forget-password-container">
+        <div className="forget-password-form-wrapper">
+          {step === 0 && (
+            <div className="forget-password-form">
+              <h2 className="form-title">Forgot Password</h2>
+              <p className="form-subtitle">
+                Enter your email to receive a verification code.
+              </p>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <button className="submit-button" onClick={handleEmailSubmit}>
+                Continue
+              </button>
+              {error && <p className="error-message">{error}</p>}
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="forget-password-form">
+              <h2 className="form-title">Enter Verification Code</h2>
+              <p className="form-subtitle">
+                We've sent a code to your email. It expires in {timer} seconds.
+              </p>
+              <div className="f-group">
+                {code.map((digit, index) => (
+                  <input
+                    key={index}
+                    className="form-input"
+                    type="text"
+                    maxLength="1"
+                    value={digit}
+                    onChange={(e) => {
+                      const newCode = [...code];
+                      newCode[index] = e.target.value;
+                      setCode(newCode);
+                    }}
+                  />
+                ))}
+              </div>
+              <button className="submit-button" onClick={handleVerifyCode}>
+                Verify
+              </button>
+              {timer === 0 && (
+                <p className="login-link">
+                  Didn't receive a code?{" "}
+                  <button onClick={handleResendCode} className="resend-link">
+                    Resend another code
+                  </button>
+                </p>
+              )}
+              {error && <p className="error-message">{error}</p>}
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="forget-password-form">
+              <h2 className="form-title">Reset Your Password</h2>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <input
+                type="password"
+                className="form-input"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button className="submit-button" onClick={handlePasswordReset}>
+                Reset Password
+              </button>
+              {error && <p className="error-message">{error}</p>}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="confirmation-container">
+              <h2 className="confirmation-title">
+                Password Reset Successfully!
+              </h2>
+              <p className="confirmation-message">
+                You can now log in with your new password.
+              </p>
+              <button
+                className="confirmation-button"
+                onClick={() => (window.location.href = "/login")}
+              >
+                Continue to Login
+              </button>
+            </div>
+          )}
         </div>
-      </Fpg>
-      <Fpf>
-        <Footer />
-      </Fpf>
-    </Fp>
+      </div>
+    </FogPasContainer>
   );
 }
 
-const Fp = styled.div`
+const FogPasContainer = styled.div`
   width: 100%;
   height: 100vh;
 `;
-const Fpn = styled.div`
+const FogPasNavBar = styled.div`
   width: 100%;
   height: 10%;
-`;
-const Fpg = styled.div`
-  width: 100%;
-  height: 40%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #fff;
-
-  .fpform {
-    width: 25%;
-    height: 75%;
-    position: relative;
-    border-radius: 0.5rem;
-    box-shadow: 16px 16px 64px 0px #1a1a1a29;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-  }
-  .fpinput {
-    width: 80%;
-    padding: 8px;
-    border-radius: 0.5rem;
-    border: 1px solid #aaaaaa;
-  }
-  .fpbut {
-    background: #3b7ced;
-    color: #fff;
-    padding: 12px;
-    // width: 10%;
-    border: none;
-    border-radius: 0.5rem;
-    text-decoration: none;
-  }
-`;
-const Fpf = styled.div`
-  width: 100%;
-  height: 50%;
-`;
-
-const ErrorText = styled.p`
-  color: red;
-  margin-top: 10px;
-`;
-
-const SuccessText = styled.p`
-  color: green;
-  margin-top: 10px;
 `;

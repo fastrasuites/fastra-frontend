@@ -85,7 +85,7 @@ const CompanyDetails = ({ next }) => {
       validate={validateForm}
     >
       {({ errors, touched }) => (
-        <Form className="registration-form">
+        <Form className="reg-form">
           <div className="f-group">
             <div className="">
               <h2 className="form-title">Register</h2>
@@ -174,7 +174,7 @@ const PasswordSetup = ({ next, apiError }) => {
       validate={validateForm}
     >
       {({ errors, touched, values }) => (
-        <Form className="registration-form">
+        <Form className="reg-form">
           <h2 className="form-title">Password</h2>
           <p className="form-subtitle">Create a password for your account</p>
 
