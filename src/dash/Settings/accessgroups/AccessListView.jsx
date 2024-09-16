@@ -10,12 +10,12 @@ import {
   Checkbox,
 } from "@mui/material";
 
-const UserListView = ({ users }) => {
+const AccessListView = ({ AccessGroups }) => {
   const [selected, setSelected] = React.useState([]);
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      const newSelected = users.map((company) => company.id);
+      const newSelected = AccessGroups.map((company) => company.id);
       setSelected(newSelected);
       return;
     }
@@ -42,12 +42,12 @@ const UserListView = ({ users }) => {
     setSelected(newSelected);
   };
 
-  if (users.length === 0) {
-    return <p style={{margin: "10px"}}>No companies available. Please add some companies.</p>;
+  if (AccessGroups.length === 0) {
+    return <p style={{margin: "10px"}}>No accessgroups set. Please set some accessgroups.</p>;
   }
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
+    <TableContainer component={Paper} sx={{ boxShadow: "none", }}>
       <Table
         sx={{
           "&.MuiTable-root": {
@@ -70,23 +70,24 @@ const UserListView = ({ users }) => {
               <Checkbox
                 color="primary"
                 indeterminate={
-                  selected.length > 0 && selected.length < users.length
+                  selected.length > 0 && selected.length < AccessGroups.length
                 }
                 checked={
-                  users.length > 0 && selected.length === users.length
+                  AccessGroups.length > 0 && selected.length === AccessGroups.length
                 }
                 onChange={handleSelectAll}
               />
             </TableCell>
             <TableCell>Company Name</TableCell>
             <TableCell>Role</TableCell>
+            <TableCell>Application</TableCell>
             <TableCell>Email Address</TableCell>
             <TableCell>Phone Number</TableCell>
-            <TableCell>Last login date</TableCell>
+            <TableCell>Date of Creation</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {users.map((user, index) => (
+          {AccessGroups.map((user, index) => (
             <TableRow
               key={user.id}
               sx={{
@@ -110,8 +111,8 @@ const UserListView = ({ users }) => {
                 }}
               >
                 <img
-                  src={user.image || "default-image-url"}
-                  alt={user.name}
+                  src={user.logo || "default-logo-url"}  // Assuming logo is available
+                  alt={user.companyName}
                   style={{
                     width: "30px",
                     height: "30px",
@@ -119,26 +120,29 @@ const UserListView = ({ users }) => {
                     borderRadius: "50%",
                   }}
                 />
-                {user.name || "N/A"}
+                {user.companyName || "N/A"}
               </TableCell>
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
                 {user.role || "N/A"}
               </TableCell>
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {user.mail || "N/A"}
+                {user.application || "N/A"}
               </TableCell>
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {user.number || "N/A"}
+                {user.email || "N/A"}
               </TableCell>
-              {/* <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {company.registrationNumber || "N/A"}
-              </TableCell> */}
+              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+                {user.phoneNumber || "N/A"}
+              </TableCell>
+              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+                {new Date(user.dateOfCreation).toLocaleDateString() || "N/A"}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </TableContainer>
+    </TableContainer> 
   );
 };
 
-export default UserListView;
+export default AccessListView;

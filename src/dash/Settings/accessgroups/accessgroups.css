@@ -1,0 +1,141 @@
+.icon-upload {
+    position: relative;
+    width: 60px;
+    height: 60px; 
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; 
+    background-color: #e2e6e9;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  
+  .icon-upload img {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    border-radius: 5px; 
+  }
+  
+  .image-preview {
+    width: 100%; 
+    height: 100%; 
+    border-radius: 5px; 
+    object-fit: cover; 
+  }
+  
+  .icon-upload-text {
+    color: #a0acb5;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px; 
+  }
+  .icon-upload-text span {
+    font-size: 10px; font-weight: 500;
+  }
+
+  .stamp {
+    font-size: 45px;
+    color: #494a4b;
+  }
+  @media (max-width: 768px) {
+    .stamp {
+        font-size: 40px;
+      }
+      .form-group, 
+      input {
+        width: 100% !important;
+      }
+  }
+ .form-header-activity {
+  margin-bottom: -33px;
+  margin-left: -12px;
+ }
+  .header-btn {
+    padding: 10px 20px;
+    border: 2px solid #fff;
+    background-color: #fff;
+    color: rgb(158, 150, 150);
+    font-size: 17.5px;
+    box-shadow: rgba(9, 30, 66, 0.25) 0px 1px 1px, rgba(9, 30, 66, 0.13) 0px 0px 1px 1px;
+    cursor: pointer;
+  }
+  .active {
+    border: 2px solid #4393e4;
+    color: #4393e4;
+    margin-left: -20px;
+  }
+  .access-table {
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 7%;
+  }
+  @media (max-width: 768px) {
+    .access-table {
+        width: 100% !important;
+        margin-bottom: 12%;
+      }
+  }
+  .heading {
+    color: #4393e4;
+    font-weight: 500;
+    margin-top: 20px;
+  }
+  .access-table table {
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .access-table th, .access-table td {
+    padding: 12px;
+    text-align: center;
+  }
+  
+  .access-table thead th {
+    color: #4393e4;
+    font-weight: 500;
+  }
+  
+  .access-table tbody tr td:first-child {
+    text-align: left;
+    font-weight: 500;
+  }
+  
+  .access-table input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+  }
+  
+  .access-table button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .access-table button.primary {
+    background-color: #4c84ff;
+    color: white;
+    border: none;
+  }
+  
+  .access-table button.secondary {
+    background-color: #f6f8fa;
+    color: #333;
+    border: 1px solid #ccc;
+  }
+  
+  .access-table button.primary:hover {
+    background-color: #3a6fdf;
+  }
+  
+  .access-table button.secondary:hover {
+    background-color: #e9ecef;
+  }
+  
+  
+  

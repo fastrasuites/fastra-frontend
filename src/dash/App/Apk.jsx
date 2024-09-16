@@ -3,8 +3,8 @@ import DashCard from "../DashCard";
 
 const Apk = () => {
   return (
-    <div className="dashbody">
-      <div className="bocard">
+    <div className="dashboard">
+      <div className="admin-card">
         <DashCard />
       </div>
     </div>

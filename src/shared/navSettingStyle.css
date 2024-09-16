@@ -3,7 +3,6 @@
     height: 100%;
     overflow: auto;
   }
-  
   .content-body {
     width: 100%;
     height: 90%;
@@ -27,7 +26,7 @@
     position: absolute;
     top: 5%;
   }
-  
+ 
   .content-header {
     padding: 5px;
     display: flex;
@@ -36,9 +35,21 @@
     margin-top: 2.5rem;
     background-color: transparent;
     margin-bottom: 2rem;
-    margin-right: 3rem;
+    margin-right: 6rem;
+   
   }
-  
+  @media screen and (max-width: 1024px) {
+    .content-header {
+      margin-top: 1.5rem !important;
+      margin-right: 0 !important;
+    }
+  }
+  @media screen and (max-width: 768px) {
+    .content-header {
+      margin-top: 0 !important;
+      margin-right: 0 !important;
+    }
+  }
   .header-activity-1 {
     display: flex;
     align-items: left;
@@ -149,57 +160,70 @@
   }
   
   .pagination-btn {
-    border: 1.2px solid #e2e6e9;
+    border: 1.2px solid #92969a;
     display: flex;
     align-items: center;
-    background-color: white;
+    background-color: #cccccc;
     border-radius: 4px;
     margin: 5px; /* Added margin for spacing */
   }
   
   .pagination-btn button {
     border: 1px solid #ccc;
-    padding: 5px 12px;
+    padding: 5px 20px;
     outline: none;
   }
   
   .pagination-btn button .icon {
     font-size: 25px !important;
     color: #92969a;
+    
   }
-  
   .view-toggle {
-    border: 1px solid #e2e6e9;
+    border: none;
     display: flex;
-    align-items: center;
-    background-color: transparent;
-    border-radius: 4px;
-    margin: 5px; /* Added margin for spacing */
+    align-items: center; 
+    justify-content: space-between; 
+    background-color: transparent;    border-radius: 4px;
+    margin: 10px; 
+    padding: 5px; 
   }
   
   .view-toggle button {
-    border: 1px solid #ccc;
-    padding: 8px 12px;
+    border: 1.8px solid #92969a;
+    padding: 8px 20px;
+    background-color: #fff;
     outline: none;
+    display: flex; 
+    align-items: center; 
   }
   
   .view-toggle button .icon {
-    font-size: 20px !important;
-    color: #357fe7 !important;
+    font-size: 20px;
+    color: #357fe7;
+    margin-left: 5px; /* Add a margin to create space between icon and text */
   }
   
   .view-toggle button .icon:hover {
-    color: #0056b3 !important;
+    color: #0056b3;
   }
   
   .view-toggle button .icon:active {
-    color: #0056b3 !important;
-    transition: color 0.3s ease-in-out;
+    color: #0056b3;
+    transition: color 0.2s ease-in-out;
   }
   
   .p-text {
     margin-top: 20px;
-    font-size: 14px; /* Responsive text size */
+    font-size: 14px; /* Adjust font size */
+  }
+  
+  /* Responsive adjustments */
+  @media screen and (max-width: 1024px) {
+    .btn {
+      padding: 10px 30px;
+      font-size: 16px; /* Adjust the font size */
+    }
   }
   
   /* Mobile adjustments */
@@ -221,7 +245,7 @@
     .pagination-btn,
     .view-toggle {
       width: 100%;
-      justify-content: center;
+      justify-content: center; /* Center elements */
     }
   }
   

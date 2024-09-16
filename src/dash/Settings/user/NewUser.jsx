@@ -434,7 +434,7 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                 </div>
               </div>
               <br /><hr /><br /><br /><br />
-              <h2 style={{color: "#4285f4", marginBottom: "30px"}}>Signature</h2>
+              <h2 style={{color: "#4285f4", marginBottom: "30px", fontWeight: "500"}}>Signature</h2>
               <Signature />
               <br />
                     {/* shows only on mobile devices */}
