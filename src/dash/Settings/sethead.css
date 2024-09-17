@@ -59,7 +59,7 @@
 }
 @media (max-width: 768px) {
   .settings-header__title {
-    margin: 10px 22px;
+    margin: 10px 15px;
     border: 1px solid #3b7ced;
     border-radius: 5px;
     padding: 10px 20px;
@@ -95,12 +95,13 @@
     grid-template-columns: 1fr;
     gap: 20px;
     top: 85%;
-    left: 15%;
+    left: 12%;
     right: 0;
     background-color: #fff;
     color: #3b7ced;
-    padding: 20px;
-    width: 50%;
+    padding: 8px 5px;
+    overflow-x: hidden;
+    box-sizing: border-box;
     height: auto;
     border: none;
     border-radius: 5px;
