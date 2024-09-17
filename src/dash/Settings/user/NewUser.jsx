@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 // import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
-import uploadIcon from "../../../image/uploadIcon.svg"; 
+import uploadIcon from "../../../image/uploadIcon.svg";
 import "../../../shared/signature.css";
-import SignatureCanvas from 'react-signature-canvas';
+import SignatureCanvas from "react-signature-canvas";
 
 import AccessRight from "./AccessRight";
 // import "./newuser.css";
@@ -117,19 +117,16 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
     }
   };
 
-  const history = useHistory();
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted", formState); // Debugging statement
     handleSaveAndSubmit(formState);
-    onClose();
-
+    // if coming through dashboard popup, open AccessRight component and its form.
     if (fromStepModal) {
-      // detect if true a user came from dashboard popup, then navigate back for the next step
-      history.push({ pathname: "/dashboard", state: { step: 3 } });
+      setShowAccessRight(true);
     } else {
-      console.log("Submit form and don't navigate");
-      // Stay here or do something else
+      // close after form submit
+      onClose();
     }
   };
 
@@ -142,7 +139,9 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
 
     const saveSignature = () => {
       if (!sigCanvas.current.isEmpty()) {
-        const dataURL = sigCanvas.current.getTrimmedCanvas().toDataURL("image/png");
+        const dataURL = sigCanvas.current
+          .getTrimmedCanvas()
+          .toDataURL("image/png");
         console.log("Signature saved", dataURL);
         // Here you can save the image dataURL to a file or use it in your backend.
       }
@@ -151,25 +150,29 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
     return (
       <div className="signature-block">
         <div className="signature">
-        <div>
-        <SignatureCanvas 
-          ref={sigCanvas}
-          canvasProps={{
-            width: "400",
-            height: "150",
-            className: "signature-canvas",
-          }}
-        />
-        <div>
-          <button className="signatory-btn" onClick={clearSignature}>Clear</button>
-          <button className="signatory-btn" onClick={saveSignature}>Save Signature</button>
+          <div>
+            <SignatureCanvas
+              ref={sigCanvas}
+              canvasProps={{
+                width: "400",
+                height: "150",
+                className: "signature-canvas",
+              }}
+            />
+            <div>
+              <button className="signatory-btn" onClick={clearSignature}>
+                Clear
+              </button>
+              <button className="signatory-btn" onClick={saveSignature}>
+                Save Signature
+              </button>
+            </div>
+          </div>
+          <div>
+            <input type="file" accept="image/*" />
+            <button className="signatory-btn">Upload Signature</button>
+          </div>
         </div>
-        </div>
-        <div>
-          <input type="file" accept="image/*" />
-          <button className="signatory-btn">Upload Signature</button>
-        </div>
-      </div>
       </div>
     );
   };
@@ -211,7 +214,8 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
       id="newuser"
       className={`registration-page ${showForm ? "fade-in" : "fade-out"}`}
     >
-      -<div className="form-header" style={{ marginTop: "3rem" }}>
+      -
+      <div className="form-header" style={{ marginTop: "3rem" }}>
         <div className="form-header-details">
           <div className="form-header-activity">
             {!showAccessRight && <h2 className="header-text"> New User</h2>}
@@ -228,19 +232,28 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
           >
             Basic Setting
           </button>
-          <button className="access-btn" onClick={() => setShowAccessRight(true)}>
+          <button
+            className="access-btn"
+            onClick={() => setShowAccessRight(true)}
+          >
             Access Right
           </button>
         </div>
         {showAccessRight ? (
           <div className="newuser3">
-            <AccessRight handleSubmit={handleSubmit} />
+            <AccessRight
+              handleSubmit={handleSubmit}
+              fromStepModal={fromStepModal}
+              onClose={onClose}
+            />
           </div>
         ) : (
           <div className="registration-form">
             <form className="registration-info" onSubmit={handleSubmit}>
               <div className="registration-header-info">
-                <h2 style={{ fontSize: "20px", marginTop: "3%" }}>Basic Information</h2>
+                <h2 style={{ fontSize: "20px", marginTop: "3%" }}>
+                  Basic Information
+                </h2>
                 <div className="reg-action-btn">
                   <button
                     type="button"
@@ -410,7 +423,10 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                   />
                 </div>
               </div>
-              <h3 style={{ fontWeight: "490", color: "#000" }}>Notifications</h3><br />
+              <h3 style={{ fontWeight: "490", color: "#000" }}>
+                Notifications
+              </h3>
+              <br />
               <div className="registration-contact-info">
                 <div className="checkbox-group" style={{ lineHeight: "2rem" }}>
                   <div className="checkbox">
@@ -433,26 +449,34 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                   </div>
                 </div>
               </div>
-              <br /><hr /><br /><br /><br />
-              <h2 style={{color: "#4285f4", marginBottom: "30px", fontWeight: "500"}}>Signature</h2>
+              <br />
+              <hr />
+              <br />
+              <br />
+              <br />
+              <h2
+                style={{
+                  color: "#4285f4",
+                  marginBottom: "30px",
+                  fontWeight: "500",
+                }}
+              >
+                Signature
+              </h2>
               <Signature />
               <br />
-                    {/* shows only on mobile devices */}
+              {/* shows only on mobile devices */}
               <div className="reg-action-btn" id="reg-action-btn">
-                  <button
-                    type="button"
-                    className="cancel-btn"
-                    onClick={onClose}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    style={{ display: "flex", justifyContent: "center" }}
-                  >
-                    Save
-                  </button>
-                </div>
+                <button type="button" className="cancel-btn" onClick={onClose}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ display: "flex", justifyContent: "center" }}
+                >
+                  Save
+                </button>
+              </div>
             </form>
           </div>
         )}

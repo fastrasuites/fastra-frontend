@@ -22,13 +22,13 @@
 }
 .numbered-circle {
   position: absolute;
-  left: 15px;
+  left: 22px;
 
   width: 60px;
   height: 60px;
   background-color: #e2e6e9;
   color: #3b7ced;
-  font-weight: 900;
+  font-weight: 600;
   line-height: 58.22px;
   font-size: 48px;
   border-radius: 50%;
@@ -36,6 +36,7 @@
   justify-content: center;
   align-items: center;
   border: 10px solid white;
+  padding: 4px;
 }
 .numbered-circle-one {
   top: 90px;
@@ -186,7 +187,7 @@
     padding-top: 50px;
   }
   .numbered-circle {
-    left: -3px;
+    left: 8px;
     width: 30px;
     height: 30px;
     font-size: 24px;

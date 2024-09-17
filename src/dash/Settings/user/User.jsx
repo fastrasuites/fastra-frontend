@@ -67,30 +67,33 @@ export default function User() {
     setViewMode(mode);
   };
 
- 
-    return (
+  return (
     <div className="container-body">
-    <div className="content-page" id="user">
-      {showNewUser ? (
-        <div className="overlay">
-          <NewUser
-            onClose={handleCloseNewUser}
-            onSaveAndSubmit={handleSaveAndSubmit}
-            fromStepModal={location.state?.openForm}
-          />
-        </div>
-      ) : (
-        <div className="content-body">
-          <div className="content-details">
-            <div className="content-header">
-              <div className="header-activity-1">
-                <button className="btn" onClick={handleNewUser}>
-                  New User
-                </button>
-                <div className="search-box">
-                <CiSearch className="icon" onClick={handleSearch} />
-                <input type="text" placeholder="Search ..." onChange={(e) => setSearchQuery(e.target.value)}  />
-                  {/* <label
+      <div className="content-page" id="user">
+        {showNewUser ? (
+          <div className="overlay">
+            <NewUser
+              onClose={handleCloseNewUser}
+              onSaveAndSubmit={handleSaveAndSubmit}
+              fromStepModal={location.state?.openForm}
+            />
+          </div>
+        ) : (
+          <div className="content-body">
+            <div className="content-details">
+              <div className="content-header">
+                <div className="header-activity-1">
+                  <button className="btn" onClick={handleNewUser}>
+                    New User
+                  </button>
+                  <div className="search-box">
+                    <CiSearch className="icon" onClick={handleSearch} />
+                    <input
+                      type="text"
+                      placeholder="Search ..."
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    {/* <label
                     htmlFor="searchInput"
                     className="users1"
                     onClick={handleSearch}
@@ -105,52 +108,65 @@ export default function User() {
                       className="users3"
                     />
                   </label> */}
-                </div>
-              </div>
-              <div className="header-activity-2">
-                <p className="pagination">1-2 of {filteredUsers.length}</p>
-                <div className="pagination-btn">
-                <button><BsCaretLeftFill className="icon" /></button>
-                <button><BsCaretRightFill className="icon" /></button>
-                </div>
-                <div className="view-toggle">
-                 <button><IoGrid
-                    className={`icon ${viewMode === "grid" ? "active" : ""}`}
-                    onClick={() => toggleViewMode("grid")}
-                  /> </button>
-                 <button> <FaBars
-                    className={`icon ${viewMode === "list" ? "active" : ""}`}
-                    onClick={() => toggleViewMode("list")}
-                  /></button>
-                </div>
-              </div>
-            </div>
-
-            <div className="user4">
-              {viewMode === "grid" ? (
-                filteredUsers.map((user, index) => (
-                  <div className="user4gv" key={index}>
-                    <div className="usermage">
-                      <img
-                        src={user.image || "default-image-url"}
-                        alt={user.name}
-                        className="cirmage"
-                      />
-                    </div>
-                    <p className="username">{user.name}</p>
-                    <p className="userole">{user.role}</p>
-                    <p className="usermail">{user.mail}</p>
-                    <p className="usernum">{user.number}</p>
                   </div>
-                ))
-              ) : (
-                <UserListView users={filteredUsers} />
-              )}
+                </div>
+                <div className="header-activity-2">
+                  <p className="pagination">1-2 of {filteredUsers.length}</p>
+                  <div className="pagination-btn">
+                    <button>
+                      <BsCaretLeftFill className="icon" />
+                    </button>
+                    <button>
+                      <BsCaretRightFill className="icon" />
+                    </button>
+                  </div>
+                  <div className="view-toggle">
+                    <button>
+                      <IoGrid
+                        className={`icon ${
+                          viewMode === "grid" ? "active" : ""
+                        }`}
+                        onClick={() => toggleViewMode("grid")}
+                      />{" "}
+                    </button>
+                    <button>
+                      {" "}
+                      <FaBars
+                        className={`icon ${
+                          viewMode === "list" ? "active" : ""
+                        }`}
+                        onClick={() => toggleViewMode("list")}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="user4">
+                {viewMode === "grid" ? (
+                  filteredUsers.map((user, index) => (
+                    <div className="user4gv" key={index}>
+                      <div className="usermage">
+                        <img
+                          src={user.image || "default-image-url"}
+                          alt={user.name}
+                          className="cirmage"
+                        />
+                      </div>
+                      <p className="username">{user.name}</p>
+                      <p className="userole">{user.role}</p>
+                      <p className="usermail">{user.mail}</p>
+                      <p className="usernum">{user.number}</p>
+                    </div>
+                  ))
+                ) : (
+                  <UserListView users={filteredUsers} />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </div>
   );
 }

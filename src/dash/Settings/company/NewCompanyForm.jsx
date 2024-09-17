@@ -3,7 +3,7 @@ import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import uploadIcon from "../../../image/uploadIcon.svg";
 
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 export default function NewCompany({
   onClose,
@@ -82,6 +82,11 @@ export default function NewCompany({
     e.preventDefault();
     onSaveAndSubmit(formState);
     onClose();
+
+    // detect if true a user came from dashboard popup, then navigate back for the next step
+    if (fromStepModal) {
+      history.push({ pathname: "/dashboard", state: { step: 2 } });
+    }
   };
 
   const currencyOptions = [
@@ -331,10 +336,10 @@ export default function NewCompany({
                 />
               </div>
             </div>
-              <hr />
-             {/* registration contact info */}
-          
-          <div className="registration-contact-info">
+            <hr />
+            {/* registration contact info */}
+
+            <div className="registration-contact-info">
               <h2>Other Information</h2>
             </div>
             <div className="registration-contact-info-grouped">
@@ -354,12 +359,12 @@ export default function NewCompany({
                 <label>Industry</label>
                 <Select
                   name="industry"
-                   placeholder="Select your industry"
-                    className="form-control"
+                  placeholder="Select your industry"
+                  className="form-control"
                   options={industryOptions}
                   styles={customStyles}
                   onChange={(selectedOption) =>
-                  handleSelectChange("industry", selectedOption)
+                    handleSelectChange("industry", selectedOption)
                   }
                 />
               </div>
@@ -367,8 +372,8 @@ export default function NewCompany({
                 <label>Laguage</label>
                 <Select
                   name="language"
-                   placeholder="Select a language"
-                    className="form-control"
+                  placeholder="Select a language"
+                  className="form-control"
                   options={languageOptions}
                   styles={customStyles}
                   onChange={(selectedOption) =>
@@ -378,45 +383,49 @@ export default function NewCompany({
               </div>
             </div>
             <div className="registration-contact-info-grouped" id="size">
-              <div className="form-group" >
+              <div className="form-group">
                 <label>Size</label>
                 <Select
-                   name="size"
-                   placeholder="Select your company size"
-                    className="form-control"
-                   options={sizeOptions}
-                   styles={customStyles}
-                   onChange={(selectedOption) =>
-                  handleSelectChange("size", selectedOption)
+                  name="size"
+                  placeholder="Select your company size"
+                  className="form-control"
+                  options={sizeOptions}
+                  styles={customStyles}
+                  onChange={(selectedOption) =>
+                    handleSelectChange("size", selectedOption)
                   }
                 />
               </div>
-            </div> 
-          
+            </div>
+
             <hr />
             {/* Role input and display section */}
             <div className="registration-role-grouped">
               <h2>Roles</h2>
-              <label style={{fontSize: "18px", fontWeight: "400"}}>Input your Role</label>
-           <div className="form-group">
-           
-           <div className="role-groped">
-              <input
-                  type="text"
-                  placeholder="Enter a role"
-                  className="form-control"
-                  value={currentRole}
-                  onChange={handleRoleInputChange}
-                /></div>
-                 <div className="add-role-button">
-                 <button type="button" onClick={addRole} className="add-role-btn">
-                  <span className="plus-icon">+</span> 
+              <label style={{ fontSize: "18px", fontWeight: "400" }}>
+                Input your Role
+              </label>
+              <div className="form-group">
+                <div className="role-groped">
+                  <input
+                    type="text"
+                    placeholder="Enter a role"
+                    className="form-control"
+                    value={currentRole}
+                    onChange={handleRoleInputChange}
+                  />
+                </div>
+                <div className="add-role-button">
+                  <button
+                    type="button"
+                    onClick={addRole}
+                    className="add-role-btn"
+                  >
+                    <span className="plus-icon">+</span>
                     <span className="text">&nbsp; &nbsp; Add More Roles</span>
                   </button>
-                   </div>
-               
-              
-            </div>
+                </div>
+              </div>
               {/* Display list of added roles */}
               <ul className="role-list">
                 {roles.map((role, index) => (
@@ -429,16 +438,16 @@ export default function NewCompany({
             {/* only on mobile submit button */}
 
             <div className="reg-action-btn" id="reg-action-btn">
-                <button type="button" className="cancel-btn" onClick={onClose}>
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  style={{ display: "flex", justifyContent: "center" }}
-                >
-                  Save
-                </button>
-              </div>
+              <button type="button" className="cancel-btn" onClick={onClose}>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                style={{ display: "flex", justifyContent: "center" }}
+              >
+                Save
+              </button>
+            </div>
           </form>
         </div>
       </div>
