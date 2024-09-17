@@ -9,7 +9,7 @@
     overflow: hidden; 
     background-color: #e2e6e9;
     cursor: pointer;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
   
   .icon-upload img {
@@ -44,7 +44,8 @@
   }
   @media (max-width: 768px) {
     .stamp {
-        font-size: 40px;
+      margin-top: 15px;
+        font-size: 35px;
       }
       .form-group, 
       input {
@@ -53,8 +54,26 @@
   }
  .form-header-activity {
   margin-bottom: -33px;
-  margin-left: -12px;
+  margin-left: -5px;
  }
+ @media (max-width: 768px) {
+  .form-header-activity {
+    margin-bottom: -14px;
+    margin-left: -15px;
+    padding-left: 15px;
+  } }
+.form-group, 
+input {
+      width: 100% !important;
+    }
+    /* .icon-upload {
+      width: 100%;
+      margin-bottom: 20px;
+    } */
+    .icon-upload-text {
+      margin-top: 0;
+    }
+    
   .header-btn {
     padding: 10px 20px;
     border: 2px solid #fff;
@@ -84,6 +103,16 @@
     color: #4393e4;
     font-weight: 500;
     margin-top: 20px;
+  }
+  @media (max-width: 768px) {
+    .heading {
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+  }  @media (max-width: 480px) {
+    .heading {
+      margin-bottom: 20px;
+    }
   }
   .access-table table {
     border-collapse: collapse;
