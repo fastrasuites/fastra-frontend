@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { FaBars, FaBell } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-import admin from "../../image/admin.svg";
 import Sidebar from "../../components/Sidebar";
-import "./sethead.css";
 import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
+import "./sethead.css";
+import { MdSettingsApplications } from "react-icons/md";
+import { RiArrowDropDownLine } from "react-icons/ri";
 
-export default function Sethead() {
+export default function SetHead() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState(0);
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = useState(0);
 
   const handleLinkClick = () => {
     setShowMenu(false);
@@ -25,64 +26,81 @@ export default function Sethead() {
     setSidebarOpen(false);
   };
 
+  // responsiveness menu toggle
+    const [isMenuVisible, setIsMenuVisible] = useState(false);
+  
+    const handleMenuToggle = () => {
+      setIsMenuVisible(!isMenuVisible); // Toggle the visibility
+    };
+    const handleMenuItemClick = () => {
+      setIsMenuVisible(false); // Collapse the menu when an item is clicked
+    };
+
   return (
-    <div className="sethead">
-      <ul className="setwrap">
-        <li className="sethom">
+    <div className="settings-header">
+      <ul className="settings-header__wrapper">
+        <li className="settings-header__home">
           <FaBars
-            className="setnav"
+            className="settings-header__menu-icon"
             onClick={handleOpenSidebar}
             style={{ cursor: "pointer" }}
           />
-
-          <p style={{ fontWeight: "700" }}>Settings</p>
+          <p className="settings-header__title" onClick={handleMenuToggle}> 
+            <MdSettingsApplications  className="menu" /> 
+            Settings 
+            <RiArrowDropDownLine className="menu" style={{fontSize: "27px"}} /> </p>
         </li>
-        <li className="setlst">
-          <div className="setlist">
+        <li className={`settings-header__navigation ${isMenuVisible ? "show" : ""}`}>
+          <div className="settings-header__nav-links">
             <NavLink
               exact
               to="/apk"
-              className="setst"
-              activeClassName="active"
-              onClick={handleLinkClick}
+              className="settings-header__link"
+              activeClassName="settings-header__link--active"
+              onClick={handleMenuItemClick }
             >
               Applications
             </NavLink>
             <NavLink
               exact
               to="/company"
-              className="setst"
-              activeClassName="active"
-              onClick={handleLinkClick}
+              className="settings-header__link"
+              activeClassName="settings-header__link--active"
+              onClick={handleMenuItemClick }
             >
               Company
             </NavLink>
             <NavLink
               exact
               to="/user"
-              className="setst"
-              activeClassName="active"
-              onClick={handleLinkClick}
+              className="settings-header__link"
+              activeClassName="settings-header__link--active"
+              onClick={handleMenuItemClick }
             >
               Users
             </NavLink>
+            <NavLink
+              exact
+              to="/accessgroups"
+              className="settings-header__link"
+              activeClassName="settings-header__link--active"
+              onClick={handleMenuItemClick }
+            >
+              Access Groups
+            </NavLink>
           </div>
         </li>
-        <li className="setalert">
-          <div className="setbell-icon-container">
-            <FaBell className="setbell-icon" />
+        <li className="settings-header__notifications">
+          <div className="settings-header__bell-icon-container">
+            <FaBell className="settings-header__bell-icon" />
             {notifications > 0 && (
-              <span className="setnotification-count">{notifications}</span>
+              <span className="settings-header__notification-count">
+                {notifications}
+              </span>
             )}
           </div>
-        </li>
+        </li> 
         <ProfileMenuDropdown />
-        {/* <li className="setadmin">
-          <img src={admin} alt="admin" className="setadminimg" />
-          <div className="setadminname">
-            <p className="setad">Administrator</p>
-          </div>
-        </li> */}
       </ul>
       <Sidebar
         sidebarOpen={sidebarOpen}

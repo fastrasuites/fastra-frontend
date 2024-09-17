@@ -1,227 +1,251 @@
 .content-page {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-  }
-  
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+.content-body {
+  width: 100%;
+  height: 90%;
+  display: flex;
+  position: absolute;
+  top: 10%;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* Media query for larger screens */
+@media screen and (min-width: 768px) {
   .content-body {
-    width: 100%;
-    height: 90%;
-    display: flex;
-    position: absolute;
-    top: 10%;
-    justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
   }
-  
-  /* Media query for larger screens */
-  @media screen and (min-width: 768px) {
-    .content-body {
-      flex-direction: row;
-    }
-  }
-  
-  .content-details {
-    width: 95%;
-    height: 95%;
-    position: absolute;
-    top: 5%;
-  }
-  
+}
+
+.content-details {
+  width: 95%;
+  height: 95%;
+  position: absolute;
+  top: 5%;
+}
+
+.content-header {
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2.5rem;
+  background-color: transparent;
+  margin-bottom: 2rem;
+  margin-right: 4rem;
+ 
+}
+@media screen and (max-width: 1024px) {
   .content-header {
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 2.5rem;
-    background-color: transparent;
-    margin-bottom: 2rem;
-    margin-right: 3rem;
+    margin-top: 1.5rem !important;
+    margin-right: 0 !important;
   }
-  
+}
+@media screen and (max-width: 768px) {
+  .content-header {
+    margin-top: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+.header-activity-1 {
+  display: flex;
+  align-items: left;
+  gap: 20px;
+  background-color: transparent;
+}
+
+.btn {
+  background: #3b7ced;
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  font-size: 20px;
+  font-weight: 530;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+.search-box {
+  background-color: #ffffff;
+  border-radius: 5px;
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  border: 1px solid #dae0e8;
+}
+
+.search-box .icon {
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.5s ease-in-out;
+  color: #242424;
+}
+
+.search-box .icon:hover {
+  color: #0056b3;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  width: 450px !important;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+/* Responsive width adjustments */
+@media screen and (max-width: 1200px) {
   .header-activity-1 {
-    display: flex;
-    align-items: left;
+    width: 70%;
+    gap: 1rem;
+ 
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .header-activity-1 {
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    display: block;
     gap: 20px;
-    background-color: transparent;
+    width: 100% !important;
+    margin: 10px;
   }
-  
-  .btn {
-    background: #3b7ced;
-    color: white;
-    padding: 12px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    font-size: 20px;
-    font-weight: 530;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn:hover {
-    background-color: #0056b3;
-  }
-  
   .search-box {
-    background-color: #ffffff;
-    border-radius: 5px;
-    display: flex;
-    flex-grow: 1;
-    align-items: center;
-    border: 1px solid #dae0e8;
+    margin-top: 10%;
+    width: 100% !important;
   }
-  
-  .search-box .icon {
-    font-size: 22px;
-    cursor: pointer;
-    transition: color 0.5s ease-in-out;
-    color: #242424;
+}
+.header-activity-2 {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: transparent;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .header-activity-2 {
+    display: none !important;
   }
-  
-  .search-box .icon:hover {
-    color: #0056b3;
+  .header-activity-2 .pagination,
+  .header-activity-2 .pagination-btn {
+    display: none !important;
   }
+  .header-activity-2 .view-toggle {
+    display: none !important;
+  }
+}
+
+.pagination {
+  margin: 0 5px;
+  color: #a9b3bc;
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap; /* Wrap pagination items for smaller screens */
+}
+
+.pagination-btn {
+  border: 1.2px solid #92969a;
+  display: flex;
+  align-items: center;
+  background-color: #0056b3;
+  border-radius: 4px;
+  margin: 5px; /* Added margin for spacing */
+}
+
+.pagination-btn button {
+  border: 1px solid #92969a;
+  padding: 5px 20px;
+  background-color: #fff;
+  outline: none;
+}
+
+.pagination-btn button .icon {
+  font-size: 25px !important;
+  color: #92969a;
   
-  .search-box input {
-    border: none;
-    outline: none;
-    background-color: transparent;
-    width: 450px !important;
-    padding: 12px;
-    border-radius: 4px;
+}
+.view-toggle {
+  border: none;
+  display: flex;
+  align-items: center; 
+  justify-content: space-between; 
+  background-color: transparent;    border-radius: 4px;
+  margin: 10px; 
+  padding: 5px; 
+}
+
+.view-toggle button {
+  border: 1.8px solid #0056b3;
+  padding: 8px 20px;
+  background-color: #fff;
+  outline: none;
+  display: flex; 
+  align-items: center; 
+}
+
+.view-toggle button .icon {
+  font-size: 20px;
+  color: #357fe7;
+  margin-left: 5px; /* Add a margin to create space between icon and text */
+}
+
+.view-toggle button .icon:hover {
+  color: #0056b3;
+}
+
+.view-toggle button .icon:active {
+  color: #0056b3;
+  transition: color 0.2s ease-in-out;
+}
+
+.p-text {
+  margin-top: 20px;
+  font-size: 14px; /* Adjust font size */
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1024px) {
+  .btn {
+    padding: 10px 30px;
+    font-size: 16px; /* Adjust the font size */
+  }
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 540px) {
+  .btn {
+    padding: 10px 15px;
     font-size: 16px;
   }
-  /* Responsive width adjustments */
-  @media screen and (max-width: 1200px) {
-    .header-activity-1 {
-      width: 70%;
-      gap: 1rem;
-   
-    }
+
+  .search-box input {
+    width: 100%;
+    font-size: 15px;
   }
-  
-  @media screen and (max-width: 768px) {
-    .header-activity-1 {
-      flex-direction: column;
-      align-items: flex-start;
-      position: relative;
-      display: block;
-      gap: 20px;
-      width: 100% !important;
-      margin: 10px;
-    }
-    .search-box {
-      margin-top: 10%;
-      width: 100% !important;
-    }
-  }
-  .header-activity-2 {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background-color: transparent;
-  }
-  
-  /* Responsive adjustments */
-  @media screen and (max-width: 768px) {
-    .header-activity-2 {
-      display: none !important;
-    }
-    .header-activity-2 .pagination,
-    .header-activity-2 .pagination-btn {
-      display: none !important;
-    }
-    .header-activity-2 .view-toggle {
-      display: none !important;
-    }
-  }
-  
+
   .pagination {
-    margin: 0 10px;
-    color: #a9b3bc;
-    font-size: 14px;
-    text-align: center;
-    display: flex;
-    flex-wrap: wrap; /* Wrap pagination items for smaller screens */
+    flex-direction: column;
   }
-  
-  .pagination-btn {
-    border: 1.2px solid #e2e6e9;
-    display: flex;
-    align-items: center;
-    background-color: white;
-    border-radius: 4px;
-    margin: 5px; /* Added margin for spacing */
-  }
-  
-  .pagination-btn button {
-    border: 1px solid #ccc;
-    padding: 5px 12px;
-    outline: none;
-  }
-  
-  .pagination-btn button .icon {
-    font-size: 25px !important;
-    color: #92969a;
-  }
-  
+
+  .pagination-btn,
   .view-toggle {
-    border: 1px solid #e2e6e9;
-    display: flex;
-    align-items: center;
-    background-color: transparent;
-    border-radius: 4px;
-    margin: 5px; /* Added margin for spacing */
+    width: 100%;
+    justify-content: center; /* Center elements */
   }
-  
-  .view-toggle button {
-    border: 1px solid #ccc;
-    padding: 8px 12px;
-    outline: none;
-  }
-  
-  .view-toggle button .icon {
-    font-size: 20px !important;
-    color: #357fe7 !important;
-  }
-  
-  .view-toggle button .icon:hover {
-    color: #0056b3 !important;
-  }
-  
-  .view-toggle button .icon:active {
-    color: #0056b3 !important;
-    transition: color 0.3s ease-in-out;
-  }
-  
-  .p-text {
-    margin-top: 20px;
-    font-size: 14px; /* Responsive text size */
-  }
-  
-  /* Mobile adjustments */
-  @media screen and (max-width: 540px) {
-    .btn {
-      padding: 10px 15px;
-      font-size: 16px;
-    }
-  
-    .search-box input {
-      width: 100%;
-      font-size: 15px;
-    }
-  
-    .pagination {
-      flex-direction: column;
-    }
-  
-    .pagination-btn,
-    .view-toggle {
-      width: 100%;
-      justify-content: center;
-    }
-  }
-  
+}

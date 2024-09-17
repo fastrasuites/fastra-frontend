@@ -43,7 +43,7 @@ const ListView = ({ companies, onItemClick }) => {
   };
 
   if (companies.length === 0) {
-    return <p>No companies available. Please add some companies.</p>;
+    return <p style={{margin: "10px"}}>No companies available. Please add some companies.</p>;
   }
 
   return (

@@ -5,13 +5,13 @@ import { BsCaretRightFill } from "react-icons/bs";
 import { CiSearch } from "react-icons/ci";
 import { FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
-import NewUser from "./NewUser";
-import UserListView from "./UserListView"; // Import UserListView
 import { useLocation } from "react-router-dom";
+import AccessListView from "./AccessListView";
+import NewAccessGroup from "./NewAccessGroup";
 
-export default function User() {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState(users);
+export default function AccessGroups() {
+  const [AccessGroups, setAccessGroups] = useState([]);
+  const [filteredAccessGroups, setFilteredAccessGroups] = useState(AccessGroups);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewUser, setShowNewUser] = useState(false);
   const [viewMode, setViewMode] = useState("list"); // Set default view mode to "list"
@@ -25,27 +25,27 @@ export default function User() {
   }, [location.openForm]);
 
   useEffect(() => {
-    const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
-    setUsers(storedUsers);
+    const storedAccessGroups = JSON.parse(localStorage.getItem("AccessGroups")) || [];
+    setAccessGroups(storedAccessGroups);
   }, []);
 
   useEffect(() => {
     handleSearch();
-  }, [searchQuery, users]);
+  }, [searchQuery, AccessGroups]);
 
   const handleSearch = () => {
     if (searchQuery === "") {
-      setFilteredUsers(users);
+      setFilteredAccessGroups(AccessGroups);
     } else {
       const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = users.filter(
+      const filtered = AccessGroups.filter(
         (item) =>
           item.name.toLowerCase().includes(lowercasedQuery) ||
           item.mail.toLowerCase().includes(lowercasedQuery) ||
           item.number.toLowerCase().includes(lowercasedQuery) ||
           item.role.toLowerCase().includes(lowercasedQuery)
       );
-      setFilteredUsers(filtered);
+      setFilteredAccessGroups(filtered);
     }
   };
 
@@ -58,9 +58,9 @@ export default function User() {
   };
 
   const handleSaveAndSubmit = (newUser) => {
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    const updatedAccessGroups = [...AccessGroups, newUser];
+    setAccessGroups(updatedAccessGroups);
+    localStorage.setItem("AccessGroups", JSON.stringify(updatedAccessGroups));
   };
 
   const toggleViewMode = (mode) => {
@@ -69,11 +69,11 @@ export default function User() {
 
  
     return (
-    <div className="container-body">
+      <div className="container-body">
     <div className="content-page" id="user">
       {showNewUser ? (
         <div className="overlay">
-          <NewUser
+          <NewAccessGroup
             onClose={handleCloseNewUser}
             onSaveAndSubmit={handleSaveAndSubmit}
             fromStepModal={location.state?.openForm}
@@ -84,31 +84,20 @@ export default function User() {
           <div className="content-details">
             <div className="content-header">
               <div className="header-activity-1">
-                <button className="btn" onClick={handleNewUser}>
-                  New User
+                <button className="btn">
+                  Access groups
+                </button>
+                <button className="btn" onClick={handleNewUser} style={{backgroundColor: "#f7f7f7", color: "#4393e4"}}>
+                  Create
                 </button>
                 <div className="search-box">
                 <CiSearch className="icon" onClick={handleSearch} />
                 <input type="text" placeholder="Search ..." onChange={(e) => setSearchQuery(e.target.value)}  />
-                  {/* <label
-                    htmlFor="searchInput"
-                    className="users1"
-                    onClick={handleSearch}
-                  >
-                    <img src={SearchIcon} alt="Search" className="users2" />
-                    <input
-                      id="searchInput"
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="users3"
-                    />
-                  </label> */}
+                  
                 </div>
               </div>
               <div className="header-activity-2">
-                <p className="pagination">1-2 of {filteredUsers.length}</p>
+                <p className="pagination">1-2 of {filteredAccessGroups.length}</p>
                 <div className="pagination-btn">
                 <button><BsCaretLeftFill className="icon" /></button>
                 <button><BsCaretRightFill className="icon" /></button>
@@ -128,7 +117,7 @@ export default function User() {
 
             <div className="user4">
               {viewMode === "grid" ? (
-                filteredUsers.map((user, index) => (
+                filteredAccessGroups.map((user, index) => (
                   <div className="user4gv" key={index}>
                     <div className="usermage">
                       <img
@@ -139,12 +128,13 @@ export default function User() {
                     </div>
                     <p className="username">{user.name}</p>
                     <p className="userole">{user.role}</p>
+                    <p className="userapplication">{user.application}</p>
                     <p className="usermail">{user.mail}</p>
                     <p className="usernum">{user.number}</p>
                   </div>
                 ))
               ) : (
-                <UserListView users={filteredUsers} />
+                <AccessListView AccessGroups={filteredAccessGroups} />
               )}
             </div>
           </div>
