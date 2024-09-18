@@ -13,7 +13,7 @@
 }
 .vertical-line {
   position: absolute;
-  left: 55px;
+  left: 50px;
   top: 0;
   bottom: 10px;
   width: 4px;
@@ -25,18 +25,15 @@
   left: 22px;
 
   width: 60px;
-  height: 60px;
   background-color: #e2e6e9;
   color: #3b7ced;
   font-weight: 600;
-  line-height: 58.22px;
   font-size: 48px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 10px solid white;
-  padding: 4px;
+  border-block: 16px solid white;
 }
 .numbered-circle-one {
   top: 90px;
@@ -56,9 +53,10 @@
   background-color: #ffffff;
   border: 2px solid #7a8a98;
   cursor: pointer;
+  transition: border ease-in-out 600ms;
 }
 .btn-skip:hover {
-  border: 2px solid #3367cc;
+  border: 2px solid #09285d;
 }
 .modal-main-content {
   margin-left: 120px;
@@ -108,9 +106,11 @@
   color: #ffffff;
   margin-bottom: 72px;
   border: none;
+  cursor: pointer;
+  transition: background ease-in-out 500ms;
 }
 .btn-goto-steps:hover {
-  background: #3367cc;
+  background: #09285d;
 }
 
 @media screen and (max-width: 53em) {
@@ -189,13 +189,11 @@
   .numbered-circle {
     left: 8px;
     width: 30px;
-    height: 30px;
     font-size: 24px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 10px solid white;
   }
 }
 
