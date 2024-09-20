@@ -10,6 +10,17 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const history = useHistory();
+  // const baseUrl = window.location.host;
+  //----------------------------------------------
+  // Using window.location (for current URL)
+  const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
+
+  // Split the URL by the dots
+  const parts = fullUrl.split(".");
+
+  // Assuming the first part is the subdomain (tenant name)
+  const tenantName = parts[0];
+  //---------------------------------------------------
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -28,7 +39,8 @@ export default function LoginForm() {
     if (email && password) {
       try {
         const response = await axios.post(
-          "https://fastrav1-production.up.railway.app/login/",
+          // "https://fastrav1-production.up.railway.app/login/",
+          `http://${tenantName}.fastrasuite.com/login`,
           { email, password }
         );
         console.log(response.data);

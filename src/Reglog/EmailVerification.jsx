@@ -16,7 +16,7 @@ const EmailVerification = () => {
         try {
           await verifyEmail(token);
           setStatus("Email verified successfully. You can now log in.");
-          setTimeout(() => history.push("/login"), 3000);
+          setTimeout(() => history.push("login"), 3000);
         } catch (error) {
           setStatus(
             "Email verification failed. Please try again or contact support."
