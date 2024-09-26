@@ -15,24 +15,31 @@ export default function ForgetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
+   // Get tenant name from URL
+   const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
+   const parts = fullUrl.split(".");
+   const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
+
   // Start countdown timer
   useEffect(() => {
     if (timer > 0) {
-      const countdown = setInterval(() => setTimer(timer - 1), 1000);
+      const countdown = setInterval(() => setTimer(prev => prev - 1), 1000);
       return () => clearInterval(countdown);
     }
   }, [timer]);
-  // Send email to backend
+
+  // Send email to backend for password reset request
   const handleEmailSubmit = async () => {
     try {
       const response = await axios.post(
-        "https://fastrav1-production.up.railway.app/send-reset-code",
+        `https://${tenantName}.fastrasuite.com/request-forgotten-password/`, // Correct endpoint
         { email }
       );
       setStep(1); // Move to next step (Enter code)
-      toast.success("Verification code sent!");
+      toast.success(response.data.detail); // Notify user
     } catch (error) {
-      setError("Failed to send code. Please try again.");
+      const errorMsg = error.response?.data.error || "Failed to send code. Please try again.";
+      setError(errorMsg); // Show error message
     }
   };
 
@@ -41,12 +48,14 @@ export default function ForgetPassword() {
     try {
       const codeString = code.join(""); // Combine code array to string
       const response = await axios.post(
-        "https://fastrav1-production.up.railway.app/verify-code",
+        `https://${tenantName}.fastrasuite.com/request-forgotten-password/`, // Ensure correct endpoint
         { email, code: codeString }
       );
       setStep(2); // Move to next step (Reset password)
+      toast.success("Code verified successfully!"); // Notify user
     } catch (error) {
-      setError("Invalid code. Please try again.");
+      const errorMsg = error.response?.data.error || "Invalid code. Please try again.";
+      setError(errorMsg); // Show error message
     }
   };
 
@@ -64,13 +73,14 @@ export default function ForgetPassword() {
     }
     try {
       const response = await axios.post(
-        "https://fastrav1-production.up.railway.app/reset-password",
+        "https://fastrav1-production.up.railway.app/reset-password", // Ensure correct endpoint
         { email, newPassword }
       );
-      toast.success("Password reset successfully!");
+      toast.success(response.data.detail); // Notify user
       setStep(3); // Move to success message
     } catch (error) {
-      setError("Failed to reset password.");
+      const errorMsg = error.response?.data.error || "Failed to reset password.";
+      setError(errorMsg); // Show error message
     }
   };
 
