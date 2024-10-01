@@ -5,29 +5,23 @@ import axios from "axios";
 import "./LoginForm.css";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // Changed from email to username
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const history = useHistory();
-  // const baseUrl = window.location.host;
-  //----------------------------------------------
-  // Using window.location (for current URL)
+
+  // Get tenant name from URL
   const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
-
-  // Split the URL by the dots
   const parts = fullUrl.split(".");
-
-  // Assuming the first part is the subdomain (tenant name)
-  const tenantName = parts[0];
-  //---------------------------------------------------
+  const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
   };
 
   const handlePasswordChange = (e) => {
@@ -36,17 +30,22 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email && password) {
+    if (username && password) {
       try {
         const response = await axios.post(
-          // "https://fastrav1-production.up.railway.app/login/",
-          `http://${tenantName}.fastrasuite.com/login`,
-          { email, password }
+          `https://${tenantName}.fastrasuite.com/login/`, // Corrected to HTTPS and endpoint
+          { username, password } // Use username instead of email
         );
+
+        const { redirect_url } = response.data; // Destructure the redirect_url from response
         console.log(response.data);
-        history.push("/dashboard");
+        window.location.href = redirect_url; // Redirect to the provided URL
       } catch (error) {
-        setError("Invalid credentials");
+        if (error.response && error.response.status === 400) {
+          setError("Invalid credentials");
+        } else {
+          setError("An error occurred. Please try again.");
+        }
         console.error("Error logging in:", error);
       }
     }
@@ -61,16 +60,16 @@ export default function LoginForm() {
         <div className="group-container">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                Email
+              <label htmlFor="username" className="form-label"> {/* Changed from email to username */}
+                Username
               </label>
               <input
-                type="email"
-                id="email"
+                type="text" // Change to text since it's a username
+                id="username"
                 className="form-input"
-                placeholder="Enter your Email here"
-                value={email}
-                onChange={handleEmailChange}
+                placeholder="Enter your Username here"
+                value={username}
+                onChange={handleUsernameChange}
                 required
               />
             </div>
@@ -108,9 +107,9 @@ export default function LoginForm() {
 
           <div className="login-links">
             <Link to="/register" className="register-link">
-              Don't have an account
+              Don't have an account?
             </Link>
-            <Link to="/fogpas" className="forgot-password-link">
+            <Link to="/forgot-password" className="forgot-password-link">
               Forget Password
             </Link>
           </div>

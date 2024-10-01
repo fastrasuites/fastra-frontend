@@ -39,7 +39,7 @@ export default function RegistrationForm() {
     try {
       const response = await axios.post(
         // "https://fastrav1-production.up.railway.app/register/",
-        "http://api.fastrasuite.com/register/",
+        "https://api.fastrasuite.com/register/",
         registrationData
       );
       console.log("Registration response:", response.data);

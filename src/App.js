@@ -39,6 +39,7 @@ import Newprod from "../src/dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
 import AccessGroups from "./dash/Settings/accessgroups/AccessGroups";
+import EmailVerifyStatus from "./Reglog/EmailVerification";
 
 
 function App() {
@@ -88,9 +89,10 @@ function App() {
       <GlobalStyle />
       <Switch>
         <Route exact path="/" component={Register} />
-        <Route path="/verify-email" component={EmailVerification} />
+        {/* <Route path="/verify-email" component={EmailVerification} /> */}
+        <Route path="/email-verify-status" component={EmailVerifyStatus} />
         <Route path="/login" component={Login} />
-        <Route path="/fogpas" component={ForgetPassword} />
+        <Route path="/forgot-password" component={ForgetPassword} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/contact" component={Contact} />
         <Route path="/settings" component={Settings} />
