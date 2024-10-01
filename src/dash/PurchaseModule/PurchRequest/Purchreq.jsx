@@ -7,6 +7,8 @@ import ListView from "./Listview";
 import Newpr from "./Newpr";
 import Papr from "./Papr";
 import CRfq from "./CRfq";
+import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
+import { useLocation } from "react-router-dom";
 
 export default function Purchreq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,7 +18,8 @@ export default function Purchreq() {
   const [rejectedCount, setRejectedCount] = useState(0);
   const [viewMode, setViewMode] = useState("list");
   const [items, setItems] = useState(() => {
-    const storedItems = JSON.parse(localStorage.getItem("purchaseRequests")) || [];
+    const storedItems =
+      JSON.parse(localStorage.getItem("purchaseRequests")) || [];
     return storedItems;
   });
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -25,7 +28,27 @@ export default function Purchreq() {
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  // Used by Purchase Module wizard ===========================
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
 
+  useEffect(() => {
+    if (location.state?.step) {
+      setCurrentStep(location.state.step);
+      setIsModalOpen(true);
+    } else {
+      const timer = setTimeout(() => {
+        setIsModalOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+  // End ===================================
   const handleSaveAndSubmit = (data) => {
     const newData = { ...data, status: "Pending" }; // Set status to Pending
     setFormData(newData);
@@ -265,6 +288,13 @@ export default function Purchreq() {
           )}
         </div>
       </div>
+
+      {/* controls the 'Purchase Module Wizard' following user clicking the Purchase card from the Home page */}
+      <PurchaseModuleWizard
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        step={currentStep}
+      />
     </div>
   );
 }

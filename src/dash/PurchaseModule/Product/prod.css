@@ -1,7 +1,7 @@
 .pro {
   height: 180vh;
   width: 100%;
-  background-image: url("../../../image/bg.svg");
+  /* background-image: url("../../../image/bg.svg"); */
   background-size: contain;
   margin: 0;
   padding: 0;
@@ -182,7 +182,7 @@
 }
 .pro4gv {
   width: 17%;
-  height: 70%;
+  height: 75%;
   background-color: white;
   border: 1px solid #e2e6e9;
   border-radius: 4px;
@@ -192,6 +192,7 @@
   flex-direction: column;
   gap: 0.7rem;
   cursor: pointer;
+  padding: 24px;
   @media screen and (max-width: 1200px) and (min-width: 954px) {
     width: 21%;
   }
@@ -230,10 +231,11 @@
   }
 }
 .promount {
-    color: #3b7ced;
-    font-size: 14px;
+  color: #3b7ced;
+  font-size: 14px;
 }
-.protype, .procat {
+.protype,
+.procat {
   color: #7a8a98;
   font-size: 14px;
 }
