@@ -255,18 +255,55 @@ const PasswordSetup = ({ next, apiError }) => {
   );
 };
 
-const ConfirmationStep = () => {
-  const handleEmailClientOpen = () => {
-    window.location.href = "mailto:";
+const ConfirmationStep = ({ companyEmail }) => {
+  // Function to detect email provider and open the respective email login page
+  const handleOpenEmailClient = () => {
+    if (!companyEmail) {
+      alert("No email found. Please check your registration.");
+      return;
+    }
+
+    // Extract the domain from the email address
+    const emailDomain = companyEmail.split("@")[1];
+
+    // Mapping common email providers to their login pages
+    const emailProviders = {
+      "gmail.com": "https://mail.google.com",
+      "yahoo.com": "https://mail.yahoo.com",
+      "outlook.com": "https://outlook.live.com",
+      "hotmail.com": "https://outlook.live.com",
+      "aol.com": "https://mail.aol.com",
+      "icloud.com": "https://www.icloud.com/mail",
+      "mail.com": "https://www.mail.com",
+      "zoho.com": "https://mail.zoho.com",
+      "protonmail.com": "https://mail.protonmail.com",
+      "gmx.com": "https://www.gmx.com",
+      "yandex.com": "https://mail.yandex.com",
+      "qq.com": "https://mail.qq.com",
+      "naver.com": "https://mail.naver.com",
+      "163.com": "https://mail.163.com",
+      "126.com": "https://mail.126.com",
+      "rediffmail.com": "https://mail.rediff.com",
+    };
+
+    // Check if the email domain is recognized, then open the login page
+    if (emailProviders[emailDomain]) {
+      window.open(emailProviders[emailDomain], "_blank");
+    } else {
+      alert(
+        `The email provider (${emailDomain}) is not recognized. Please open your email manually.`
+      );
+    }
   };
+
   return (
     <div className="confirmation-container">
       <h2 className="confirmation-title">Confirmation</h2>
       <p className="confirmation-message">
-        We sent a confirmation link to your email, click on that link to
-        proceed. Use the "Continue" button to open your default email client.
+        We sent a confirmation link to your email. Click the "Continue" button
+        to open your email client and retrieve the token.
       </p>
-      <button className="confirmation-button" onClick={handleEmailClientOpen}>
+      <button className="confirmation-button" onClick={handleOpenEmailClient}>
         Continue
       </button>
     </div>
