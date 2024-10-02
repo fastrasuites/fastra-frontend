@@ -6,6 +6,7 @@
   justify-content: center;
   align-items: center;
   z-index: 999;
+  margin-top: 6%;
   background-color: white;
   overflow: auto;
 }
@@ -127,6 +128,7 @@
   height: 10%;
   display: flex;
   gap: 4rem;
+  padding: 10px;
   align-items: center;
   border-bottom: 1px solid #e2e6e9;
   margin-top: 1rem;
@@ -163,6 +165,7 @@
 
 .npr3ca {
   width: 25%;
+  padding: 10px;
   height: 90%;
   display: flex;
   justify-content: center;

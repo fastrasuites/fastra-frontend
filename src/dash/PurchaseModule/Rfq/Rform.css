@@ -8,6 +8,7 @@
   z-index: 999;
   background-color: white;
   overflow: auto;
+  margin-top: 7%;
 }
 .fade-in {
   opacity: 1;

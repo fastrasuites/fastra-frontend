@@ -185,17 +185,17 @@ export default function Rfq() {
               <div className="rfqsash">
                 <label
                   htmlFor="searchInput"
-                  className="ps1"
+                  className="search-box"
                   onClick={handleSearch}
                 >
-                  <img src={SearchIcon} alt="Search" className="ps2" />
+                  <img src={SearchIcon} alt="Search" className="search-icon" />
                   <input
                     id="searchInput"
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="ps3"
+                    className="search-input"
                   />
                 </label>
               </div>
@@ -209,12 +209,12 @@ export default function Rfq() {
               </div>
               <div className="r3bview">
                 <IoGrid
-                  className={`grid ${viewMode === "grid" ? "active" : ""}`}
+                  className={`toggle ${viewMode === "grid" ? "active" : ""}`}
                   onClick={() => toggleViewMode("grid")}
                 />
                 <div className="stroke"></div>
                 <FaBars
-                  className={`grid ${viewMode === "list" ? "active" : ""}`}
+                  className={`toggle ${viewMode === "list" ? "active" : ""}`}
                   onClick={() => toggleViewMode("list")}
                 />
               </div>

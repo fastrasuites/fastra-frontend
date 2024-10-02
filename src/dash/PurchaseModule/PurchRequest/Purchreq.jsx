@@ -152,74 +152,75 @@ export default function Purchreq() {
   };
 
   return (
-    <div className="prq" id="purchase">
-      <div className="prq1">
-        <div className="prq2">
+    <div className="purchase-request" id="purchase">
+      <div className="purchase-request-heading">
+        <div className="purchase-request-content">
           <p>Purchase Requests</p>
-          <div className="prqlist">
-            <div className="prql1">
+          <div className="purchase-request-status">
+            <div className="purchase-draft">
               <p>Draft</p>
-              <p className={`plnum ${draftCount === 0 ? "zero" : ""}`}>
+              <p className={`purchase-list-count ${draftCount === 0 ? "zero" : ""}`}>
                 {draftCount}
               </p>
             </div>
-            <div className="prql2">
+            <div className="purchase-approved">
               <p>Approved</p>
-              <p className={`plnum ${approvedCount === 0 ? "zero" : ""}`}>
+              <p className={`purchase-list-count ${approvedCount === 0 ? "zero" : ""}`}>
                 {approvedCount}
               </p>
             </div>
-            <div className="prql3">
+            <div className="purchase-pending">
               <p>Pending</p>
-              <p className={`plnum ${pendingCount === 0 ? "zero" : ""}`}>
+              <p className={`purchase-list-count ${pendingCount === 0 ? "zero" : ""}`}>
                 {pendingCount}
               </p>
             </div>
-            <div className="prql4">
+            <div className="purchase-rejected">
               <p>Rejected</p>
-              <p className={`plnum ${rejectedCount === 0 ? "zero" : ""}`}>
+              <p className={`purchase-list-count ${rejectedCount === 0 ? "zero" : ""}`}>
                 {rejectedCount}
               </p>
             </div>
           </div>
-          <div className="prq3">
-            <div className="p3a">
-              <button className="p3abtn" onClick={handleNewPurchaseRequest}>
+          
+          <div className="purchase-nav">
+            <div className="purchase-content">
+              <button className="purchase-contentbtn" onClick={handleNewPurchaseRequest}>
                 New Purchase Request
               </button>
               <div className="prqsash">
                 <label
                   htmlFor="searchInput"
-                  className="ps1"
+                  className="search-box"
                   onClick={handleSearch}
                 >
-                  <img src={SearchIcon} alt="Search" className="ps2" />
+                  <img src={SearchIcon} alt="Search" className="search-icon" />
                   <input
                     id="searchInput"
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="ps3"
+                    className="search-input"
                   />
                 </label>
               </div>
             </div>
-            <div className="p3b">
-              <p className="p3bpage">1-2 of 2</p>
-              <div className="p3bnav">
+            <div className="pagination">
+              <p className="purchase-pagination">1-2 of 2</p>
+              <div className="purchase-pagination-nav">
                 <FaCaretLeft className="lr" />
                 <div className="stroke"></div>
                 <FaCaretRight className="lr" />
               </div>
               <div className="p3bview">
                 <IoGrid
-                  className={`grid ${viewMode === "grid" ? "active" : ""}`}
+                  className={`toggle ${viewMode === "grid" ? "active" : ""}`}
                   onClick={() => toggleViewMode("grid")}
                 />
-                <div className="stroke"></div>
+                <div className="stroke"></div>&nbsp; &nbsp;
                 <FaBars
-                  className={`grid ${viewMode === "list" ? "active" : ""}`}
+                  className={`toggle ${viewMode === "list" ? "active" : ""}`}
                   onClick={() => toggleViewMode("list")}
                 />
               </div>
@@ -284,7 +285,9 @@ export default function Purchreq() {
               ))}
             </div>
           ) : (
-            <ListView items={filteredItems} onItemClick={handleCardClick} />
+            
+             <ListView items={filteredItems} onItemClick={handleCardClick} />
+            
           )}
         </div>
       </div>
