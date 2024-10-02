@@ -1,27 +1,33 @@
-.prq {
-  height: 180vh;
+.purchase-request {
+  height: 100%;
   width: 100%;
-  background-image: url("../../../image/bg.svg");
-  background-size: contain;
-  margin: 0;
+  /* background-image: url("../../../image/bg.svg"); */
+  background-repeat: no-repeat;
+  background-size: cover; 
+  margin: 0; 
   padding: 0;
   font-family: Product Sans;
+  /* background-color: red; */
 }
-.prq1 {
+.purchase-request-heading {
   width: 100%;
-  height: 90%;
+  height: 100%;
   display: flex;
   position: absolute;
   top: 10%;
   justify-content: center;
+  /* background-color: blue; */
 }
-.prq2 {
-  width: 95%;
-  height: 95%;
+.purchase-request-content {
+  width: 100%;
+  height: 100%;
   position: absolute;
-  top: 5%;
+  top: 0;
+  margin-top: 2.5rem;
+  justify-content: center;
+  /* background-color: #7e2218; */
 }
-.prqlist {
+.purchase-request-status {
   width: 50%;
   height: 20%;
   display: flex;
@@ -48,7 +54,7 @@
     gap: 1rem;
   }
 }
-.prql1 {
+.purchase-draft {
   background: linear-gradient(225deg, #3b7ded 0%, #224787 100%);
   width: 35%;
   height: 100%;
@@ -62,7 +68,7 @@
     width: 22%;
   }
 }
-.prql2 {
+.purchase-approved {
   background: linear-gradient(225deg, #2ba24c 0%, #103c1c 100%);
   width: 35%;
   height: 100%;
@@ -74,7 +80,7 @@
   line-height: 2.5rem;
   border-radius: 5px;
 }
-.prql3 {
+.purchase-pending {
   background: linear-gradient(225deg, #f0b501 0%, #8a6801 100%);
   width: 35%;
   height: 100%;
@@ -86,7 +92,7 @@
   line-height: 2.5rem;
   border-radius: 5px;
 }
-.prql4 {
+.purchase-rejected {
   background: linear-gradient(225deg, #e43e2b 0%, #7e2218 100%);
   width: 35%;
   height: 100%;
@@ -101,13 +107,14 @@
     width: 26%;
   }
 }
-.plnum {
+.purchase-list-count {
   font-size: 2rem;
+  text-align: left;
   @media screen and (max-width: 449px) {
     font-size: 1.5rem;
   }
 }
-.prq3 {
+.purchase-nav {
   width: 100%;
   height: 10%;
   display: flex;
@@ -121,7 +128,7 @@
     gap: 1rem;
   }
 }
-.p3a {
+.purchase-content {
   display: flex;
   align-items: center;
   gap: 2rem;
@@ -135,7 +142,7 @@
     gap: 0.5rem;
   }
 }
-.p3abtn {
+.purchase-contentbtn {
   background: #3b7ced;
   color: white;
   padding: 12px;
@@ -154,7 +161,7 @@
     padding: 10px;
   }
 }
-.p3abtn:hover {
+.purchase-contentbtn:hover {
   background: #335db2;
 }
 .prqsash {
@@ -167,7 +174,7 @@
     gap: 0;
   }
 }
-.ps1 {
+.search-box {
   display: flex;
   width: 100%;
   height: 100%;
@@ -175,11 +182,11 @@
   align-items: center;
   gap: 0;
 }
-.ps2 {
-  width: 40%;
-  height: 40%;
+.search-icon {
+  width: 40px;
+  height: 4px;
 }
-.ps3 {
+.search-input {
   width: 140%;
   height: 50%;
   outline: none;
@@ -193,7 +200,7 @@
     font-size: xx-small;
   }
 }
-.p3b {
+.pagination {
   display: flex;
   gap: 1.5rem;
   height: 100%;
@@ -209,13 +216,13 @@
     gap: 0.5rem;
   }
 }
-.p3bpage {
+.purchase-pagination{
   color: #a9b3bc;
   @media screen and (max-width: 500px) {
     font-size: 12px;
   }
 }
-.p3bnav {
+.purchase-pagination-nav {
   border: 1.2px solid #e2e6e9;
   width: 25%;
   height: 50%;
@@ -236,18 +243,28 @@
   border: 1.2px solid #e2e6e9;
   width: 25%;
   height: 50%;
+  margin-right: 15%;
   display: flex;
   align-items: center;
   background-color: white;
+  /* padding: 12px; */
   border-radius: 4px;
   @media screen and (max-width: 400px) {
     height: 35%;
   }
 }
-.grid {
+
+.p3bview .toggle {
+  width: 100%;
+  border: none !important;
+  outline: none !important;
+  margin: 2px;
+}
+.toggle {
   width: 50%;
   height: 50%;
   color: #3b7ced;
+  gap: 20px;
 }
 .stroke {
   width: 2%;
@@ -272,6 +289,7 @@
   background-color: white;
   border: 1px solid #e2e6e9;
   border-radius: 4px;
+  margin-right: 10%;
   display: flex;
   align-items: center;
   justify-content: center;
