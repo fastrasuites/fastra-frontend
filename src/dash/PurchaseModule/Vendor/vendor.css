@@ -1,7 +1,6 @@
 .vend {
   height: 180vh;
   width: 100%;
-  background-image: url("../../../image/bg.svg");
   background-size: contain;
   margin: 0;
   padding: 0;
@@ -11,15 +10,16 @@
 .vr4gv .vendor-image {
   margin-bottom: 15px;
 }
-.vr4gv{
-   width: 17%; 
-  height: 75%; 
+.vr4gv {
+  width: 17%;
+  height: 75%;
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
   margin-bottom: 20px;
   text-align: center;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(65, 62, 62, 0.19);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1),
+    0 6px 20px 0 rgba(65, 62, 62, 0.19);
   display: flex;
   flex-direction: column;
   align-items: center;
