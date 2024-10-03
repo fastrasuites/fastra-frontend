@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import autosave from "../../../image/autosave.svg";
 import "./Newvendor.css";
+import vendorLogo from "../../../image/vendor-logo.svg";
+import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
 
 export default function Newvendor({ onClose, onSaveAndSubmit }) {
   const generateNewID = () => {
@@ -87,6 +89,7 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
             </div>
           </div>
           <div className="nvr2b">
+            <p>1 - 6 of 6</p>
             <div className="nvrbnav">
               <FaCaretLeft className="nr" />
               <div className="sep"></div>
@@ -108,60 +111,116 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
               </button>
             </div>
 
-            <div className="nvr3c">
-              <div className="nvr3ca">
-                <label>Vendor Name</label>
-                <input
-                  type="text"
-                  name="vendorName"
-                  placeholder="Cee Que Enterprise"
-                  className="nvr3cb"
-                  value={formState.vendorName}
-                  onChange={(e) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorName: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="nvr3ca">
-                <label>Vendor Category</label>
-                <input
-                  type="text"
-                  name="vendorCategory"
-                  placeholder="IT Hardware Sales"
-                  className="nvr3cb"
-                  value={formState.vendorCategory}
-                  onChange={(e) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorCategory: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="nvr3ca">
-                <label>Image</label>
-                <input
-                  type="file"
-                  name="image"
-                  className="nvr3cb"
-                  onChange={handleImageUpload}
-                />
-              </div>
-            </div>
+            {/* BAsic information */}
+            <Box>
+              {/* Vendor Name Section */}
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6} md={4}>
+                  <Typography variant="body1" gutterBottom>
+                    Vendor Name
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    placeholder="Cee Que Enterprise"
+                    value={formState.vendorName}
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        vendorName: e.target.value,
+                      }))
+                    }
+                  />
+                </Grid>
+              </Grid>
+
+              {/* Divider */}
+              <Divider
+                sx={{
+                  marginY: "32px",
+                  borderColor: "#E2E6E9",
+                  borderWidth: "1.2px",
+                }}
+              />
+
+              {/* Image Upload Section */}
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={3}>
+                  <Box
+                    onClick={() =>
+                      document.getElementById("imageInput").click()
+                    }
+                    sx={{
+                      width: "98px",
+                      height: "98px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept=".png, .jpg, .jpeg"
+                      onChange={handleImageUpload}
+                      id="imageInput"
+                      name="image"
+                      style={{ display: "none" }}
+                    />
+                    {formState.image ? (
+                      <img
+                        src={formState.image}
+                        alt="Preview"
+                        style={{
+                          width: "98px",
+                          height: "98px",
+                          objectFit: "cover",
+                          borderRadius: "50%",
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <img src={vendorLogo} alt="Upload" />
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Divider */}
+              <Divider
+                sx={{
+                  marginY: "32px",
+                  borderColor: "#E2E6E9",
+                  borderWidth: "1.2px",
+                }}
+              />
+            </Box>
+
+            {/* Contact information */}
             <div className="nvr3a">
-              <p style={{ fontSize: "20px" }}>Contact Information</p>
+              <p style={{ fontSize: "20px", marginBottom: "16px" }}>
+                Contact Information
+              </p>
             </div>
-            <div className="nvr3c">
-              <div className="nvr3ca">
-                <label>Email Address</label>
-                <input
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography gutterBottom>Email Address</Typography>
+                <TextField
+                  fullWidth
                   type="email"
                   name="email"
                   placeholder="Enter Vendor Email"
-                  className="nvr3cb"
+                  // className="nvr3cb"
                   value={formState.email}
                   onChange={(e) =>
                     setFormState((prev) => ({
@@ -170,14 +229,15 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                     }))
                   }
                 />
-              </div>
-              <div className="nvr3ca">
-                <label>Phone number</label>
-                <input
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography gutterBottom>Phone number</Typography>
+                <TextField
+                  fullWidth
                   type="text"
                   name="phone"
                   placeholder="Enter a valid phone number"
-                  className="nvr3cb"
+                  // className="nvr3cb"
                   value={formState.phone}
                   onChange={(e) =>
                     setFormState((prev) => ({
@@ -186,14 +246,16 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                     }))
                   }
                 />
-              </div>
-              <div className="nvr3ca">
-                <label>Address</label>
-                <input
+              </Grid>
+            </Grid>
+            <Grid container spacing={3} mt={1}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography gutterBottom>Address</Typography>
+                <TextField
+                  fullWidth
                   type="text"
                   name="address"
                   placeholder="Enter Address"
-                  className="nvr3cb"
                   value={formState.address}
                   onChange={(e) =>
                     setFormState((prev) => ({
@@ -202,16 +264,22 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                     }))
                   }
                 />
-              </div>
-            </div>
-
-            <div className="nvr3e">
+              </Grid>
+            </Grid>
+            <div
+              className="nvr3e"
+              style={{ marginTop: "32px", justifyContent: "flex-start" }}
+            >
               <button
                 type="submit"
                 className="nvr3btn"
-                style={{ display: "flex", justifyContent: "center" }}
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  float: "left",
+                }}
               >
-                Send Invite
+                Add Vendor
               </button>
             </div>
           </form>

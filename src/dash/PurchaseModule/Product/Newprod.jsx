@@ -2,9 +2,19 @@ import React, { useState, useEffect } from "react";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
+import productLogo from "../../../image/product-logo.svg";
 import "./Newprod.css";
+import { useHistory } from "react-router-dom";
+import { Grid, TextField } from "@mui/material";
+import styled from "styled-components";
+// import Select from "react-select";
 
-export default function Newprod({ onClose, onSaveAndSubmit }) {
+export default function Newprod({
+  onClose,
+  onSaveAndSubmit,
+  fromPurchaseModuleWizard,
+}) {
+  const history = useHistory();
   const generateNewID = () => {
     const lastID = localStorage.getItem("lastGeneratedID");
     let newID = "PR00001";
@@ -27,17 +37,24 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
     sp: "",
     cp: "",
     image: null, // New state for image
+    productDesc: "",
+    availableProductQty: "",
+    totalQtyPurchased: "",
   });
 
   const [showForm] = useState(true);
   const [error, setError] = useState(null);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, productDesc, availableProductQty, totalQtyPurchased } =
+      e.target;
 
     setFormState((prev) => ({
       ...prev,
       [name]: value,
+      [productDesc]: value,
+      [availableProductQty]: value,
+      [totalQtyPurchased]: value,
     }));
   };
 
@@ -90,24 +107,30 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
 
     handleSaveAndSubmit(formDataWithFormattedPrices);
     onClose();
+
+    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
+    if (fromPurchaseModuleWizard) {
+      history.push({ pathname: "/purchase", state: { step: 2 } });
+    }
   };
 
   const unitOptions = [
+    { value: "NIL", label: "NIL" },
     { value: "QTY", label: "Quantity" },
     { value: "LBS", label: "Pounds" },
     { value: "KG", label: "Kilograms" },
   ];
 
   const categoryOptions = [
-    { value: "Electronics", label: "Electronics" },
-    { value: "Furniture", label: "Furniture" },
-    { value: "Clothing", label: "Clothing" },
+    { value: "Consumables", label: "Consumables" },
+    { value: "Stockable", label: "Stockable" },
+    { value: "Service Product", label: "Service Product" },
   ];
 
   const customStyles = {
     control: (provided) => ({
       ...provided,
-      width: "95%",
+      // width: "95%",
       marginTop: "0.1rem",
       cursor: "pointer",
       outline: "none",
@@ -118,11 +141,11 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
     }),
     menu: (provided) => ({
       ...provided,
-      width: "95%",
+      // width: "95%",
     }),
     menuList: (provided) => ({
       ...provided,
-      width: "95%",
+      // width: "95%",
     }),
     option: (provided) => ({
       ...provided,
@@ -141,14 +164,15 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
               <img src={autosave} alt="Autosaved" />
             </div>
           </div>
-          <div className="newp2b">
+          {/* <div className="newp2b">
             <div className="newpbnav">
               <FaCaretLeft className="nr" />
               <div className="sep"></div>
               <FaCaretRight className="nr" />
             </div>
-          </div>
+          </div> */}
         </div>
+        {/* form for create/add new products starts here */}
         <div className="newp3">
           <form className="newpform" onSubmit={handleSubmit}>
             <div className="newp3a">
@@ -162,51 +186,101 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
                 Cancel
               </button>
             </div>
-            <div className="newp3b">
-              <div className="newp3ba">
-                <label>Product Name</label>
+
+            {/* Upload product logo */}
+            <div className="newuser3ba" style={{ marginBlock: "24px" }}>
+              <div
+                className="image-upload"
+                onClick={() => document.getElementById("imageInput").click()}
+              >
                 <input
+                  type="file"
+                  accept=".png, .jpg, .jpeg"
+                  onChange={handleImageChange}
+                  id="imageInput"
+                  name="image"
+                  style={{ display: "none" }}
+                  required
+                />
+                {formState.image ? (
+                  <img
+                    src={formState.image}
+                    alt="Preview"
+                    className="image-preview"
+                  />
+                ) : (
+                  <div className="image-upload-text">
+                    <img src={productLogo} alt="Upload" />
+                    {/* <span style={{ fontSize: "10px" }}>Click to upload</span> */}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Grid container spacing={3}>
+              {" "}
+              {/* spacing adds equidistant gaps */}
+              <Grid item xs={12} sm={6} md={4}>
+                {" "}
+                {/* Full width on xs, 2 cols on sm, 3 cols on md */}
+                <div style={{ marginBottom: "8px" }}>
+                  <label>Product Name</label>
+                </div>
+                <TextField
+                  fullWidth
                   type="text"
                   name="name"
-                  placeholder="Enter the product name"
-                  className="newp3cb"
+                  placeholder="Meat Burger"
                   value={formState.name}
                   onChange={handleChange}
                 />
-              </div>
-              <div className="newp3ba">
-                <label>Unit of Measure</label>
-                <Select
-                  options={unitOptions}
-                  name="unt"
-                  styles={customStyles}
-                  value={unitOptions.find(
-                    (option) => option.value === formState.unt
-                  )}
-                  onChange={(selectedOption) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      unt: selectedOption ? selectedOption.value : "",
-                    }))
-                  }
-                />
-              </div>
-              <div className="newp3ba">
-                <label>Type</label>
-                <input
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <div style={{ marginBottom: "8px" }}>
+                  <label>Product Description</label>
+                </div>
+                <TextField
+                  fullWidth
                   type="text"
-                  name="type"
-                  placeholder="Goods"
-                  className="newp3cb"
-                  value={formState.type}
+                  name="productDesc"
+                  placeholder="White"
+                  value={formState.productDesc}
                   onChange={handleChange}
                 />
-              </div>
-            </div>
-            <div className="newp3c">
-              <div className="newp3ca">
-                <label>Category</label>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <div style={{ marginBottom: "8px" }}>
+                  <label>Available Product Quantity</label>
+                </div>
+
+                <TextField
+                  fullWidth
+                  type="number"
+                  name="availableProductQty"
+                  placeholder="0"
+                  value={formState.availableProductQty}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <div style={{ marginBottom: "8px" }}>
+                  <label>Total Quantity Purchased</label>
+                </div>
+                <TextField
+                  fullWidth
+                  type="number"
+                  name="totalQtyPurchased"
+                  placeholder="0"
+                  value={formState.totalQtyPurchased}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <div style={{ marginBottom: "8px" }}>
+                  <label>Category</label>
+                </div>
                 <Select
+                  placeholder="Select Product Category"
                   options={categoryOptions}
                   name="category"
                   styles={customStyles}
@@ -220,20 +294,47 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
                     }))
                   }
                 />
-              </div>
-              <div className="newp3ca">
-                <label>Image</label>
-                <input
-                  type="file"
-                  accept=".png, .jpg, .jpeg"
-                  onChange={handleImageChange}
-                  className="newp3cb"
-                  name="image"
-                  required
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <div style={{ marginBottom: "8px" }}>
+                  <label>Unit of Measure</label>
+                </div>
+                <Select
+                  placeholder="Select your Unit of Measure"
+                  options={unitOptions}
+                  name="unt"
+                  styles={customStyles}
+                  value={unitOptions.find(
+                    (option) => option.value === formState.unt
+                  )}
+                  onChange={(selectedOption) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      unt: selectedOption ? selectedOption.value : "",
+                    }))
+                  }
                 />
-              </div>
-            </div>
-            <div className="newp3a2">
+              </Grid>
+            </Grid>
+            <hr style={{ border: "1.2px solid #E2E6E9", marginTop: "32px" }} />
+
+            {/* Tobe deleted later */}
+            {/* <div className="newp3ba">
+                <label>Type</label>
+                <input
+                  type="text"
+                  name="type"
+                  placeholder="Goods"
+                  className="newp3cb"
+                  value={formState.type}
+                  onChange={handleChange}
+                />
+              </div> */}
+            {/* </div> */}
+            {/* <div className="newp3c"> */}
+
+            {/* To be deactivated: form bottom for cost and selling price  */}
+            {/* <div className="newp3a2">
               <p style={{ fontSize: "20px" }}>Pricing</p>
             </div>
             <div className="newp3d">
@@ -259,8 +360,9 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
                   onChange={handleChange}
                 />
               </div>
-            </div>
-            <div className="newp3e">
+            </div>*/}
+            <Button type="submit">Create Product</Button>
+            {/* <div className="newp3e">
               <button
                 type="submit"
                 className="newp3btn"
@@ -268,7 +370,7 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
               >
                 Create Product
               </button>
-            </div>
+            </div> */}
             {error && <p className="error-message">{error}</p>}
           </form>
         </div>
@@ -276,3 +378,21 @@ export default function Newprod({ onClose, onSaveAndSubmit }) {
     </div>
   );
 }
+
+const Button = styled.button`
+  padding: 8px 24px 8px 24px;
+  border-radius: 4px;
+  opacity: 0px;
+  background: #3b7ced;
+  border: solid 1px #3b7ced;
+  display: inline-flex;
+  width: max-content;
+  cursor: pointer;
+  margin-top: 32px;
+
+  font-size: 16px;
+  font-weight: 400;
+  // line-height: 19.41px;
+  // text-align: center;
+  color: #ffffff;
+`;
