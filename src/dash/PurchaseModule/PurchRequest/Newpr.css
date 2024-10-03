@@ -7,7 +7,8 @@
   align-items: center;
   z-index: 999;
   margin-top: 6%;
-  background-color: white;
+  background-color: #ffffff;
+  background-image: url(../../../assets/background.png);
   overflow: auto;
 }
 .fade-in {
@@ -226,7 +227,7 @@
 .no-arrows {
   -webkit-appearance: none;
   -moz-appearance: textfield;
-  appearance: textfield; 
+  appearance: textfield;
 }
 
 .no-arrows::-webkit-outer-spin-button,
