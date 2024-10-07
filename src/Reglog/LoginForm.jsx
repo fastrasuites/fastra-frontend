@@ -33,7 +33,7 @@ export default function LoginForm() {
     if (username && password) {
       try {
         const response = await axios.post(
-          `https://${tenantName}.fastrasuite.com/login/`, // Corrected to HTTPS and endpoint
+          `https://${tenantName}.fastrasuite.com/api/login/`, // Corrected to HTTPS and endpoint
           { username, password } // Use username instead of email
         );
 
@@ -60,7 +60,9 @@ export default function LoginForm() {
         <div className="group-container">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="username" className="form-label"> {/* Changed from email to username */}
+              <label htmlFor="username" className="form-label">
+                {" "}
+                {/* Changed from email to username */}
                 Username
               </label>
               <input
