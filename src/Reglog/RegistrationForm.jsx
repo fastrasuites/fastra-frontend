@@ -55,7 +55,7 @@ export default function RegistrationForm() {
   const steps = [
     <CompanyDetails next={handleNextStep} />,
     <PasswordSetup next={handleNextStep} apiError={apiError} />,
-    <ConfirmationStep />,
+    <ConfirmationStep companyEmail={formData.companyEmail} />,
   ];
 
   return (
@@ -256,6 +256,7 @@ const PasswordSetup = ({ next, apiError }) => {
 };
 
 const ConfirmationStep = ({ companyEmail }) => {
+  console.log("checkig that companyEmail props got here? ", companyEmail);
   // Function to detect email provider and open the respective email login page
   const handleOpenEmailClient = () => {
     if (!companyEmail) {
@@ -288,6 +289,7 @@ const ConfirmationStep = ({ companyEmail }) => {
 
     // Check if the email domain is recognized, then open the login page
     if (emailProviders[emailDomain]) {
+      console.log(emailProviders[emailDomain]);
       window.open(emailProviders[emailDomain], "_blank");
     } else {
       alert(
