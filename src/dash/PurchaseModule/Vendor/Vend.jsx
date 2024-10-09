@@ -361,7 +361,7 @@ export default function Vend() {
                     textTransform: "capitalize",
                   }}
                 >
-                  New Product
+                  New Vendor
                 </Button>
 
                 <Box

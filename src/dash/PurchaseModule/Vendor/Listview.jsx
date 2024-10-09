@@ -80,7 +80,7 @@ const ListView = ({ items, onItemClick }) => {
             <TableCell>Email</TableCell>
             <TableCell>Phone</TableCell>
             <TableCell>Address</TableCell>
-            <TableCell>Category</TableCell>
+            {/* <TableCell>Category</TableCell> */}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -104,7 +104,7 @@ const ListView = ({ items, onItemClick }) => {
               <TableCell>{item.email}</TableCell>
               <TableCell>{item.phone}</TableCell>
               <TableCell>{item.address}</TableCell>
-              <TableCell>{item.category}</TableCell>
+              {/* <TableCell>{item.category}</TableCell> */}
             </TableRow>
           ))}
         </TableBody>
