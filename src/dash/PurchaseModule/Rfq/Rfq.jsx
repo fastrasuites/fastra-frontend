@@ -8,6 +8,10 @@ import RListView from "./RListView";
 import Rform from "./Rform";
 import Rapr from "./Rapr";
 import { getVendors, getCategories } from "../Vendor/Vend";
+import draft from '../../../../src/image/icons/draft (1).png';
+import approved from '../../../../src/image/icons/approved.png';
+import rejected from '../../../../src/image/icons/rejected.png';
+import pending from '../../../../src/image/icons/pending.png';
 
 export default function Rfq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -153,15 +157,25 @@ export default function Rfq() {
       <div className="rfq1">
         <div className="rfq2">
           <p>RFQs</p>
-          <div className="rfqlist">
-            <div className="rfql1">
-              <p style={{ lineHeight: "1rem" }}>Vendor Selected</p>
+          <div className="rfq-status">
+          <div className="status-field rfq-draft">
+            <img src={draft} alt="approved" className="status-img" />
               <p className={`plnum ${vendorSelectedCount === 0 ? "zero" : ""}`}>
                 {vendorSelectedCount}
               </p>
+              <p style={{ lineHeight: "1rem" }} className="status-desc" >Request for Quote</p>
+              <p style={{ fontSize: "20px"}}>Draft</p>
             </div>
-            <div className="rfql2">
-              <p style={{ lineHeight: "1rem" }}>Awaiting Vendor Selection</p>
+            <div className="status-field rfq-approved">
+            <img src={approved} alt="approved" className="status-img" />
+              <p className={`plnum ${vendorSelectedCount === 0 ? "zero" : ""}`}>
+                {vendorSelectedCount}
+              </p>
+              <p style={{ lineHeight: "1rem" }} className="status-desc">Request for Quote</p>
+              <p style={{ fontSize: "20px"}}>Approved</p>
+            </div>
+            <div className="status-field rfq-pending">
+            <img src={pending} alt="pending" className="status-img" />
               <p
                 className={`plnum ${
                   awaitingVendorSelectionCount === 0 ? "zero" : ""
@@ -169,12 +183,16 @@ export default function Rfq() {
               >
                 {awaitingVendorSelectionCount}
               </p>
+              <p style={{ lineHeight: "1rem" }} className="status-desc">Request for Quote</p>
+              <p style={{ fontSize: "20px"}}>Pending</p>
             </div>
-            <div className="rfql3">
-              <p>Cancelled</p>
+            <div className="status-field rfq-rejected">
+            <img src={rejected} alt="approved" className="status-img" />
               <p className={`plnum ${cancelledCount === 0 ? "zero" : ""}`}>
                 {cancelledCount}
               </p>
+              <p style={{ lineHeight: "1rem" }} className="status-desc">Request for Quote</p>
+              <p style={{ fontSize: "20px"}}>Rejected</p>
             </div>
           </div>
           <div className="rfq3">

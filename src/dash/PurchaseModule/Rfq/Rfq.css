@@ -21,10 +21,12 @@
   position: absolute;
   top: 5%;
 }
-.rfqlist {
-  width: 40%;
-  height: 20%;
+.rfq-status {
+  width: 65%;
+  height: 28%;
   display: flex;
+  justify-content: flex-start;
+  justify-items: flex-start;
   gap: 2rem;
   margin-top: 1.5rem;
   color: white;
@@ -48,44 +50,42 @@
     gap: 1rem;
   }
 }
-.rfql1 {
-  background: linear-gradient(225deg, #2ba24c 0%, #103c1c 100%);
-  width: 35%;
+.status-field {
+  width: 50%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
+  display: grid;
+  align-items: left;
+  justify-content: flex-start;
+  padding: 1rem;
   flex-direction: column;
-  line-height: 2.5rem;
-  border-radius: 5px;
-}
-.rfql3 {
-  background: linear-gradient(225deg, #e43e2b 0%, #7e2218 100%);
-  width: 24%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 2.5rem;
-  text-align: center;
+  line-height: 1.8rem;
   border-radius: 5px;
   @media screen and (max-width: 420px) {
-    width: 26%;
+    width: 100%;
   }
 }
-.rfql2 {
+.status-img {
+  padding-bottom: 20px;
+}
+.status-desc {
+  margin-bottom: -0.4rem;
+  opacity: 0.5;
+  @media screen and (max-width: 420px) {
+    font-size: 8px;
+  }
+}
+.rfq-draft {
+  background: linear-gradient(225deg, #3BB1D2 0%, #158193 100%);
+
+}
+.rfq-approved {
+  background: linear-gradient(225deg, #2ba24c 0%, #103c1c 100%);
+  }
+.rfq-pending {
   background: linear-gradient(225deg, #f0b501 0%, #8a6801 100%);
-  width: 52%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 2.5rem;
-  text-align: center;
-  border-radius: 5px;
+}
+.rfq-rejected {
+  background: linear-gradient(225deg, #e43e2b 0%, #7e2218 100%);
 }
 .plnum {
   font-size: 2rem;
@@ -124,12 +124,13 @@
 .r3abtn {
   background: #3b7ced;
   color: white;
-  padding: 12px;
+  padding: 12px 24px;
   border-radius: 4px 0px 0px 0px;
   display: flex;
   justify-content: center;
   align-items: center;
   border: none;
+  font-size: 18px;
   @media screen and (max-width: 647px) and (min-width: 562px) {
     font-size: 11px;
   }

@@ -9,6 +9,11 @@ import Papr from "./Papr";
 import CRfq from "./CRfq";
 import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
 import { useLocation } from "react-router-dom";
+import draft from '../../../../src/image/icons/draft (1).png';
+import approved from '../../../../src/image/icons/approved.png';
+import rejected from '../../../../src/image/icons/rejected.png';
+import pending from '../../../../src/image/icons/pending.png';
+
 
 export default function Purchreq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -157,29 +162,37 @@ export default function Purchreq() {
         <div className="purchase-request-content">
           <p>Purchase Requests</p>
           <div className="purchase-request-status">
-            <div className="purchase-draft">
-              <p>Draft</p>
+            <div className="status-field purchase-draft">
+              <img src={draft} alt="draft" className="status-img" />
               <p className={`purchase-list-count ${draftCount === 0 ? "zero" : ""}`}>
                 {draftCount}
               </p>
+              <p className="status-desc">Purchase Request</p>
+              <p style={{ fontSize: "20px"}}>Draft</p>
             </div>
-            <div className="purchase-approved">
-              <p>Approved</p>
+            <div className="status-field purchase-approved">
+              <img src={approved} alt="approved" className="status-img" />
               <p className={`purchase-list-count ${approvedCount === 0 ? "zero" : ""}`}>
                 {approvedCount}
               </p>
+              <p className="status-desc">Purchase Request</p>
+              <p style={{ fontSize: "20px"}}>Approved</p>
             </div>
-            <div className="purchase-pending">
-              <p>Pending</p>
+            <div className="status-field purchase-pending">
+              <img src={pending} alt="pending" className="status-img" />
               <p className={`purchase-list-count ${pendingCount === 0 ? "zero" : ""}`}>
                 {pendingCount}
               </p>
+              <p className="status-desc">Purchase Request</p>
+              <p style={{ fontSize: "20px"}}>Pending</p>
             </div>
-            <div className="purchase-rejected">
-              <p>Rejected</p>
+            <div className="status-field purchase-rejected">
+              <img src={rejected} alt="rejected" className="status-img" />
               <p className={`purchase-list-count ${rejectedCount === 0 ? "zero" : ""}`}>
                 {rejectedCount}
               </p>
+              <p className="status-desc">Purchase Request</p>
+              <p style={{ fontSize: "20px"}}>Rejected</p>
             </div>
           </div>
           
