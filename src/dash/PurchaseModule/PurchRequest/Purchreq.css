@@ -28,9 +28,11 @@
   /* background-color: #7e2218; */
 }
 .purchase-request-status {
-  width: 50%;
-  height: 20%;
+  width: 65%;
+  height: 25%;
   display: flex;
+  justify-content: flex-start;
+  justify-items: flex-start;
   gap: 2rem;
   margin-top: 1.5rem;
   color: white;
@@ -54,58 +56,43 @@
     gap: 1rem;
   }
 }
-.purchase-draft {
-  background: linear-gradient(225deg, #3BB1D2 0%, #158193 100%);
-  width: 35%;
+.status-field {
+  width: 50%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  align-items: left;
+  justify-content: flex-start;
+  padding: 1rem;
   flex-direction: column;
-  line-height: 2.5rem;
+  line-height: 1.8rem;
   border-radius: 5px;
   @media screen and (max-width: 420px) {
-    width: 22%;
+    width: 100%;
   }
+}
+.status-img {
+  padding-bottom: 20px;
+}
+.status-desc {
+  margin-bottom: -0.6rem;
+  line-height: 1rem;
+  opacity: 0.5;
+  @media screen and (max-width: 420px) {
+    font-size: 8px;
+  }
+}
+.purchase-draft {
+  background: linear-gradient(225deg, #3BB1D2 0%, #158193 100%);
+
 }
 .purchase-approved {
   background: linear-gradient(225deg, #2ba24c 0%, #103c1c 100%);
-  width: 35%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 2.5rem;
-  border-radius: 5px;
-}
+  }
 .purchase-pending {
   background: linear-gradient(225deg, #f0b501 0%, #8a6801 100%);
-  width: 35%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  flex-direction: column;
-  line-height: 2.5rem;
-  border-radius: 5px;
 }
 .purchase-rejected {
   background: linear-gradient(225deg, #e43e2b 0%, #7e2218 100%);
-  width: 35%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 2.5rem;
-  text-align: center;
-  border-radius: 5px;
-  @media screen and (max-width: 420px) {
-    width: 26%;
-  }
 }
 .purchase-list-count {
   font-size: 2rem;

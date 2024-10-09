@@ -298,7 +298,7 @@ export default function POrderform({
                 <button type="button" className="new3but" onClick={onClose}>
                   Cancel
                 </button>
-                <button type="button" className="new3btn" onClick={handlePrint}>
+                {/* <button type="button" className="new3btn" onClick={handlePrint}>
                   Print Order
                 </button>
                 <button type="button" className="new3btn" onClick={handleSave}>
@@ -306,7 +306,7 @@ export default function POrderform({
                 </button>
                 <button type="submit" className="new3btn">
                   Save &amp; Send
-                </button>
+                </button> */}
               </div>
             </div>
             <div className="newpod3b">
@@ -317,7 +317,15 @@ export default function POrderform({
                 </p>
               </div>
               <div className="newpod3bb">
-                <p>Date Created</p>
+                <p>Date</p>
+                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                  {`${formatDate(formState.date)} - ${formatTime(
+                    formState.date
+                  )}`}
+                </p>
+              </div>
+              <div className="newpod3bb">
+                <p>Created By</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
                   {`${formatDate(formState.date)} - ${formatTime(
                     formState.date
@@ -346,7 +354,7 @@ export default function POrderform({
                   )}
                 />
               </div>
-              <div className="newpod3ca">
+              {/* <div className="newpod3ca">
                 <p>Vendor Category</p>
                 <Autocomplete
                   value={formState.vendorCategory}
@@ -367,17 +375,104 @@ export default function POrderform({
                     />
                   )}
                 />
-              </div>
+              </div> */}
               <button
                 type="button"
                 className="new3but"
                 onClick={addRow}
-                style={{ marginTop: "1rem" }}
+                style={{ marginTop: "1rem", color: "#000", fontSize: "15px", opacity: "0.5", padding: "2px", borderRadius: "50px"}}
               >
-                Add Row
+                 <span style={{ fontSize: "20px", opacity: "0.5", padding: "1px", borderRadius: "50%", }}>+</span> Add New Vendor
               </button>
             </div>
 
+            <div className="newpod3b">
+            <div className="newpod3bb">
+                <p>Vendor Address</p>
+                {/* this should pick vendor address */}
+                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                  {`${formatDate(formState.date)} - ${formatTime(
+                    formState.date
+                  )}`} 
+                </p>
+              </div>
+              <div className="newpod3bb">
+                <p>Vendor Email</p>
+                {/* this should pick vendor email */}
+                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                  {`${formatDate(formState.date)} - ${formatTime(
+                    formState.date
+                  )}`} 
+                </p>
+              </div>
+              
+            </div> <br />
+            <div className="newpod3c">
+              <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
+                <p>Payment Term</p>
+                <Autocomplete
+                  value={selectedVendor}
+                  onChange={handleVendorSelect}
+                  inputValue={vendorInputValue}
+                  onInputChange={(event, newInputValue) => {
+                    setVendorInputValue(newInputValue);
+                  }}
+                  options={savedVendors}
+                  getOptionLabel={(option) => option.vendorName}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Payment Term"
+                      className="newpod3cb"
+                    />
+                  )}
+                />
+              </div>
+              <div className="newpod3ca">
+                <p>Purchase Policy</p>
+                <Autocomplete
+                  value={formState.vendorCategory}
+                  onChange={handleVendorCategoryChange}
+                  inputValue={formState.vendorCategory}
+                  onInputChange={(event, newInputValue) => {
+                    setFormState((prev) => ({
+                      ...prev,
+                      vendorCategory: newInputValue,
+                    }));
+                  }}
+                  options={categories}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Purchase Policy"
+                      className="newpod3cb"
+                    />
+                  )}
+                />
+              </div>
+              <div className="newpod3ca">
+                <p>Delivery Terms</p>
+                <Autocomplete
+                  value={formState.vendorCategory}
+                  onChange={handleVendorCategoryChange}
+                  inputValue={formState.vendorCategory}
+                  onInputChange={(event, newInputValue) => {
+                    setFormState((prev) => ({
+                      ...prev,
+                      vendorCategory: newInputValue,
+                    }));
+                  }}
+                  options={categories}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Delivery Term"
+                      className="newpod3cb"
+                    />
+                  )}
+                />
+              </div>
+            </div>
             <p style={{ fontSize: "20px", color: "blue", marginTop: "1rem" }}>
               Purchase Order Content
             </p>
@@ -509,6 +604,24 @@ export default function POrderform({
                   </TableBody>
                 </Table>
               </TableContainer>
+            </div>
+            <br /> <br /><br /> <br />
+            <div className="newpod3a" style={{ justifyContent: "flex-end"}}>
+              
+              <div className="newpod3e" >
+                {/* <button type="button" className="new3but" onClick={onClose}>
+                  Cancel
+                </button>
+                <button type="button" className="new3btn" onClick={handlePrint}>
+                  Print Order
+                </button> */}
+                <button type="button" className="new3but" onClick={handleSave} style={{ border: "1px solid #3b7ced", padding: "12px 20px"}}>
+                  Save
+                </button>
+                <button type="submit" className="new3btn">
+                  Save &amp; Share
+                </button>
+              </div>
             </div>
           </form>
         </div>

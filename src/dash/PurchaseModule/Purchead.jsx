@@ -8,6 +8,7 @@ import Sidebar from "../../components/Sidebar";
 import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 import { Center } from "@chakra-ui/react";
 
+
 export default function Purchead() {
   const [notifications, setNotifications] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
