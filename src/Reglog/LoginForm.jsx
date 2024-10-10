@@ -69,7 +69,7 @@ export default function LoginForm() {
                 type="text" // Change to text since it's a username
                 id="username"
                 className="form-input"
-                placeholder="Enter your Username here"
+                placeholder="Enter your username here"
                 value={username}
                 onChange={handleUsernameChange}
                 required
