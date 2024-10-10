@@ -61,49 +61,50 @@
 // };
 
 // export default EmailVerification;
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
-const EmailVerifyStatus = ( { tenantName }) => {
-    const { search } = useLocation();
-    const queryParams = new URLSearchParams(search);
-    const status = queryParams.get('status');
-    const token = queryParams.get('token');
-    const [message, setMessage] = useState('');
+const EmailVerifyStatus = ({ tenantName }) => {
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const status = queryParams.get("status");
+  const token = queryParams.get("token");
+  const [message, setMessage] = useState("");
 
-    useEffect(() => {
-        if (status) {
-            if (status === 'expired') {
-                setMessage('Your verification link has expired. Please request a new one.');
-            }
-            else {
-                setMessage(status);
-            }
-        }
-    }, [status]);
+  useEffect(() => {
+    if (status) {
+      if (status === "expired") {
+        setMessage(
+          "Your verification link has expired. Please request a new one."
+        );
+      } else {
+        setMessage(status);
+      }
+    }
+  }, [status]);
 
-    const resendVerification = async () => {
-      
-        try {
-            const response = await fetch(`https://${tenantName}.api.fastrasuite.com/resend-verification-email?token=${token}`);
-            const data = await response.json();
-            alert(data.detail || 'Verification email has been sent.');
-          
-        } catch (error) {
-            console.error('Error resending email:', error);
-            alert('An error occurred while resending the verification email.');
-        }
-    };
+  const resendVerification = async () => {
+    try {
+      const response = await fetch(
+        `https://${tenantName}.fastrasuite.com/api/resend-verification-email?token=${token}`
+      );
+      const data = await response.json();
+      alert(data.detail || "Verification email has been sent.");
+    } catch (error) {
+      console.error("Error resending email:", error);
+      alert("An error occurred while resending the verification email.");
+    }
+  };
 
-    return (
-        <div>
-            <h1>Email Verification</h1>
-            <p>{message}</p>
-            {status === 'expired' && token && (
-                <button onClick={resendVerification}>Resend Verification Email</button>
-            )}
-        </div>
-    );
+  return (
+    <div>
+      <h1>Email Verification</h1>
+      <p>{message}</p>
+      {status === "expired" && token && (
+        <button onClick={resendVerification}>Resend Verification Email</button>
+      )}
+    </div>
+  );
 };
 
 export default EmailVerifyStatus;
