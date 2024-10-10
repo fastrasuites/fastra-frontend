@@ -5,7 +5,8 @@ import axios from "axios";
 import "./LoginForm.css";
 
 export default function LoginForm() {
-  const [username, setUsername] = useState(""); // Changed from email to username
+  // const [username, setUsername] = useState(""); // Changed from email to username
+  const [email, setEmail] = useState(""); // Changed from email to username
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -20,8 +21,8 @@ export default function LoginForm() {
     setShowPassword(!showPassword);
   };
 
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
   };
 
   const handlePasswordChange = (e) => {
@@ -30,11 +31,11 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (username && password) {
+    if (email && password) {
       try {
         const response = await axios.post(
           `https://${tenantName}.fastrasuite.com/api/company/login/`, // Corrected to HTTPS and endpoint
-          { username, password } // Use username instead of email
+          { email, password } // Use username instead of email
         );
 
         const { redirect_url } = response.data; // Destructure the redirect_url from response
@@ -60,18 +61,18 @@ export default function LoginForm() {
         <div className="group-container">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="username" className="form-label">
+              <label htmlFor="email" className="form-label">
                 {" "}
                 {/* Changed from email to username */}
-                Username
+                Email
               </label>
               <input
-                type="text" // Change to text since it's a username
-                id="username"
+                type="email" // Change to text since it's a username
+                id="email"
                 className="form-input"
-                placeholder="Enter your username here"
-                value={username}
-                onChange={handleUsernameChange}
+                placeholder="Enter your email here"
+                value={email}
+                onChange={handleEmailChange}
                 required
               />
             </div>

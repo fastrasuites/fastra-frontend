@@ -62,7 +62,8 @@ const EmailVerification = ({ tenantName }) => {
   );
 };
 
-// export default EmailVerification;
+export default EmailVerification;
+
 // import React, { useEffect, useState } from "react";
 // import { useLocation } from "react-router-dom";
 
