@@ -13,6 +13,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { useHistory } from "react-router-dom";
 import "./POrderform.css";
+// import { TextField } from "@mui/material";
+
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -73,7 +75,7 @@ export default function POrderform({
     id: initialData?.id || generateNewID(),
     productName: initialData?.productName || "",
     amount: initialData?.amount || "",
-    status: initialData?.status || "Awaiting Goods",
+    status: initialData?.status || "Pending Order",
     date: initialData?.date ? new Date(initialData.date) : new Date(),
     expiryDate: initialData?.expiryDate || "",
     vendor: initialData?.vendor || "",
@@ -205,7 +207,47 @@ export default function POrderform({
       }));
     }
   };
+  const [purchaseState, setPurchaseState] = React.useState({
+    paymentTerm: '',
+    purchasePolicy: '',
+    deliveryTerm: '',
+  });
 
+  // Load vendor details from localStorage on component mount
+  useEffect(() => {
+    const savedVendorDetails = JSON.parse(localStorage.getItem('vendorDetails'));
+    if (savedVendorDetails) {
+      setPurchaseState(savedVendorDetails);
+    }
+  }, []);
+
+  // Save to localStorage whenever formState changes
+  useEffect(() => {
+    localStorage.setItem('vendorDetails', JSON.stringify(purchaseState));
+  }, [purchaseState]);
+
+  function handlePurchaseChange (e) {
+    const { name, value } = e.target;
+    setPurchaseState((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+  const [vendor, setVendor] = useState({
+    vendorName: "",
+    email: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
+    
+    // Fetch data from latest vendor added
+    if (savedVendors.length > 0) {
+      const latestVendor = savedVendors[savedVendors.length - 1];
+      setVendor(latestVendor);
+    }
+  }, []);
   const handleVendorCategoryChange = (event, newValue) => {
     setFormState((prev) => ({
       ...prev,
@@ -327,9 +369,7 @@ export default function POrderform({
               <div className="newpod3bb">
                 <p>Created By</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`}
+                {vendor.vendorName}
                 </p>
               </div>
             </div>
@@ -391,18 +431,14 @@ export default function POrderform({
                 <p>Vendor Address</p>
                 {/* this should pick vendor address */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`} 
+                {vendor.address}
                 </p>
               </div>
               <div className="newpod3bb">
                 <p>Vendor Email</p>
                 {/* this should pick vendor email */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`} 
+                {vendor.email}
                 </p>
               </div>
               
@@ -410,70 +446,48 @@ export default function POrderform({
             <div className="newpod3c">
               <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
                 <p>Payment Term</p>
-                <Autocomplete
-                  value={selectedVendor}
-                  onChange={handleVendorSelect}
-                  inputValue={vendorInputValue}
-                  onInputChange={(event, newInputValue) => {
-                    setVendorInputValue(newInputValue);
-                  }}
-                  options={savedVendors}
-                  getOptionLabel={(option) => option.vendorName}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Payment Term"
-                      className="newpod3cb"
-                    />
-                  )}
+                <TextField
+                 name="paymentTerm"
+                  value={purchaseState.paymentTerm}
+                  onChange={handlePurchaseChange}
+                  label="Type your payment terms here"
+                  placeholder="Type your payment terms here."
+                  variant="outlined" // You can change the variant to 'filled' or 'standard' based on your design
+                  className="newpod3cb"
+                  fullWidth // Makes the input take the full width of its container
+                  margin="normal" // Adds some space around the input
                 />
               </div>
               <div className="newpod3ca">
                 <p>Purchase Policy</p>
-                <Autocomplete
-                  value={formState.vendorCategory}
-                  onChange={handleVendorCategoryChange}
-                  inputValue={formState.vendorCategory}
-                  onInputChange={(event, newInputValue) => {
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorCategory: newInputValue,
-                    }));
-                  }}
-                  options={categories}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Purchase Policy"
-                      className="newpod3cb"
-                    />
-                  )}
+                <TextField
+                  name="purchasePolicy"
+                  value={purchaseState.purchasePolicy}
+                  onChange={handlePurchaseChange}
+                  label="Type your purchase policy here"
+                  placeholder="Type your purchase policy here."
+                  variant="outlined"
+                  className="newpod3cb"
+                  fullWidth
+                  margin="normal"
                 />
               </div>
               <div className="newpod3ca">
                 <p>Delivery Terms</p>
-                <Autocomplete
-                  value={formState.vendorCategory}
-                  onChange={handleVendorCategoryChange}
-                  inputValue={formState.vendorCategory}
-                  onInputChange={(event, newInputValue) => {
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorCategory: newInputValue,
-                    }));
-                  }}
-                  options={categories}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Delivery Term"
-                      className="newpod3cb"
-                    />
-                  )}
+                <TextField
+                  name="deliveryTerm"
+                  value={purchaseState.deliveryTerm}
+                  onChange={handlePurchaseChange}
+                  label="Type your delivery terms here"
+                  placeholder="Type your delivery terms here."
+                  variant="outlined"
+                  className="newpod3cb"
+                  fullWidth
+                  margin="normal"
                 />
               </div>
             </div>
-            <p style={{ fontSize: "20px", color: "blue", marginTop: "1rem" }}>
+            <p style={{ fontSize: "20px", color: "#3b7ced", marginTop: "1rem" }}>
               Purchase Order Content
             </p>
             <div className="newpod3d">

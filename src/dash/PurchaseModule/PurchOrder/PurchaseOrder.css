@@ -2,6 +2,8 @@
   height: 180vh;
   width: 100%;
   background-image: url("../../../image/bg.svg");
+  background-repeat: no-repeat;
+  background-size: cover;
   background-size: contain;
   margin: 0;
   box-sizing: border-box;
@@ -29,7 +31,98 @@
   box-sizing: border-box;
   top: 5%;
 }
+.purchase-order-heading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  position: absolute;
+  top: 10%;
+  justify-content: center;
+  /* background-color: blue; */
+}
+.purchase-order-content {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  margin-top: 2.5rem;
+  justify-content: center;
+  /* background-color: #7e2218; */
+}
+.purchase-order-status {
+  width: 65%;
+  height: 25%;
+  display: flex;
+  justify-content: flex-start;
+  justify-items: flex-start;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  color: white;
+  @media screen and (max-width: 1200px) and (min-width: 850px) {
+    width: 55%;
+  }
+  @media screen and (max-width: 849px) and (min-width: 680px) {
+    width: 65%;
+  }
+  @media screen and (max-width: 679px) and (min-width: 580px) {
+    width: 75%;
+  }
+  @media screen and (max-width: 579px) /*and (min-width: 800px) */ {
+    width: 95%;
+  }
+  @media screen and (max-width: 449px) {
+    font-size: 0.8rem;
+  }
+  @media screen and (max-width: 420px) {
+    width: 100%;
+    gap: 1rem;
+  }
+}
+.status-field {
+  width: 50%;
+  height: 100%;
+  display: grid;
+  align-items: left;
+  justify-content: flex-start;
+  padding: 1rem;
+  flex-direction: column;
+  line-height: 1.8rem;
+  border-radius: 5px;
+  @media screen and (max-width: 420px) {
+    width: 100%;
+  }
+}
+.status-img {
+  padding-bottom: 20px;
+}
+.status-desc {
+  margin-bottom: -0.6rem;
+  line-height: 1rem;
+  opacity: 0.5;
+  @media screen and (max-width: 420px) {
+    font-size: 8px;
+  }
+}
+.purchase-draft {
+  background: linear-gradient(225deg, #3BB1D2 0%, #158193 100%);
 
+}
+.purchase-approved {
+  background: linear-gradient(225deg, #2ba24c 0%, #103c1c 100%);
+  }
+.purchase-pending {
+  background: linear-gradient(225deg, #f0b501 0%, #8a6801 100%);
+}
+.purchase-rejected {
+  background: linear-gradient(225deg, #e43e2b 0%, #7e2218 100%);
+}
+.purchase-list-count {
+  font-size: 2rem;
+  text-align: left;
+  @media screen and (max-width: 449px) {
+    font-size: 1.5rem;
+  }
+}
 .purchaseOrderlist {
   width: 40%;
   height: 20%;
@@ -113,7 +206,7 @@
   display: flex;
   align-items: center;
   gap: 30rem;
-  margin-top: 2.5rem;
+  margin-top: 10rem;
   @media screen and (max-width: 1200px) and (min-width: 451px) {
     gap: 0;
   }
