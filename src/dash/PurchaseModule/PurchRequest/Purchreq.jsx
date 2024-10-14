@@ -160,7 +160,7 @@ export default function Purchreq() {
     <div className="purchase-request" id="purchase">
       <div className="purchase-request-heading">
         <div className="purchase-request-content">
-          <p>Purchase Requests</p>
+          <p style={{ fontSize: "17px"}}>Purchase Requests</p>
           <div className="purchase-request-status">
             <div className="status-field purchase-draft">
               <img src={draft} alt="draft" className="status-img" />
@@ -198,7 +198,7 @@ export default function Purchreq() {
           
           <div className="purchase-nav">
             <div className="purchase-content">
-              <button className="purchase-contentbtn" onClick={handleNewPurchaseRequest}>
+              <button className="purchase-contentbtn" onClick={handleNewPurchaseRequest} style={{ fontSize: "17px"}}>
                 New Purchase Request
               </button>
               <div className="prqsash">

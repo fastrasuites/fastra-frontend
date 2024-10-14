@@ -111,7 +111,7 @@ export default function PurchaseOrder() {
     <div className="purchase-order" id="purchase">
       <div className="purchase-order-heading">
         <div className="purchase-order-content">
-          <p>Purchase Order</p>
+          <p style={{ fontSize: "17px"}}>Purchase Order</p>
           <div className="purchase-order-status">
             {/* Status fields for draft, approved, pending, rejected */}
             <div className="status-field purchase-draft">
@@ -153,7 +153,7 @@ export default function PurchaseOrder() {
               <div className="purchaseOrder2">
                 <div className="purchaseOrder3">
                   <div className="r3a">
-                    <button className="r3abtn" onClick={handleNewPurchaseOrder}>
+                    <button className="r3abtn" onClick={handleNewPurchaseOrder} style={{ fontSize: "17px"}}>
                       New Purchase Order
                     </button>
                     <div className="purchaseOrdersash">

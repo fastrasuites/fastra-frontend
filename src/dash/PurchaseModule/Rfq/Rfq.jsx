@@ -156,7 +156,7 @@ export default function Rfq() {
     <div className="rfq" id="rfq">
       <div className="rfq1">
         <div className="rfq2">
-          <p>RFQs</p>
+          <p style={{ fontSize: "17px"}}>RFQs</p>
           <div className="rfq-status">
           <div className="status-field rfq-draft">
             <img src={draft} alt="approved" className="status-img" />
@@ -197,7 +197,7 @@ export default function Rfq() {
           </div>
           <div className="rfq3">
             <div className="r3a">
-              <button className="r3abtn" onClick={handleNewRfq}>
+              <button className="r3abtn" onClick={handleNewRfq} style={{ fontSize: "17px"}}>
                 New RFQ
               </button>
               <div className="rfqsash">
