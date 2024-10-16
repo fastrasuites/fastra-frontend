@@ -21,13 +21,14 @@
 }
 
 .content-details {
-  width: 95%;
+  width: 100%;
   height: 95%;
   position: absolute;
   top: 5%;
 }
 
 .content-header {
+  margin: 20px;
   padding: 5px;
   display: flex;
   align-items: center;
@@ -35,7 +36,7 @@
   margin-top: 2.5rem;
   background-color: transparent;
   margin-bottom: 2rem;
-  margin-right: 4rem;
+ 
  
 }
 @media screen and (max-width: 1024px) {
@@ -66,7 +67,7 @@
   justify-content: center;
   align-items: center;
   border: none;
-  font-size: 1.2rem;
+  font-size: 17px;
   font-weight: 530;
   border-radius: 5px;
   cursor: pointer;
@@ -133,8 +134,9 @@
 .header-activity-2 {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
   background-color: transparent;
+  margin-right: 5rem;
 }
 
 /* Responsive adjustments */
@@ -153,15 +155,15 @@
 
 .pagination {
   margin: 0 5px;
-  color: #a9b3bc;
-  font-size: 14px;
+  color: #ddd;
+  font-size: 16px;
   text-align: center;
   display: flex;
   flex-wrap: wrap; /* Wrap pagination items for smaller screens */
 }
 
 .pagination-btn {
-  border: 1.2px solid #92969a;
+  border: 1.5px solid #ccc;
   display: flex;
   align-items: center;
   background-color: #0056b3;
@@ -177,8 +179,8 @@
 }
 
 .pagination-btn button .icon {
-  font-size: 25px !important;
-  color: #92969a;
+  font-size: 16px !important;
+  color: #ddd;
   
 }
 .view-toggle {
@@ -192,8 +194,8 @@
 }
 
 .view-toggle button {
-  border: 1.8px solid #0056b3;
-  padding: 8px 20px;
+  border: 1.5px solid #0056b3;
+  padding: 5px 20px;
   background-color: #fff;
   outline: none;
   display: flex; 
@@ -201,7 +203,7 @@
 }
 
 .view-toggle button .icon {
-  font-size: 20px;
+  font-size: 16px;
   color: #357fe7;
   margin-left: 5px; /* Add a margin to create space between icon and text */
 }

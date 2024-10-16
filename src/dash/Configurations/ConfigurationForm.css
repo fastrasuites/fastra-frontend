@@ -1,0 +1,159 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.configurations {
+  min-height: 100vh;
+  margin-top: 7rem;
+}
+
+.configuration-header {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px 20px;
+  background: transparent;
+  margin-bottom: 20px;
+  z-index: 1000;
+}
+
+.configuration-header h1 {
+  font-size: 24px;
+  color: #000;
+  font-weight: 500;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+}
+
+.pagination span {
+  margin-right: 10px;
+  font-size: 14px;
+  color: #666;
+}
+.switch-btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 7px 12px;
+}
+.pagination button {
+  background: #fff;
+  border: 1.5px solid #ccc;
+  font-size: 16px;
+  color: #ddd;
+  text-align: center;
+  cursor: pointer;
+  padding: 5px 12px;
+}
+
+.pagination button:hover {
+  color: #3B7CED;
+}
+
+/* Container for the form */
+
+.configuration-form {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: transparent;
+    border-radius: 8px;
+    box-sizing: border-box;
+    /* border: 1px solid #ccc; */
+    
+  }
+  .configuration-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding-top: 30px;
+    transition: box-shadow 0.3s ease-in-out;
+  }
+  /* Section headers (e.g., Currency, Unit of Measure) */
+  .configuration-form h2,
+  .configuration-form h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #3B7CED;
+    font-weight: 500;
+    text-align: left;
+
+    
+  }
+  
+  /* Individual form sections */
+  .form-section {
+    margin-bottom: 40px;
+  }
+  
+  .form-section .MuiFormControl-root {
+    margin-bottom: 20px;
+  }
+  
+  .form-section .MuiButton-root {
+    margin-top: 20px;
+    width: 100%;
+    background-color: #3B7CED;
+    color: #fff;
+    font-weight: 500;
+  }
+  
+  .form-section .MuiButton-root:hover {
+    background-color: #3B7CED;
+  }
+  
+  /* Placeholder for Input Fields */
+  input::placeholder {
+    color: #aaa;
+    font-size: 0.95rem;
+  }
+  
+  /* Input fields styling */
+  .MuiTextField-root {
+    margin-bottom: 20px;
+  }
+  
+  /* Center the Create button */
+  .create-button {
+    display: block;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+  }
+  
+  /* Currency and Unit input fields */
+  .currency-form-group,
+  .unit-measure-form-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .currency-form-group .MuiFormControl-root,
+  .unit-measure-form-group .MuiTextField-root {
+    width: 100%;
+  }
+  
+  /* Form labels */
+  .MuiInputLabel-root {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  /* Form input boxes */
+  .MuiOutlinedInput-root {
+    background-color: #fafafa;
+    border-radius: 4px;
+  }
+  
+  /* Disable default focus outline and use a custom outline on focus */
+  .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #3B7CED;
+  }
+  

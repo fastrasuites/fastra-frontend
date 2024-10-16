@@ -67,6 +67,7 @@ export default function Purchead() {
               className="purst"
               activeClassName="active"
               onClick={handleLinkClick}
+              style={{ paddingLeft: "20px"}}
             >
               Purchase Requests
             </NavLink>
@@ -108,7 +109,7 @@ export default function Purchead() {
                 <IoIosArrowDown className="ardan" />
               </NavLink>
               {showVendorDropdown && (
-                <div className="prolst">
+                <div className="prolst" style={{ backgroundColor: "#fff", width: "100%"}}>
                   <NavLink
                     to="#"
                     className="dropdownlink"
@@ -161,8 +162,20 @@ export default function Purchead() {
                   >
                     Products
                   </NavLink>
+                 
                 </div>
               )}
+              
+              <NavLink
+              exact
+              to="/configurations"
+              className="purst"
+              activeClassName="active"
+              style={{ paddingLeft: "20px"}}
+              onClick={handleLinkClick}
+            >
+              Configurations
+            </NavLink>
             </div>
           </div>
         </li>

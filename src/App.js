@@ -40,6 +40,7 @@ import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
 import AccessGroups from "./dash/Settings/accessgroups/AccessGroups";
 import EmailVerifyStatus from "./Reglog/EmailVerification";
+import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 
 
 function App() {
@@ -120,6 +121,7 @@ function App() {
         <Route path="/procat" component={Procat} />
         <Route path="/pedit" component={Pedit} />
         <Route path="/accessgroups" component={AccessGroups } />
+        <Route path="/configurations" component={ConfigurationSettings } />
       </Switch>
     </div>
   );

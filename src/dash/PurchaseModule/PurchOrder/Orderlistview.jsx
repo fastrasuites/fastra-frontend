@@ -113,7 +113,7 @@ const Orderlistview = ({ items, onItemClick }) => {
                 />
               </TableCell>
               <TableCell>{item.id}</TableCell>
-              <TableCell>{item.productName}</TableCell>
+              <TableCell>{item.VendorName}</TableCell>
               <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
               <TableCell style={{ color: getStatusColor(item.status) }}>
                 {item.status}

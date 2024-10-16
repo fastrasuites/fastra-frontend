@@ -179,6 +179,7 @@ export default function Vend() {
   };
 
   return (
+    <div className="container-body">
     <div className="vend" id="vend">
       <div className="prq1">
         <div className="prq2">
@@ -521,6 +522,7 @@ export default function Vend() {
           />
         </div>
       )}
+    </div>
     </div>
   );
 }
