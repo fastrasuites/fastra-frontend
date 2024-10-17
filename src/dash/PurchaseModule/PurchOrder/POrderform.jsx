@@ -15,7 +15,6 @@ import { useHistory } from "react-router-dom";
 import "./POrderform.css";
 // import { TextField } from "@mui/material";
 
-
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.white,
@@ -133,10 +132,11 @@ export default function POrderform({
       date: formState.date.toString(),
       rows,
     };
+    console.log(formDataWithStringDate);
 
     onSaveAndSubmit(formDataWithStringDate);
 
-    history.push("/orapr");
+    // history.push("/orapr");
   };
 
   const addRow = () => {
@@ -208,14 +208,16 @@ export default function POrderform({
     }
   };
   const [purchaseState, setPurchaseState] = React.useState({
-    paymentTerm: '',
-    purchasePolicy: '',
-    deliveryTerm: '',
+    paymentTerm: "",
+    purchasePolicy: "",
+    deliveryTerm: "",
   });
 
   // Load vendor details from localStorage on component mount
   useEffect(() => {
-    const savedVendorDetails = JSON.parse(localStorage.getItem('vendorDetails'));
+    const savedVendorDetails = JSON.parse(
+      localStorage.getItem("vendorDetails")
+    );
     if (savedVendorDetails) {
       setPurchaseState(savedVendorDetails);
     }
@@ -223,10 +225,10 @@ export default function POrderform({
 
   // Save to localStorage whenever formState changes
   useEffect(() => {
-    localStorage.setItem('vendorDetails', JSON.stringify(purchaseState));
+    localStorage.setItem("vendorDetails", JSON.stringify(purchaseState));
   }, [purchaseState]);
 
-  function handlePurchaseChange (e) {
+  function handlePurchaseChange(e) {
     const { name, value } = e.target;
     setPurchaseState((prev) => ({
       ...prev,
@@ -241,7 +243,7 @@ export default function POrderform({
 
   useEffect(() => {
     const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
-    
+
     // Fetch data from latest vendor added
     if (savedVendors.length > 0) {
       const latestVendor = savedVendors[savedVendors.length - 1];
@@ -253,58 +255,6 @@ export default function POrderform({
       ...prev,
       vendorCategory: newValue,
     }));
-  };
-  const handlePrint = () => {
-    const printWindow = window.open("", "", "width=800,height=600");
-    printWindow.document.write("<html><head><title>Print Order</title>");
-    printWindow.document.write("<style>");
-    printWindow.document.write(`
-      body { font-family: PT Sans, sans-serif; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
-      th { background-color: #f2f2f2; }
-    `);
-    printWindow.document.write("</style></head><body>");
-    printWindow.document.write(`
-      <h1>Purchase Order</h1>
-      <h2>Basic Information</h2>
-      <p><strong>ID:</strong> ${formState.id}</p>
-      <p><strong>Date Created:</strong> ${formatDate(formState.date)}</p>
-      <p><strong>Vendor:</strong> ${formState.vendor}</p>
-      <p><strong>Vendor Category:</strong> ${formState.vendorCategory}</p>
-      <h2>Product Information</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Description</th>
-            <th>Qty</th>
-            <th>Estimated Unit Price</th>
-            <th>Total Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map(
-              (row) => `
-              <tr>
-                <td>${row.productName}</td>
-                <td>${row.description}</td>
-                <td>${row.qty}</td>
-                <td>${row.unitPrice}</td>
-                <td>${row.totalPrice}</td>
-              </tr>`
-            )
-            .join("")}
-        </tbody>
-      </table>
-      <h2>Total Amount</h2>
-      <p><strong>Total:</strong> $${calculateTotalAmount()}</p>
-    `);
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.addEventListener("afterprint", onClose);
   };
 
   return (
@@ -340,15 +290,6 @@ export default function POrderform({
                 <button type="button" className="new3but" onClick={onClose}>
                   Cancel
                 </button>
-                {/* <button type="button" className="new3btn" onClick={handlePrint}>
-                  Print Order
-                </button>
-                <button type="button" className="new3btn" onClick={handleSave}>
-                  Save
-                </button>
-                <button type="submit" className="new3btn">
-                  Save &amp; Send
-                </button> */}
               </div>
             </div>
             <div className="newpod3b">
@@ -369,7 +310,7 @@ export default function POrderform({
               <div className="newpod3bb">
                 <p>Created By</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                {vendor.vendorName}
+                  {vendor.vendorName}
                 </p>
               </div>
             </div>
@@ -394,60 +335,55 @@ export default function POrderform({
                   )}
                 />
               </div>
-              {/* <div className="newpod3ca">
-                <p>Vendor Category</p>
-                <Autocomplete
-                  value={formState.vendorCategory}
-                  onChange={handleVendorCategoryChange}
-                  inputValue={formState.vendorCategory}
-                  onInputChange={(event, newInputValue) => {
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorCategory: newInputValue,
-                    }));
-                  }}
-                  options={categories}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Select category"
-                      className="newpod3cb"
-                    />
-                  )}
-                />
-              </div> */}
+
               <button
                 type="button"
                 className="new3but"
                 onClick={addRow}
-                style={{ marginTop: "1rem", color: "#000", fontSize: "15px", opacity: "0.5", padding: "2px", borderRadius: "50px"}}
+                style={{
+                  marginTop: "1rem",
+                  color: "#000",
+                  fontSize: "15px",
+                  opacity: "0.5",
+                  padding: "2px",
+                  borderRadius: "50px",
+                }}
               >
-                 <span style={{ fontSize: "20px", opacity: "0.5", padding: "1px", borderRadius: "50%", }}>+</span> Add New Vendor
+                <span
+                  style={{
+                    fontSize: "20px",
+                    opacity: "0.5",
+                    padding: "1px",
+                    borderRadius: "50%",
+                  }}
+                >
+                  +
+                </span>{" "}
+                Add New Vendor
               </button>
             </div>
-
             <div className="newpod3b">
-            <div className="newpod3bb">
+              <div className="newpod3bb">
                 <p>Vendor Address</p>
                 {/* this should pick vendor address */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                {vendor.address}
+                  {vendor.address}
                 </p>
               </div>
               <div className="newpod3bb">
                 <p>Vendor Email</p>
                 {/* this should pick vendor email */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                {vendor.email}
+                  {vendor.email}
                 </p>
               </div>
-              
-            </div> <br />
+            </div>{" "}
+            <br />
             <div className="newpod3c">
               <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
                 <p>Payment Term</p>
                 <TextField
-                 name="paymentTerm"
+                  name="paymentTerm"
                   value={purchaseState.paymentTerm}
                   onChange={handlePurchaseChange}
                   label="Type your payment terms here"
@@ -487,7 +423,9 @@ export default function POrderform({
                 />
               </div>
             </div>
-            <p style={{ fontSize: "20px", color: "#3b7ced", marginTop: "1rem" }}>
+            <p
+              style={{ fontSize: "20px", color: "#3b7ced", marginTop: "1rem" }}
+            >
               Purchase Order Content
             </p>
             <div className="newpod3d">
@@ -619,17 +557,16 @@ export default function POrderform({
                 </Table>
               </TableContainer>
             </div>
-            <br /> <br /><br /> <br />
-            <div className="newpod3a" style={{ justifyContent: "flex-end"}}>
-              
-              <div className="newpod3e" >
-                {/* <button type="button" className="new3but" onClick={onClose}>
-                  Cancel
-                </button>
-                <button type="button" className="new3btn" onClick={handlePrint}>
-                  Print Order
-                </button> */}
-                <button type="button" className="new3but" onClick={handleSave} style={{ border: "1px solid #3b7ced", padding: "12px 20px"}}>
+            <br /> <br />
+            <br /> <br />
+            <div className="newpod3a" style={{ justifyContent: "flex-end" }}>
+              <div className="newpod3e">
+                <button
+                  type="button"
+                  className="new3but"
+                  onClick={handleSave}
+                  style={{ border: "1px solid #3b7ced", padding: "12px 20px" }}
+                >
                   Save
                 </button>
                 <button type="submit" className="new3btn">

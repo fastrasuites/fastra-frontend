@@ -111,12 +111,16 @@ export default function PurchaseOrder() {
     <div className="purchase-order" id="purchase">
       <div className="purchase-order-heading">
         <div className="purchase-order-content">
-          <p style={{ fontSize: "17px"}}>Purchase Order</p>
+          <p style={{ fontSize: "17px" }}>Purchase Order</p>
           <div className="purchase-order-status">
             {/* Status fields for draft, approved, pending, rejected */}
             <div className="status-field purchase-draft">
               <img src={draft} alt="draft" className="status-img" />
-              <p className={`purchase-list-count ${getStatusCount("Draft") === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  getStatusCount("Draft") === 0 ? "zero" : ""
+                }`}
+              >
                 {getStatusCount("Draft")}
               </p>
               <p className="status-desc">Purchase Order</p>
@@ -124,7 +128,11 @@ export default function PurchaseOrder() {
             </div>
             <div className="status-field purchase-approved">
               <img src={approved} alt="approved" className="status-img" />
-              <p className={`purchase-list-count ${getStatusCount("Approved") === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  getStatusCount("Approved") === 0 ? "zero" : ""
+                }`}
+              >
                 {getStatusCount("Approved")}
               </p>
               <p className="status-desc">Purchase Order</p>
@@ -132,7 +140,11 @@ export default function PurchaseOrder() {
             </div>
             <div className="status-field purchase-pending">
               <img src={pending} alt="pending" className="status-img" />
-              <p className={`purchase-list-count ${getStatusCount("Pending") === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  getStatusCount("Pending") === 0 ? "zero" : ""
+                }`}
+              >
                 {getStatusCount("Pending")}
               </p>
               <p className="status-desc">Purchase Order</p>
@@ -140,7 +152,11 @@ export default function PurchaseOrder() {
             </div>
             <div className="status-field purchase-rejected">
               <img src={rejected} alt="rejected" className="status-img" />
-              <p className={`purchase-list-count ${getStatusCount("Rejected") === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  getStatusCount("Rejected") === 0 ? "zero" : ""
+                }`}
+              >
                 {getStatusCount("Rejected")}
               </p>
               <p className="status-desc">Purchase Order</p>
@@ -153,12 +169,20 @@ export default function PurchaseOrder() {
               <div className="purchaseOrder2">
                 <div className="purchaseOrder3">
                   <div className="r3a">
-                    <button className="r3abtn" onClick={handleNewPurchaseOrder} style={{ fontSize: "17px"}}>
+                    <button
+                      className="r3abtn"
+                      onClick={handleNewPurchaseOrder}
+                      style={{ fontSize: "17px" }}
+                    >
                       New Purchase Order
                     </button>
                     <div className="purchaseOrdersash">
                       <label htmlFor="searchInput" className="search-box">
-                        <img src={SearchIcon} alt="Search" className="search-icon" />
+                        <img
+                          src={SearchIcon}
+                          alt="Search"
+                          className="search-icon"
+                        />
                         <input
                           id="searchInput"
                           type="text"
@@ -181,12 +205,16 @@ export default function PurchaseOrder() {
                     </div>
                     <div className="r3bview">
                       <IoGrid
-                        className={`toggle ${viewMode === "grid" ? "active" : ""}`}
+                        className={`toggle ${
+                          viewMode === "grid" ? "active" : ""
+                        }`}
                         onClick={() => toggleViewMode("grid")}
                       />
                       <div className="stroke"></div>
                       <FaBars
-                        className={`toggle ${viewMode === "list" ? "active" : ""}`}
+                        className={`toggle ${
+                          viewMode === "list" ? "active" : ""
+                        }`}
                         onClick={() => toggleViewMode("list")}
                       />
                     </div>
@@ -226,7 +254,9 @@ export default function PurchaseOrder() {
                                 color: "blue",
                               }}
                             >
-                              <span style={{ color: "blue" }}>Select Vendor</span>
+                              <span style={{ color: "blue" }}>
+                                Select Vendor
+                              </span>
                               <IconButton style={{ color: "blue" }}>
                                 <ArrowDropDownIcon />
                               </IconButton>
@@ -236,7 +266,10 @@ export default function PurchaseOrder() {
                           )}
                         </div>
                         <p>{formatDate(item.date)}</p>
-                        <p className="status" style={{ color: getStatusColor(item.status) }}>
+                        <p
+                          className="status"
+                          style={{ color: getStatusColor(item.status) }}
+                        >
                           {item.status}
                         </p>
                       </div>
