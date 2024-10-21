@@ -77,7 +77,9 @@ export default function PurchaseOrder() {
         (item) =>
           item.productName.toLowerCase().includes(lowercasedQuery) ||
           item.date.includes(lowercasedQuery) ||
-          item.status.toLowerCase().includes(lowercasedQuery)
+          item.status.toLowerCase().includes(lowercasedQuery) ||
+          item.id.toLowerCase().includes(lowercasedQuery) ||
+          item.vendor.toLowerCase().includes(lowercasedQuery)
       );
       setFilteredItems(filtered);
     }
@@ -99,6 +101,7 @@ export default function PurchaseOrder() {
       case "Pending":
         return "#f0b501";
       case "Rejected":
+      case "Cancelled":
         return "#e43e2b";
       case "Draft":
         return "#3b7ded";
@@ -244,7 +247,7 @@ export default function PurchaseOrder() {
                         onClick={() => handleCardClick(item)}
                       >
                         <p className="cardid">{item.id}</p>
-                        <div className="vendname">
+                        {/* <div className="vendname">
                           {item.status === "Pending" ? (
                             <div
                               style={{
@@ -262,9 +265,10 @@ export default function PurchaseOrder() {
                               </IconButton>
                             </div>
                           ) : (
-                            <p>{item.vendorName}</p>
+                            <p>{item.vendor}</p>
                           )}
-                        </div>
+                        </div> */}
+                        <p className="vendname">{item.vendor}</p>
                         <p>{formatDate(item.date)}</p>
                         <p
                           className="status"

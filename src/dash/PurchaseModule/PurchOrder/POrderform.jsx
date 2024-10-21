@@ -74,7 +74,7 @@ export default function POrderform({
     id: initialData?.id || generateNewID(),
     productName: initialData?.productName || "",
     amount: initialData?.amount || "",
-    status: initialData?.status || "Pending Order",
+    status: initialData?.status || "Pending",
     date: initialData?.date ? new Date(initialData.date) : new Date(),
     expiryDate: initialData?.expiryDate || "",
     vendor: initialData?.vendor || "",

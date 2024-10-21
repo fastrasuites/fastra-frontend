@@ -12,11 +12,13 @@ import {
 
 const Orderlistview = ({ items, onItemClick }) => {
   const [selected, setSelected] = React.useState([]);
+  console.log("checking contents the items: ", items);
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
       const newSelected = items.map((item) => item.id);
       setSelected(newSelected);
+      console.log(selected);
       return;
     }
     setSelected([]);
@@ -48,11 +50,14 @@ const Orderlistview = ({ items, onItemClick }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Approved Order":
+      case "Approved":
         return "#2ba24c"; // Green
-      case "Pending Order":
+      case "Pending":
         return "#f0b501"; // Yellow
+      case "Draft":
+        return "#158fec"; //blue
       case "Cancelled":
+      case "Rejected":
         return "#e43e2b"; // Red
       default:
         return "#7a8a98"; // Gray
@@ -89,9 +94,11 @@ const Orderlistview = ({ items, onItemClick }) => {
                 onChange={handleSelectAll}
               />
             </TableCell>
-            <TableCell>ID</TableCell>
+            <TableCell>Purchase Order ID</TableCell>
+            <TableCell>Product Name</TableCell>
+            <TableCell>QTY</TableCell>
+            <TableCell>Date Created</TableCell>
             <TableCell>Vendor Name</TableCell>
-            <TableCell>Date</TableCell>
             <TableCell>Status</TableCell>
           </TableRow>
         </TableHead>
@@ -113,8 +120,12 @@ const Orderlistview = ({ items, onItemClick }) => {
                 />
               </TableCell>
               <TableCell>{item.id}</TableCell>
-              <TableCell>{item.VendorName}</TableCell>
+              <TableCell>
+                {item.rows.map((item, index) => item.productName)}
+              </TableCell>
+              <TableCell>{item.rows.map((item, index) => item.qty)}</TableCell>
               <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+              <TableCell>{item.vendor}</TableCell>
               <TableCell style={{ color: getStatusColor(item.status) }}>
                 {item.status}
               </TableCell>
