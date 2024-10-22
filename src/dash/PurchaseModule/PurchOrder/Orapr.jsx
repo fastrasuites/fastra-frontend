@@ -302,7 +302,7 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
                     name=""
                     id=""
                     placeholder="Payment terms will be typed here for clarifications"
-                    rows={2}
+                    rows={3}
                     style={{
                       fontSize: "16px",
                       fontWeight: "400",
@@ -320,7 +320,7 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
                     name=""
                     id=""
                     placeholder="Purchase policy will be typed here for clarifications"
-                    rows={2}
+                    rows={3}
                     style={{
                       fontSize: "16px",
                       fontWeight: "400",
@@ -338,7 +338,7 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
                     name=""
                     id=""
                     placeholder="Delivery terms will be typed here for clarifications"
-                    rows={2}
+                    rows={3}
                     style={{
                       fontSize: "16px",
                       fontWeight: "400",
