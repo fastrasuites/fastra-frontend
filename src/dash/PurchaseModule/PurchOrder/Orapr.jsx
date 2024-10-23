@@ -52,6 +52,20 @@ const DeselectButton = styled("button")(({ theme }) => ({
   cursor: "pointer",
   margin: "1rem 0",
 }));
+const SaveorShareButton = styled("button")(({ theme }) => ({
+  backgroundColor: "#3B7CED",
+  color: "white",
+  border: "none",
+  cursor: "pointer",
+  borderRadius: "4px",
+  fontFamily: "Product Sans",
+  fontSize: "16px",
+  fontWeight: "400",
+  lineHeight: "19.41px",
+  textAlign: "center",
+  paddingBlock: "8px",
+  paddingInline: "32px",
+}));
 
 export default function Orapr({ onUpdateStatus, formData, onClose }) {
   const [showReceipt, setShowReceipt] = useState(false);
@@ -158,31 +172,56 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
                 <div className="orapr3ae">
                   <p style={{ fontSize: "20px" }}>Basic Information</p>
                   <div className="orapr3e">
-                    <button
-                      style={{
-                        border: "none",
-                        borderRadius: "4px",
-                        paddingInline: "8px",
-                        backgroundColor: "white",
-                        color: "#3B7CED",
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="orapr3but"
-                      style={{
-                        border: "solid 1px#3B7CED",
-                        borderRadius: "4px",
-                        paddingInline: "8px",
-                        marginRight: "10px",
-                        cursor: "pointer",
-                      }}
-                      onClick={onClose}
-                    >
-                      Cancel
-                    </button>
+                    {formData.status === "Pending" ||
+                    formData.status === "Drafted" ? (
+                      <>
+                        <button
+                          style={{
+                            border: "none",
+                            borderRadius: "4px",
+                            paddingInline: "8px",
+                            backgroundColor: "white",
+                            color: "#3B7CED",
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="orapr3but"
+                          style={{
+                            border: "solid 1px#3B7CED",
+                            borderRadius: "4px",
+                            paddingInline: "8px",
+                            marginRight: "10px",
+                            cursor: "pointer",
+                          }}
+                          onClick={onClose}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : formData.status === "Approved" ||
+                      formData.status === "Rejected" ? (
+                      <>
+                        <button
+                          type="button"
+                          className="orapr3but"
+                          style={{
+                            border: "solid 1px#3B7CED",
+                            borderRadius: "4px",
+                            paddingInline: "8px",
+                            marginRight: "10px",
+                            cursor: "pointer",
+                          }}
+                          onClick={onClose}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      ""
+                    )}
 
                     {/* CANCEL AND SEND TO VENDOR BUTTON */}
                     {/* <button
@@ -420,9 +459,36 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
               {/* Status */}
               <div style={{ marginTop: "1rem" }}>
                 {/* <p>Status</p> */}
-                <p style={{ fontSize: "14px", color: "#f0b501" }}>
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color:
+                      formData.status === "Pending"
+                        ? "#f0b501"
+                        : formData.status === "Drafted"
+                        ? "#3BB1D2"
+                        : formData.status === "Approved"
+                        ? "#1E4226"
+                        : formData.status === "Rejected"
+                        ? "#E43E2B"
+                        : "",
+                  }}
+                >
                   {formData ? formData.status : ""}
                 </p>
+              </div>
+              <div style={{ marginTop: "1rem" }}>
+                {formData.status === "Approved" ? (
+                  <SaveorShareButton>Send to Vendor</SaveorShareButton>
+                ) : formData.status === "Drafted" ? (
+                  <SaveorShareButton>Share</SaveorShareButton>
+                ) : formData.status === "Rejected" ? (
+                  <SaveorShareButton>Set back to Draft</SaveorShareButton>
+                ) : formData.status === "Pending" ? (
+                  console.log("Pending order screen lack the button")
+                ) : (
+                  ""
+                )}
               </div>
             </form>
           </div>
