@@ -149,6 +149,7 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
       {
         productName: "",
         description: "",
+        unt: "",
         qty: "",
         unitPrice: "",
         totalPrice: "",
@@ -167,7 +168,18 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
       setPage(page - 1);
     }
   };
+  const [products, setProducts] = useState([]);
 
+  useEffect(() => {
+    const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
+    setProducts(savedProducts);
+  }, []);
+  
+  const calculateTotalPrice = (product) => {
+    const pricePerUnit = parseFloat(product.sp.replace("₦", "")) || 0;
+    const totalQuantity = parseInt(product.availableProductQty) || 0;
+    return `₦${(pricePerUnit * totalQuantity).toFixed(2)}`;
+  };
   const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const pageCount = Math.ceil(rows.length / rowsPerPage);
 
@@ -190,6 +202,34 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
       .reduce((sum, row) => sum + parseFloat(row.totalPrice || 0), 0)
       .toFixed(2);
   };
+
+  
+  // Load saved currencies from localStorage
+const [selectedCurrency, setSelectedCurrency] = useState(null);
+const [savedCurrencies, setSavedCurrencies] = useState([]);
+
+useEffect(() => {
+  // Fetch currencies from localStorage
+  const currencies = JSON.parse(localStorage.getItem("savedCurrencies")) || [];
+  if (currencies.length === 0) {
+    console.warn('No currencies found in localStorage.');
+  }
+  setSavedCurrencies(currencies);
+}, []);  // Only run this effect once, on component mount
+
+const handleCurrencyChange = (event, newValue) => {
+  setSelectedCurrency(newValue);
+  // Assuming you have a form state to update
+  setFormState((prev) => ({
+    ...prev,
+    currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
+  }));
+
+  // Log the selected currency
+  if (newValue) {
+    console.log("Selected Currency:", newValue);
+  }
+};
 
   return (
     <div id="npr" className={`npr ${showForm ? "fade-in" : "fade-out"}`}>
@@ -256,6 +296,18 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
               </div>
             </div>
             <div className="npr3c">
+            <div className="npr3ca">
+            <p>Select Currency</p>
+                <Autocomplete
+                  value={selectedCurrency}
+                  onChange={handleCurrencyChange}
+                  options={savedCurrencies}  // Populate options from localStorage
+                  getOptionLabel={(option) => `${option.name} - ${option.symbol}`}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Currency" className="newpod3cb" />
+                  )}
+                />
+            </div>
               <div className="npr3ca">
                 <label>Purpose</label>
                 <input
@@ -344,6 +396,7 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
                       <StyledTableCell>Product Name</StyledTableCell>
                       <StyledTableCell>Description</StyledTableCell>
                       <StyledTableCell align="right">Qty</StyledTableCell>
+                      <StyledTableCell align="right">Unit Measurement</StyledTableCell>
                       <StyledTableCell align="right">
                         Estimated Unit Price
                       </StyledTableCell>
@@ -353,37 +406,13 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentRows.map((row, index) => (
+                    {products.map((product, index) => (
                       <StyledTableRow key={index + page * rowsPerPage}>
                         <StyledTableCell component="th" scope="row">
-                          <input
-                            type="text"
-                            placeholder="Enter a product name"
-                            name="productName"
-                            value={row.productName}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "productName",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.name}
                         </StyledTableCell>
                         <StyledTableCell>
-                          <input
-                            type="text"
-                            placeholder="Enter a description"
-                            name="description"
-                            value={row.description}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.productDesc}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
@@ -392,7 +421,7 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
                             name="qty"
                             className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.qty}
+                            value={product.qty}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -401,6 +430,9 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
                               )
                             }
                           />
+                            
+                        </StyledTableCell>
+                        <StyledTableCell align="right">{product.unt}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
@@ -409,7 +441,7 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
                             name="unitPrice"
                             className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.unitPrice}
+                            value={product.unitPrice}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -420,20 +452,14 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
                           />
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="000,000"
-                            name="totalPrice"
-                            style={{ textAlign: "right" }}
-                            value={row.totalPrice}
-                            readOnly
-                          />
+                        {calculateTotalAmount()}
+
                         </StyledTableCell>
                       </StyledTableRow>
                     ))}
                     <StyledTableRow>
-                      <StyledTableCell colSpan={4} align="right">
-                        Total Amount
+                      <StyledTableCell colSpan={5} align="right">
+                       <b> Total Amount</b>
                       </StyledTableCell>
                       <StyledTableCell align="right">
                         {calculateTotalAmount()}

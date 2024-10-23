@@ -41,6 +41,7 @@ import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
 import AccessGroups from "./dash/Settings/accessgroups/AccessGroups";
 import EmailVerifyStatus from "./Reglog/EmailVerification";
 import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
+import NewCompany from "./dash/Settings/company/NewCompanyForm";
 
 
 function App() {
@@ -98,7 +99,8 @@ function App() {
         <Route path="/contact" component={Contact} />
         <Route path="/settings" component={Settings} />
         <Route path="/apk" component={Apk} />
-        <Route path="/company" component={Company} />
+        {/* <Route path="/company" component={Company} /> */}
+        <Route path="/company" component={NewCompany} />
         <Route path="/user" component={User} />
         <Route path="/purchase" component={Purchase} />
         <Route path="/npr" component={Newpr} />

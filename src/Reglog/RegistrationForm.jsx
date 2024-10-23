@@ -43,6 +43,7 @@ export default function RegistrationForm() {
         registrationData
       );
       console.log("Registration response:", response.data);
+      localStorage.setItem("registrationData", JSON.stringify(registrationData));
       setCurrentStep(2);
     } catch (error) {
       console.error("Registration error:", error.response?.data);

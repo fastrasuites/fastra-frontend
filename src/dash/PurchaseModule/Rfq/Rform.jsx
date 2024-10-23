@@ -69,6 +69,26 @@ export default function Rform({
     return newID;
   };
 
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
+    setProducts(savedProducts);
+  }, []);
+  
+  const calculateTotalPrice = (product) => {
+    const pricePerUnit = parseFloat(product.sp.replace("₦", "")) || 0;
+    const totalQuantity = parseInt(product.availableProductQty) || 0;
+    return `₦${(pricePerUnit * totalQuantity).toFixed(2)}`;
+  };
+  // const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  // const pageCount = Math.ceil(rows.length / rowsPerPage);
+
+  // const formatDate = (date) => {
+  //   const options = { day: "numeric", month: "short", year: "numeric" };
+  //   return date.toLocaleDateString("en-US", options);
+  // };
+
   const [formState, setFormState] = useState({
     id: initialData?.id || generateNewID(),
     productName: initialData?.productName || "",
@@ -141,6 +161,7 @@ export default function Rform({
         productName: "",
         description: "",
         qty: "",
+        unt: " ",
         unitPrice: "",
         totalPrice: "",
       },
@@ -158,8 +179,33 @@ export default function Rform({
       setPage(page - 1);
     }
   };
-
-  const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+ // Load saved currencies from localStorage
+ const [selectedCurrency, setSelectedCurrency] = useState(null);
+ const [savedCurrencies, setSavedCurrencies] = useState([]);
+ 
+ useEffect(() => {
+   // Fetch currencies from localStorage
+   const currencies = JSON.parse(localStorage.getItem("savedCurrencies")) || [];
+   if (currencies.length === 0) {
+     console.warn('No currencies found in localStorage.');
+   }
+   setSavedCurrencies(currencies);
+ }, []);  // Only run this effect once, on component mount
+ 
+ const handleCurrencyChange = (event, newValue) => {
+   setSelectedCurrency(newValue);
+   // Assuming you have a form state to update
+   setFormState((prev) => ({
+     ...prev,
+     currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
+   }));
+ 
+   // Log the selected currency
+   if (newValue) {
+     console.log("Selected Currency:", newValue);
+   }
+ };
+  const addRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const pageCount = Math.ceil(rows.length / rowsPerPage);
 
   const formatDate = (date) => {
@@ -255,7 +301,19 @@ export default function Rform({
                   )}`}
                 </p>
               </div>
+              <div className="npr3ca">
+            <p>Select Currency</p>
+                <Autocomplete
+                  value={selectedCurrency}
+                  onChange={handleCurrencyChange}
+                  options={savedCurrencies}  // Populate options from localStorage
+                  getOptionLabel={(option) => `${option.name} - ${option.symbol}`}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Currency" className="newpod3cb" />
+                  )}
+                />
             </div>
+            </div> <br /><br /> <br />
             <div className="rpr3c">
               <div className="rpr3ca">
                 <label>Expiry Date</label>
@@ -313,7 +371,7 @@ export default function Rform({
               </button>
             </div>
             <div className="rpr3d">
-              <TableContainer
+            <TableContainer
                 component={Paper}
                 sx={{
                   boxShadow: "none",
@@ -344,6 +402,7 @@ export default function Rform({
                       <StyledTableCell>Product Name</StyledTableCell>
                       <StyledTableCell>Description</StyledTableCell>
                       <StyledTableCell align="right">Qty</StyledTableCell>
+                      <StyledTableCell align="right">Unit Measurement</StyledTableCell>
                       <StyledTableCell align="right">
                         Estimated Unit Price
                       </StyledTableCell>
@@ -353,45 +412,22 @@ export default function Rform({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentRows.map((row, index) => (
+                    {products.map((product, index) => (
                       <StyledTableRow key={index + page * rowsPerPage}>
                         <StyledTableCell component="th" scope="row">
-                          <input
-                            type="text"
-                            placeholder="Enter a product name"
-                            name="productName"
-                            value={row.productName}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "productName",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.name}
                         </StyledTableCell>
                         <StyledTableCell>
-                          <input
-                            type="text"
-                            placeholder="Enter a description"
-                            name="description"
-                            value={row.description}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.productDesc}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
                             type="number"
-                            placeholder="0"
+                            placeholder="0.00"
                             name="qty"
+                            className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.qty}
+                            value={product.qty}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -400,14 +436,18 @@ export default function Rform({
                               )
                             }
                           />
+                            
+                        </StyledTableCell>
+                        <StyledTableCell align="right">{product.unt}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
                             type="number"
                             placeholder="0.00"
                             name="unitPrice"
+                            className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.unitPrice}
+                            value={product.unitPrice}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -418,20 +458,14 @@ export default function Rform({
                           />
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            name="totalPrice"
-                            style={{ textAlign: "right" }}
-                            value={row.totalPrice}
-                            readOnly
-                          />
+                        {calculateTotalAmount()}
+
                         </StyledTableCell>
                       </StyledTableRow>
                     ))}
                     <StyledTableRow>
-                      <StyledTableCell colSpan={4} align="right">
-                        Total Amount
+                      <StyledTableCell colSpan={5} align="right">
+                       <b> Total Amount</b>
                       </StyledTableCell>
                       <StyledTableCell align="right">
                         {calculateTotalAmount()}

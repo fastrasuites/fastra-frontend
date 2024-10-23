@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -9,7 +9,9 @@ import {
   Paper,
   Checkbox,
 } from "@mui/material";
+import { useLocation } from "react-router-dom";
 
+// Function to get status color
 const getStatusColor = (status) => {
   switch (status) {
     case "Approved":
@@ -26,6 +28,11 @@ const getStatusColor = (status) => {
 };
 
 const ListView = ({ items, onItemClick }) => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const userName = queryParams.get("name");
+  const userRole = queryParams.get("role");
+
   const [selected, setSelected] = React.useState([]);
 
   const handleSelectAll = (event) => {
@@ -37,6 +44,14 @@ const ListView = ({ items, onItemClick }) => {
     setSelected([]);
   };
 
+  React.useEffect(() => {
+    console.log("Product items:", items);
+  }, [items]);
+  const [selectedUser, setSelectedUser] = useState({});
+
+  const handleUserSelect = (user) => {
+    setSelectedUser(user);
+  };
   const handleSelect = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -65,18 +80,10 @@ const ListView = ({ items, onItemClick }) => {
     <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
       <Table
         sx={{
-          "&.MuiTable-root": {
-            border: "none",
-          },
-          "& .MuiTableCell-root": {
-            border: "none",
-          },
-          "& .MuiTableCell-head": {
-            border: "none",
-          },
-          "& .MuiTableCell-body": {
-            border: "none",
-          },
+          "&.MuiTable-root": { border: "none" },
+          "& .MuiTableCell-root": { border: "none" },
+          "& .MuiTableCell-head": { border: "none" },
+          "& .MuiTableCell-body": { border: "none" },
         }}
       >
         <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
@@ -96,7 +103,6 @@ const ListView = ({ items, onItemClick }) => {
             <TableCell>Qty</TableCell>
             <TableCell>Amount</TableCell>
             <TableCell>Requester</TableCell>
-            <TableCell>Department</TableCell>
             <TableCell>Status</TableCell>
           </TableRow>
         </TableHead>
@@ -108,8 +114,8 @@ const ListView = ({ items, onItemClick }) => {
                 backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
                 "&:last-child td, &:last-child th": { border: 0 },
               }}
-              onClick={() => onItemClick(item)} // Add onClick handler
-              style={{ cursor: "pointer" }} // Add cursor style
+              onClick={() => onItemClick(item)}
+              style={{ cursor: "pointer" }}
             >
               <TableCell padding="checkbox">
                 <Checkbox
@@ -119,23 +125,28 @@ const ListView = ({ items, onItemClick }) => {
                 />
               </TableCell>
               <TableCell>{item.id}</TableCell>
+
+              {/* Displaying productName correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {Array.isArray(item.productNames)
+              {Array.isArray(item.name)
                   ? item.productNames.join(", ")
                   : ""}
               </TableCell>
+
+              {/* Displaying qty correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.qty}
+                {item.rows.map((product) => product.qty).join(", ")}
               </TableCell>
+
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
                 {item.amount}
               </TableCell>
+
+              {/* Displaying Requester Name correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.requester}
+              {item.user?.name || "N/A"} 
               </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.department}
-              </TableCell>
+
               <TableCell
                 sx={{
                   color: getStatusColor(item.status),

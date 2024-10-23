@@ -114,12 +114,31 @@ export default function Newprod({
     }
   };
 
-  const unitOptions = [
-    { value: "NIL", label: "NIL" },
-    { value: "QTY", label: "Quantity" },
-    { value: "LBS", label: "Pounds" },
-    { value: "KG", label: "Kilograms" },
-  ];
+ // Load saved units from localStorage
+const [selectedUnit, setSelectedUnit] = useState(null); // Changed variable name for clarity
+const [savedUnits, setSavedUnits] = useState([]);
+
+useEffect(() => {
+  // Fetch units from localStorage
+  const units = JSON.parse(localStorage.getItem("savedUnits")) || [];
+  if (units.length === 0) {
+    console.warn('No units found in localStorage.');
+  }
+  setSavedUnits(units);
+}, []); // Only run this effect once, on component mount
+
+const handleUnitChange = (newUnit) => { // Simplified the event parameter
+  setSelectedUnit(newUnit);
+  setFormState((prev) => ({
+    ...prev,
+    unt: newUnit ? newUnit.unitName : "", // Assuming you want to update the unit in form state
+  }));
+
+  // Log the selected unit
+  if (newUnit) {
+    console.log("Selected unit:", newUnit);
+  }
+};
 
   const categoryOptions = [
     { value: "Consumables", label: "Consumables" },
@@ -300,6 +319,16 @@ export default function Newprod({
                   <label>Unit of Measure</label>
                 </div>
                 <Select
+                 value={selectedUnit}
+                  onChange={handleUnitChange}
+                  
+                  options={savedUnits}  // Populate options from localStorage
+                  getOptionLabel={(option) => `${option.unitName} - ${option.unitCategory}`}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Currency" className="newpod3cb" />
+                  )}
+                />
+                {/* <Select
                   placeholder="Select your Unit of Measure"
                   options={unitOptions}
                   name="unt"
@@ -313,7 +342,7 @@ export default function Newprod({
                       unt: selectedOption ? selectedOption.value : "",
                     }))
                   }
-                />
+                /> */}
               </Grid>
             </Grid>
             <hr style={{ border: "1.2px solid #E2E6E9", marginTop: "32px" }} />

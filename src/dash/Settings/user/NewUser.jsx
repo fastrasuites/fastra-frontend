@@ -15,6 +15,29 @@ const fetchLanguages = async () => {
   const apiKey = "YOUR_GOOGLE_CLOUD_API_KEY"; // Replace with your API key
   const url = `https://translation.googleapis.com/language/translate/v2/languages?key=${apiKey}&target=en`;
 
+  // Fetch company name and email from localStorage on component mount
+//  useEffect(() => {
+//   const storedData = JSON.parse(localStorage.getItem("registrationData"));
+//   if (storedData) {
+//     setFormState((prev) => ({
+//       ...prev,
+//       companyName: storedData.companyName || "",
+//       email: storedData.email || "",
+//     }));
+//   }
+// }, []);
+
+// const handleChange = (e) => {
+//   const { name, value } = e.target;
+//   console.log(`${name}: ${value}`); // Log the field name and value
+//   setFormState((prevState) => ({
+//     ...prevState,
+//     [name]: value,
+//   }));
+// };
+
+
+
   try {
     const response = await fetch(url);
     const data = await response.json();
@@ -375,9 +398,10 @@ export default function NewUser({ onClose, onSaveAndSubmit, fromStepModal }) {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Company name"
+                    placeholder="company.fastrasuite.com"
                     value={formState.companyName}
                     onChange={handleChange}
+                    disabled 
                   />
                 </div>
               </div>

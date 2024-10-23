@@ -129,14 +129,11 @@ export default function POrderform({
 
     const formDataWithStringDate = {
       ...formState,
-      date: formState.date.toString(),
+      date: formState.date.toString(), // Convert date to string
       rows,
     };
-    console.log(formDataWithStringDate);
 
     onSaveAndSubmit(formDataWithStringDate);
-
-    // history.push("/orapr");
   };
 
   const addRow = () => {
@@ -145,6 +142,7 @@ export default function POrderform({
       {
         productName: "",
         description: "",
+        unt: "",
         qty: "",
         unitPrice: "",
         totalPrice: "",
@@ -163,14 +161,26 @@ export default function POrderform({
       setPage(page - 1);
     }
   };
+  const [products, setProducts] = useState([]);
 
-  const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-  const pageCount = Math.ceil(rows.length / rowsPerPage);
-
+  useEffect(() => {
+    const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
+    setProducts(savedProducts);
+  }, []);
+  
+  const calculateTotalPrice = (product) => {
+    const pricePerUnit = parseFloat(product.sp.replace("₦", "")) || 0;
+    const totalQuantity = parseInt(product.availableProductQty) || 0;
+    return `₦${(pricePerUnit * totalQuantity).toFixed(2)}`;
+  };
+ 
   const formatDate = (date) => {
     const options = { day: "numeric", month: "short", year: "numeric" };
     return date.toLocaleDateString("en-US", options);
   };
+
+  const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  const pageCount = Math.ceil(rows.length / rowsPerPage);
 
   const formatTime = (date) => {
     const hours = date.getHours();
@@ -256,6 +266,32 @@ export default function POrderform({
       vendorCategory: newValue,
     }));
   };
+// Load saved currencies from localStorage
+const [selectedCurrency, setSelectedCurrency] = useState(null);
+const [savedCurrencies, setSavedCurrencies] = useState([]);
+
+useEffect(() => {
+  // Fetch currencies from localStorage
+  const currencies = JSON.parse(localStorage.getItem("savedCurrencies")) || [];
+  if (currencies.length === 0) {
+    console.warn('No currencies found in localStorage.');
+  }
+  setSavedCurrencies(currencies);
+}, []);  // Only run this effect once, on component mount
+
+const handleCurrencyChange = (event, newValue) => {
+  setSelectedCurrency(newValue);
+  // Assuming you have a form state to update
+  setFormState((prev) => ({
+    ...prev,
+    currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
+  }));
+
+  // Log the selected currency
+  if (newValue) {
+    console.log("Selected Currency:", newValue);
+  }
+};
 
   return (
     <div
@@ -380,6 +416,18 @@ export default function POrderform({
             </div>{" "}
             <br />
             <div className="newpod3c">
+            <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
+                <p>Select Currency</p>
+                <Autocomplete
+                  value={selectedCurrency}
+                  onChange={handleCurrencyChange}
+                  options={savedCurrencies}  // Populate options from localStorage
+                  getOptionLabel={(option) => `${option.name} - ${option.symbol}`}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Currency" className="newpod3cb" />
+                  )}
+                />
+                </div>
               <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
                 <p>Payment Term</p>
                 <TextField
@@ -429,7 +477,7 @@ export default function POrderform({
               Purchase Order Content
             </p>
             <div className="newpod3d">
-              <TableContainer
+               <TableContainer
                 component={Paper}
                 sx={{
                   boxShadow: "none",
@@ -460,6 +508,7 @@ export default function POrderform({
                       <StyledTableCell>Product Name</StyledTableCell>
                       <StyledTableCell>Description</StyledTableCell>
                       <StyledTableCell align="right">Qty</StyledTableCell>
+                      <StyledTableCell align="right">Unit Measurement</StyledTableCell>
                       <StyledTableCell align="right">
                         Estimated Unit Price
                       </StyledTableCell>
@@ -469,45 +518,22 @@ export default function POrderform({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentRows.map((row, index) => (
+                    {products.map((product, index) => (
                       <StyledTableRow key={index + page * rowsPerPage}>
                         <StyledTableCell component="th" scope="row">
-                          <input
-                            type="text"
-                            placeholder="Enter a product name"
-                            name="productName"
-                            value={row.productName}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "productName",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.name}
                         </StyledTableCell>
                         <StyledTableCell>
-                          <input
-                            type="text"
-                            placeholder="Enter a description"
-                            name="description"
-                            value={row.description}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.productDesc}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
                             type="number"
-                            placeholder="0"
+                            placeholder="0.00"
                             name="qty"
+                            className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.qty}
+                            value={product.qty}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -516,14 +542,18 @@ export default function POrderform({
                               )
                             }
                           />
+                            
+                        </StyledTableCell>
+                        <StyledTableCell align="right">{product.unt}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
                             type="number"
                             placeholder="0.00"
                             name="unitPrice"
+                            className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.unitPrice}
+                            value={product.unitPrice}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -534,20 +564,14 @@ export default function POrderform({
                           />
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            name="totalPrice"
-                            style={{ textAlign: "right" }}
-                            value={row.totalPrice}
-                            readOnly
-                          />
+                        {calculateTotalAmount()}
+
                         </StyledTableCell>
                       </StyledTableRow>
                     ))}
                     <StyledTableRow>
-                      <StyledTableCell colSpan={4} align="right">
-                        Total Amount
+                      <StyledTableCell colSpan={5} align="right">
+                       <b> Total Amount</b>
                       </StyledTableCell>
                       <StyledTableCell align="right">
                         {calculateTotalAmount()}

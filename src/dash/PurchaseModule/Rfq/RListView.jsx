@@ -93,8 +93,6 @@ const RListView = ({ items = [], onCardClick }) => {
             <TableCell>Product Name</TableCell>
             <TableCell>Qty</TableCell>
             <TableCell>Amount</TableCell>
-            <TableCell>Requester</TableCell>
-            <TableCell>Department</TableCell>
             <TableCell>Status</TableCell>
           </TableRow>
         </TableHead>
@@ -117,62 +115,16 @@ const RListView = ({ items = [], onCardClick }) => {
               </TableCell>
               <TableCell>{item.id}</TableCell>
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {Array.isArray(item.productName) ? (
-                  <div className="multi-cell">
-                    {item.productName[0]}
-                    {item.productName.length > 1 && (
-                      <span className="more-items">
-                        +{item.productName.length - 1} more
-                      </span>
-                    )}
-                    <div className="dropdown-content">
-                      {item.productName.join(", ")}
-                    </div>
-                  </div>
-                ) : (
-                  item.productName || "N/A"
-                )}
+              {item.rows.map((item, index) => item.productName)}
               </TableCell>
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {Array.isArray(item.qty) ? (
-                  <div className="multi-cell">
-                    {item.qty[0]}
-                    {item.qty.length > 1 && (
-                      <span className="more-items">
-                        +{item.qty.length - 1} more
-                      </span>
-                    )}
-                    <div className="dropdown-content">
-                      {item.qty.join(", ")}
-                    </div>
-                  </div>
-                ) : (
-                  item.qty || "N/A"
-                )}
+               
+                {item.rows.map((item, index) => item.qty)}
               </TableCell>
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {Array.isArray(item.amount) ? (
-                  <div className="multi-cell">
-                    {item.amount[0]}
-                    {item.amount.length > 1 && (
-                      <span className="more-items">
-                        +{item.amount.length - 1} more
-                      </span>
-                    )}
-                    <div className="dropdown-content">
-                      {item.amount.join(", ")}
-                    </div>
-                  </div>
-                ) : (
-                  item.amount || "N/A"
-                )}
+              {item.amount}
               </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.requester || "N/A"}
-              </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.department || "N/A"}
-              </TableCell>
+            
               <TableCell
                 sx={{
                   fontSize: "12px",
