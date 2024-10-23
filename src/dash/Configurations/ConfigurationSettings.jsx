@@ -177,7 +177,7 @@ const ConfigurationSettings = () => {
       </Box>
 
       {/* Display saved currencies */}
-      <div className="saved-currencies">
+      {/* <div className="saved-currencies">
         <FormControl fullWidth>
           <h3>Saved Currencies:</h3>
           <ul>
@@ -188,10 +188,10 @@ const ConfigurationSettings = () => {
             ))}
           </ul>
         </FormControl>
-      </div>
+      </div> */}
 
       {/* Display saved units */}
-      <div className="saved-units">
+      {/* <div className="saved-units">
         <FormControl fullWidth>
           <h3>Saved Units:</h3>
           <ul>
@@ -202,7 +202,7 @@ const ConfigurationSettings = () => {
             ))}
           </ul>
         </FormControl>
-      </div>
+      </div> */}
     </div>
   );
 };
