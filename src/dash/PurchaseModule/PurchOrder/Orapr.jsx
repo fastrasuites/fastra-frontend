@@ -11,6 +11,7 @@ import Receipt from "./Receipt";
 import autosave from "../../../image/autosave.svg";
 import { FaCaretLeft, FaCaretRight, FaReceipt } from "react-icons/fa";
 import "./Orapr.css";
+import { background } from "@chakra-ui/react";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -51,12 +52,27 @@ const DeselectButton = styled("button")(({ theme }) => ({
   cursor: "pointer",
   margin: "1rem 0",
 }));
+const SaveorShareButton = styled("button")(({ theme }) => ({
+  backgroundColor: "#3B7CED",
+  color: "white",
+  border: "none",
+  cursor: "pointer",
+  borderRadius: "4px",
+  fontFamily: "Product Sans",
+  fontSize: "16px",
+  fontWeight: "400",
+  lineHeight: "19.41px",
+  textAlign: "center",
+  paddingBlock: "8px",
+  paddingInline: "32px",
+}));
 
 export default function Orapr({ onUpdateStatus, formData, onClose }) {
   const [showReceipt, setShowReceipt] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [currentView, setCurrentView] = useState("orfq");
   const [currentFormData, setCurrentFormData] = useState(formData);
+  console.log("inspecting formData: ", formData);
 
   useEffect(() => {
     if (currentFormData && currentFormData.rows) {
@@ -116,7 +132,9 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
             </div>
           </div>
         </div>
-        <div className="oraprclk">
+
+        {/* Purchase Order and Vendors Quotes tabs*/}
+        {/* <div className="oraprclk">
           <div className="oraprclka">
             <p
               className={`togclk ${currentView === "orfq" ? "active" : ""}`}
@@ -144,33 +162,82 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
               onClose={() => setShowReceipt(false)}
             />
           )}
-        </div>
+        </div> */}
+
         {currentView === "orfq" ? (
           <div className="orapr3" style={{ height: "auto" }}>
             <form className="oraprform">
+              {/* header and buttons */}
               <div className="orapr3a">
                 <div className="orapr3ae">
                   <p style={{ fontSize: "20px" }}>Basic Information</p>
                   <div className="orapr3e">
-                    <button
+                    {formData.status === "Pending" ||
+                    formData.status === "Drafted" ? (
+                      <>
+                        <button
+                          style={{
+                            border: "none",
+                            borderRadius: "4px",
+                            paddingInline: "8px",
+                            backgroundColor: "white",
+                            color: "#3B7CED",
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="orapr3but"
+                          style={{
+                            border: "solid 1px#3B7CED",
+                            borderRadius: "4px",
+                            paddingInline: "8px",
+                            marginRight: "10px",
+                            cursor: "pointer",
+                          }}
+                          onClick={onClose}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : formData.status === "Approved" ||
+                      formData.status === "Rejected" ? (
+                      <>
+                        <button
+                          type="button"
+                          className="orapr3but"
+                          style={{
+                            border: "solid 1px#3B7CED",
+                            borderRadius: "4px",
+                            paddingInline: "8px",
+                            marginRight: "10px",
+                            cursor: "pointer",
+                          }}
+                          onClick={onClose}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      ""
+                    )}
+
+                    {/* CANCEL AND SEND TO VENDOR BUTTON */}
+                    {/* <button
                       type="button"
                       className="orapr3but"
                       onClick={onClose}
                     >
                       Cancel
-                    </button>
-                    <button type="submit" className="orapr3btn">
+                    </button> */}
+                    {/* <button type="submit" className="orapr3btn">
                       Send to vendor
-                    </button>
+                    </button> */}
                   </div>
                 </div>
-                <div style={{ marginTop: "1rem" }}>
-                  <p>Status</p>
-                  <p style={{ fontSize: "14px", color: "#f0b501" }}>
-                    {formData ? formData.status : ""}
-                  </p>
-                </div>
               </div>
+              {/* ID, Date and Created By */}
               <div className="orapr3b">
                 <div className="orapr3ba">
                   <p>ID</p>
@@ -179,7 +246,7 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
                   </p>
                 </div>
                 <div className="orapr3bb">
-                  <p>Date Created</p>
+                  <p>Date</p>
                   <p style={{ fontSize: "14px", color: "#7a8a98" }}>
                     {formData
                       ? formatDate(formData.date) +
@@ -188,116 +255,142 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
                       : ""}
                   </p>
                 </div>
-                <div className="orapr3bb">
-                  <p>Vendor</p>
-                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                    {formData ? formData.vendorName : ""}
+                <div className="orapr3ba">
+                  <p>Created By</p>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#7a8a98",
+
+                      // display: "inline-flex",
+                    }}
+                  >
+                    Firstname Lastname
                   </p>
+                  {/* <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {formData ? formData.id : ""}
+                  </p> */}
                 </div>
-                <div className="orapr3bb">
+
+                {/* VENDOR CATEGORY */}
+                {/* <div className="orapr3bb">
                   <p>Vendor Category</p>
                   <p style={{ fontSize: "14px", color: "#7a8a98" }}>
                     {formData ? formData.vendorCategory : ""}
                   </p>
-                </div>
+                </div> */}
               </div>
-              <p className="orapr3c">RFQ Content</p>
-              <div className="orapr3d">
-                <StyledTableContainer
-                  component={Paper}
-                  sx={{ boxShadow: "none", border: "1px solid #e2e6e9" }}
+              {/* Vendor */}
+              <div className="orapr3bb">
+                <p>Vendor</p>
+                <div
+                  style={{
+                    border: "solid 2px #7a8a98",
+                    padding: "5px",
+                    borderRadius: "4px",
+                    width: "250px",
+                  }}
                 >
-                  <StyledTable
-                    sx={{ minWidth: 700, border: "none" }}
-                    aria-label="customized table"
-                  >
-                    <TableHead>
-                      <TableRow>
-                        <StyledTableCell>Product Name</StyledTableCell>
-                        <StyledTableCell>Description</StyledTableCell>
-                        <StyledTableCell align="right">Qty</StyledTableCell>
-                        <StyledTableCell align="right">
-                          Estimated Unit Price
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          Total Price
-                        </StyledTableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {formData && formData.rows && formData.rows.length > 0 ? (
-                        formData.rows.map((row, index) => (
-                          <StyledTableRow key={index}>
-                            <StyledTableCell>{row.productName}</StyledTableCell>
-                            <StyledTableCell>{row.description}</StyledTableCell>
-                            <StyledTableCell align="right">
-                              {row.qty}
-                            </StyledTableCell>
-                            <StyledTableCell align="right">
-                              {row.unitPrice}
-                            </StyledTableCell>
-                            <StyledTableCell align="right">
-                              {row.totalPrice}
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        ))
-                      ) : (
-                        <StyledTableRow>
-                          <StyledTableCell colSpan={5} align="center">
-                            No products available
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      )}
-                      <StyledTableRow>
-                        <StyledTableCell
-                          colSpan={4}
-                          align="right"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          Total
-                        </StyledTableCell>
-                        <StyledTableCell
-                          align="right"
-                          style={{ fontWeight: "bold" }}
-                        >
-                          {totalPrice.toFixed(2)}
-                        </StyledTableCell>
-                      </StyledTableRow>
-                    </TableBody>
-                  </StyledTable>
-                </StyledTableContainer>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <div className="orapr4">
-            <form className="oraprform2">
-              <div className="orapr4a">
-                <p style={{ fontSize: "20px" }}>Basic Details</p>
-                <div className="orapr4ab">
-                  <p className="orapr4pg">1 of 6</p>
-                  <div className="orapr4nav">
-                    <FaCaretLeft className="nr" />
-                    <div className="sep"></div>
-                    <FaCaretRight className="nr" />
-                  </div>
-                </div>
-              </div>
-              <div className="orapr4b">
-                <div className="orapr4ba">
-                  <p>Vendor Name</p>
                   <p style={{ fontSize: "14px", color: "#7a8a98" }}>
                     {formData ? formData.vendor : ""}
                   </p>
                 </div>
-                <div className="orapr4ba">
-                  <p>Vendor Category</p>
-                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                    {formData ? formData.vendorCategory : ""}
+              </div>
+              <div className="orapr3b">
+                <div className="orapr3ba">
+                  <p>Vendor Address</p>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#7a8a98",
+                    }}
+                  >
+                    5, Vendor address
+                  </p>
+                </div>
+                <div className="orapr3ba">
+                  <p>Vendor Email</p>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#7a8a98",
+                    }}
+                  >
+                    vendoremail@gmail.com
                   </p>
                 </div>
               </div>
-              <p className="orapr3c">Quote</p>
+              <div
+                className="orapr3b"
+                style={{ borderBottom: "1px solid #e2e6e9" }}
+              >
+                <div className="orapr3ba">
+                  <p>Currency Type</p>
+                  <p
+                    style={{
+                      fontSize: "14px",
+                      color: "#7a8a98",
+                    }}
+                  >
+                    Naira (N)
+                  </p>
+                </div>
+                <div className="orapr3ba">
+                  <p>PaymentTerms</p>
+                  <textarea
+                    name=""
+                    id=""
+                    placeholder="Payment terms will be typed here for clarifications"
+                    rows={3}
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "400",
+                      lineHeight: "19.41px",
+                      outline: "none",
+                      border: "none",
+                      color: "#8C9AA6",
+                      fontFamily: "Product Sans",
+                    }}
+                  ></textarea>
+                </div>
+                <div className="orapr3ba">
+                  <p>Purchase Policy</p>
+                  <textarea
+                    name=""
+                    id=""
+                    placeholder="Purchase policy will be typed here for clarifications"
+                    rows={3}
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "400",
+                      lineHeight: "19.41px",
+                      outline: "none",
+                      border: "none",
+                      color: "#8C9AA6",
+                      fontFamily: "Product Sans",
+                    }}
+                  ></textarea>
+                </div>
+                <div className="orapr3ba">
+                  <p>Delivery Term</p>
+                  <textarea
+                    name=""
+                    id=""
+                    placeholder="Delivery terms will be typed here for clarifications"
+                    rows={3}
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "400",
+                      lineHeight: "19.41px",
+                      outline: "none",
+                      border: "none",
+                      color: "#8C9AA6",
+                      fontFamily: "Product Sans",
+                    }}
+                  ></textarea>
+                </div>
+              </div>
+              <p className="orapr3c">Purchase Order Content</p>
               <div className="orapr3d">
                 <StyledTableContainer
                   component={Paper}
@@ -363,13 +456,145 @@ export default function Orapr({ onUpdateStatus, formData, onClose }) {
                   </StyledTable>
                 </StyledTableContainer>
               </div>
-              <div>
-                <DeselectButton onClick={handleDeselect}>
-                  Deselect Vendor
-                </DeselectButton>
+              {/* Status */}
+              <div style={{ marginTop: "1rem" }}>
+                {/* <p>Status</p> */}
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color:
+                      formData.status === "Pending"
+                        ? "#f0b501"
+                        : formData.status === "Drafted"
+                        ? "#3BB1D2"
+                        : formData.status === "Approved"
+                        ? "#1E4226"
+                        : formData.status === "Rejected"
+                        ? "#E43E2B"
+                        : "",
+                  }}
+                >
+                  {formData ? formData.status : ""}
+                </p>
+              </div>
+              <div style={{ marginTop: "1rem" }}>
+                {formData.status === "Approved" ? (
+                  <SaveorShareButton>Send to Vendor</SaveorShareButton>
+                ) : formData.status === "Drafted" ? (
+                  <SaveorShareButton>Share</SaveorShareButton>
+                ) : formData.status === "Rejected" ? (
+                  <SaveorShareButton>Set back to Draft</SaveorShareButton>
+                ) : formData.status === "Pending" ? (
+                  console.log("Pending order screen lack the button")
+                ) : (
+                  ""
+                )}
               </div>
             </form>
           </div>
+        ) : (
+          <></>
+          // DESELLECT VENDOR COMPONENT BELOW
+          // <div className="orapr4">
+          //   <form className="oraprform2">
+          //     <div className="orapr4a">
+          //       <p style={{ fontSize: "20px" }}>Basic Details</p>
+          //       <div className="orapr4ab">
+          //         <p className="orapr4pg">1 of 6</p>
+          //         <div className="orapr4nav">
+          //           <FaCaretLeft className="nr" />
+          //           <div className="sep"></div>
+          //           <FaCaretRight className="nr" />
+          //         </div>
+          //       </div>
+          //     </div>
+          //     <div className="orapr4b">
+          //       <div className="orapr4ba">
+          //         <p>Vendor Name</p>
+          //         <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+          //           {formData ? formData.vendor : ""}
+          //         </p>
+          //       </div>
+          //       <div className="orapr4ba">
+          //         <p>Vendor Category</p>
+          //         <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+          //           {formData ? formData.vendorCategory : ""}
+          //         </p>
+          //       </div>
+          //     </div>
+          //     <p className="orapr3c">Quote</p>
+          //     <div className="orapr3d">
+          //       <StyledTableContainer
+          //         component={Paper}
+          //         sx={{ boxShadow: "none", border: "1px solid #e2e6e9" }}
+          //       >
+          //         <StyledTable
+          //           sx={{ minWidth: 700, border: "none" }}
+          //           aria-label="customized table"
+          //         >
+          //           <TableHead>
+          //             <TableRow>
+          //               <StyledTableCell>Product Name</StyledTableCell>
+          //               <StyledTableCell>Description</StyledTableCell>
+          //               <StyledTableCell align="right">Qty</StyledTableCell>
+          //               <StyledTableCell align="right">
+          //                 Estimated Unit Price
+          //               </StyledTableCell>
+          //               <StyledTableCell align="right">
+          //                 Total Price
+          //               </StyledTableCell>
+          //             </TableRow>
+          //           </TableHead>
+          //           <TableBody>
+          //             {formData && formData.rows && formData.rows.length > 0 ? (
+          //               formData.rows.map((row, index) => (
+          //                 <StyledTableRow key={index}>
+          //                   <StyledTableCell>{row.productName}</StyledTableCell>
+          //                   <StyledTableCell>{row.description}</StyledTableCell>
+          //                   <StyledTableCell align="right">
+          //                     {row.qty}
+          //                   </StyledTableCell>
+          //                   <StyledTableCell align="right">
+          //                     {row.unitPrice}
+          //                   </StyledTableCell>
+          //                   <StyledTableCell align="right">
+          //                     {row.totalPrice}
+          //                   </StyledTableCell>
+          //                 </StyledTableRow>
+          //               ))
+          //             ) : (
+          //               <StyledTableRow>
+          //                 <StyledTableCell colSpan={5} align="center">
+          //                   No products available
+          //                 </StyledTableCell>
+          //               </StyledTableRow>
+          //             )}
+          //             <StyledTableRow>
+          //               <StyledTableCell
+          //                 colSpan={4}
+          //                 align="right"
+          //                 style={{ fontWeight: "bold" }}
+          //               >
+          //                 Total
+          //               </StyledTableCell>
+          //               <StyledTableCell
+          //                 align="right"
+          //                 style={{ fontWeight: "bold" }}
+          //               >
+          //                 {totalPrice.toFixed(2)}
+          //               </StyledTableCell>
+          //             </StyledTableRow>
+          //           </TableBody>
+          //         </StyledTable>
+          //       </StyledTableContainer>
+          //     </div>
+          //     <div>
+          //       <DeselectButton onClick={handleDeselect}>
+          //         Deselect Vendor
+          //       </DeselectButton>
+          //     </div>
+          //   </form>
+          // </div>
         )}
       </div>
     </div>
