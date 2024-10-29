@@ -261,9 +261,10 @@
   margin: 1.5rem 0;
 }
 .checkbox {
-  width: 12%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  align-content: center;
 }
 /* Remove the spinner buttons from number input fields */
 input[type="number"]::-webkit-outer-spin-button,

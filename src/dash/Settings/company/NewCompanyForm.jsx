@@ -422,7 +422,7 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
             {/* Role input and display section */}
             <div className="registration-role-grouped">
   <h2>Roles</h2>
-  <div className="form-group">
+  <div className="form-group" style={{ display: "flex", alignItems: "center", alignContent: "center"}}>
     <label>Add a Role</label>
     <input
       type="text"
@@ -432,8 +432,8 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
       onChange={handleRoleInputChange}
       disabled={!isEditable}
     />
-    <button type="button" onClick={addRole} disabled={!isEditable}>
-      Add Role
+    <button type="button" onClick={addRole} disabled={!isEditable} style={{ padding: "2px 10px", border: "none", backgroundColor: "transparent", color: "#242424"}}>
+       + Add Role
     </button>
   </div>
 
@@ -449,10 +449,8 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
   )}
 </div>
 
-<hr />
-
 {/* Submission Section */}
-<div className="form-group">
+{/* <div className="form-group">
   <button
     type="submit"
     className="submit-btn"
@@ -460,7 +458,7 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
   >
     Save and Submit
   </button>
-</div>
+</div> */}
 </form>
 </div>
 </div>

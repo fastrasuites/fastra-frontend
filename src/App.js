@@ -56,6 +56,7 @@ function App() {
     "/company",
     "/apk",
     "/user",
+    "/accessgroups",
   ];
   const noHeadRoutes = [
     "/",
@@ -102,6 +103,7 @@ function App() {
         {/* <Route path="/company" component={Company} /> */}
         <Route path="/company" component={NewCompany} />
         <Route path="/user" component={User} />
+        <Route path="/accessgroups" component={AccessGroups } />
         <Route path="/purchase" component={Purchase} />
         <Route path="/npr" component={Newpr} />
         <Route path="/papr" component={Papr} />
@@ -122,7 +124,7 @@ function App() {
         <Route path="/Newprod" component={Newprod} />
         <Route path="/procat" component={Procat} />
         <Route path="/pedit" component={Pedit} />
-        <Route path="/accessgroups" component={AccessGroups } />
+       
         <Route path="/configurations" component={ConfigurationSettings } />
       </Switch>
     </div>
