@@ -23,6 +23,7 @@ import {
   InputBase,
   Button,
 } from "@mui/material";
+import UploadMedia from "../../../components/UploadMedia";
 
 export default function Prod() {
   const [showNewProd, setShowNewProd] = useState(false);
@@ -33,6 +34,7 @@ export default function Prod() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [openLeft, setOpenLeft] = useState(false);
   const [openRight, setOpenRight] = useState(false);
+  const [showUploadMedia, setShowUploadMedia] = useState(false);
   const location = useLocation();
 
   const toggleLeftDrawer = (open) => () => setOpenLeft(open);
@@ -66,6 +68,9 @@ export default function Prod() {
 
   const handleCloseNewProd = () => {
     setShowNewProd(false);
+  };
+  const handleCloseUploadMedia = () => {
+    setShowUploadMedia(false);
   };
 
   const handleSaveAndSubmit = (formData) => {
@@ -182,19 +187,16 @@ export default function Prod() {
                 />
               </Box>
 
-              <a
-                href={ExcelFile}
-                download={ExcelFile}
+              <IconButton
                 style={{ marginLeft: "24px" }}
+                onClick={() => setShowUploadMedia(true)}
               >
-                <IconButton>
-                  <img
-                    src={CloudDownload}
-                    alt="Download Excel"
-                    style={{ height: "32px" }}
-                  />
-                </IconButton>
-              </a>
+                <img
+                  src={CloudDownload}
+                  alt="Download Excel"
+                  style={{ height: "32px" }}
+                />
+              </IconButton>
             </Grid>
 
             {/* Icon for Right Drawer */}
@@ -334,19 +336,22 @@ export default function Prod() {
                   />
                 </Box>
 
-                <a
+                {/* <a
                   href={ExcelFile}
                   download={ExcelFile}
+                  
+                > */}
+                <IconButton
                   style={{ marginTop: "10px", display: "block" }}
+                  onClick={() => setShowUploadMedia(true)}
                 >
-                  <IconButton>
-                    <img
-                      src={CloudDownload}
-                      alt="Download Excel"
-                      style={{ height: "20px" }}
-                    />
-                  </IconButton>
-                </a>
+                  <img
+                    src={CloudDownload}
+                    alt="Download Excel"
+                    style={{ height: "20px" }}
+                  />
+                </IconButton>
+                {/* </a> */}
               </Box>
             </Drawer>
 
@@ -462,6 +467,12 @@ export default function Prod() {
             onSaveAndSubmit={handleSaveAndSubmit}
             fromPurchaseModuleWizard={location.state?.openForm}
           />
+        </div>
+      )}
+      {/* RENDER UPLOAD PRODUCT FILE FORM CONDITIONALLY */}
+      {showUploadMedia && (
+        <div className="overlay">
+          <UploadMedia onClose={handleCloseUploadMedia} />
         </div>
       )}
     </div>
