@@ -109,7 +109,6 @@
   gap: 8px;
   border-radius: var(--radilg, 12px);
   border: solid 1px #e7e7e7;
-  opacity: 0px;
   background-color: #ffffff;
 }
 .file-details {
