@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { verifyEmail, resendVerificationEmail } from "../Reglog/EmailApi";
+import Swal from "sweetalert2";
 
 const EmailVerification = ({ tenantName }) => {
-  const [status, setStatus] = useState("Verifying...");
-  const [expired, setExpired] = useState(false);
   const location = useLocation();
   const history = useHistory();
 
@@ -16,53 +15,75 @@ const EmailVerification = ({ tenantName }) => {
       if (token) {
         try {
           await verifyEmail(tenantName, token);
-          setStatus("Email verified successfully. You can now log in.");
-          setTimeout(() => history.push("/login"), 3000);
+          // Show success alert
+          Swal.fire({
+            title: "Success!",
+            text: "Email verified successfully. You can now log in.",
+            icon: "success",
+            confirmButtonText: "OK"
+          }).then(() => {
+            history.push("/login"); // Redirect after confirmation
+          });
         } catch (error) {
           if (error.message === "Token expired") {
-            setStatus(
-              "Token expired. Click below to resend the verification email."
-            );
-            setExpired(true);
+            Swal.fire({
+              title: "Token Expired",
+              text: "Click below to resend the verification email.",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonText: "Resend Email",
+              cancelButtonText: "Cancel"
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                await handleResendEmail(token);
+              }
+            });
           } else {
-            setStatus(
-              "Email verification failed. Please try again or contact support."
-            );
+            Swal.fire({
+              title: "Verification Failed",
+              text: "Email verification failed. Please try again or contact support.",
+              icon: "error",
+              confirmButtonText: "OK"
+            });
           }
         }
       } else {
-        setStatus("Invalid verification link.");
+        Swal.fire({
+          title: "Invalid Link",
+          text: "Invalid verification link.",
+          icon: "error",
+          confirmButtonText: "OK"
+        });
       }
     };
 
     verifyToken();
   }, [location, history, tenantName]);
 
-  const handleResendEmail = async () => {
-    const params = new URLSearchParams(location.search);
-    const token = params.get("token");
-
+  const handleResendEmail = async (token) => {
     try {
       await resendVerificationEmail(tenantName, token);
-      setStatus("A new verification email has been sent.");
-      setExpired(false);
+      Swal.fire({
+        title: "Email Resent",
+        text: "A new verification email has been sent.",
+        icon: "success",
+        confirmButtonText: "OK"
+      });
     } catch (error) {
-      setStatus("Failed to resend verification email. Please try again later.");
+      Swal.fire({
+        title: "Error",
+        text: "Failed to resend verification email. Please try again later.",
+        icon: "error",
+        confirmButtonText: "OK"
+      });
     }
   };
 
-  return (
-    <div>
-      <h2>Email Verification</h2>
-      <p>{status}</p>
-      {expired && (
-        <button onClick={handleResendEmail}>Resend Verification Email</button>
-      )}
-    </div>
-  );
+  return <div>Verifying your email...</div>; // Placeholder while verifying
 };
 
 export default EmailVerification;
+
 
 // import React, { useEffect, useState } from "react";
 // import { useLocation } from "react-router-dom";
