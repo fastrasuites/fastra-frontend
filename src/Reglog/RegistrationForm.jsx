@@ -26,14 +26,14 @@ export default function RegistrationForm() {
 
   const makeRequest = async (finalData) => {
     const registrationData = {
-      schema_name: finalData.companyName.toLowerCase().replace(/\s+/g, "-"),
+      // schema_name: finalData.companyName.toLowerCase().replace(/\s+/g, "-"),
       company_name: finalData.companyName,
       user: {
         password1: finalData.password,
         password2: finalData.confirmPassword,
         email: finalData.companyEmail,
       },
-      frontend_url: window.location.origin,
+      // frontend_url: window.location.origin,
     };
 
     try {
@@ -43,7 +43,10 @@ export default function RegistrationForm() {
         registrationData
       );
       console.log("Registration response:", response.data);
-      localStorage.setItem("registrationData", JSON.stringify(registrationData));
+      localStorage.setItem(
+        "registrationData",
+        JSON.stringify(registrationData)
+      );
       setCurrentStep(2);
     } catch (error) {
       console.error("Registration error:", error.response?.data);
