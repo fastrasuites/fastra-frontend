@@ -41,7 +41,7 @@ export default function RegistrationForm() {
 
     try {
       const response = await axios.post(
-        "https://fastrasuite.com/api/register/",
+        "https://www.fastrasuite.com/api/register/",
         registrationData
       );
       console.log("Registration response:", response.data);
@@ -62,15 +62,20 @@ export default function RegistrationForm() {
 
   const steps = [
     <CompanyDetails next={handleNextStep} />,
-    <PasswordSetup next={handleNextStep} apiError={apiError} isLoading={isLoading} />,
-    <ConfirmationStep companyEmail={formData.companyEmail} isLoading={isLoading} />,
+    <PasswordSetup
+      next={handleNextStep}
+      apiError={apiError}
+      isLoading={isLoading}
+    />,
+    <ConfirmationStep
+      companyEmail={formData.companyEmail}
+      isLoading={isLoading}
+    />,
   ];
 
   return (
     <div className="registration-container">
-      <div className="registration-form-wrapper">
-        {steps[currentStep]}
-      </div>
+      <div className="registration-form-wrapper">{steps[currentStep]}</div>
     </div>
   );
 }
