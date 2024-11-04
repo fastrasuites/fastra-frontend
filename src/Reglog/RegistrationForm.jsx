@@ -13,12 +13,13 @@ export default function RegistrationForm() {
     confirmPassword: "",
   });
   const [apiError, setApiError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   const handleNextStep = (newData, final = false) => {
-    setFormData((prev) => ({ ...prev, ...newData })); // Update state with new data
+    setFormData((prev) => ({ ...prev, ...newData }));
 
     if (final) {
-      makeRequest({ ...formData, ...newData }); // Send complete data on final step
+      makeRequest({ ...formData, ...newData });
     } else {
       setCurrentStep((prev) => prev + 1);
     }
@@ -36,9 +37,10 @@ export default function RegistrationForm() {
       frontend_url: window.location.origin,
     };
 
+    setIsLoading(true); // Start loading
+
     try {
       const response = await axios.post(
-        // "https://fastrav1-production.up.railway.app/register/",
         "https://fastrasuite.com/api/register/",
         registrationData
       );
@@ -50,18 +52,22 @@ export default function RegistrationForm() {
       setApiError(
         error.response?.data || { message: "An unexpected error occurred" }
       );
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
 
   const steps = [
     <CompanyDetails next={handleNextStep} />,
-    <PasswordSetup next={handleNextStep} apiError={apiError} />,
-    <ConfirmationStep companyEmail={formData.companyEmail} />,
+    <PasswordSetup next={handleNextStep} apiError={apiError} isLoading={isLoading} />,
+    <ConfirmationStep companyEmail={formData.companyEmail} isLoading={isLoading} />,
   ];
 
   return (
     <div className="registration-container">
-      <div className="registration-form-wrapper">{steps[currentStep]}</div>
+      <div className="registration-form-wrapper">
+        {steps[currentStep]}
+      </div>
     </div>
   );
 }
@@ -89,7 +95,7 @@ const CompanyDetails = ({ next }) => {
       {({ errors, touched }) => (
         <Form className="reg-form">
           <div className="f-group">
-            <div className="">
+            <div>
               <h2 className="form-title">Register</h2>
               <p className="form-subtitle">Enter your details to register</p>
             </div>
@@ -152,7 +158,7 @@ const CompanyDetails = ({ next }) => {
   );
 };
 
-const PasswordSetup = ({ next, apiError }) => {
+const PasswordSetup = ({ next, apiError, isLoading }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -248,7 +254,7 @@ const PasswordSetup = ({ next, apiError }) => {
           )}
 
           <button className="submit-button" type="submit">
-            Continue
+            {isLoading ? "Processing..." : "Continue"}
           </button>
         </Form>
       )}
@@ -256,19 +262,15 @@ const PasswordSetup = ({ next, apiError }) => {
   );
 };
 
-const ConfirmationStep = ({ companyEmail }) => {
-  console.log("checkig that companyEmail props got here? ", companyEmail);
-  // Function to detect email provider and open the respective email login page
+const ConfirmationStep = ({ companyEmail, isLoading }) => {
   const handleOpenEmailClient = () => {
     if (!companyEmail) {
       alert("No email found. Please check your registration.");
       return;
     }
 
-    // Extract the domain from the email address
     const emailDomain = companyEmail.split("@")[1];
 
-    // Mapping common email providers to their login pages
     const emailProviders = {
       "gmail.com": "https://mail.google.com",
       "yahoo.com": "https://mail.yahoo.com",
@@ -288,9 +290,7 @@ const ConfirmationStep = ({ companyEmail }) => {
       "rediffmail.com": "https://mail.rediff.com",
     };
 
-    // Check if the email domain is recognized, then open the login page
     if (emailProviders[emailDomain]) {
-      console.log(emailProviders[emailDomain]);
       window.open(emailProviders[emailDomain], "_blank");
     } else {
       alert(
@@ -307,7 +307,7 @@ const ConfirmationStep = ({ companyEmail }) => {
         to open your email client and retrieve the token.
       </p>
       <button className="confirmation-button" onClick={handleOpenEmailClient}>
-        Continue
+        {isLoading ? "Processing..." : "Continue"}
       </button>
     </div>
   );
