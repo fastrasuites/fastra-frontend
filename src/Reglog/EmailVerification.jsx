@@ -10,36 +10,30 @@ const EmailVerification = ({ tenantName }) => {
   const [verificationMessage, setVerificationMessage] = useState(
     "Verifying your email..."
   );
+  const [showResendButton, setShowResendButton] = useState(true);
 
   useEffect(() => {
     const verifyToken = async () => {
       const params = new URLSearchParams(location.search);
       const token = params.get("token");
+      const tenant = params.get("tenant");
 
       if (token) {
         try {
-          await verifyEmail(tenantName, token);
+          await verifyEmail(tenant, token);
           setVerificationMessage(
             "Email verified successfully! Redirecting to login..."
           );
           setTimeout(() => history.push("/login"), 3000); // Redirect after 3 seconds
         } catch (error) {
-          if (error.message === "Token expired") {
-            Swal.fire({
-              title: "Token Expired",
-              text: "Click below to resend the verification email.",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonText: "Resend Verification Email",
-              cancelButtonText: "Cancel",
-            }).then(async (result) => {
-              if (result.isConfirmed) {
-                await handleResendEmail();
-              }
-            });
+          if (error.message.includes("expired")) {
+            setVerificationMessage(
+              "Email verification failed. return to your email and click the token again."
+            );
+            setShowResendButton(true);
           } else {
             setVerificationMessage(
-              "Email verification failed. Please try again."
+              "Token has expired. Please Request for a new token and try again."
             );
           }
         }
@@ -61,6 +55,7 @@ const EmailVerification = ({ tenantName }) => {
         icon: "success",
         confirmButtonText: "OK",
       });
+      setShowResendButton(false); // Hide the button after resending
     } catch (error) {
       Swal.fire({
         title: "Error",
@@ -81,10 +76,29 @@ const EmailVerification = ({ tenantName }) => {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "red",
+        fontSize: "18px",
+        color: "white",
       }}
     >
       <div>{verificationMessage}</div>
       {isLoading && <div style={{ marginTop: "10px" }}>Loading spinner...</div>}
+      {!isLoading && showResendButton && (
+        <button
+          onClick={handleResendEmail}
+          style={{
+            marginTop: "15px",
+            padding: "10px 20px",
+            fontSize: "16px",
+            color: "white",
+            backgroundColor: "blue",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Resend Verification Email
+        </button>
+      )}
     </div>
   );
 };
