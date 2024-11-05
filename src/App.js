@@ -43,7 +43,6 @@ import EmailVerifyStatus from "./Reglog/EmailVerification";
 import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 import NewCompany from "./dash/Settings/company/NewCompanyForm";
 
-
 function App() {
   const location = useLocation();
   const noHeaderRoutes = [
@@ -57,6 +56,7 @@ function App() {
     "/apk",
     "/user",
     "/accessgroups",
+    "/verify-email",
   ];
   const noHeadRoutes = [
     "/",
@@ -84,6 +84,7 @@ function App() {
     "/Newprod",
     "/procat",
     "/pedit",
+    "/verify-email",
   ];
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
@@ -92,8 +93,8 @@ function App() {
       <GlobalStyle />
       <Switch>
         <Route exact path="/" component={Register} />
-        {/* <Route path="/verify-email" component={EmailVerification} /> */}
-        <Route path="/email-verify-status" component={EmailVerifyStatus} />
+        <Route path="/verify-email" component={EmailVerification} />
+        {/* <Route path="/email-verify-status" component={EmailVerifyStatus} /> */}
         <Route path="/login" component={Login} />
         <Route path="/forgot-password" component={ForgetPassword} />
         <Route path="/dashboard" component={Dashboard} />
@@ -103,7 +104,7 @@ function App() {
         {/* <Route path="/company" component={Company} /> */}
         <Route path="/company" component={NewCompany} />
         <Route path="/user" component={User} />
-        <Route path="/accessgroups" component={AccessGroups } />
+        <Route path="/accessgroups" component={AccessGroups} />
         <Route path="/purchase" component={Purchase} />
         <Route path="/npr" component={Newpr} />
         <Route path="/papr" component={Papr} />
@@ -124,8 +125,8 @@ function App() {
         <Route path="/Newprod" component={Newprod} />
         <Route path="/procat" component={Procat} />
         <Route path="/pedit" component={Pedit} />
-       
-        <Route path="/configurations" component={ConfigurationSettings } />
+
+        <Route path="/configurations" component={ConfigurationSettings} />
       </Switch>
     </div>
   );

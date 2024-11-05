@@ -12,10 +12,12 @@ export const verifyEmail = async (tenantName, token) => {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.log("checking errorData from EmailApi ", errorData);
       throw new Error(errorData.error); // Handle errors from response
     }
 
     const data = await response.json();
+    console.log("checking data content from emailApi: ", data);
     return data; // Successful verification response
   } catch (error) {
     throw new Error(error.message);
