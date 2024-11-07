@@ -1,3 +1,5 @@
+// ========== BELOW CODE - FROM CLAUDE ===============================
+
 import React, { useEffect, useState } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { verifyEmail, resendVerificationEmail } from "../Reglog/EmailApi";
@@ -11,17 +13,19 @@ const STATUS = {
   ALREADY_VERIFIED: "ALREADY_VERIFIED",
   INVALID: "INVALID",
   ERROR: "ERROR",
-  NO_TOKEN: "NO_TOKEN"
+  NO_TOKEN: "NO_TOKEN",
 };
 
 const MESSAGE_MAP = {
   [STATUS.VERIFYING]: "Verifying your email...",
   [STATUS.SUCCESS]: "Email verified successfully! Redirecting to login...",
-  [STATUS.EXPIRED]: "Token has expired. Please request a new verification email.",
-  [STATUS.ALREADY_VERIFIED]: "Email has already been verified. Redirecting to login...",
+  [STATUS.EXPIRED]:
+    "Token has expired. Please request a new verification email.",
+  [STATUS.ALREADY_VERIFIED]:
+    "Email has already been verified. Redirecting to login...",
   [STATUS.INVALID]: "Invalid token. Please request a new verification email.",
   [STATUS.ERROR]: "Email verification failed. Please try again.",
-  [STATUS.NO_TOKEN]: "Invalid verification link."
+  [STATUS.NO_TOKEN]: "Invalid verification link.",
 };
 
 const EmailVerification = ({ tenantName }) => {
@@ -30,7 +34,12 @@ const EmailVerification = ({ tenantName }) => {
   const [status, setStatus] = useState(STATUS.VERIFYING);
   const [isResending, setIsResending] = useState(false);
 
-  const showResendButton = [STATUS.EXPIRED, STATUS.INVALID].includes(status);
+  const showResendButton = [
+    STATUS.EXPIRED,
+    STATUS.INVALID,
+    STATUS.ERROR,
+    STATUS.NO_TOKEN,
+  ].includes(status);
   const isLoading = status === STATUS.VERIFYING;
 
   useEffect(() => {
@@ -51,7 +60,7 @@ const EmailVerification = ({ tenantName }) => {
       } catch (error) {
         // Handle both axios error response and direct error object
         const errorStatus = error?.response?.data?.status || error?.status;
-        
+
         switch (errorStatus) {
           case "expired":
             setStatus(STATUS.EXPIRED);
@@ -149,7 +158,7 @@ const EmailVerification = ({ tenantName }) => {
                 Resending...
               </>
             ) : (
-              'Resend Verification Email'
+              "Resend Verification Email"
             )}
           </Button>
         )}
@@ -160,6 +169,9 @@ const EmailVerification = ({ tenantName }) => {
 
 export default EmailVerification;
 
+// ========== ABOVE CODE - FROM CLAUDE ===============================
+
+// ======== ABOVE CODE - OUR CODE ==================
 // import React, { useEffect, useState } from "react";
 // import { useLocation, useHistory } from "react-router-dom";
 // import { verifyEmail, resendVerificationEmail } from "../Reglog/EmailApi";
@@ -189,6 +201,9 @@ export default EmailVerification;
 //           setShowResendButton(false); // Hide button on successful verification
 //           setTimeout(() => history.push("/login"), 3000); // Redirect after 3 seconds
 //         } catch (error) {
+//           setVerificationMessage(error.message);
+//           setShowResendButton(true);
+
 //           if (error.status === "expired" ) {
 //             setVerificationMessage(
 //               "Token has expired. Please request a new verification email."
@@ -212,7 +227,8 @@ export default EmailVerification;
 //             setShowResendButton(false);
 //           }
 //         }
-//       } else {
+//       }
+//       else {
 //         setVerificationMessage("Invalid verification link.");
 //         setShowResendButton(false);
 //       }
@@ -280,3 +296,4 @@ export default EmailVerification;
 // };
 
 // export default EmailVerification;
+// ======== MISS CODE - OUR CODE ==================

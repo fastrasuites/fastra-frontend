@@ -1,7 +1,7 @@
 export const verifyEmail = async (tenantName, token) => {
   try {
     const response = await fetch(
-      `https://${tenantName}.fastrasuite.com/api/company/email-verify/?token=${token}`,
+      `https://${tenantName}.fastrasuite.com/api/company/email-verify?token=${token}`,
       {
         method: "GET",
         headers: {
