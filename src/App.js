@@ -4,6 +4,7 @@ import {
   Route,
   Switch,
   useLocation,
+  Link,
 } from "react-router-dom";
 import Register from "./Reglog/Register";
 import EmailVerification from "./Reglog/EmailVerification";
@@ -44,6 +45,25 @@ import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 import NewCompany from "./dash/Settings/company/NewCompanyForm";
 
 function App() {
+  // Extract subdomain
+  const getTenantName = () => {
+    const host = window.location.hostname; // e.g., "tenantName.fastrasuit.com"
+    const parts = host.split(".");
+
+    if (parts.length > 2) {
+      return parts[0]; // tenantName
+    }
+
+    return null; // No subdomain, return null or a default value
+  };
+
+  const tenantName = getTenantName();
+
+  if (!tenantName) {
+    // Redirect to main domain homepage if no subdomain is present
+    return <Link to="/" />;
+  }
+
   const location = useLocation();
   const noHeaderRoutes = [
     "/",
@@ -93,9 +113,17 @@ function App() {
       <GlobalStyle />
       <Switch>
         <Route exact path="/" component={Register} />
+
+        {/* Below code:  Format for subdomain */}
+        <Route
+          path="/login"
+          render={(props) => <Login {...props} tenantName={tenantName} />}
+        />
+        {/* Above code: format for subdomain */}
+
         <Route path="/verify-email" component={EmailVerification} />
         {/* <Route path="/email-verify-status" component={EmailVerifyStatus} /> */}
-        <Route path="/login" component={Login} />
+        {/* <Route path="/login" component={Login} /> */}
         <Route path="/forgot-password" component={ForgetPassword} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/contact" component={Contact} />
