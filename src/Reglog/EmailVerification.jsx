@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { Alert, CircularProgress, Button, Box } from "@mui/material";
 import { useTenant } from "../context/TenantContext";
-import { verifyEmail } from "./EmailApi";
+import { verifyEmail, resendVerificationEmail } from "./EmailApi";
+import Swal from "sweetalert2";
 
 const MAIN_DOMAIN = "fastra-frontend.vercel.app" || "fastrasuite.com";
 
@@ -104,10 +105,29 @@ function EmailVerification() {
     verifyToken();
   }, [location.search, history, setTenant]);
 
-  const handleResendVerification = () => {
-    // Logic to resend verification email
-    // Example: resendVerificationEmail(tenant) - Implement according to your API
-    alert("Resend verification link sent!");
+  const handleResendVerification = async () => {
+    const params = new URLSearchParams(location.search);
+    const tenant = params.get("tenant");
+
+    if (!tenant) {
+      Swal.fire("Error", "Tenant information is missing.", "error");
+      return;
+    }
+
+    try {
+      await resendVerificationEmail(tenant);
+      Swal.fire(
+        "Email Resent",
+        "A new verification email has been sent. Please check your inbox.",
+        "success"
+      );
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        "Failed to resend verification email. Please try again later.",
+        "error"
+      );
+    }
   };
 
   return (
