@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
-import { verifyEmail } from "../EmailApi"; // Your API function
 import { Alert, CircularProgress, Box } from "@mui/material";
 import { useTenant } from "../context/TenantContext";
+import { verifyEmail } from "./EmailApi";
 
 // This will fetch the domain from the .env file
 // const MAIN_DOMAIN = process.env.REACT_APP_MAIN_DOMAIN;
