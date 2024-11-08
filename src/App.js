@@ -37,6 +37,8 @@ import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 import NewCompany from "./dash/Settings/company/NewCompanyForm";
 import ResendEmailVerification from "./Reglog/ResendEmailVerification";
 import { useTenant } from "./context/TenantContext";
+import NoHeaderLayout from "./notFound/NoHeaderLayout";
+import NotFound from "./notFound/NotFound";
 
 function App() {
   const location = useLocation();
@@ -87,11 +89,12 @@ function App() {
     "/pedit",
     "/verify-email",
     "/resend-email-verification",
+    "/notfound",
   ];
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
-      {!noHeaderRoutes.includes(location.pathname) && <Purchead />}
-      {!noHeadRoutes.includes(location.pathname) && <Sethead />}
+     {!noHeaderRoutes.includes(location.pathname) && location.pathname !== "/notfound" && <Purchead />}
+     {!noHeadRoutes.includes(location.pathname) && location.pathname !== "/notfound" && <Sethead />}
       <GlobalStyle />
       <Switch>
         <Route exact path="/" component={Register} />
@@ -136,6 +139,15 @@ function App() {
           path={tenantRoute("/configurations")}
           component={ConfigurationSettings}
         />
+        {/* 404 NotFound route with NoHeaderLayout */}
+        <Route
+            path="*"
+            render={() => (
+              <NoHeaderLayout>
+                <NotFound />
+              </NoHeaderLayout>
+            )}
+          />
       </Switch>
     </div>
   );

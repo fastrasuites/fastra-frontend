@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Formik, Form, Field } from "formik";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import "./RegistrationForm.css";
 
 export default function RegistrationForm() {
@@ -13,11 +13,10 @@ export default function RegistrationForm() {
     confirmPassword: "",
   });
   const [apiError, setApiError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleNextStep = (newData, final = false) => {
     setFormData((prev) => ({ ...prev, ...newData }));
-
     if (final) {
       makeRequest({ ...formData, ...newData });
     } else {
@@ -25,19 +24,21 @@ export default function RegistrationForm() {
     }
   };
 
+  const handlePreviousStep = () => {
+    setCurrentStep((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+
   const makeRequest = async (finalData) => {
     const registrationData = {
-      // schema_name: finalData.companyName.toLowerCase().replace(/\s+/g, "-"),
       company_name: finalData.companyName,
       user: {
         password1: finalData.password,
         password2: finalData.confirmPassword,
         email: finalData.companyEmail,
       },
-      // frontend_url: window.location.origin,
     };
 
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
 
     try {
       const response = await axios.post(
@@ -56,16 +57,19 @@ export default function RegistrationForm() {
         error.response?.data || { message: "An unexpected error occurred" }
       );
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
   const steps = [
-    <CompanyDetails next={handleNextStep} />,
+    <CompanyDetails next={handleNextStep} formData={formData} />,
     <PasswordSetup
       next={handleNextStep}
+      previous={handlePreviousStep}
       apiError={apiError}
       isLoading={isLoading}
+      formData={formData}
+      showBackButton={!!formData.companyName && !!formData.companyEmail}
     />,
     <ConfirmationStep
       companyEmail={formData.companyEmail}
@@ -80,7 +84,7 @@ export default function RegistrationForm() {
   );
 }
 
-const CompanyDetails = ({ next }) => {
+const CompanyDetails = ({ next, formData }) => {
   const validateForm = (values) => {
     const errors = {};
     if (!values.companyName) errors.companyName = "Company Name is required";
@@ -96,17 +100,18 @@ const CompanyDetails = ({ next }) => {
 
   return (
     <Formik
-      initialValues={{ companyName: "", companyEmail: "" }}
+      initialValues={{
+        companyName: formData.companyName || "",
+        companyEmail: formData.companyEmail || "",
+      }}
       onSubmit={(values) => next(values)}
       validate={validateForm}
     >
       {({ errors, touched }) => (
         <Form className="reg-form">
           <div className="f-group">
-            <div>
-              <h2 className="form-title">Register</h2>
-              <p className="form-subtitle">Enter your details to register</p>
-            </div>
+            <h2 className="form-title">Register</h2>
+            <p className="form-subtitle">Enter your details to register</p>
 
             <div className="sub-group">
               <div>
@@ -166,7 +171,14 @@ const CompanyDetails = ({ next }) => {
   );
 };
 
-const PasswordSetup = ({ next, apiError, isLoading }) => {
+const PasswordSetup = ({
+  next,
+  previous,
+  apiError,
+  isLoading,
+  formData,
+  showBackButton,
+}) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -185,19 +197,35 @@ const PasswordSetup = ({ next, apiError, isLoading }) => {
 
   return (
     <Formik
-      initialValues={{ password: "", confirmPassword: "" }}
+      initialValues={{
+        password: formData.password || "",
+        confirmPassword: formData.confirmPassword || "",
+      }}
       onSubmit={(values) => next(values, true)}
       validate={validateForm}
     >
       {({ errors, touched, values }) => (
         <Form className="reg-form">
+          {/* {showBackButton && (
+            <div className="back-button-container">
+              <p className="go-back-link" onClick={previous}>
+                <FaArrowLeft /> Go Back
+              </p>
+            </div>
+          )} */}
           <h2 className="form-title">Password</h2>
           <p className="form-subtitle">Create a password for your account</p>
 
           {apiError && (
             <div className="api-error-message">
               {Object.entries(apiError).map(([key, value]) => (
-                <p key={key}>{`${key}: ${value}`}</p>
+                <p key={key}>
+                  {`${key}: ${value}`} -{" "}
+                  <span className="go-back-link" onClick={previous}>
+                    {/* <FaArrowLeft />  */}
+                    Go Back
+                  </span>
+                </p>
               ))}
             </div>
           )}
@@ -245,7 +273,7 @@ const PasswordSetup = ({ next, apiError, isLoading }) => {
           </ul>
 
           <label className="form-label">Confirm Password</label>
-          <div className="password-input-container">
+           <div className="password-input-container">
             <Field
               className={`form-input ${
                 touched.confirmPassword && errors.confirmPassword
@@ -261,8 +289,8 @@ const PasswordSetup = ({ next, apiError, isLoading }) => {
             <div className="error-message">{errors.confirmPassword}</div>
           )}
 
-          <button className="submit-button" type="submit">
-            {isLoading ? "Processing..." : "Continue"}
+          <button className="submit-button" type="submit" disabled={isLoading}>
+            {isLoading ? "Processing..." : "Submit"}
           </button>
         </Form>
       )}
@@ -270,53 +298,14 @@ const PasswordSetup = ({ next, apiError, isLoading }) => {
   );
 };
 
-const ConfirmationStep = ({ companyEmail, isLoading }) => {
-  const handleOpenEmailClient = () => {
-    if (!companyEmail) {
-      alert("No email found. Please check your registration.");
-      return;
-    }
+const ConfirmationStep = ({ companyEmail, isLoading }) => (
+  <div className="confirmation-step">
+    <h2>Confirmation</h2>
+    <p>
+      A confirmation email has been sent to <strong>{companyEmail}</strong>.
+      Please check your inbox to complete registration.
+    </p>
+    {isLoading && <p>Processing...</p>}
+  </div>
+);
 
-    const emailDomain = companyEmail.split("@")[1];
-
-    const emailProviders = {
-      "gmail.com": "https://mail.google.com",
-      "yahoo.com": "https://mail.yahoo.com",
-      "outlook.com": "https://outlook.live.com",
-      "hotmail.com": "https://outlook.live.com",
-      "aol.com": "https://mail.aol.com",
-      "icloud.com": "https://www.icloud.com/mail",
-      "mail.com": "https://www.mail.com",
-      "zoho.com": "https://mail.zoho.com",
-      "protonmail.com": "https://mail.protonmail.com",
-      "gmx.com": "https://www.gmx.com",
-      "yandex.com": "https://mail.yandex.com",
-      "qq.com": "https://mail.qq.com",
-      "naver.com": "https://mail.naver.com",
-      "163.com": "https://mail.163.com",
-      "126.com": "https://mail.126.com",
-      "rediffmail.com": "https://mail.rediff.com",
-    };
-
-    if (emailProviders[emailDomain]) {
-      window.open(emailProviders[emailDomain], "_blank");
-    } else {
-      alert(
-        `The email provider (${emailDomain}) is not recognized. Please open your email manually.`
-      );
-    }
-  };
-
-  return (
-    <div className="confirmation-container">
-      <h2 className="confirmation-title">Confirmation</h2>
-      <p className="confirmation-message">
-        We sent a confirmation link to your email. Click the "Continue" button
-        to open your email client and retrieve the token.
-      </p>
-      <button className="confirmation-button" onClick={handleOpenEmailClient}>
-        {isLoading ? "Processing..." : "Continue"}
-      </button>
-    </div>
-  );
-};
