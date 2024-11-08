@@ -24,7 +24,7 @@ export const verifyEmail = async (tenantName, token) => {
   }
 };
 
-export const resendVerificationEmail = async (tenantName, token) => {
+export const resendVerificationEmail = async (tenantName) => {
   try {
     const response = await fetch(
       `https://${tenantName}.fastrasuite.com/api/company/resend-verification-email/`,

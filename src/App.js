@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Switch,
-  useLocation,
-  Link,
-} from "react-router-dom";
+import { Switch, Route, useLocation } from "react-router-dom";
 import Register from "./Reglog/Register";
 import EmailVerification from "./Reglog/EmailVerification";
 import Login from "./Reglog/Login";
@@ -16,7 +10,6 @@ import Contact from "./dash/Contact";
 import Settings from "./dash/Settings/Setting";
 import Sethead from "./dash/Settings/Sethead";
 import Apk from "./dash/App/Apk";
-import Company from "./dash/Settings/company/Company";
 import User from "./dash/Settings/user/User";
 import Purchead from "./dash/PurchaseModule/Purchead";
 import Purchase from "./dash/PurchaseModule/Purchase";
@@ -40,31 +33,18 @@ import Newprod from "../src/dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
 import AccessGroups from "./dash/Settings/accessgroups/AccessGroups";
-import EmailVerifyStatus from "./Reglog/EmailVerification";
 import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 import NewCompany from "./dash/Settings/company/NewCompanyForm";
+import ResendEmailVerification from "./Reglog/ResendEmailVerification";
+import { useTenant } from "./context/TenantContext";
 
 function App() {
-  // Extract subdomain
-  const getTenantName = () => {
-    const host = window.location.hostname; // e.g., "tenantName.fastrasuit.com"
-    const parts = host.split(".");
-
-    if (parts.length > 2) {
-      return parts[0]; // tenantName
-    }
-
-    return null; // No subdomain, return null or a default value
-  };
-
-  const tenantName = getTenantName();
-
-  if (!tenantName) {
-    // Redirect to main domain homepage if no subdomain is present
-    return <Link to="/" />;
-  }
-
   const location = useLocation();
+  const { tenant } = useTenant(); // Get tenant from context
+
+  // Utility function for tenant-specific routes
+  const tenantRoute = (route) => (tenant ? `/${tenant}${route}` : route);
+
   const noHeaderRoutes = [
     "/",
     "/login",
@@ -77,6 +57,7 @@ function App() {
     "/user",
     "/accessgroups",
     "/verify-email",
+    "/resend-email-verification",
   ];
   const noHeadRoutes = [
     "/",
@@ -105,6 +86,7 @@ function App() {
     "/procat",
     "/pedit",
     "/verify-email",
+    "/resend-email-verification",
   ];
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
@@ -113,59 +95,51 @@ function App() {
       <GlobalStyle />
       <Switch>
         <Route exact path="/" component={Register} />
-
-        {/* Below code:  Format for subdomain */}
-        <Route
-          path="/login"
-          render={(props) => <Login {...props} tenantName={tenantName} />}
-        />
-        {/* Above code: format for subdomain */}
-
         <Route path="/verify-email" component={EmailVerification} />
-        {/* <Route path="/email-verify-status" component={EmailVerifyStatus} /> */}
-        {/* <Route path="/login" component={Login} /> */}
-        <Route path="/forgot-password" component={ForgetPassword} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/apk" component={Apk} />
-        {/* <Route path="/company" component={Company} /> */}
-        <Route path="/company" component={NewCompany} />
-        <Route path="/user" component={User} />
-        <Route path="/accessgroups" component={AccessGroups} />
-        <Route path="/purchase" component={Purchase} />
-        <Route path="/npr" component={Newpr} />
-        <Route path="/papr" component={Papr} />
-        <Route path="/crfq" component={CRfq} />
-        <Route path="/rfq" component={Rfq} />
-        <Route path="/newrfq" component={Rform} />
-        <Route path="/rapr" component={Rapr} />
-        <Route path="/pod" component={PurchaseOrder} />
-        <Route path="/newPurchaseOrder" component={POrderform} />
-        <Route path="/orapr" component={Orapr} />
-        <Route path="/vend" component={Vend} />
-        <Route path="/vendetails" component={VendorDetails} />
-        <Route path="/Newvendor" component={Newvendor} />
-        <Route path="/varcat" component={Varcat} />
-        <Route path="/edit" component={Edit} />
-        <Route path="/prod" component={Prod} />
-        <Route path="/prodetails" component={ProductDetails} />
-        <Route path="/Newprod" component={Newprod} />
-        <Route path="/procat" component={Procat} />
-        <Route path="/pedit" component={Pedit} />
-
-        <Route path="/configurations" component={ConfigurationSettings} />
+        <Route
+          path={tenantRoute("/resend-email-verification")}
+          component={ResendEmailVerification}
+        />
+        <Route path={tenantRoute("/login")} component={Login} />
+        <Route
+          path={tenantRoute("/forgot-password")}
+          component={ForgetPassword}
+        />
+        <Route path={tenantRoute("/dashboard")} component={Dashboard} />
+        <Route path={tenantRoute("/contact")} component={Contact} />
+        <Route path={tenantRoute("/settings")} component={Settings} />
+        <Route path={tenantRoute("/apk")} component={Apk} />
+        <Route path={tenantRoute("/company")} component={NewCompany} />
+        <Route path={tenantRoute("/user")} component={User} />
+        <Route path={tenantRoute("/accessgroups")} component={AccessGroups} />
+        <Route path={tenantRoute("/purchase")} component={Purchase} />
+        <Route path={tenantRoute("/npr")} component={Newpr} />
+        <Route path={tenantRoute("/papr")} component={Papr} />
+        <Route path={tenantRoute("/crfq")} component={CRfq} />
+        <Route path={tenantRoute("/rfq")} component={Rfq} />
+        <Route path={tenantRoute("/newrfq")} component={Rform} />
+        <Route path={tenantRoute("/rapr")} component={Rapr} />
+        <Route path={tenantRoute("/pod")} component={PurchaseOrder} />
+        <Route path={tenantRoute("/newPurchaseOrder")} component={POrderform} />
+        <Route path={tenantRoute("/orapr")} component={Orapr} />
+        <Route path={tenantRoute("/vend")} component={Vend} />
+        <Route path={tenantRoute("/vendetails")} component={VendorDetails} />
+        <Route path={tenantRoute("/Newvendor")} component={Newvendor} />
+        <Route path={tenantRoute("/varcat")} component={Varcat} />
+        <Route path={tenantRoute("/edit")} component={Edit} />
+        <Route path={tenantRoute("/prod")} component={Prod} />
+        <Route path={tenantRoute("/prodetails")} component={ProductDetails} />
+        <Route path={tenantRoute("/Newprod")} component={Newprod} />
+        <Route path={tenantRoute("/procat")} component={Procat} />
+        <Route path={tenantRoute("/pedit")} component={Pedit} />
+        <Route
+          path={tenantRoute("/configurations")}
+          component={ConfigurationSettings}
+        />
       </Switch>
     </div>
   );
 }
 
-function AppWrapper() {
-  return (
-    <Router>
-      <App />
-    </Router>
-  );
-}
 
-export default AppWrapper;
+export default App;
