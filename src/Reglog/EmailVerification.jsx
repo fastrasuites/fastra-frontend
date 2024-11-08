@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
-import { verifyEmail } from "../api"; // Your API function
+import { verifyEmail } from "../EmailApi"; // Your API function
 import { Alert, CircularProgress, Box } from "@mui/material";
 import { useTenant } from "../context/TenantContext";
 
 // This will fetch the domain from the .env file
 // const MAIN_DOMAIN = process.env.REACT_APP_MAIN_DOMAIN;
-const MAIN_DOMAIN = "fastra-frontend.vercel.app" || "fastrsuite.com";
+const MAIN_DOMAIN = "fastra-frontend.vercel.app" || "fastrasuite.com";
 
 const STATUS = {
   VERIFYING: "verifying",
@@ -72,7 +72,7 @@ function EmailVerification() {
         await verifyEmail(tenant, token);
         setStatus(STATUS.SUCCESS);
         setTimeout(() => {
-          // Redirecting the user to the tenant-specific dashboard
+          // Redirecting the user to the tenant-specific login
           window.location.href = `https://${tenant}.${MAIN_DOMAIN}/login`;
         }, 3000);
       } catch (error) {
