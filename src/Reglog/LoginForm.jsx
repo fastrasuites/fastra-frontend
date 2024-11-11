@@ -112,7 +112,7 @@ export default function LoginForm() {
             <Link to="/register" className="register-link">
               Don't have an account?
             </Link>
-            <Link to="/forgot-password" className="forgot-password-link">
+            <Link to="/forget-password" className="forgot-password-link">
               Forget Password
             </Link>
           </div>

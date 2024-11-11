@@ -43,26 +43,26 @@ import NotFound from "./notFound/NotFound";
 function App() {
   const location = useLocation();
   const { tenant } = useTenant(); // Get tenant from context
-  const MAIN_DOMAIN = "fastra-frontend.vercel.app";
+  const MAIN_DOMAIN = "fastra-frontend.vercel.app " || "http://localhost:3000" || "https://fastrasuite.com";
 
-  // Step 1: Utility function to generate tenant-specific URL
+  // Utility function to generate tenant-specific URL
   const getTenantUrl = (tenant, path = "") => {
     return tenant
       ? `https://${tenant}.${MAIN_DOMAIN}${path}`
       : `https://${MAIN_DOMAIN}${path}`;
   };
 
-  // Step 2: Redirect function to navigate to tenant-specific URLs
+  // Redirect function to navigate to tenant-specific URLs
   const redirectToTenantRoute = (tenant, path) => {
     const tenantUrl = getTenantUrl(tenant, path);
-    window.location.href = tenantUrl; // Redirects to tenant-specific URL
+    window.location.href = tenantUrl;
   };
 
   const noHeaderRoutes = [
     "/",
     "/login",
     "/dashboard",
-    "/fogpas",
+    "/forget-password",
     "/contact",
     "/settings",
     "/company",
@@ -71,12 +71,14 @@ function App() {
     "/accessgroups",
     "/verify-email",
     "/resend-email-verification",
+    "/notfound",
   ];
+  
   const noHeadRoutes = [
     "/",
     "/login",
     "/dashboard",
-    "/fogpas",
+    "/forget-password",
     "/contact",
     "/purchase",
     "/npr",
@@ -102,341 +104,71 @@ function App() {
     "/resend-email-verification",
     "/notfound",
   ];
+
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
+      {/* Render headers conditionally based on routes */}
       {!noHeaderRoutes.includes(location.pathname) &&
         location.pathname !== "/notfound" && <Purchead />}
       {!noHeadRoutes.includes(location.pathname) &&
         location.pathname !== "/notfound" && <Sethead />}
+
       <GlobalStyle />
+
       <Switch>
+        {/* Define tenant-aware routes */}
         <Route exact path="/" component={Register} />
         <Route path="/verify-email" component={EmailVerification} />
-
-        <Route
-          path={
-            tenant
-              ? getTenantUrl(tenant, "/resend-email-verification")
-              : "/resend-email-verification"
-          }
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/resend-email-verification");
-              return null;
-            }
-            return <ResendEmailVerification />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/forgpas") : "/forgpas"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/forgpas");
-              return null;
-            }
-            return <ForgetPassword />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/login") : "/login"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/login");
-              return null;
-            }
-            return <Login />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/dashboard") : "/dashboard"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/dashboard");
-              return null;
-            }
-            return <Dashboard />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/contact") : "/contact"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/contact");
-              return null;
-            }
-            return <Contact />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/settings") : "/settings"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/settings");
-              return null;
-            }
-            return <Settings />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/apk") : "/apk"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/apk");
-              return null;
-            }
-            return <Apk />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/company") : "/company"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/company");
-              return null;
-            }
-            return <NewCompany />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/user") : "/user"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/user");
-              return null;
-            }
-            return <User />;
-          }}
-        />
-        <Route
-          path={
-            tenant ? getTenantUrl(tenant, "/accessgroups") : "/accessgroups"
-          }
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/accessgroups");
-              return null;
-            }
-            return <AccessGroups />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/purchase") : "/purchase"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/purchase");
-              return null;
-            }
-            return <Purchase />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/npr") : "/npr"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/npr");
-              return null;
-            }
-            return <Newpr />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/papr") : "/papr"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/papr");
-              return null;
-            }
-            return <Papr />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/crfq") : "/crfq"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/crfq");
-              return null;
-            }
-            return <CRfq />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/rfq") : "/rfq"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/rfq");
-              return null;
-            }
-            return <Rfq />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/newrfq") : "/newrfq"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/newrfq");
-              return null;
-            }
-            return <Rform />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/rapr") : "/rapr"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/rapr");
-              return null;
-            }
-            return <Rapr />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/pod") : "/pod"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/pod");
-              return null;
-            }
-            return <PurchaseOrder />;
-          }}
-        />
-        <Route
-          path={
-            tenant
-              ? getTenantUrl(tenant, "/newPurchaseOrder")
-              : "/newPurchaseOrder"
-          }
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/newPurchaseOrder");
-              return null;
-            }
-            return <POrderform />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/orapr") : "/orapr"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/orapr");
-              return null;
-            }
-            return <Orapr />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/vend") : "/vend"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/vend");
-              return null;
-            }
-            return <Vend />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/vendetails") : "/vendetails"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/vendetails");
-              return null;
-            }
-            return <VendorDetails />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/Newvendor") : "/Newvendor"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/Newvendor");
-              return null;
-            }
-            return <Newvendor />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/varcat") : "/varcat"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/varcat");
-              return null;
-            }
-            return <Varcat />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/edit") : "/edit"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/edit");
-              return null;
-            }
-            return <Edit />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/prod") : "/prod"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/prod");
-              return null;
-            }
-            return <Prod />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/prodetails") : "/prodetails"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/prodetails");
-              return null;
-            }
-            return <ProductDetails />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/Newprod") : "/Newprod"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/Newprod");
-              return null;
-            }
-            return <Newprod />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/procat") : "/procat"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/procat");
-              return null;
-            }
-            return <Procat />;
-          }}
-        />
-        <Route
-          path={tenant ? getTenantUrl(tenant, "/pedit") : "/pedit"}
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/pedit");
-              return null;
-            }
-            return <Pedit />;
-          }}
-        />
-        <Route
-          path={
-            tenant ? getTenantUrl(tenant, "/configurations") : "/configurations"
-          }
-          render={() => {
-            if (tenant) {
-              redirectToTenantRoute(tenant, "/configurations");
-              return null;
-            }
-            return <ConfigurationSettings />;
-          }}
-        />
-        {/* 404 NotFound route with NoHeaderLayout */}
-        <Route
+        
+        {[
+          { path: "/resend-email-verification", component: ResendEmailVerification },
+          { path: "/forget-password", component: ForgetPassword },
+          { path: "/login", component: Login },
+          { path: "/dashboard", component: Dashboard },
+          { path: "/contact", component: Contact },
+          { path: "/settings", component: Settings },
+          { path: "/apk", component: Apk },
+          { path: "/company", component: NewCompany },
+          { path: "/user", component: User },
+          { path: "/accessgroups", component: AccessGroups },
+          { path: "/purchase", component: Purchase },
+          { path: "/npr", component: Newpr },
+          { path: "/papr", component: Papr },
+          { path: "/crfq", component: CRfq },
+          { path: "/rfq", component: Rfq },
+          { path: "/newrfq", component: Rform },
+          { path: "/rapr", component: Rapr },
+          { path: "/pod", component: PurchaseOrder },
+          { path: "/newPurchaseOrder", component: POrderform },
+          { path: "/orapr", component: Orapr },
+          { path: "/vend", component: Vend },
+          { path: "/vendetails", component: VendorDetails },
+          { path: "/Newvendor", component: Newvendor },
+          { path: "/varcat", component: Varcat },
+          { path: "/edit", component: Edit },
+          { path: "/prod", component: Prod },
+          { path: "/prodetails", component: ProductDetails },
+          { path: "/Newprod", component: Newprod },
+          { path: "/procat", component: Procat },
+          { path: "/pedit", component: Pedit },
+          { path: "/configurations", component: ConfigurationSettings },
+        ].map(({ path, component }, index) => (
+          <Route
+            key={index}
+            path={tenant ? getTenantUrl(tenant, path) : path}
+            render={() => {
+              if (tenant) {
+                redirectToTenantRoute(tenant, path);
+                return null;
+              }
+              return React.createElement(component);
+            }}
+          />
+        ))}
+        
+        {/* Fallback for 404 */}
+          {/* 404 NotFound route with NoHeaderLayout */}
+          <Route
           path="*"
           render={() => (
             <NoHeaderLayout>
@@ -450,3 +182,6 @@ function App() {
 }
 
 export default App;
+
+
+
