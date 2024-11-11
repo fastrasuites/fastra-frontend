@@ -298,14 +298,52 @@ const PasswordSetup = ({
   );
 };
 
-const ConfirmationStep = ({ companyEmail, isLoading }) => (
-  <div className="confirmation-step">
-    <h2>Confirmation</h2>
-    <p>
-      A confirmation email has been sent to <strong>{companyEmail}</strong>.
-      Please check your inbox to complete registration.
-    </p>
-    {isLoading && <p>Processing...</p>}
-  </div>
-);
+const ConfirmationStep = ({ companyEmail, isLoading }) => {
+  const handleOpenEmailClient = () => {
+    if (!companyEmail) {
+      alert("No email found. Please check your registration.");
+      return;
+    }
 
+    const emailDomain = companyEmail.split("@")[1];
+
+    const emailProviders = {
+      "gmail.com": "https://mail.google.com",
+      "yahoo.com": "https://mail.yahoo.com",
+      "outlook.com": "https://outlook.live.com",
+      "hotmail.com": "https://outlook.live.com",
+      "aol.com": "https://mail.aol.com",
+      "icloud.com": "https://www.icloud.com/mail",
+      "mail.com": "https://www.mail.com",
+      "zoho.com": "https://mail.zoho.com",
+      "protonmail.com": "https://mail.protonmail.com",
+      "gmx.com": "https://www.gmx.com",
+      "yandex.com": "https://mail.yandex.com",
+      "qq.com": "https://mail.qq.com",
+      "naver.com": "https://mail.naver.com",
+      "163.com": "https://mail.163.com",
+      "126.com": "https://mail.126.com",
+      "rediffmail.com": "https://mail.rediff.com",
+    };
+
+    if (emailProviders[emailDomain]) {
+      window.open(emailProviders[emailDomain], "_blank");
+    } else {
+      alert(
+        `The email provider (${emailDomain}) is not recognized. Please open your email manually.`
+      );
+    }
+  };
+  return (
+    <div className="confirmation-container">
+      <h2 className="confirmation-title">Confirmation</h2>
+      <p className="confirmation-message">
+        We sent a confirmation link to your email. Click the "Continue" button
+        to open your email client and retrieve the token.
+      </p>
+      <button className="confirmation-button" onClick={handleOpenEmailClient}>
+        {isLoading ? "Processing..." : "Continue"}
+      </button>
+    </div>
+  );
+};
