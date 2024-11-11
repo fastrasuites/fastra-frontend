@@ -43,7 +43,7 @@ import NotFound from "./notFound/NotFound";
 function App() {
   const location = useLocation();
   const { tenant } = useTenant(); // Get tenant from context
-  const MAIN_DOMAIN = "fastra-frontend.vercel.app " || "http://localhost:3000" || "https://fastrasuite.com";
+  const MAIN_DOMAIN = "fastra-frontend.vercel.app" || "http://localhost:3001" || "https://fastrasuite.com";
 
   // Utility function to generate tenant-specific URL
   const getTenantUrl = (tenant, path = "") => {
