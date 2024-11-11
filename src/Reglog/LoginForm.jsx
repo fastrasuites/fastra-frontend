@@ -109,7 +109,7 @@ export default function LoginForm() {
           </form>
 
           <div className="login-links">
-            <Link to="/register" className="register-link">
+            <Link to="/" className="register-link">
               Don't have an account?
             </Link>
             <Link to="/forget-password" className="forgot-password-link">
