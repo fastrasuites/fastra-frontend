@@ -12,6 +12,7 @@ import draft from '../../../../src/image/icons/draft (1).png';
 import approved from '../../../../src/image/icons/approved.png';
 import rejected from '../../../../src/image/icons/rejected.png';
 import pending from '../../../../src/image/icons/pending.png';
+import PurchaseHeader from "../PurchaseHeader";
 
 export default function Rfq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -154,6 +155,7 @@ export default function Rfq() {
 
   return (
     <div className="rfq" id="rfq">
+      <PurchaseHeader />
       <div className="rfq1">
         <div className="rfq2">
           <p style={{ fontSize: "17px"}}>RFQs</p>

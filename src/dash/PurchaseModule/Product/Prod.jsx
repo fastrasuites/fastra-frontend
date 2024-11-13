@@ -24,6 +24,7 @@ import {
   Button,
 } from "@mui/material";
 import UploadMedia from "../../../components/UploadMedia";
+import PurchaseHeader from "../PurchaseHeader";
 
 export default function Prod() {
   const [showNewProd, setShowNewProd] = useState(false);
@@ -126,6 +127,7 @@ export default function Prod() {
 
   return (
     <div className="pro" id="prod">
+      <PurchaseHeader />
       <div className="pro1">
         <div className="pro2">
           {/* New responsive secondary header for product */}

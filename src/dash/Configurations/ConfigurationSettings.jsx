@@ -9,6 +9,7 @@ import {
   Box
 } from '@mui/material';
 import './ConfigurationForm.css'; 
+import PurchaseHeader from '../PurchaseModule/PurchaseHeader';
 
 const ConfigurationSettings = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('');
@@ -94,6 +95,7 @@ const ConfigurationSettings = () => {
 
   return (
     <div className="configurations">
+      <PurchaseHeader />
       <div className="configuration-header">
         <h1>Configuration</h1>
         <div className="pagination">

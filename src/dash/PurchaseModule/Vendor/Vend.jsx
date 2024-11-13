@@ -26,6 +26,7 @@ import {
   InputBase,
 } from "@mui/material";
 import UploadMedia from "../../../components/UploadMedia";
+import PurchaseHeader from "../PurchaseHeader";
 
 export const getVendors = (items) => {
   return items.map((item) => ({
@@ -187,6 +188,7 @@ export default function Vend() {
   return (
     <div className="container-body">
       <div className="vend" id="vend">
+        <PurchaseHeader />
         <div className="prq1">
           <div className="prq2">
             {/* New secondary navbar */}

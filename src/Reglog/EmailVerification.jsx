@@ -20,11 +20,11 @@ const STATUS = {
 const MESSAGE_MAP = {
   [STATUS.VERIFYING]: "Verifying your email. Please wait...",
   [STATUS.SUCCESS]:
-    "Email verified successfully! Redirecting to your login...",
+    "Email verified successfully! Redirecting you to loginpage...",
   [STATUS.EXPIRED]:
     "Your verification link has expired. Redirecting to resend verification page...",
   [STATUS.ALREADY_VERIFIED]:
-    "Your email is already verified. Redirecting to your login...",
+    "Your email is already verified. Redirecting you to loginpage...",
   [STATUS.INVALID]:
     "Invalid verification link. Redirecting to resend verification page...",
   [STATUS.ERROR]:

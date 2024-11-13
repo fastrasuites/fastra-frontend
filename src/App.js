@@ -39,6 +39,9 @@ import ResendEmailVerification from "./Reglog/ResendEmailVerification";
 import { useTenant } from "./context/TenantContext";
 import NoHeaderLayout from "./notFound/NoHeaderLayout";
 import NotFound from "./notFound/NotFound";
+import { components } from "react-select";
+import Inventory from "./dash/Inventory/Inventory";
+import Location from "./dash/Inventory/Location/Location";
 
 function App() {
   const location = useLocation();
@@ -81,39 +84,41 @@ function App() {
     "/forget-password",
     "/contact",
     "/purchase",
+    "/inventory",
     "/npr",
     "/papr",
     "/crfq",
     "/rfq",
     "/newrfq",
     "/rapr",
-    "/pod",
+    "/purchase-order",
     "/newPurchaseOrder",
     "/orapr",
-    "/vend",
+    "/vendor",
     "/vendetails",
     "/Newvendor",
     "/varcat",
     "/edit",
-    "/prod",
+    "/product",
     "/prodetails",
     "/Newprod",
     "/procat",
     "/pedit",
     "/verify-email",
     "/resend-email-verification",
+    "/create-inventory-location",
     "/notfound",
   ];
 
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
       {/* Render headers conditionally based on routes */}
-      {!noHeaderRoutes.includes(location.pathname) &&
+      {/* {!noHeaderRoutes.includes(location.pathname) &&
         location.pathname !== "/notfound" && <Purchead />}
       {!noHeadRoutes.includes(location.pathname) &&
-        location.pathname !== "/notfound" && <Sethead />}
+        location.pathname !== "/notfound" && <Sethead />} */}
 
-      <GlobalStyle />
+      {/* <GlobalStyle /> */}
 
       <Switch>
         {/* Define tenant-aware routes */}
@@ -138,20 +143,23 @@ function App() {
           { path: "/rfq", component: Rfq },
           { path: "/newrfq", component: Rform },
           { path: "/rapr", component: Rapr },
-          { path: "/pod", component: PurchaseOrder },
+          { path: "/purchase-order", component: PurchaseOrder },
           { path: "/newPurchaseOrder", component: POrderform },
           { path: "/orapr", component: Orapr },
-          { path: "/vend", component: Vend },
+          { path: "/vendor", component: Vend },
           { path: "/vendetails", component: VendorDetails },
           { path: "/Newvendor", component: Newvendor },
           { path: "/varcat", component: Varcat },
           { path: "/edit", component: Edit },
-          { path: "/prod", component: Prod },
+          { path: "/product", component: Prod },
           { path: "/prodetails", component: ProductDetails },
           { path: "/Newprod", component: Newprod },
           { path: "/procat", component: Procat },
           { path: "/pedit", component: Pedit },
-          { path: "/configurations", component: ConfigurationSettings },
+          { path: "/purchase-configuration-settings", component: ConfigurationSettings },
+          { path: "/inventory", component: Inventory },
+          { path: "/create-inventory-location", component: Location },
+          
         ].map(({ path, component }, index) => (
           <Route
             key={index}

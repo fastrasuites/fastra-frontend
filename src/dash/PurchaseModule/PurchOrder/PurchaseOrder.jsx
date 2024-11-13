@@ -13,6 +13,7 @@ import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import "./PurchaseOrder.css";
+import PurchaseHeader from "../PurchaseHeader";
 
 export default function PurchaseOrder() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,7 +112,10 @@ export default function PurchaseOrder() {
   };
 
   return (
+    
     <div className="purchase-order" id="purchase">
+      {/* Header */}
+      <PurchaseHeader />
       <div className="purchase-order-heading">
         <div className="purchase-order-content">
           <p style={{ fontSize: "17px" }}>Purchase Order</p>

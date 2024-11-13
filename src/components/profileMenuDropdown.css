@@ -18,10 +18,10 @@
 }
 .profile p {
   font-family: "Product Sans";
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 500;
   line-height: 16.98px;
-  text-align: left;
+  text-align: left !important;
   color: #1a1a1a;
 }
 .profile small {

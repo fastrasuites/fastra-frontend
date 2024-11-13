@@ -13,6 +13,7 @@ import draft from '../../../../src/image/icons/draft (1).png';
 import approved from '../../../../src/image/icons/approved.png';
 import rejected from '../../../../src/image/icons/rejected.png';
 import pending from '../../../../src/image/icons/pending.png';
+import PurchaseHeader from "../PurchaseHeader";
 
 
 export default function Purchreq() {
@@ -158,6 +159,7 @@ export default function Purchreq() {
 
   return (
     <div className="purchase-request" id="purchase">
+      <PurchaseHeader />
       <div className="purchase-request-heading">
         <div className="purchase-request-content">
           <p style={{ fontSize: "17px"}}>Purchase Requests</p>
