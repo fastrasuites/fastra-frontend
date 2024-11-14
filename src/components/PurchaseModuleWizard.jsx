@@ -9,9 +9,9 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
   const handleAddProductandVendor = () => {
     onClose();
     if (step === 1) {
-      history.push("/prod", { openForm: true });
+      history.push("/product", { openForm: true });
     } else if (step === 2) {
-      history.push("/vend", { openForm: true });
+      history.push("/vendor", { openForm: true });
     } else {
       alert(" Humm! The last stage is not ready. Please use the skip button.");
     }
@@ -69,7 +69,7 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
 
             {/* Step 2 ---------------------------------- */}
 
-            <p className="para-headline">3 SIMPLE STEPS</p>
+            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
             <p className="heading-text">
               {step === 1
                 ? "Step 2: Add Vendors"

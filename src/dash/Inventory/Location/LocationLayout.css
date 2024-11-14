@@ -1,0 +1,62 @@
+.vend {
+    height: 180vh;
+    width: 100%;
+    background-size: contain;
+    padding: 0;
+    font-family: Product Sans;
+    background-color: white;
+   
+  }
+  .prq1 {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    position: absolute;
+    top: 10%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .prq2 {
+    margin-top: 4rem;
+    width: 100%;
+    padding: 1rem 4rem;
+    height: 95%;
+    position: absolute;
+    top: 5%;
+  }
+  
+  .vr4gv .vendor-image {
+    margin-bottom: 15px;
+  }
+  .vr4gv {
+    width: 17%;
+    height: 75%;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1),
+      0 6px 20px 0 rgba(65, 62, 62, 0.19);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .vr4gv .vendor-email,
+  .vr4gv .vendor-phone,
+  .vr4gv .vendor-address,
+  .vr4gv .vendor-category {
+    margin-bottom: 10px;
+    line-height: 1.5;
+    color: #7a8a98;
+    font-size: 14px;
+  }
+  
+  .circular-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: auto;
+  }
+  

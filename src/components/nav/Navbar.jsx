@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Logo from "../../image/logo.svg";
 import { IoIosArrowDown } from "react-icons/io";
-import "./RegNavbar.css"; // Updated CSS file name
+import "./Navbar.css"; 
 
 export default function Navbar() {
   const [click, setClick] = useState(false);

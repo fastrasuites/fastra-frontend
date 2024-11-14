@@ -11,7 +11,7 @@ export default function Inventory() {
         <Switch>
           {/* Define routes for the inventory pages */}
           <Route exact path="/inventory" component={Location } /> { /*hi, lukman change this line component to your first s */}
-          <Route exact path="/create-inventory-location" component={Location } />
+          <Route path="/location" component={Location } />
           {/* Add additional inventory routes as needed */}
         </Switch>
       </InventoryContainer>
