@@ -33,7 +33,7 @@ export default function Navbar() {
                 <IoIosArrowDown className="dropdown-icon" />
               </p>
               <div className="dropdown-menu">
-                <a href="/prod" onClick={handleLinkClick}>
+                <a href="/product" onClick={handleLinkClick}>
                   Product
                 </a>
                 <a href="/procat" onClick={handleLinkClick}>
