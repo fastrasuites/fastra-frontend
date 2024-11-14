@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Logo from "../../image/logo.svg";
 import { IoIosArrowDown } from "react-icons/io";
-import "./Navbar.css"; // Import the CSS file
+import "./RegNavbar.css"; // Updated CSS file name
 
 export default function Navbar() {
   const [click, setClick] = useState(false);
@@ -16,23 +16,23 @@ export default function Navbar() {
   };
 
   return (
-    <div className="navbar">
-      <div className={`navbar-wrap ${click ? "active" : ""}`}>
-        <img src={Logo} alt="Fastra Suite" className="logo" />
-        <div className="mobile-icon" onClick={handleClick}>
+    <div className="reg-navbar">
+      <div className={`reg-navbar-wrap ${click ? "active" : ""}`}>
+        <img src={Logo} alt="Fastra Suite" className="reg-logo" />
+        <div className="reg-mobile-icon" onClick={handleClick}>
           {click ? <FaTimes /> : <FaBars />}
         </div>
-        <div className={`nav-links ${click ? "active" : ""}`}>
-          <div className="nav-items">
-            <a href="/" className="nav-link" onClick={handleLinkClick}>
+        <div className={`reg-nav-links ${click ? "active" : ""}`}>
+          <div className="reg-nav-items">
+            <a href="/" className="reg-nav-link" onClick={handleLinkClick}>
               Home
             </a>
-            <div className="dropdown">
-              <p className="dropdown-toggle">
+            <div className="reg-dropdown">
+              <p className="reg-dropdown-toggle">
                 Products
-                <IoIosArrowDown className="dropdown-icon" />
+                <IoIosArrowDown className="reg-dropdown-icon" />
               </p>
-              <div className="dropdown-menu">
+              <div className="reg-dropdown-menu">
                 <a href="/product" onClick={handleLinkClick}>
                   Product
                 </a>
@@ -41,11 +41,11 @@ export default function Navbar() {
                 </a>
               </div>
             </div>
-            <a href="/help" className="nav-link" onClick={handleLinkClick}>
+            <a href="/help" className="reg-nav-link" onClick={handleLinkClick}>
               Help
             </a>
           </div>
-          <a href="/reach" className="contact-button" onClick={handleLinkClick}>
+          <a href="/reach" className="reg-contact-button" onClick={handleLinkClick}>
             Contact Us
           </a>
         </div>
