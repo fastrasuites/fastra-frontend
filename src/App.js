@@ -43,7 +43,6 @@ import { components } from "react-select";
 import Inventory from "./dash/Inventory/Inventory";
 import Location from "./dash/Inventory/Location/Location";
 import LocationForm from "./dash/Inventory/Location/LocationForm";
-import { getLocations } from "./dash/Inventory/Location/LocationLayout";
 
 function App() {
   const location = useLocation();
@@ -160,7 +159,7 @@ function App() {
           { path: "/pedit", component: Pedit },
           { path: "/purchase-configuration-settings", component: ConfigurationSettings },
           { path: "/inventory", component: Inventory },
-              { path: "/location", component: Location },
+          { path: "/location", component: Location },
           { path: "/create-inventory-location", component: LocationForm },
           
         ].map(({ path, component }, index) => (
