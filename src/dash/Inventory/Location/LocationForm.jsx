@@ -119,7 +119,7 @@ const LocationForm = () => {
                     <div className="location-form-content">
                         <form className="location-form-fields">
                             <div className="location-form-info">
-                                <p style={{ fontSize: "20px" }}>Location Information</p>
+                                <p style={{ fontSize: "20px" }}>Location Information</p> 
                                 <button
                                     type="button"
                                     className="location-cancel-button"
@@ -129,7 +129,7 @@ const LocationForm = () => {
                                     Cancel
                                 </button>
                             </div>
-
+                            <br />
                             {/* Location Information */}
                             <Box>
                                 <Grid container spacing={3}>

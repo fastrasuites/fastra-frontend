@@ -1,19 +1,20 @@
 import React from "react";
-import { Modal, Box, Typography, Button } from "@mui/material";
+import { Modal, Box } from "@mui/material";
 import { useHistory } from "react-router-dom";
 import "./LocationStep.css";
 
 const LocationStep = ({ open, onClose, step }) => {
   const history = useHistory();
 
-  const handleSetUpCompany = () => {
+  const handleLocationSetUp = () => {
     onClose();
     if (step === 1) {
-      history.push("/create-inventory-location", { openForm: true });
+      history.push("/create-inventory-location");
     } else {
-      alert(" Humm! The last stage is not ready. Please use the skip button.");
+      alert("Humm! The last stage is not ready. Please use the skip button.");
     }
   };
+  
 
   return (
     <Modal open={open} onClose={onClose} className="modal">
@@ -27,7 +28,7 @@ const LocationStep = ({ open, onClose, step }) => {
           <div className="modal-main-content">
             <p className="heading-text"> Location Creation</p>
             <p className="para-description"> To proceed, kindly create your location </p>
-            <button onClick={handleSetUpCompany} className="btn-goto-steps"> Create Location </button>
+            <button onClick={handleLocationSetUp} className="btn-goto-steps"> Create Location </button>
             
           </div>
         </Box>
