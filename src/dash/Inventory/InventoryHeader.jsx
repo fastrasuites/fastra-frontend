@@ -33,5 +33,5 @@ const InventoryHeader = () => {
     </div>
   );
 };
-;
+
 export default InventoryHeader;
