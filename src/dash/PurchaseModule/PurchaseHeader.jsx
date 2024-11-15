@@ -11,8 +11,8 @@ const PurchaseHeader = () => {
           label: 'Vendors',
           link: '/vendor',
           subItems: [
-            { label: 'Vendors Bills', link: '/vendor' },
-            { label: 'Vendors', link: '/vendors-bill' },
+            { label: 'Vendors Bills', link: '/vendor-bill' },
+            { label: 'Vendors', link: '/vendor' },
           ],
         },
         {

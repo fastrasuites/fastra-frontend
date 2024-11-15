@@ -186,7 +186,7 @@ export default function Vend() {
   };
 
   return (
-    <div className="container-body">
+    <div className="container-bod">
       <div className="vend" id="vend">
         <PurchaseHeader />
         <div className="prq1">

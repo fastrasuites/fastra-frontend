@@ -7,6 +7,7 @@ import "./Newprod.css";
 import { useHistory } from "react-router-dom";
 import { Grid, TextField } from "@mui/material";
 import styled from "styled-components";
+import PurchaseHeader from "../PurchaseHeader";
 // import Select from "react-select";
 
 export default function Newprod({
@@ -173,6 +174,8 @@ const handleUnitChange = (newUnit) => { // Simplified the event parameter
   };
 
   return (
+    <div className="newp-contain ">
+    <PurchaseHeader />
     <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
       <div className="newp1">
         <div className="newp2">
@@ -404,6 +407,7 @@ const handleUnitChange = (newUnit) => { // Simplified the event parameter
           </form>
         </div>
       </div>
+    </div>
     </div>
   );
 }

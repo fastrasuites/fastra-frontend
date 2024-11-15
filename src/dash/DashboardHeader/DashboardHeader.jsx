@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { FaBell } from "react-icons/fa6";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import Sidebar from "../../components/Sidebar";
 import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 import "./DashboardHeader.css";
@@ -42,8 +43,8 @@ const DashboardHeader = ({ title, menuItems }) => {
           <nav className="nav">
             {menuItems.map((item, index) => (
               <div key={index} className="navItem">
-                <a
-                  href={item.link}
+                <Link
+                  to={item.link} // Use Link instead of a href
                   onClick={(e) => {
                     if (item.subItems) {
                       e.preventDefault();
@@ -63,13 +64,17 @@ const DashboardHeader = ({ title, menuItems }) => {
                       }}
                     />
                   )}
-                </a>
+                </Link>
                 {item.subItems && activeDropdown === index && (
                   <div className="dropdown">
                     {item.subItems.map((subItem, subIndex) => (
-                      <a href={subItem.link} key={subIndex} className="dropdownItem">
+                      <Link
+                        key={subIndex}
+                        to={subItem.link} // Use Link for subItems as well
+                        className="dropdownItem"
+                      >
                         {subItem.label}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -78,20 +83,18 @@ const DashboardHeader = ({ title, menuItems }) => {
           </nav>
         </div>
         <div className="rightSection">
-         <div className="notification-icon">
-         <span className="strokeRight" />
-         <button className="notification"><FaBell /></button>
-         <span className="strokeRight" />
-         </div>
-          {/* administrator profile */ }
-            <ProfileMenuDropdown isOpen={isProfileMenuOpen} onClose={closeProfileMenu} />
+          <div className="notification-icon">
+            <span className="strokeRight" />
+            <button className="notification"><FaBell /></button>
+            <span className="strokeRight" />
+          </div>
+          {/* administrator profile */}
+          <ProfileMenuDropdown isOpen={isProfileMenuOpen} onClose={closeProfileMenu} />
         </div>
       </header>
 
       {/* Conditionally render the Sidebar */}
       <Sidebar sidebarOpen={isSidebarOpen} handleCloseSidebar={closeSidebar} />
-
-    
     </>
   );
 };

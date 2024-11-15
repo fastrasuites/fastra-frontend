@@ -12,6 +12,7 @@ import autosave from "../../../image/autosave.svg";
 import "./Newpr.css";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
+import PurchaseHeader from "../PurchaseHeader";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -232,6 +233,8 @@ const handleCurrencyChange = (event, newValue) => {
 };
 
   return (
+    <div className="npr-contain">
+      <PurchaseHeader />
     <div id="npr" className={`npr ${showForm ? "fade-in" : "fade-out"}`}>
       <div className="npr1">
         <div className="npr2">
@@ -266,7 +269,7 @@ const handleCurrencyChange = (event, newValue) => {
                 Cancel
               </button>
             </div>
-
+            <br />
             <div className="npr3b">
               <div className="npr3ba">
                 <p>ID</p>
@@ -294,7 +297,7 @@ const handleCurrencyChange = (event, newValue) => {
                   {formState.department}
                 </p>
               </div>
-            </div>
+            </div> <br /><br />
             <div className="npr3c">
             <div className="npr3ca">
             <p>Select Currency</p>
@@ -326,44 +329,44 @@ const handleCurrencyChange = (event, newValue) => {
               <div className="npr3ca">
                 <label>Suggested Vendors</label>
                 <Autocomplete
-  value={selectedVendor}
-  onChange={handleVendorSelect}
-  inputValue={vendorInputValue}
-  onInputChange={(event, newInputValue) => {
-    setVendorInputValue(newInputValue);
-  }}
-  id="vendor-autocomplete"
-  options={savedVendors}
-  getOptionLabel={(option) => option.vendorName}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Select vendor"
-      style={{
-        width: "95%",
-        marginTop: "0.1rem",
-        cursor: "pointer",
-        outline: "none",  // Remove default outline
-        border: "2px solid #e2e6e9",
-        borderRadius: "4px",
-        // padding: "15px",
-        marginBottom: "1rem",
-      }}
-      InputProps={{
-        ...params.InputProps,
-        style: {
-          outline: "none",  // Remove default outline
-        },
-      }}
-    />
-  )}
-/>
+                  value={selectedVendor}
+                  onChange={handleVendorSelect}
+                  inputValue={vendorInputValue}
+                  onInputChange={(event, newInputValue) => {
+                    setVendorInputValue(newInputValue);
+                  }}
+                  id="vendor-autocomplete"
+                  options={savedVendors}
+                  getOptionLabel={(option) => option.vendorName}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select vendor"
+                      style={{
+                        width: "95%",
+                        marginTop: "0.1rem",
+                        cursor: "pointer",
+                        outline: "none",  // Remove default outline
+                        border: "2px solid #e2e6e9",
+                        borderRadius: "4px",
+                        // padding: "15px",
+                        marginBottom: "1rem",
+                      }}
+                      InputProps={{
+                        ...params.InputProps,
+                        style: {
+                          outline: "none",  // Remove default outline
+                        },
+                      }}
+                    />
+                  )}
+                />
 
               </div>
               <button type="button" className="npr3but" onClick={addRow}>
                 Add Row
               </button>
-            </div>
+            </div> <br />
             <div className="npr3d">
               <TableContainer
                 component={Paper}
@@ -475,11 +478,13 @@ const handleCurrencyChange = (event, newValue) => {
               </button>
               <button type="submit" className="npr3btn">
                 Save & Submit
-              </button>
+              </button> 
             </div>
           </form>
+          <br />
         </div>
       </div>
+    </div>
     </div>
   );
 }

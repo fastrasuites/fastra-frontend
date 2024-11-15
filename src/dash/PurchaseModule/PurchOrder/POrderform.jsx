@@ -13,6 +13,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { useHistory } from "react-router-dom";
 import "./POrderform.css";
+import PurchaseHeader from "../PurchaseHeader";
 // import { TextField } from "@mui/material";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -294,6 +295,8 @@ const handleCurrencyChange = (event, newValue) => {
 };
 
   return (
+    <div className="newpod-contain">
+      <PurchaseHeader />
     <div
       id="newPurchaseOrder"
       className={`newpod ${showForm ? "fade-in" : "fade-out"}`}
@@ -601,6 +604,7 @@ const handleCurrencyChange = (event, newValue) => {
           </form>
         </div>
       </div>
+    </div>
     </div>
   );
 }

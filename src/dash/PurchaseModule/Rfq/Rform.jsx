@@ -12,6 +12,7 @@ import autosave from "../../../image/autosave.svg";
 import "./Rform.css";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
+import PurchaseHeader from "../PurchaseHeader";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -248,6 +249,8 @@ export default function Rform({
     }
   };
   return (
+    <div className="rpr-contain">
+      <PurchaseHeader />
     <div id="newrfq" className={`rpr ${showForm ? "fade-in" : "fade-out"}`}>
       <div className="rpr1">
         <div className="rpr2">
@@ -478,6 +481,7 @@ export default function Rform({
           </form>
         </div>
       </div>
+    </div>
     </div>
   );
 }

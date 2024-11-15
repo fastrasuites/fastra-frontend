@@ -1,3 +1,9 @@
+.newpod-contain {
+  width: 100%;
+  height: 100%;
+  font-family: Product Sans;
+  display: block;
+}
 .newpod {
   width: 100%;
   height: 100%;
@@ -6,11 +12,11 @@
   justify-content: center;
   align-items: center;
   z-index: 999;
-  background-color: white;
-  overflow: auto;
-  background-image: url("../../../image/bg.svg");
+  background-color: #fff;
+  background-image: url('../../../../src/image/background.png');
   background-repeat: no-repeat;
   background-size: cover;
+  overflow: auto;
 }
 .fade-in {
   opacity: 1;
@@ -29,7 +35,7 @@
   width: 100%;
   height: 100%;
   margin: 0 40px;
-  background-color: white;
+  /* background-color: white; */
 }
 
 .newpod2 {
@@ -38,7 +44,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 5rem;
+  margin-top: 1rem;
 }
 
 .newpod2a {
@@ -105,7 +111,7 @@
   background-color: white;
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding: 24px;
 }
 
 .newform {
@@ -176,7 +182,7 @@
   margin-top: 0.1rem;
   cursor: pointer;
   outline: none;
-  border: 2px solid #e2e6e9;
+  /* border: 2px solid #e2e6e9; */
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 1rem;

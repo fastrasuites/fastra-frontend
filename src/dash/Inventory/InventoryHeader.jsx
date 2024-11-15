@@ -22,7 +22,7 @@ const InventoryHeader = () => {
       ],
     },
     { label: 'Location', link: '/location' },
-    { label: 'Configuration', link: '/inventory-configuration' },
+    { label: 'Configuration', link: '/location-configuration' },
   ];
 
   return (

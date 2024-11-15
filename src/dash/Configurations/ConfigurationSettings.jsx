@@ -94,8 +94,9 @@ const ConfigurationSettings = () => {
   };
 
   return (
-    <div className="configurations">
+    <div className='congiure-contain'>
       <PurchaseHeader />
+    <div className="configurations">
       <div className="configuration-header">
         <h1>Configuration</h1>
         <div className="pagination">
@@ -205,7 +206,7 @@ const ConfigurationSettings = () => {
           </ul>
         </FormControl>
       </div> */}
-    </div>
+    </div></div>
   );
 };
 

@@ -3,10 +3,15 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+.configure-contain {
+  width: 100%;
+  height: 100%;
+  font-family: Product Sans;
+  display: block;
+}
 .configurations {
   min-height: 100vh;
-  margin-top: 7rem;
+  margin-top: 1rem;
 }
 
 .configuration-header {

@@ -4,6 +4,7 @@ import autosave from "../../../image/autosave.svg";
 import "./Newvendor.css";
 import vendorLogo from "../../../image/vendor-logo.svg";
 import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
+import PurchaseHeader from "../PurchaseHeader";
 
 export default function Newvendor({ onClose, onSaveAndSubmit }) {
   const generateNewID = () => {
@@ -78,6 +79,8 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
   };
 
   return (
+    <div className="nvr-contain">
+      <PurchaseHeader />
     <div id="nvr" className={`nvr ${showForm ? "fade-in" : "fade-out"}`}>
       <div className="nvr1">
         <div className="nvr2">
@@ -285,6 +288,7 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
           </form>
         </div>
       </div>
+    </div>
     </div>
   );
 }

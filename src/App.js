@@ -43,6 +43,7 @@ import { components } from "react-select";
 import Inventory from "./dash/Inventory/Inventory";
 import Location from "./dash/Inventory/Location/Location";
 import LocationForm from "./dash/Inventory/Location/LocationForm";
+import LocationConfiguration from "./dash/Inventory/LocationConfiguration/LocationConfig";
 
 function App() {
   const location = useLocation();
@@ -119,7 +120,7 @@ function App() {
       {!noHeadRoutes.includes(location.pathname) &&
         location.pathname !== "/notfound" && <Sethead />} */}
 
-      <GlobalStyle />
+      {/* <GlobalStyle /> */}
 
       <Switch>
         {/* Define tenant-aware routes */}
@@ -161,7 +162,8 @@ function App() {
           { path: "/inventory", component: Inventory },
           { path: "/location", component: Location },
           { path: "/create-inventory-location", component: LocationForm },
-          
+          { path: "/location-configuration", component: LocationConfiguration },
+
         ].map(({ path, component }, index) => (
           <Route
             key={index}
