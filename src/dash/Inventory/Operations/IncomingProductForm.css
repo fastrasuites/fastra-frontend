@@ -1,0 +1,9 @@
+.form-wrapper {
+  padding: 24px;
+  background-color: white;
+}
+.form-wrapper form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
