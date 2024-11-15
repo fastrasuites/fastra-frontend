@@ -1,9 +1,15 @@
+.navbar404 {
+  display: block;
+  width: 100%;
+}
 .not-found-container {
     text-align: center;
     padding: 50px;
   }
   .notFoundImg {
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
+    margin-top: -4rem;
   }
   .not-found-container h1 {
     font-size: 3.5rem;
@@ -14,6 +20,7 @@
   .not-found-container p {
     font-size: 1.2rem;
     margin: 20px 0;
+    font-weight: 100;
   }
 
   .home-link {
