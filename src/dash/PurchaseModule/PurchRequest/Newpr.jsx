@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
@@ -367,6 +368,8 @@ const handleCurrencyChange = (event, newValue) => {
                 Add Row
               </button>
             </div> <br />
+
+            {/* product line */}
             <div className="npr3d">
               <TableContainer
                 component={Paper}

@@ -219,6 +219,8 @@ const LocationForm = () => {
                                         display: "flex",
                                         justifyContent: "center",
                                         float: "left",
+                                        padding: "12px 20px",
+                                        fontSize: "18px",
                                     }}
                                 >
                                     Add Location
