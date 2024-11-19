@@ -45,6 +45,7 @@ import Location from "./dash/Inventory/Location/Location";
 import LocationForm from "./dash/Inventory/Location/LocationForm";
 import LocationConfiguration from "./dash/Inventory/LocationConfiguration/LocationConfig";
 import StockAdjustment from "./dash/Inventory/stock/StockAdjustment";
+import NewStockAdjustment from "./dash/Inventory/stock/NewStockAdjustment";
 
 function App() {
   const location = useLocation();
@@ -111,6 +112,7 @@ function App() {
     "/resend-email-verification",
     "/location",
     "/stock-adjustment",
+    "/create-new-stock",
     "/notfound",
   ];
 
@@ -166,6 +168,7 @@ function App() {
           { path: "/create-inventory-location", component: LocationForm },
           { path: "/location-configuration", component: LocationConfiguration },
           { path: "/stock-adjustment", component: StockAdjustment },
+          { path: "/create-new-stock", component: NewStockAdjustment },
 
         ].map(({ path, component }, index) => (
           <Route
