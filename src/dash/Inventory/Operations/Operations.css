@@ -1,8 +1,16 @@
+.operation-wrapper {
+  margin-inline: 32px;
+}
+
 .pending-boxes-container {
   display: flex;
   flex-wrap: wrap;
   gap: 28px;
   margin-bottom: 52px;
+}
+
+.form-wrapper {
+  border: "solid 1px #E2E6E9";
 }
 
 .button-and-search-container {
