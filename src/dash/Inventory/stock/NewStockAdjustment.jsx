@@ -93,20 +93,17 @@ const onClose = () => {
                             <Box sx={{ padding: "5px" }}>
                             <Grid container spacing={2}>
                                 {/* Adjustment Type */}
-                                <Grid item xs={12} sm={6} md={3}>
+                            <Grid item xs={12} sm={6} md={3}>
                                 <Typography variant="body1" gutterBottom>
                                     Adjustment Type
                                 </Typography>
-                                <Select
+                                <TextField
                                     fullWidth
-                                    value={adjustmentType}
-                                    onChange={(e) => setAdjustmentType(e.target.value)}
-                                    displayEmpty
-                                >
-                                    <MenuItem value="">Select Adjustment Type</MenuItem>
-                                    <MenuItem value="stock level update">Stock Level Update</MenuItem>
-                                </Select>
-                                </Grid>
+                                    value="Stock Level Update"
+                                    disabled
+                                />
+                            </Grid>
+
 
                                 {/* Date */}
                                 <Grid item xs={12} sm={6} md={3}>
