@@ -7,7 +7,7 @@ const InventoryHeader = () => {
       label: "Operations",
       link: "/inventory/operations",
       subItems: [
-        { label: "Incoming Product", link: "/incoming-product" },
+        { label: "Incoming Product", link: "/inventory" },
         { label: "Delivery Order", link: "/delivery-order" },
         { label: "Internal Transfer", link: "/internal-transfer" },
       ],
@@ -21,8 +21,8 @@ const InventoryHeader = () => {
         { label: "Scrap", link: "/scrap" },
       ],
     },
-    { label: 'Location', link: '/location' },
-    { label: 'Configuration', link: '/location-configuration' },
+    { label: "Location", link: "/location" },
+    { label: "Configuration", link: "/location-configuration" },
   ];
 
   return (

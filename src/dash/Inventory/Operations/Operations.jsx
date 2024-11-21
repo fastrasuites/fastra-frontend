@@ -10,13 +10,19 @@ import {
   InputLabel,
   Button,
 } from "@mui/material";
-import IncomingProductForm from "./IncomingProductForm";
+import IncomingProductManualForm from "./IncomingProductManualForm";
+import IncomingProductManualListview from "./IncomingProductManualListview";
 
 const Operations = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [showNewIncomingProductForm, setShowNewIncomingProductForm] =
     useState(false);
-  const [incomingProducts, setIncomingProducts] = useState([]);
+  const options = ["Suppliers location", "Customers location"];
+
+  const handleChange = (event) => {
+    setSelectedLocation(event.target.value);
+  };
+
   const pendingIncomingProductCount = [
     "A",
     "B",
@@ -31,11 +37,6 @@ const Operations = () => {
     "B",
     "C",
   ].length;
-  const options = ["Suppliers location", "Customers location"];
-
-  const handleChange = (event) => {
-    setSelectedLocation(event.target.value);
-  };
   const pendingDeliveryOrderCount = ["A", "B", "C"].length;
   const pendingInternalTransferCount = ["A", "B"].length;
   const pendingReturnsCount = ["A", "B", "C", "A", "B", "C"].length;
@@ -46,7 +47,7 @@ const Operations = () => {
       <InventoryHeader />
       <div className="operation-wrapper">
         {showNewIncomingProductForm ? (
-          <IncomingProductForm />
+          <IncomingProductManualForm />
         ) : (
           <>
             {/* Operations and Select Location */}
@@ -164,6 +165,8 @@ const Operations = () => {
               </button>
               {/* Still remain others */}
             </div>
+
+            <IncomingProductManualListview />
           </>
         )}
       </div>
