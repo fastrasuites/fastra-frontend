@@ -1,0 +1,36 @@
+.table-container {
+    padding: 20px;
+    margin: 0px auto;
+    max-width: 1440px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: none;
+    padding: 10px;
+    text-align: left;
+    background: #f9f9f9;
+  }
+  tr, th {
+    font-weight: 530;
+    margin-bottom: 15px;
+    padding-bottom: 30px;
+    background: #fff;
+  }
+ 
+  select, input {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    outline: none;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ccc;
+    
+  }
+  

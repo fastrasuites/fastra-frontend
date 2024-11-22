@@ -4,9 +4,9 @@ import { useHistory } from "react-router-dom";
 import "../Location/LocationForm.css";
 import { Grid, TextField, Box, Divider, Select, Typography, MenuItem } from "@mui/material";
 import InventoryHeader from "../InventoryHeader";
-import ProductLineTable from "./ProductLineTable";
+import ProductScrapLine from "./ProductScrapLine";
 
-const NewStockAdjustment = () => {
+const NewScrap = () => {
     const [adjustmentType, setAdjustmentType] = useState("");
     const [notes, setNotes] = useState("");
     const [locations, setLocations] = useState([]); // Stores the list of locations
@@ -67,7 +67,7 @@ const NewStockAdjustment = () => {
 
     const onClose = () => {
         // Navigate back to screen when cancel is clicked
-        history.push("/stock-adjustment"); // Use history.push for navigation
+        history.push("/scrap"); // Use history.push for navigation
     };
 
     return (
@@ -77,7 +77,7 @@ const NewStockAdjustment = () => {
                 <div className="location-form-container">
                     <div className="location-form-header">
                         <div className="location-header-left">
-                            <p className="location-title">New Stock Adjustment</p>
+                            <p className="location-title">New Scrap</p>
                             <div className="location-autosave">
                                 <p>Autosaved</p>
                                 <img src={autosave} alt="Autosaved" />
@@ -100,19 +100,30 @@ const NewStockAdjustment = () => {
                             <br />
                             <Box sx={{ padding: "5px" }}>
                                 <Grid container spacing={2}>
+                                    {/* Id */}
+                                    <Grid item xs={12} sm={6} md={3}>
+                                        <Typography variant="body1" gutterBottom>
+                                            ID
+                                        </Typography>
+                                        <span fullWidth type="text" style={{ color: "#ccc", paddingTop: "30px"}}>LAG0001</span>
+                                        {/* <TextField fullWidth type="text" value={new Date().toLocaleString()} disabled /> */}
+                                    </Grid>
                                     {/* Adjustment Type */}
                                     <Grid item xs={12} sm={6} md={3}>
                                         <Typography variant="body1" gutterBottom>
                                             Adjustment Type
                                         </Typography>
-                                        <TextField fullWidth value="Stock Level Update" disabled />
+                                        <TextField fullWidth value="Stock Level Update"
+                                       
+                                        disabled />
                                     </Grid>
                                     {/* Date */}
                                     <Grid item xs={12} sm={6} md={3}>
                                         <Typography variant="body1" gutterBottom>
                                             Date
                                         </Typography>
-                                        <TextField fullWidth type="text" value={new Date().toLocaleString()} disabled />
+                                        <span fullWidth type="text" style={{ color: "#ccc", paddingTop: "30px"}}>{new Date().toLocaleString()}</span>
+                                        {/* <TextField fullWidth type="text" value={new Date().toLocaleString()} disabled /> */}
                                     </Grid>
                                       {/* Warehouse Location */}
                                 <Grid item xs={12} sm={6} md={3}>
@@ -127,6 +138,7 @@ const NewStockAdjustment = () => {
                                     value={selectedLocation}
                                     onChange={(e) => setSelectedLocation(e.target.value)}
                                     displayEmpty
+                                    style={{ color: "#ccc", paddingTop: "30px", border: "none", backgroundColor: "transparent" }}
                                     >
                                     <MenuItem value="">Select Location</MenuItem>
                                     {locations.map((location, index) => (
@@ -156,7 +168,7 @@ const NewStockAdjustment = () => {
                             </Box>
                             {/* Product Line Table */}
                             <section>
-                                <ProductLineTable
+                                <ProductScrapLine
                                     productLines={productLines}
                                     handleProductChange={handleProductChange}
                                     addProductLine={addProductLine}
@@ -203,4 +215,4 @@ const NewStockAdjustment = () => {
     );
 };
 
-export default NewStockAdjustment;
+export default NewScrap;
