@@ -4,6 +4,9 @@
   background-color: white;
   border: solid 2px #e2e6e9;
   border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 .form-wrapper form {
   display: flex;
