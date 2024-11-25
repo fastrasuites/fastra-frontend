@@ -22,7 +22,7 @@ function StockMoves() {
       <div style={{ padding: '20px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button className='create-stock' onClick={handleCreatescrapClick}>Stock Move</button>
+          <h2 className='create-stock'>Stock Move</h2>
           <TextField variant="outlined" placeholder="Search" size="small" style={{ width: '200px' }} />
         </div>
 
