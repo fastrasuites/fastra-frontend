@@ -18,8 +18,9 @@ import {
   TableHead,
   TableRow,
   TextField,
+  useMediaQuery,
+  Typography,
 } from "@mui/material";
-import { useMediaQuery, Typography } from "@mui/material";
 
 const IncomingProductManualForm = () => {
   const [selectedReceiptType, setSelectedReceiptType] = useState("");
@@ -92,13 +93,9 @@ const IncomingProductManualForm = () => {
       >
         <h1
           style={{
-            fontFamily: "Product Sans",
             fontSize: "24px",
             fontWeight: "500",
             lineHeight: "29.11px",
-            textAlign: "left",
-            textUnderlinePosition: "from-font",
-            textDecorationSkipInk: "none",
             color: "#1A1A1A",
             marginRight: "42px",
           }}
@@ -264,6 +261,19 @@ const IncomingProductManualForm = () => {
                 color: "#1A1A1A",
               }}
             />
+
+            <TextField
+              label="Source location"
+              variant="standard"
+              value="Supplier's location"
+              InputProps={{ readOnly: true, disableUnderline: true }}
+              sx={{
+                width: "max-content",
+                fontFamily: "Product Sans",
+                fontSize: "14px",
+                display: "none",
+              }}
+            />
           </div>
           <Divider sx={{ marginY: "0px" }} />
 
@@ -418,271 +428,3 @@ const IncomingProductManualForm = () => {
 };
 
 export default IncomingProductManualForm;
-
-// import React, { useState } from "react";
-// import autosave from "../../../image/autosave-text.svg";
-// import {
-//   Box,
-//   ButtonGroup,
-//   Dialog,
-//   DialogContent,
-//   DialogTitle,
-//   Divider,
-//   FormControl,
-//   MenuItem,
-//   Paper,
-//   Select,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
-//   TextField,
-//   Typography,
-//   useMediaQuery,
-// } from "@mui/material";
-
-// const RECEIPT_TYPES = ["Goods", "Manufacturing", "Internal Transfer"];
-// const UNIT_MEASURE_OPTIONS = ["kg", "pcs", "liters"];
-
-// const IncomingProductManualForm = () => {
-//   const [selectedReceiptType, setSelectedReceiptType] = useState("");
-//   const [supplierName, setSupplierName] = useState("");
-//   const [tableData, setTableData] = useState([
-//     {
-//       productName: "Keyboard",
-//       expectedQty: 10,
-//       unitOfMeasure: "kg",
-//       receivedQty: 12,
-//     },
-//     {
-//       productName: "Monitor",
-//       expectedQty: 5,
-//       unitOfMeasure: "pcs",
-//       receivedQty: 3,
-//     },
-//   ]);
-//   const [modalMessage, setModalMessage] = useState([]);
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-
-//   const isSmallScreen = useMediaQuery("(max-width:600px)");
-
-//   const handleFieldChange = (index, field, value) => {
-//     const updatedData = [...tableData];
-//     updatedData[index][field] = value;
-//     setTableData(updatedData);
-//   };
-
-//   const handleValidate = (e) => {
-//     e.preventDefault();
-//     const results = tableData.map((row) => {
-//       if (row.expectedQty === row.receivedQty) {
-//         return `${row.productName}: Quantities are equal.`;
-//       } else if (row.expectedQty > row.receivedQty) {
-//         return `${row.productName}: Received less than expected.`;
-//       } else {
-//         return `${row.productName}: Received more than expected.`;
-//       }
-//     });
-//     setModalMessage(results);
-//     setIsModalOpen(true);
-//   };
-
-//   const handleCloseModal = () => setIsModalOpen(false);
-
-//   return (
-//     <Box sx={{ padding: "24px" }}>
-//       {/* Header */}
-//       <Box sx={{ display: "flex", alignItems: "center", gap: "40px", mb: 3 }}>
-//         <Typography variant="h5" sx={{ fontWeight: 500 }}>
-//           New Incoming Product
-//         </Typography>
-//         <img src={autosave} alt="autosave" />
-//       </Box>
-
-//       {/* Form */}
-//       <form>
-//         {/* Form Header */}
-//         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-//           <Typography variant="h6" color="primary">
-//             Product Information
-//           </Typography>
-//           <button
-//             className="cancel-btn"
-//             style={{ background: "none", border: "none" }}
-//           >
-//             Cancel
-//           </button>
-//         </Box>
-
-//         {/* Receipt Type and Details */}
-//         <Box sx={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
-//           <FormControl fullWidth>
-//             <label>Receipt Type</label>
-//             <Select
-//               value={selectedReceiptType}
-//               onChange={(e) => setSelectedReceiptType(e.target.value)}
-//               displayEmpty
-//               sx={{ maxWidth: "300px" }}
-//             >
-//               <MenuItem value="" disabled>
-//                 Select Receipt Type
-//               </MenuItem>
-//               {RECEIPT_TYPES.map((type, index) => (
-//                 <MenuItem key={index} value={type}>
-//                   {type}
-//                 </MenuItem>
-//               ))}
-//             </Select>
-//           </FormControl>
-
-//           <TextField
-//             label="ID"
-//             variant="standard"
-//             value="LAGIN0001"
-//             InputProps={{ readOnly: true }}
-//           />
-//           <TextField
-//             label="Receipt Date"
-//             variant="standard"
-//             value="4 Apr 2024 - 4:48"
-//             InputProps={{ readOnly: true }}
-//           />
-//           <TextField
-//             label="Location"
-//             variant="standard"
-//             value="xds Store"
-//             InputProps={{ readOnly: true }}
-//           />
-//         </Box>
-
-//         <Divider sx={{ my: 3 }} />
-
-//         {/* Supplier Name */}
-//         <Box>
-//           <label>Name of Supplier</label>
-//           <TextField
-//             placeholder="Enter supplier's name"
-//             variant="outlined"
-//             fullWidth
-//             value={supplierName}
-//             onChange={(e) => setSupplierName(e.target.value)}
-//           />
-//         </Box>
-
-//         <Divider sx={{ my: 3 }} />
-
-//         {/* Product Table */}
-//         <Box sx={{ overflowX: "auto" }}>
-//           <TableContainer component={Paper}>
-//             <Table>
-//               <TableHead>
-//                 <TableRow>
-//                   <TableCell>Product Name</TableCell>
-//                   <TableCell>Expected Qty</TableCell>
-//                   <TableCell>Unit of Measure</TableCell>
-//                   <TableCell>Received Qty</TableCell>
-//                 </TableRow>
-//               </TableHead>
-//               <TableBody>
-//                 {tableData.map((row, index) => (
-//                   <TableRow key={index}>
-//                     <TableCell>
-//                       <TextField
-//                         value={row.productName}
-//                         onChange={(e) =>
-//                           handleFieldChange(
-//                             index,
-//                             "productName",
-//                             e.target.value
-//                           )
-//                         }
-//                         variant="standard"
-//                       />
-//                     </TableCell>
-//                     <TableCell>
-//                       <TextField
-//                         type="number"
-//                         value={row.expectedQty}
-//                         onChange={(e) =>
-//                           handleFieldChange(
-//                             index,
-//                             "expectedQty",
-//                             e.target.value
-//                           )
-//                         }
-//                         variant="standard"
-//                       />
-//                     </TableCell>
-//                     <TableCell>
-//                       <Select
-//                         value={row.unitOfMeasure}
-//                         onChange={(e) =>
-//                           handleFieldChange(
-//                             index,
-//                             "unitOfMeasure",
-//                             e.target.value
-//                           )
-//                         }
-//                       >
-//                         {UNIT_MEASURE_OPTIONS.map((option, i) => (
-//                           <MenuItem key={i} value={option}>
-//                             {option}
-//                           </MenuItem>
-//                         ))}
-//                       </Select>
-//                     </TableCell>
-//                     <TableCell>
-//                       <TextField
-//                         type="number"
-//                         value={row.receivedQty}
-//                         onChange={(e) =>
-//                           handleFieldChange(
-//                             index,
-//                             "receivedQty",
-//                             e.target.value
-//                           )
-//                         }
-//                         variant="standard"
-//                       />
-//                     </TableCell>
-//                   </TableRow>
-//                 ))}
-//               </TableBody>
-//             </Table>
-//           </TableContainer>
-//         </Box>
-
-//         {/* Action Buttons */}
-//         <ButtonGroup
-//           sx={{
-//             mt: 3,
-//             display: "flex",
-//             justifyContent: "flex-end",
-//             gap: "16px",
-//           }}
-//         >
-//           <button className="validate-btn" onClick={handleValidate}>
-//             Validate
-//           </button>
-//           <button className="save-btn">Save</button>
-//         </ButtonGroup>
-//       </form>
-
-//       {/* Modal */}
-//       <Dialog open={isModalOpen} onClose={handleCloseModal}>
-//         <DialogTitle>Validation Results</DialogTitle>
-//         <DialogContent>
-//           <ul>
-//             {modalMessage.map((message, i) => (
-//               <li key={i}>{message}</li>
-//             ))}
-//           </ul>
-//         </DialogContent>
-//       </Dialog>
-//     </Box>
-//   );
-// };
-
-// export default IncomingProductManualForm;

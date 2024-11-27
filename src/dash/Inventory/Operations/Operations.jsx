@@ -9,11 +9,23 @@ import {
   FormControl,
   InputLabel,
   Button,
+  useTheme,
+  Box,
 } from "@mui/material";
 import IncomingProductManualForm from "./IncomingProductManualForm";
 import IncomingProductManualListview from "./IncomingProductManualListview";
+import IncomingProductStatus from "./IncomingProductStatus";
+import inventoryShareStyle from "../inventorySharedStyles";
+import IncomingProductLessOrMore from "./IncomingProductLessOrMore";
+import IncomingProduct from "./IncomingProduct";
+import IncomingPurchaseOrderProduct from "./IncomingPurchaseOrderProduct";
+import IncomingProductReturnForm from "./IncomingProductReturnForm";
+import IncomingProductNoBackOrder from "./IncomingProductNoBackOrder";
+import IncomingProductBackOrderCreation from "./IncomingProductBackOrderCreation";
 
 const Operations = () => {
+  const theme = useTheme();
+
   const [selectedLocation, setSelectedLocation] = useState("");
   const [showNewIncomingProductForm, setShowNewIncomingProductForm] =
     useState(false);
@@ -45,9 +57,16 @@ const Operations = () => {
   return (
     <div>
       <InventoryHeader />
-      <div className="operation-wrapper">
+      <Box sx={inventoryShareStyle.operationWrapper(theme)}>
         {showNewIncomingProductForm ? (
           <IncomingProductManualForm />
+          // <IncomingProductStatus />
+          // <IncomingProductLessOrMore />
+          // <IncomingProduct />
+          // <IncomingPurchaseOrderProduct />
+          // <IncomingProductReturnForm />
+          // <IncomingProductNoBackOrder />
+          // <IncomingProductBackOrderCreation />
         ) : (
           <>
             {/* Operations and Select Location */}
@@ -169,7 +188,7 @@ const Operations = () => {
             <IncomingProductManualListview />
           </>
         )}
-      </div>
+      </Box>
     </div>
   );
 };
