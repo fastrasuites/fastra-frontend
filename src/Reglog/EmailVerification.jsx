@@ -5,7 +5,7 @@ import { useTenant } from "../context/TenantContext";
 import { verifyEmail, resendVerificationEmail } from "./EmailApi";
 import Swal from "sweetalert2";
 
-const MAIN_DOMAIN = !window.location.href.contains("fastrasuite.com")
+const MAIN_DOMAIN = !window.location.href.includes("fastrasuite.com")
   ? "localhost:3000"
   : "fastrasuite.com";
 

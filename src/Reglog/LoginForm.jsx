@@ -38,9 +38,11 @@ export default function LoginForm() {
           { email, password } // Use username instead of email
         );
 
-        const { redirect_url } = response.data; // Destructure the redirect_url from response
-        console.log(response.data);
+        const { redirect_url } = response.data;
+        console.log("what is redirect_url: ", redirect_url);
+        console.log("what is in response.data", response.data); // Destructure the redirect_url from response
         window.location.href = redirect_url; // Redirect to the provided URL
+        // history.push(redirect_url); // I think this is another correct way to redirect
       } catch (error) {
         if (error.response && error.response.status === 400) {
           setError("Invalid credentials");
