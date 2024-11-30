@@ -42,7 +42,7 @@ export default function RegistrationForm() {
 
     try {
       const response = await axios.post(
-        "https://www.fastrasuite.com/api/register/",
+        "https://www.fastrasuiteapi.com.ng/register/",
         registrationData
       );
       console.log("Registration response:", response.data);

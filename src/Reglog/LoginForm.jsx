@@ -34,7 +34,7 @@ export default function LoginForm() {
     if (email && password) {
       try {
         const response = await axios.post(
-          `https://${tenantName}.fastrasuite.com/api/company/login/`, // Corrected to HTTPS and endpoint
+          `https://${tenantName}.fastrasuiteapi.com.ng/company/login/`, // Corrected to HTTPS and endpoint
           { email, password } // Use username instead of email
         );
 

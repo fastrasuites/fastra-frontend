@@ -1,9 +1,8 @@
-import { fontSize, lineHeight } from "@mui/system";
-
 // Inventory shared styles
 const inventoryShareStyle = {
   operationWrapper: (theme) => ({
     marginInline: "32px",
+    marginBlock: "48px",
     [theme.breakpoints.down("md")]: {
       marginInline: "24px",
     },
@@ -104,5 +103,3 @@ const inventoryShareStyle = {
 };
 
 export default inventoryShareStyle;
-
-

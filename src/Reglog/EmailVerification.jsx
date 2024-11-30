@@ -5,7 +5,9 @@ import { useTenant } from "../context/TenantContext";
 import { verifyEmail, resendVerificationEmail } from "./EmailApi";
 import Swal from "sweetalert2";
 
-const MAIN_DOMAIN = "fastra-frontend.vercel.app" || "http://localhost:3001" || "https://fastrasuite.com";
+const MAIN_DOMAIN = !window.location.href.contains("fastrasuite.com")
+  ? "localhost:3000"
+  : "fastrasuite.com";
 
 const STATUS = {
   VERIFYING: "verifying",

@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 // import Bg from "../../../src/image/bg.svg";
 import Location from "./Location/Location";
 import Operations from "./Operations/Operations";
+import MaterialConsumption from "./MaterialConsumption/MaterialConsumption";
 
 export default function Inventory() {
   return (
@@ -15,6 +16,7 @@ export default function Inventory() {
           {/*hi, lukman change this line component to your first s */}
           <Route path="/location" component={Location} />
           {/* Add additional inventory routes as needed */}
+          <Route path="/material-consumption" component={MaterialConsumption} />{" "}
         </Switch>
       </InventoryContainer>
     </Router>

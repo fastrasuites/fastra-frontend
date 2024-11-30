@@ -10,6 +10,7 @@ const InventoryHeader = () => {
         { label: "Incoming Product", link: "/inventory" },
         { label: "Delivery Order", link: "/delivery-order" },
         { label: "Internal Transfer", link: "/internal-transfer" },
+        { label: "Material Consumption", link: "/material-consumption" },
       ],
     },
     {
