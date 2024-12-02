@@ -31,28 +31,75 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email && password) {
-      try {
-        const response = await axios.post(
-          `https://${tenantName}.fastrasuiteapi.com.ng/company/login/`, // Corrected to HTTPS and endpoint
-          { email, password } // Use username instead of email
-        );
 
-        const { redirect_url } = response.data;
-        console.log("what is redirect_url: ", redirect_url);
-        console.log("what is in response.data", response.data); // Destructure the redirect_url from response
-        window.location.href = redirect_url; // Redirect to the provided URL
-        // history.push(redirect_url); // I think this is another correct way to redirect
-      } catch (error) {
-        if (error.response && error.response.status === 400) {
-          setError("Invalid credentials");
+    // Ensure email and password are provided
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    try {
+      // Construct the request URL
+      const apiBaseUrl = `https://${tenantName}.fastrasuiteapi.com.ng`;
+      const loginEndpoint = "/company/login/";
+      const requestUrl = apiBaseUrl + loginEndpoint;
+
+      // Send login request
+      const response = await axios.post(requestUrl, { email, password });
+
+      // Extract tokens and user info from the response
+      const { refresh_token, access_token, user } = response.data;
+
+      // Save tokens to localStorage or sessionStorage securely
+      localStorage.setItem("refresh_token", refresh_token);
+      localStorage.setItem("access_token", access_token);
+
+      // Log user info (optional)
+      console.log("Logged-in User:", user);
+
+      // Redirect to dashboard
+      const dashboardUrl = `https://${tenantName}.fastrasuite.com/dashboard`;
+      window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
+    } catch (error) {
+      // Handle errors
+      if (error.response) {
+        if (error.response.status === 400) {
+          setError("Invalid email or password. Please try again.");
         } else {
-          setError("An error occurred. Please try again.");
+          setError("An error occurred. Please try again later.");
         }
-        console.error("Error logging in:", error);
+      } else {
+        setError(
+          "Unable to connect to the server. Check your internet connection."
+        );
       }
+      console.error("Login Error:", error);
     }
   };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (email && password) {
+  //     try {
+  //       const response = await axios.post(
+  //         `https://${tenantName}.fastrasuiteapi.com.ng/company/login/`, // Corrected to HTTPS and endpoint
+  //         { email, password } // Use username instead of email
+  //       );
+
+  //       const { redirect_url } = response.data;
+  //       console.log("what is redirect_url: ", redirect_url);
+  //       console.log("what is in response.data", response.data); // Destructure the redirect_url from response
+  //       window.location.href = redirect_url; // Redirect to the provided URL
+  //     } catch (error) {
+  //       if (error.response && error.response.status === 400) {
+  //         setError("Invalid credentials");
+  //       } else {
+  //         setError("An error occurred. Please try again.");
+  //       }
+  //       console.error("Error logging in:", error);
+  //     }
+  //   }
+  // };
 
   return (
     <div className="login-container">
