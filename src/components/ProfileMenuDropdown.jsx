@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Dialog, DialogContent } from "@mui/material";
 import { Link } from "react-router-dom";
 import admin from "../image/admin.svg";
@@ -6,9 +6,9 @@ import settingIcon from "../image/settings-01.svg";
 import userIcon from "../image/user-circle.svg";
 import usergroupIcon from "../image/user-group.svg";
 import logoutIcon from "../image/logout-03.svg";
+import { AuthContext } from "../context/AuthContext";
 
 import "./profileMenuDropdown.css";
-import { position } from "@chakra-ui/react";
 
 const users = [
   {
@@ -57,12 +57,14 @@ const ProfileConfigs = ({ url, icon, desc, handleClose }) => {
 
 const ProfileMenuDropdown = () => {
   const [open, setOpen] = useState(false);
+  const { logoutUser } = useContext(AuthContext);
 
   const handleClickOpen = () => {
     setOpen(true);
   };
 
   const handleClose = () => {
+    logoutUser();
     setOpen(false);
   };
 
