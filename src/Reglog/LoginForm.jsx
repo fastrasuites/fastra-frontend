@@ -13,13 +13,6 @@ export default function LoginForm() {
   const history = useHistory();
   const { loginUser } = useContext(AuthContext);
 
-  // Get tenant name from URL
-  /*
-  const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
-  const parts = fullUrl.split(".");
-  const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)  
-  */
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -34,7 +27,7 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log("Email:", email, "Password:", password);
     // Ensure email and password are provided
     if (!email || !password) {
       setError("Email and password are required.");
@@ -44,6 +37,7 @@ export default function LoginForm() {
     try {
       await loginUser(email, password);
       // Redirect to the dashboard or another authenticated route
+      console.log("Redirecting to dashboard");
       history.push("/dashboard");
     } catch (err) {
       // Handle errors, including network or authentication errors
@@ -124,6 +118,13 @@ export default function LoginForm() {
     </div>
   );
 }
+
+// Get tenant name from URL
+  /*
+  const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
+  const parts = fullUrl.split(".");
+  const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)  
+  */
 
 // try {
 //   // Construct the request URL
