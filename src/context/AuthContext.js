@@ -23,8 +23,6 @@ export const AuthProvider = ({ children }) => {
       setAccessToken(data.access_token);
       localStorage.setItem("access_token", data.access_token);
       setUser(data.user);
-      console.log(data.user)
-      console.log(user)
     } catch (error) {
       if (error.response?.status === 404) {
         console.error("Tenant not found");

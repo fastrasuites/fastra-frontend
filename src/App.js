@@ -75,14 +75,16 @@ function App() {
           {/* Define tenant-aware routes */}
           <Route exact path="/" component={Register} />
           <Route path="/verify-email" component={EmailVerification} />
-
+          <Route path="/login" component={Login} />
+          {/* <Route path="/dashboard" component={Dashboard} />
+          <Route path="/forget-password" component={ForgetPassword} /> */}
           {[
             {
               path: "/resend-email-verification",
               component: ResendEmailVerification,
             },
             { path: "/forget-password", component: ForgetPassword },
-            { path: "/login", component: Login },
+            // { path: "/login", component: Login },
             { path: "/dashboard", component: Dashboard },
             { path: "/contact", component: Contact },
             { path: "/settings", component: Settings },
