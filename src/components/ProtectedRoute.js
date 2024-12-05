@@ -5,7 +5,6 @@ import { Redirect } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
   const { accessToken } = useContext(AuthContext);
-  console.log("Access Token in ProtectedRoute:", accessToken);
   return accessToken ? children : <Redirect to="/login" />;
 };
 
