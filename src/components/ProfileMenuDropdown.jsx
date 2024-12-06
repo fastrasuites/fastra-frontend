@@ -8,7 +8,6 @@ import usergroupIcon from "../image/user-group.svg";
 import logoutIcon from "../image/logout-03.svg";
 
 import "./profileMenuDropdown.css";
-import { position } from "@chakra-ui/react";
 
 const users = [
   {
@@ -66,6 +65,13 @@ const ProfileMenuDropdown = () => {
     setOpen(false);
   };
 
+  const logout = () => {
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("access_token");
+    setOpen(false);
+    console.log("logged out user");
+  };
+
   return (
     <div className="">
       <UserCard handleClickOpen={handleClickOpen} users={users} />
@@ -111,7 +117,7 @@ const ProfileMenuDropdown = () => {
             desc="Logout"
             url="/"
             icon={logoutIcon}
-            handleClose={handleClose}
+            handleClose={logout}
           />
         </DialogContent>
       </Dialog>
