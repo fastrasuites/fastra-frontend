@@ -179,9 +179,6 @@ const Operations = () => {
               >
                 New Incoming Product
               </button>
-              <button className="view-incoming-purchase-order-btn">
-                view-incoming-purchase-order
-              </button>
               {/* Still remain others */}
             </div>
 
