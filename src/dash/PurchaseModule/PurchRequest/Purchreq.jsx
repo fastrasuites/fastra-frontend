@@ -9,12 +9,12 @@ import Papr from "./Papr";
 import CRfq from "./CRfq";
 import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
 import { useLocation } from "react-router-dom";
-import draft from '../../../../src/image/icons/draft (1).png';
-import approved from '../../../../src/image/icons/approved.png';
-import rejected from '../../../../src/image/icons/rejected.png';
-import pending from '../../../../src/image/icons/pending.png';
+import draft from "../../../../src/image/icons/draft (1).png";
+import approved from "../../../../src/image/icons/approved.png";
+import rejected from "../../../../src/image/icons/rejected.png";
+import pending from "../../../../src/image/icons/pending.png";
 import PurchaseHeader from "../PurchaseHeader";
-
+import axios from "axios";
 
 export default function Purchreq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,7 +38,38 @@ export default function Purchreq() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
+  // -------------------------------------
+  const BASE_API_URL = "https://fastrasuiteapi.com.ng";
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const access_token = localStorage.getItem("access_token");
+  const fetchPurchaseOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${BASE_API_URL}/purchase/purchase-order/`,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`, // Replace with your token
+          },
+        }
+      );
+      setPurchaseOrders(response.data); // Adjust according to the API response structure
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchPurchaseOrders();
+  }, []);
+  console.log("inspecting Purchase order: ", purchaseOrders);
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  // -----------------------------
   useEffect(() => {
     if (location.state?.step) {
       setCurrentStep(location.state.step);
@@ -162,45 +193,65 @@ export default function Purchreq() {
       <PurchaseHeader />
       <div className="purchase-request-heading">
         <div className="purchase-request-content">
-          <p style={{ fontSize: "17px"}}>Purchase Requests</p>
+          <p style={{ fontSize: "17px" }}>Purchase Requests</p>
           <div className="purchase-request-status">
             <div className="status-field purchase-draft">
               <img src={draft} alt="draft" className="status-img" />
-              <p className={`purchase-list-count ${draftCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  draftCount === 0 ? "zero" : ""
+                }`}
+              >
                 {draftCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Draft</p>
+              <p style={{ fontSize: "20px" }}>Draft</p>
             </div>
             <div className="status-field purchase-approved">
               <img src={approved} alt="approved" className="status-img" />
-              <p className={`purchase-list-count ${approvedCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  approvedCount === 0 ? "zero" : ""
+                }`}
+              >
                 {approvedCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Approved</p>
+              <p style={{ fontSize: "20px" }}>Approved</p>
             </div>
             <div className="status-field purchase-pending">
               <img src={pending} alt="pending" className="status-img" />
-              <p className={`purchase-list-count ${pendingCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  pendingCount === 0 ? "zero" : ""
+                }`}
+              >
                 {pendingCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Pending</p>
+              <p style={{ fontSize: "20px" }}>Pending</p>
             </div>
             <div className="status-field purchase-rejected">
               <img src={rejected} alt="rejected" className="status-img" />
-              <p className={`purchase-list-count ${rejectedCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  rejectedCount === 0 ? "zero" : ""
+                }`}
+              >
                 {rejectedCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Rejected</p>
+              <p style={{ fontSize: "20px" }}>Rejected</p>
             </div>
           </div>
-          
+
           <div className="purchase-nav">
             <div className="purchase-content">
-              <button className="purchase-contentbtn" onClick={handleNewPurchaseRequest} style={{ fontSize: "17px"}}>
+              <button
+                className="purchase-contentbtn"
+                onClick={handleNewPurchaseRequest}
+                style={{ fontSize: "17px" }}
+              >
                 New Purchase Request
               </button>
               <div className="prqsash">
@@ -241,6 +292,27 @@ export default function Purchreq() {
               </div>
             </div>
           </div>
+
+          {/* Testing purchase API start */}
+
+          <div>
+            <h1>Purchase Orders</h1>
+            {purchaseOrders.length > 0 ? (
+              <ul>
+                {purchaseOrders.map((order) => (
+                  <li key={order.id}>
+                    {/* Adjust the display according to your API data structure */}
+                    Order ID: {order.id}, Description: {order.description}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No purchase orders found.</p>
+            )}
+          </div>
+
+          {/* Testing purchase API ends */}
+
           {isFormVisible ? (
             <div className="overlay">
               <Newpr
@@ -300,9 +372,7 @@ export default function Purchreq() {
               ))}
             </div>
           ) : (
-            
-             <ListView items={filteredItems} onItemClick={handleCardClick} />
-            
+            <ListView items={filteredItems} onItemClick={handleCardClick} />
           )}
         </div>
       </div>
