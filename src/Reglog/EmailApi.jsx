@@ -1,8 +1,8 @@
 const BASE_DOMAIN = "fastrasuiteapi.com.ng";
-export const verifyEmail = async (tenantName, token) => {
+export const verifyEmail = async (tenant, token) => {
   try {
     const response = await fetch(
-      `https://${tenantName}.${BASE_DOMAIN}/company/email-verify?token=${token}`,
+      `https://${tenant}.${BASE_DOMAIN}/company/email-verify?token=${token}`,
       {
         method: "GET",
         headers: {
@@ -25,10 +25,10 @@ export const verifyEmail = async (tenantName, token) => {
   }
 };
 
-export const resendVerificationEmail = async (tenantName) => {
+export const resendVerificationEmail = async (tenant) => {
   try {
     const response = await fetch(
-      `https://${tenantName}.${BASE_DOMAIN}/company/resend-verification-email/`,
+      `https://${tenant}.${BASE_DOMAIN}/company/resend-verification-email/`,
 
       {
         method: "GET", // Assuming it's a GET request

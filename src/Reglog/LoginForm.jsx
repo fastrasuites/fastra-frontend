@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
 import "./LoginForm.css";
+import { useTenant } from "../context/TenantContext";
 
 export default function LoginForm() {
   // const [username, setUsername] = useState(""); // Changed from email to username
@@ -11,11 +12,13 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const history = useHistory();
+  const { setTenant } = useTenant();
 
-  // Get tenant name from URL
+  // Get tenant name from URL and setTanant for TenantContext for accessibility across the app.
   const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
   const parts = fullUrl.split(".");
-  const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
+  const tenant = parts[0]; // Assuming the first part is the subdomain (tenant name)
+  setTenant(tenant);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -40,7 +43,7 @@ export default function LoginForm() {
 
     try {
       // Construct the request URL
-      const apiBaseUrl = `https://${tenantName}.fastrasuiteapi.com.ng`;
+      const apiBaseUrl = `https://${tenant}.fastrasuiteapi.com.ng`;
       const loginEndpoint = "/company/login/";
       const requestUrl = apiBaseUrl + loginEndpoint;
 
@@ -58,7 +61,7 @@ export default function LoginForm() {
       console.log("Logged-in User:", user);
 
       // Redirect to dashboard
-      const dashboardUrl = `https://${tenantName}.fastrasuite.com/dashboard`;
+      const dashboardUrl = `https://${tenant}.fastrasuite.com/dashboard`;
       window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
     } catch (error) {
       // Handle errors
@@ -82,7 +85,7 @@ export default function LoginForm() {
   //   if (email && password) {
   //     try {
   //       const response = await axios.post(
-  //         `https://${tenantName}.fastrasuiteapi.com.ng/company/login/`, // Corrected to HTTPS and endpoint
+  //         `https://${tenant}.fastrasuiteapi.com.ng/company/login/`, // Corrected to HTTPS and endpoint
   //         { email, password } // Use username instead of email
   //       );
 

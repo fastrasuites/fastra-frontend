@@ -15,6 +15,7 @@ import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import PurchaseHeader from "../PurchaseHeader";
 import axios from "axios";
+import { useTenant } from "../../../context/TenantContext";
 
 export default function Purchreq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,7 +40,9 @@ export default function Purchreq() {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   // -------------------------------------
-  const BASE_API_URL = "https://fastrasuiteapi.com.ng";
+  const { tenant } = useTenant();
+  console.log("from purchasereqComp: ", tenant);
+  const BASE_API_URL = `https://${tenant}.fastrasuiteapi.com.ng`;
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +72,7 @@ export default function Purchreq() {
   console.log("inspecting Purchase order: ", purchaseOrders);
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-  // -----------------------------
+  // Testing Ends-----------------------------
   useEffect(() => {
     if (location.state?.step) {
       setCurrentStep(location.state.step);
