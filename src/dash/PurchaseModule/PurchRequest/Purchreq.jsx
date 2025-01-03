@@ -54,6 +54,7 @@ export default function Purchreq() {
         `${BASE_API_URL}/purchase/purchase-order/`,
         {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${access_token}`, // Replace with your token
           },
         }
