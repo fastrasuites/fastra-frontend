@@ -40,6 +40,7 @@ export default function Purchreq() {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   // Testing fetching purchase request -------------------------------------
+  /*
   const { tenant } = useTenant();
   console.log("Tenant from useTenant:", tenant);
 
@@ -56,7 +57,8 @@ export default function Purchreq() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASE_API_URL}/purchase/purchase-order/`,
+        `${BASE_API_URL}/purchase/purchase-request/`,
+        // `${BASE_API_URL}/purchase/purchase-order/`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -81,7 +83,9 @@ export default function Purchreq() {
   console.log("Purchase Orders:", purchaseOrders);
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
+  */
   // Testing Ends-----------------------------
+
   useEffect(() => {
     if (location.state?.step) {
       setCurrentStep(location.state.step);
@@ -304,26 +308,6 @@ export default function Purchreq() {
               </div>
             </div>
           </div>
-
-          {/* Testing purchase API start */}
-
-          <div>
-            <h1>Purchase Orders</h1>
-            {purchaseOrders.length > 0 ? (
-              <ul>
-                {purchaseOrders.map((order) => (
-                  <li key={order.id}>
-                    {/* Adjust the display according to your API data structure */}
-                    Order ID: {order.id}, Description: {order.description}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No purchase orders found.</p>
-            )}
-          </div>
-
-          {/* Testing purchase API ends */}
 
           {isFormVisible ? (
             <div className="overlay">

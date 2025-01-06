@@ -1,3 +1,4 @@
+// LoginForm.jsx
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
@@ -11,14 +12,18 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const history = useHistory();
-  const { setTenant } = useTenant();
+  const { tenant } = useTenant();
+  console.log(tenant);
 
-  // Get tenant name from URL and setTanant for TenantContext for accessibility across the app.
-  const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
-  const parts = fullUrl.split(".");
-  const tenant = parts[0]; // Assuming the first part is the subdomain (tenant name)
-  setTenant(tenant);
+  // checks url for localhost:3000 or fastrasuite.com
+  const MAIN_DOMAIN = window.location.href.includes("fastrasuite.com")
+    ? "fastrasuite.com"
+    : "localhost:3000";
+
+  // Determine protocol dynamically (http for localhost, https for production)
+  const PROTOCOL = window.location.protocol.includes("https")
+    ? "https"
+    : "http";
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -61,7 +66,7 @@ export default function LoginForm() {
       console.log("Logged-in User:", user);
 
       // Redirect to dashboard
-      const dashboardUrl = `https://${tenant}.fastrasuite.com/dashboard`;
+      const dashboardUrl = `${PROTOCOL}://${tenant}.${MAIN_DOMAIN}/dashboard`;
       window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
     } catch (error) {
       // Handle errors
@@ -79,30 +84,6 @@ export default function LoginForm() {
       console.error("Login Error:", error);
     }
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (email && password) {
-  //     try {
-  //       const response = await axios.post(
-  //         `https://${tenant}.fastrasuiteapi.com.ng/company/login/`, // Corrected to HTTPS and endpoint
-  //         { email, password } // Use username instead of email
-  //       );
-
-  //       const { redirect_url } = response.data;
-  //       console.log("what is redirect_url: ", redirect_url);
-  //       console.log("what is in response.data", response.data); // Destructure the redirect_url from response
-  //       window.location.href = redirect_url; // Redirect to the provided URL
-  //     } catch (error) {
-  //       if (error.response && error.response.status === 400) {
-  //         setError("Invalid credentials");
-  //       } else {
-  //         setError("An error occurred. Please try again.");
-  //       }
-  //       console.error("Error logging in:", error);
-  //     }
-  //   }
-  // };
 
   return (
     <div className="login-container">
