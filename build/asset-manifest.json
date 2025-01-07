@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/static/css/main.98a59467.css",
-    "main.js": "/static/js/main.00c9df8b.js",
+    "main.css": "/static/css/main.f964ad21.css",
+    "main.js": "/static/js/main.a750548e.js",
     "static/js/453.5dcf098e.chunk.js": "/static/js/453.5dcf098e.chunk.js",
     "static/media/background.png": "/static/media/background.168ca9e00c6e5781ac66.png",
     "static/media/bg.svg": "/static/media/bg.17c063f174eddaad2c2103ec5c2a2b88.svg",
@@ -12,7 +12,7 @@
     "static/media/product-logo.svg": "/static/media/product-logo.9331098b5299ad190d40c5e2de9d8e8f.svg",
     "static/media/vendor-logo.svg": "/static/media/vendor-logo.3081fe133683b3719ea9b7d49a0520a8.svg",
     "static/media/ExcelFile.xlsx": "/static/media/ExcelFile.680949c7e1940fa53342.xlsx",
-    "static/media/autosave-text.svg": "/static/media/autosave-text.2a6ada3cc2c7a9d959cf7dd5699b91ff.svg",
+    "static/media/autosave-text.svg": "/static/media/autosave-text.1d30b46efa8a435bd0d576a86f6e6b95.svg",
     "static/media/costing.svg": "/static/media/costing.3684e9b5f67ed634d3f32e632954db0c.svg",
     "static/media/account.svg": "/static/media/account.70f7c6cad8c77c898ce0b551368d8e52.svg",
     "static/media/manufacture.svg": "/static/media/manufacture.371eea21c84186fcd61ef2cc742edc30.svg",
@@ -23,7 +23,7 @@
     "static/media/user-group.svg": "/static/media/user-group.b12d749ce2d45e1ee5ca0db8f436223c.svg",
     "static/media/inventory.svg": "/static/media/inventory.950f2895973aff0c2ead8f7af68d74f9.svg",
     "static/media/accounts.svg": "/static/media/accounts.f51c93f406d366e070aef3335c986d92.svg",
-    "static/media/error-icon.svg": "/static/media/error-icon.babe446a6c5505a141b565f76a346141.svg",
+    "static/media/error-icon.svg": "/static/media/error-icon.bc95919cc91359f626db20413d2efc9d.svg",
     "static/media/hr.svg": "/static/media/hr.dad93ce3666a855f306bb3cda7a6e6fa.svg",
     "static/media/sales.svg": "/static/media/sales.2f5fb4327f93dbce19db0e02a4a6267a.svg",
     "static/media/settings.svg": "/static/media/settings.08dabc6dd54de7a55a3bb8321d5c6a38.svg",
@@ -33,11 +33,11 @@
     "static/media/crm.svg": "/static/media/crm.515de26edcdb6f15de1b61127152ea94.svg",
     "static/media/contact.svg": "/static/media/contact.b4105e06aa8c21e8cabda82f6d42fcb5.svg",
     "static/media/autosave.svg": "/static/media/autosave.babd1cae0c0670c2078277d2e9b74de0.svg",
-    "static/media/upload.svg": "/static/media/upload.cbe7dd30052e3917cdec739f861d3687.svg",
+    "static/media/upload.svg": "/static/media/upload.1570daeee8ac84685a0a0dcaa90640c3.svg",
     "static/media/report.svg": "/static/media/report.daff19610a945a032d6e48d2955ef680.svg",
     "static/media/contacts.svg": "/static/media/contacts.df287e6a914dc71ee25b7c5f030e6ab3.svg",
     "static/media/vendor.svg": "/static/media/vendor.dc3f71399234b4a674e57e728ed85496.svg",
-    "static/media/Excel-file-icon.svg": "/static/media/Excel-file-icon.ef11e3a2606e765cfa1414fe532446bf.svg",
+    "static/media/Excel-file-icon.svg": "/static/media/Excel-file-icon.2557c3a96fe47c6b7da4c0b64245f33b.svg",
     "static/media/home.svg": "/static/media/home.955116d88b2540af10d908cab9311fdb.svg",
     "static/media/logout-03.svg": "/static/media/logout-03.eb42c901e77a8fd5b9a6850b64a89147.svg",
     "index.html": "/index.html",
@@ -46,12 +46,12 @@
     "static/media/dots.svg": "/static/media/dots.3ac60a9949973054a1459e709ef5b582.svg",
     "static/media/search.svg": "/static/media/search.f4efbdddf8927037839dbaec808eb9f3.svg",
     "static/media/arrow-left.svg": "/static/media/arrow-left.aba5de772addcdaaf9a608b369584c72.svg",
-    "main.98a59467.css.map": "/static/css/main.98a59467.css.map",
-    "main.00c9df8b.js.map": "/static/js/main.00c9df8b.js.map",
+    "main.f964ad21.css.map": "/static/css/main.f964ad21.css.map",
+    "main.a750548e.js.map": "/static/js/main.a750548e.js.map",
     "453.5dcf098e.chunk.js.map": "/static/js/453.5dcf098e.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.98a59467.css",
-    "static/js/main.00c9df8b.js"
+    "static/css/main.f964ad21.css",
+    "static/js/main.a750548e.js"
   ]
 }
