@@ -14,8 +14,7 @@ import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import PurchaseHeader from "../PurchaseHeader";
-import axios from "axios";
-import { useTenant } from "../../../context/TenantContext";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 export default function Purchreq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,52 +38,11 @@ export default function Purchreq() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
-  // Testing fetching purchase request -------------------------------------
-  /*
-  const { tenant } = useTenant();
-  console.log("Tenant from useTenant:", tenant);
+  // -------------------------------------
+  // const { error, Purchreq } = usePurchase;
 
-  const BASE_API_URL = `https://${tenant}.fastrasuiteapi.com.ng`;
-  console.log("BASE_API_URL:", BASE_API_URL);
-
-  const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const access_token = localStorage.getItem("access_token");
-  console.log("Access Token:", access_token);
-
-  const fetchPurchaseOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `${BASE_API_URL}/purchase/purchase-request/`,
-        // `${BASE_API_URL}/purchase/purchase-order/`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${access_token}`, // Replace with your token
-          },
-        }
-      );
-      console.log("API Response:", response);
-
-      setPurchaseOrders(response.data); // Adjust according to the API response structure
-    } catch (err) {
-      console.error("Error fetching purchase orders:", err);
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPurchaseOrders();
-  }, []);
-  console.log("Purchase Orders:", purchaseOrders);
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
-  */
-  // Testing Ends-----------------------------
+  // console.log(Purchreq);
+  // -----------------------------
 
   useEffect(() => {
     if (location.state?.step) {

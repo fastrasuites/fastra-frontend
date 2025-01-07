@@ -1,17 +1,16 @@
 import styled from "styled-components";
-import Navbar from "../components/nav/Navbar";
+// import Navbar from "../components/nav/Navbar";
 import LoginForm from "./LoginForm";
 
 export default function Login() {
   return (
     <Logcont id="#login">
-      <Ln>
+      {/* <Ln>
         <Navbar />
-      </Ln>
+      </Ln> */}
       <Lg>
         <LoginForm />
       </Lg>
-      
     </Logcont>
   );
 }
@@ -26,6 +25,5 @@ const Ln = styled.div`
 `;
 const Lg = styled.div`
   width: 100%;
-  height: 90%;
+  height: 100%;
 `;
-

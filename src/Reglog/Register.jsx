@@ -1,18 +1,16 @@
 import styled from "styled-components";
-import Navbar from "../components/nav/Navbar";
+// import Navbar from "../components/nav/Navbar";
 import RegistrationForm from "./RegistrationForm";
-
 
 export default function Register() {
   return (
     <Regcont id="home">
-      <Rn>
+      {/* <Rn>
         <Navbar />
-      </Rn>
+      </Rn> */}
       <Rg>
         <RegistrationForm />
       </Rg>
-     
     </Regcont>
   );
 }
@@ -27,5 +25,5 @@ const Rn = styled.div`
 `;
 const Rg = styled.div`
   width: 100%;
-  height: 90%;
+  height: 100%;
 `;
