@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Logo from "../../image/logo.svg";
 import { IoIosArrowDown } from "react-icons/io";
-import "./Navbar.css"; 
+import "./Navbar.css";
 
 export default function Navbar() {
   const [click, setClick] = useState(false);
@@ -33,19 +33,19 @@ export default function Navbar() {
                 <IoIosArrowDown className="reg-dropdown-icon" />
               </p>
               <div className="reg-dropdown-menu">
-                <a href="/product" onClick={handleLinkClick}>
+                <a href="#" onClick={handleLinkClick}>
                   Product
                 </a>
-                <a href="/procat" onClick={handleLinkClick}>
+                <a href="#" onClick={handleLinkClick}>
                   Categories
                 </a>
               </div>
             </div>
-            <a href="/help" className="reg-nav-link" onClick={handleLinkClick}>
+            <a href="#" className="reg-nav-link" onClick={handleLinkClick}>
               Help
             </a>
           </div>
-          <a href="/reach" className="reg-contact-button" onClick={handleLinkClick}>
+          <a href="#" className="reg-contact-button" onClick={handleLinkClick}>
             Contact Us
           </a>
         </div>
