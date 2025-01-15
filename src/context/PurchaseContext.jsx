@@ -1,3 +1,4 @@
+// PurchaseContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getTenantClient } from "../services/apiService";
 import { useTenant } from "./TenantContext";
@@ -7,13 +8,24 @@ const PurchaseContext = createContext();
 export const PurchaseProvider = ({ children }) => {
   const { tenant } = useTenant();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const [purchaseReq, setPurchaseReq] = useState([]);
+  const [purchaseRequests, setPurchaseRequests] = useState([]);
   const [error, setError] = useState(null);
 
   const access_token = localStorage.getItem("access_token");
 
   // Create a client for tenant-specific API calls
   const client = getTenantClient(tenant, access_token);
+
+  // Fetch all purchase requests
+  const fetchPurchaseRequests = async () => {
+    try {
+      const response = await client.get("/purchase/purchase-request/");
+      setPurchaseRequests(response.data);
+    } catch (err) {
+      setError(err);
+      console.error("Error fetching purchase requests:", err);
+    }
+  };
 
   // Fetch all purchase orders (GET)
   const fetchPurchaseOrders = async () => {
@@ -23,16 +35,6 @@ export const PurchaseProvider = ({ children }) => {
     } catch (err) {
       setError(err);
       console.error("Error fetching purchase orders:", err);
-    }
-  };
-
-  const fetchPurchaseRequests = async () => {
-    try {
-      const response = await client.get("/purchase/purchase-request");
-      setPurchaseReq(response.data);
-    } catch (err) {
-      console.error(err);
-      console.log("Error fetching purchase request");
     }
   };
 
@@ -91,15 +93,19 @@ export const PurchaseProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchPurchaseOrders();
     fetchPurchaseRequests();
-  }, [client]);
+  }, []);
+
+  useEffect(() => {
+    fetchPurchaseOrders();
+  }, []);
 
   return (
     <PurchaseContext.Provider
       value={{
+        purchaseRequests,
+        fetchPurchaseRequests,
         purchaseOrders,
-        purchaseReq,
         createPurchaseOrder,
         updatePurchaseOrder,
         partialUpdatePurchaseOrder,

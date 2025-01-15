@@ -1,3 +1,4 @@
+// Purchreq.jsx
 import React, { useState, useEffect } from "react";
 import "./Purchreq.css";
 import SearchIcon from "../../../image/search.svg";
@@ -23,13 +24,15 @@ export default function Purchreq() {
   const [pendingCount, setPendingCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [viewMode, setViewMode] = useState("list");
-  const [items, setItems] = useState(() => {
-    const storedItems =
-      JSON.parse(localStorage.getItem("purchaseRequests")) || [];
-    return storedItems;
-  });
+  const { purchaseRequests, fetchPurchaseRequests } = usePurchase();
+  // const [items, setItems] = useState(() => {
+  //   const storedItems =
+  //     JSON.parse(localStorage.getItem("purchaseRequests")) || [];
+  //   return storedItems;
+  // });
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [filteredItems, setFilteredItems] = useState(items);
+  // const [filteredItems, setFilteredItems] = useState(items);
+  const [filteredItems, setFilteredItems] = useState(purchaseRequests);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -39,10 +42,11 @@ export default function Purchreq() {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   // -------------------------------------
-  // const { error, Purchreq } = usePurchase;
 
-  // console.log(Purchreq);
-  // -----------------------------
+  console.log(purchaseRequests);
+  useEffect(() => {
+    console.log(purchaseRequests);
+  });
 
   useEffect(() => {
     if (location.state?.step) {
@@ -64,9 +68,10 @@ export default function Purchreq() {
     const newData = { ...data, status: "Pending" }; // Set status to Pending
     setFormData(newData);
     setIsSubmitted(true);
-    const updatedItems = [...items, newData];
-    setItems(updatedItems);
-    localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
+    // const updatedItems = [...items, newData];
+    const updatedItems = [...purchaseRequests, newData];
+    // setItems(updatedItems);
+    // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
     setIsFormVisible(false);
     setSelectedItem(newData); // Immediately select the new item
   };
@@ -90,11 +95,11 @@ export default function Purchreq() {
   };
 
   const handleUpdateStatus = (id, status) => {
-    const updatedItems = items.map((item) =>
+    const updatedItems = purchaseRequests.map((item) =>
       item.id === id ? { ...item, status } : item
     );
-    setItems(updatedItems);
-    localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
+    // setItems(updatedItems);
+    // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
     setIsSubmitted(false);
     setIsFormVisible(false);
     setSelectedItem(null);
@@ -133,16 +138,20 @@ export default function Purchreq() {
   };
 
   useEffect(() => {
-    updateCounts(items);
-    setFilteredItems(items);
-  }, [items]);
+    // updateCounts(items);
+    // setFilteredItems(items);
+    updateCounts(purchaseRequests);
+    setFilteredItems(purchaseRequests);
+  }, [purchaseRequests]);
 
   const handleSearch = () => {
     if (searchQuery === "") {
-      setFilteredItems(items);
+      // setFilteredItems(items);
+      setFilteredItems(purchaseRequests);
     } else {
       const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = items.filter(
+      // const filtered = items.filter(
+      const filtered = purchaseRequests.filter(
         (item) =>
           item.id.toLowerCase().includes(lowercasedQuery) ||
           item.productName.toLowerCase().includes(lowercasedQuery) ||
