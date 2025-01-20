@@ -24,7 +24,7 @@ export default function Purchreq() {
   const [pendingCount, setPendingCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [viewMode, setViewMode] = useState("list");
-  const { purchaseRequests, fetchPurchaseRequests } = usePurchase();
+  const { purchaseRequests } = usePurchase();
   // const [items, setItems] = useState(() => {
   //   const storedItems =
   //     JSON.parse(localStorage.getItem("purchaseRequests")) || [];
@@ -43,11 +43,6 @@ export default function Purchreq() {
   const location = useLocation();
   // -------------------------------------
 
-  console.log(purchaseRequests);
-  useEffect(() => {
-    console.log(purchaseRequests);
-  });
-
   useEffect(() => {
     if (location.state?.step) {
       setCurrentStep(location.state.step);
@@ -64,6 +59,9 @@ export default function Purchreq() {
     setIsModalOpen(false);
   };
   // End ===================================
+
+  console.log("Purchase Requests:", purchaseRequests);
+
   const handleSaveAndSubmit = (data) => {
     const newData = { ...data, status: "Pending" }; // Set status to Pending
     setFormData(newData);

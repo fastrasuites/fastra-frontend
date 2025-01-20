@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { usePurchase } from "../../../context/PurchaseContext";
 import "./prod.css";
 import SearchIcon from "../../../image/search.svg";
 import {
@@ -28,7 +29,8 @@ import PurchaseHeader from "../PurchaseHeader";
 
 export default function Prod() {
   const [showNewProd, setShowNewProd] = useState(false);
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
+  const { products } = usePurchase();
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
@@ -41,6 +43,8 @@ export default function Prod() {
   const toggleLeftDrawer = (open) => () => setOpenLeft(open);
   const toggleRightDrawer = (open) => () => setOpenRight(open);
 
+  console.log("Product list", products);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (location.state?.openForm) {
@@ -50,17 +54,17 @@ export default function Prod() {
     return () => clearTimeout(timer);
   }, [location.state?.openForm]);
 
-  useEffect(() => {
-    const savedProducts = localStorage.getItem("products");
-    if (savedProducts) {
-      const parsedProducts = JSON.parse(savedProducts);
-      setProducts(parsedProducts);
-      setFilteredProducts(parsedProducts);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedProducts = localStorage.getItem("products");
+  //   if (savedProducts) {
+  //     const parsedProducts = JSON.parse(savedProducts);
+  //     setProducts(parsedProducts);
+  //     setFilteredProducts(parsedProducts);
+  //   }
+  // }, []);
   useEffect(() => {
     setFilteredProducts(products);
-    localStorage.setItem("products", JSON.stringify(products));
+    // localStorage.setItem("products", JSON.stringify(products));
   }, [products]);
 
   const handleNewProduct = () => {
@@ -75,10 +79,12 @@ export default function Prod() {
   };
 
   const handleSaveAndSubmit = (formData) => {
-    const updatedProducts = [...products, formData];
-    setProducts(updatedProducts);
-    setFilteredProducts(updatedProducts);
-    localStorage.setItem("products", JSON.stringify(updatedProducts));
+    // Handle product save logic if needed
+
+    // const updatedProducts = [...products, formData];
+    // setProducts(updatedProducts);
+    // setFilteredProducts(updatedProducts);
+    // localStorage.setItem("products", JSON.stringify(updatedProducts));
     setShowNewProd(false);
   };
 
@@ -116,12 +122,14 @@ export default function Prod() {
   };
 
   const handleSaveProductDetails = (updatedProduct) => {
-    const updatedProducts = products.map((product) =>
-      product.id === updatedProduct.id ? updatedProduct : product
-    );
-    setProducts(updatedProducts);
-    setFilteredProducts(updatedProducts);
-    localStorage.setItem("products", JSON.stringify(updatedProducts));
+    // Handle product update logic if needed
+
+    // const updatedProducts = products.map((product) =>
+    //   product.id === updatedProduct.id ? updatedProduct : product
+    // );
+    // setProducts(updatedProducts);
+    // setFilteredProducts(updatedProducts);
+    // localStorage.setItem("products", JSON.stringify(updatedProducts));
     setSelectedProduct(updatedProduct);
   };
 

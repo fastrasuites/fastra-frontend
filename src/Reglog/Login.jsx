@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import LoginForm from "./LoginForm";
+import Logo from "../image/logo.svg";
 
 export default function Login() {
   return (
@@ -18,5 +19,5 @@ const Logcont = styled.div`
 
 const Lg = styled.div`
   width: 100%;
-  height: 100%;
+  height: 90%;
 `;

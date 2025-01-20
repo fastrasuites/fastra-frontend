@@ -9,12 +9,24 @@ export const PurchaseProvider = ({ children }) => {
   const { tenant } = useTenant();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [purchaseRequests, setPurchaseRequests] = useState([]);
+  const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
 
   const access_token = localStorage.getItem("access_token");
 
   // Create a client for tenant-specific API calls
   const client = getTenantClient(tenant, access_token);
+
+  // Fetch all products
+  const fetchProducts = async () => {
+    try {
+      const response = await client.get("/purchase/products/");
+      setProducts(response.data); // Set products state
+    } catch (err) {
+      setError(err);
+      console.error("Error fetching products:", err);
+    }
+  };
 
   // Fetch all purchase requests
   const fetchPurchaseRequests = async () => {
@@ -93,6 +105,10 @@ export const PurchaseProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    fetchProducts();
+  }, [tenant]);
+
+  useEffect(() => {
     fetchPurchaseRequests();
   }, []);
 
@@ -103,6 +119,7 @@ export const PurchaseProvider = ({ children }) => {
   return (
     <PurchaseContext.Provider
       value={{
+        products,
         purchaseRequests,
         fetchPurchaseRequests,
         purchaseOrders,
