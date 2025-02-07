@@ -1,25 +1,25 @@
-// TenantContext.js
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
+
 const TenantContext = createContext();
 
 export const TenantProvider = ({ children }) => {
-  const [tenant, setTenant] = useState(null); // Holds the tenant ID
+  const [tenantData, setTenantData] = useState(() => {
+    const storedData = localStorage.getItem("tenantData");
+    return storedData ? JSON.parse(storedData) : null;
+  });
 
-  useEffect(() => {
-    // Extract tenant from the URL
-    const fullUrl = window.location.hostname;
-    const parts = fullUrl.split(".");
-    const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
-    setTenant(tenantName);
-  }, [tenant]);
+  const login = (data) => {
+    localStorage.setItem("tenantData", JSON.stringify(data));
+    setTenantData(data);
+  };
 
-  // Show loading screen until tenant is set
-  if (tenant === null) {
-    return <p>Loading...</p>;
-  }
+  const logout = () => {
+    localStorage.removeItem("tenantData");
+    setTenantData(null);
+  };
 
   return (
-    <TenantContext.Provider value={{ tenant, setTenant }}>
+    <TenantContext.Provider value={{ tenantData, login, logout }}>
       {children}
     </TenantContext.Provider>
   );

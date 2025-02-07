@@ -4,11 +4,12 @@ import { CloseRounded } from "@mui/icons-material";
 import uploadIcon from "../image/upload.svg";
 import { Divider } from "@mui/material";
 import ExcelFileIcon from "../image/Excel-file-icon.svg";
-import ExcelFile from "../ExcelFile.xlsx";
-import axios from "axios";
+// import ExcelFile from "../ExcelFile.xlsx";
 import ErrorIcon from "../image/error-icon.svg";
+import { usePurchase } from "../context/PurchaseContext";
 
-const UploadMedia = ({ onClose }) => {
+const UploadMedia = ({ onClose, endpoint, excelFile }) => {
+  const { uploadFile } = usePurchase();
   const [file, setFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorPopup, setShowErrorPopup] = useState(false);
@@ -61,28 +62,18 @@ const UploadMedia = ({ onClose }) => {
     validateFile(droppedFile);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      const url = "http://placeholder-url.com/upload"; // Replace with actual endpoint
-
-      axios
-        .post(url, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .then((response) => {
-          setFile(null); // Clear file after successful upload
-          onClose(); // Close the upload modal
-        })
-        .catch((error) => {
-          setErrorMessage("Failed to upload the file.");
-          setShowErrorPopup(true); // Show the error popup on error
-        });
+      try {
+        await uploadFile(file, endpoint); // use the context function
+        setFile(null); // Clear file after successful upload
+        onClose(); // Close the upload modal
+      } catch (error) {
+        setErrorMessage("Failed to upload the file.");
+        setShowErrorPopup(true);
+      }
     }
   };
 
@@ -120,7 +111,7 @@ const UploadMedia = ({ onClose }) => {
             }}
           >
             Click here to{" "}
-            <a href={ExcelFile} download={ExcelFile} style={{ color: "red" }}>
+            <a href={excelFile} download={excelFile} style={{ color: "red" }}>
               download the acceptable format,
             </a>{" "}
             edit respectively and upload format to continue.{" "}
@@ -147,7 +138,7 @@ const UploadMedia = ({ onClose }) => {
               <h6>Media Upload</h6>
               <p>
                 Add your documents here,{" "}
-                <a href={ExcelFile} download={ExcelFile}>
+                <a href={excelFile} download={excelFile}>
                   download&nbsp;acceptable&nbsp;format&nbsp;here
                 </a>
               </p>

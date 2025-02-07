@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { Alert, CircularProgress, Button, Box } from "@mui/material";
-import { useTenant } from "../context/TenantContext";
 import { verifyEmail, resendVerificationEmail } from "./EmailApi";
 import Swal from "sweetalert2";
 
-const MAIN_DOMAIN = !window.location.href.includes("fastrasuite.com")
-  ? "localhost:3000"
-  : "fastrasuite.com";
+// const MAIN_DOMAIN_URL =
+//   process.env.REACT_APP_MAIN_DOMAIN_URL || "localhost:3000";
+
+// const MAIN_DOMAIN_URL = !window.location.href.includes("app.fastrasuite.com")
+//   ? "localhost:3000"
+//   : "app.fastrasuite.com";
 
 const STATUS = {
   VERIFYING: "verifying",
@@ -22,11 +24,11 @@ const STATUS = {
 const MESSAGE_MAP = {
   [STATUS.VERIFYING]: "Verifying your email. Please wait...",
   [STATUS.SUCCESS]:
-    "Email verified successfully! Redirecting you to loginpage...",
+    "Email verified successfully! Redirecting you to login page...",
   [STATUS.EXPIRED]:
     "Your verification link has expired. Redirecting to resend verification page...",
   [STATUS.ALREADY_VERIFIED]:
-    "Your email is already verified. Redirecting you to loginpage...",
+    "Your email is already verified. Redirecting you to login page...",
   [STATUS.INVALID]:
     "Invalid verification link. Redirecting to resend verification page...",
   [STATUS.ERROR]:
@@ -49,7 +51,7 @@ function EmailVerification() {
   const location = useLocation();
   const history = useHistory();
   const [status, setStatus] = useState(STATUS.VERIFYING);
-  const { setTenant } = useTenant();
+  const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -62,17 +64,17 @@ function EmailVerification() {
         return;
       }
 
-      if (tenant) {
-        setTenant(tenant);
+      if (!tenant) {
+        setStatus(STATUS.INVALID);
+        return;
       }
 
       try {
         await verifyEmail(tenant, token);
         setStatus(STATUS.SUCCESS);
-        setTimeout(() => {
-          window.location.href = `https://${tenant}.${MAIN_DOMAIN}/login`;
-        }, 3000);
+        setTimeout(() => history.push("/login"), 3000);
       } catch (error) {
+        console.error("Email verification error:", error);
         const errorStatus = (
           error?.response?.data?.status ||
           error?.status ||
@@ -82,21 +84,15 @@ function EmailVerification() {
         switch (errorStatus) {
           case STATUS.EXPIRED:
             setStatus(STATUS.EXPIRED);
-            setTimeout(() => {
-              window.location.href = `https://${tenant}.${MAIN_DOMAIN}/resend-email-verification`;
-            }, 3000);
+            setTimeout(() => history.push("/resend-email-verification"), 3000);
             break;
           case STATUS.ALREADY_VERIFIED:
             setStatus(STATUS.ALREADY_VERIFIED);
-            setTimeout(() => {
-              window.location.href = `https://${tenant}.${MAIN_DOMAIN}/login`;
-            }, 3000);
+            setTimeout(() => history.push("/login"), 3000);
             break;
           case STATUS.INVALID:
             setStatus(STATUS.INVALID);
-            setTimeout(() => {
-              window.location.href = `https://${tenant}.${MAIN_DOMAIN}/resend-email-verification`;
-            }, 3000);
+            setTimeout(() => history.push("/resend-email-verification"), 3000);
             break;
           default:
             setStatus(STATUS.ERROR);
@@ -105,7 +101,7 @@ function EmailVerification() {
     };
 
     verifyToken();
-  }, [location.search, history, setTenant]);
+  }, [location.search, history]);
 
   const handleResendVerification = async () => {
     const params = new URLSearchParams(location.search);
@@ -116,6 +112,7 @@ function EmailVerification() {
       return;
     }
 
+    setIsResending(true);
     try {
       await resendVerificationEmail(tenant);
       Swal.fire(
@@ -129,6 +126,8 @@ function EmailVerification() {
         "Failed to resend verification email. Please try again later.",
         "error"
       );
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -145,16 +144,19 @@ function EmailVerification() {
         padding: 2,
       }}
     >
-      <Alert severity={SEVERITY_MAP[status]}>{MESSAGE_MAP[status]}</Alert>
+      <Alert severity={SEVERITY_MAP[status]} aria-live="polite">
+        {MESSAGE_MAP[status]}
+      </Alert>
       {status === STATUS.VERIFYING && <CircularProgress sx={{ mt: 2 }} />}
       {status === STATUS.ERROR && (
         <Button
           variant="contained"
           color="primary"
           onClick={handleResendVerification}
+          disabled={isResending}
           sx={{ mt: 2 }}
         >
-          Resend Verification
+          {isResending ? "Sending..." : "Resend Verification"}
         </Button>
       )}
     </Box>
@@ -162,139 +164,3 @@ function EmailVerification() {
 }
 
 export default EmailVerification;
-
-// import React, { useEffect, useState } from "react";
-// import { useHistory, useLocation } from "react-router-dom";
-// import { Alert, CircularProgress, Button, Box } from "@mui/material";
-// import { useTenant } from "../context/TenantContext";
-// import { verifyEmail } from "./EmailApi";
-
-// // This will fetch the domain from the .env file
-// // const MAIN_DOMAIN = process.env.REACT_APP_MAIN_DOMAIN;
-// const MAIN_DOMAIN = "fastra-frontend.vercel.app" || "fastrasuite.com";
-
-// const STATUS = {
-//   VERIFYING: "verifying",
-//   SUCCESS: "success",
-//   EXPIRED: "expired",
-//   ALREADY_VERIFIED: "already_verified",
-//   INVALID: "invalid",
-//   ERROR: "error",
-//   NO_TOKEN: "no_token",
-// };
-
-// const MESSAGE_MAP = {
-//   [STATUS.VERIFYING]: "Verifying your email. Please wait...",
-//   [STATUS.SUCCESS]:
-//     "Email verified successfully! Redirecting to your dashboard...",
-//   [STATUS.EXPIRED]:
-//     "Your verification link has expired. Redirecting to resend verification page...",
-//   [STATUS.ALREADY_VERIFIED]:
-//     "Your email is already verified. Redirecting to your dashboard...",
-//   [STATUS.INVALID]:
-//     "Invalid verification link. Redirecting to resend verification page...",
-//   [STATUS.ERROR]:
-//     "An error occurred during verification. Please try again later.",
-//   [STATUS.NO_TOKEN]:
-//     "No verification token provided. Please check your email link.",
-// };
-
-// const SEVERITY_MAP = {
-//   [STATUS.SUCCESS]: "success",
-//   [STATUS.EXPIRED]: "warning",
-//   [STATUS.ALREADY_VERIFIED]: "info",
-//   [STATUS.INVALID]: "error",
-//   [STATUS.ERROR]: "error",
-//   [STATUS.NO_TOKEN]: "error",
-//   [STATUS.VERIFYING]: "info",
-// };
-
-// function EmailVerification() {
-//   const location = useLocation();
-//   const history = useHistory();
-//   const [status, setStatus] = useState(STATUS.VERIFYING);
-//   const { setTenant } = useTenant(); // Use context to set tenant
-//   const [resendEmailVerification, setResendEmailVerification] = useState(true);
-
-//   useEffect(() => {
-//     const verifyToken = async () => {
-//       const params = new URLSearchParams(location.search);
-//       const token = params.get("token");
-//       const tenant = params.get("tenant");
-
-//       // If no token is provided in the URL
-//       if (!token) {
-//         setStatus(STATUS.NO_TOKEN);
-//         return;
-//       }
-
-//       // Set tenant in the global context
-//       if (tenant) {
-//         setTenant(tenant);
-//       }
-
-//       try {
-//         // Call your API to verify the email token
-//         await verifyEmail(tenant, token);
-//         setStatus(STATUS.SUCCESS);
-//         setTimeout(() => {
-//           // Redirecting the user to the tenant-specific login
-//           window.location.href = `https://${tenant}.${MAIN_DOMAIN}/login`;
-//         }, 3000);
-//       } catch (error) {
-//         // Normalize status to lowercase for comparison
-//         const errorStatus = (
-//           error?.response?.data?.status ||
-//           error?.status ||
-//           ""
-//         ).toLowerCase();
-
-//         // Handle different error statuses and redirect accordingly
-//         switch (errorStatus) {
-//           case STATUS.EXPIRED:
-//             setStatus(STATUS.EXPIRED);
-//             setTimeout(() => {
-//               window.location.href = `https://${tenant}.${MAIN_DOMAIN}/resend-email-verification`;
-//             }, 3000);
-//             break;
-//           case STATUS.ALREADY_VERIFIED:
-//             setStatus(STATUS.ALREADY_VERIFIED);
-//             setTimeout(() => {
-//               window.location.href = `https://${tenant}.${MAIN_DOMAIN}/login`;
-//             }, 3000);
-//             break;
-//           case STATUS.INVALID:
-//             setStatus(STATUS.INVALID);
-//             setTimeout(() => {
-//               window.location.href = `https://${tenant}.${MAIN_DOMAIN}/resend-email-verification`;
-//             }, 3000);
-//             break;
-//           default:
-//             setStatus(STATUS.ERROR);
-//         }
-//       }
-//     };
-
-//     verifyToken();
-//   }, [location.search, history, setTenant]); // Run when the URL changes (i.e., when query params change)
-
-//   return (
-//     <Box
-//       sx={{
-//         height: "100vh",
-//         width: "100%",
-//         display: "flex",
-//         flexDirection: "column",
-//         justifyContent: "center",
-//         alignItems: "center",
-//         bgcolor: "#f5f5f5",
-//         padding: 2,
-//       }}
-//     >
-//       <Alert severity={SEVERITY_MAP[status]}>{MESSAGE_MAP[status]}</Alert>
-//       {status === STATUS.VERIFYING && <CircularProgress sx={{ mt: 2 }} />}
-//     </Box>
-//   );
-// }
-
-// export default EmailVerification;

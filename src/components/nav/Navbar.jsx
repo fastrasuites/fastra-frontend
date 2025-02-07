@@ -18,11 +18,14 @@ export default function Navbar() {
   return (
     <div className="reg-navbar">
       <div className={`reg-navbar-wrap ${click ? "active" : ""}`}>
-        <img src={Logo} alt="Fastra Suite" className="reg-logo" />
-        <div className="reg-mobile-icon" onClick={handleClick}>
+        <a href="https://fastrasuite.com">
+          {" "}
+          <img src={Logo} alt="Fastra Suite" className="reg-logo" />{" "}
+        </a>
+        {/* <div className="reg-mobile-icon" onClick={handleClick}>
           {click ? <FaTimes /> : <FaBars />}
-        </div>
-        <div className={`reg-nav-links ${click ? "active" : ""}`}>
+        </div> */}
+        {/* <div className={`reg-nav-links ${click ? "active" : ""}`}>
           <div className="reg-nav-items">
             <a href="/" className="reg-nav-link" onClick={handleLinkClick}>
               Home
@@ -48,7 +51,7 @@ export default function Navbar() {
           <a href="/" className="reg-contact-button" onClick={handleLinkClick}>
             Contact Us
           </a>
-        </div>
+        </div> */}
       </div>
     </div>
   );

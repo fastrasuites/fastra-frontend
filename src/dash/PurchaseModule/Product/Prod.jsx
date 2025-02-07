@@ -15,7 +15,7 @@ import ProdListview from "./ProdListview";
 import ProductDetails from "./ProductDetails";
 import { useLocation } from "react-router-dom";
 import CloudDownload from "../../../image/cloud-download.svg";
-import ExcelFile from "../../../ExcelFile.xlsx";
+import ExcelFile from "../../../productExcelFile.xlsx";
 import {
   Grid,
   IconButton,
@@ -482,7 +482,11 @@ export default function Prod() {
       {/* RENDER UPLOAD PRODUCT FILE FORM CONDITIONALLY */}
       {showUploadMedia && (
         <div className="overlay">
-          <UploadMedia onClose={handleCloseUploadMedia} />
+          <UploadMedia
+            onClose={handleCloseUploadMedia}
+            endpoint="/products/upload_excel/"
+            excelFile={ExcelFile}
+          />
         </div>
       )}
     </div>

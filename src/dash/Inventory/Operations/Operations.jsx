@@ -59,9 +59,9 @@ const Operations = () => {
       <InventoryHeader />
       <Box sx={inventoryShareStyle.operationWrapper(theme)}>
         {showNewIncomingProductForm ? (
-          <IncomingProductManualForm />
+          // <IncomingProductManualForm />
           // <IncomingProductStatus />
-          // <IncomingProductLessOrMore />
+          <IncomingProductLessOrMore />
           // <IncomingProduct />
           // <IncomingPurchaseOrderProduct />
           // <IncomingProductReturnForm />

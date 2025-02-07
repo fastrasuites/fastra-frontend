@@ -1,4 +1,3 @@
-// LoginForm.jsx
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
@@ -7,17 +6,16 @@ import "./LoginForm.css";
 import { useTenant } from "../context/TenantContext";
 
 export default function LoginForm() {
-  // const [username, setUsername] = useState(""); // Changed from email to username
-  const [email, setEmail] = useState(""); // Changed from email to username
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const { tenant } = useTenant();
-  console.log(tenant);
+  const { login } = useTenant();
+  const history = useHistory();
 
-  // checks url for localhost:3000 or fastrasuite.com
-  const MAIN_DOMAIN = window.location.href.includes("fastrasuite.com")
-    ? "fastrasuite.com"
+  // checks url for localhost:3000 or app.fastrasuite.com
+  const MAIN_DOMAIN_URL = window.location.href.includes("app.fastrasuite.com")
+    ? "app.fastrasuite.com"
     : "localhost:3000";
 
   // Determine protocol dynamically (http for localhost, https for production)
@@ -40,36 +38,30 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Ensure email and password are provided
     if (!email || !password) {
       setError("Email and password are required.");
       return;
     }
 
     try {
-      // Construct the request URL
-      const apiBaseUrl = `https://${tenant}.fastrasuiteapi.com.ng`;
-      const loginEndpoint = "/company/login/";
+      const apiBaseUrl = `https://fastrasuiteapi.com.ng`;
+      const loginEndpoint = "/login/";
       const requestUrl = apiBaseUrl + loginEndpoint;
 
-      // Send login request
       const response = await axios.post(requestUrl, { email, password });
+      const { access_token, tenant_company_name, ...rest } = response.data;
+      console.log("Login Response:", response.data);
 
-      // Extract tokens and user info from the response
-      const { refresh_token, access_token, user } = response.data;
+      login({ access_token, tenant_company_name, ...rest });
 
-      // Save tokens to localStorage or sessionStorage securely
-      localStorage.setItem("refresh_token", refresh_token);
-      localStorage.setItem("access_token", access_token);
-
-      // Log user info (optional)
-      console.log("Logged-in User:", user);
+      console.log;
 
       // Redirect to dashboard
-      const dashboardUrl = `${PROTOCOL}://${tenant}.${MAIN_DOMAIN}/dashboard`;
+      const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_company_name}/dashboard`;
       window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
+
+      // history.push(`/${tenant_company_name}/dashboard` ||`localhost:3000/${tenant_company_name}/dashboard`);
     } catch (error) {
-      // Handle errors
       if (error.response) {
         if (error.response.status === 400) {
           setError("Invalid email or password. Please try again.");
@@ -95,12 +87,10 @@ export default function LoginForm() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="email" className="form-label">
-                {" "}
-                {/* Changed from email to username */}
                 Email
               </label>
               <input
-                type="email" // Change to text since it's a username
+                type="email"
                 id="email"
                 className="form-input"
                 placeholder="Enter your email here"
@@ -154,3 +144,17 @@ export default function LoginForm() {
     </div>
   );
 }
+
+//  // checks url for localhost:3000 or app.fastrasuite.com
+//   const MAIN_DOMAIN = window.location.href.includes("app.fastrasuite.com")
+//     ? "app.fastrasuite.com"
+//     : "localhost:3000";
+
+//   // Determine protocol dynamically (http for localhost, https for production)
+//   const PROTOCOL = window.location.protocol.includes("https")
+//     ? "https"
+//     : "http";
+
+// // Redirect to dashboard
+//       window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
+//       const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN}/${tenant}/dashboard`;

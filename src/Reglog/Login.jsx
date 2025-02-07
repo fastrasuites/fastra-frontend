@@ -1,10 +1,13 @@
 import styled from "styled-components";
 import LoginForm from "./LoginForm";
-import Logo from "../image/logo.svg";
+import Navbar from "../components/nav/Navbar";
 
 export default function Login() {
   return (
     <Logcont id="#login">
+      <LoginNavBar>
+        <Navbar />
+      </LoginNavBar>
       <Lg>
         <LoginForm />
       </Lg>
@@ -20,4 +23,9 @@ const Logcont = styled.div`
 const Lg = styled.div`
   width: 100%;
   height: 90%;
+`;
+
+const LoginNavBar = styled.div`
+  width: 100%;
+  height: 10%;
 `;

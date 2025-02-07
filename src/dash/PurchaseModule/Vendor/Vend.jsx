@@ -15,7 +15,7 @@ import Newvendor from "./Newvendor";
 import VendorDetails from "./VendorDetails";
 
 import CloudDownload from "../../../image/cloud-download.svg";
-import ExcelFile from "../../../ExcelFile.xlsx";
+import ExcelFile from "../../../vendorExcelFile.xlsx";
 import { useLocation } from "react-router-dom";
 import {
   Box,
@@ -27,6 +27,7 @@ import {
 } from "@mui/material";
 import UploadMedia from "../../../components/UploadMedia";
 import PurchaseHeader from "../PurchaseHeader";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 export const getVendors = (items) => {
   return items.map((item) => ({
@@ -48,16 +49,17 @@ export const getCategories = (items) => {
 export default function Vend() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-  const [items, setItems] = useState(() => {
-    return JSON.parse(localStorage.getItem("vendors")) || [];
-  });
+  // const [items, setItems] = useState(() => {
+  //   return JSON.parse(localStorage.getItem("vendors")) || [];
+  // });
+  // const [vendors, setVendors] = useState([]);
+  const { vendors, createVendor, error } = usePurchase();
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [filteredItems, setFilteredItems] = useState(items);
+  const [filteredItems, setFilteredItems] = useState(vendors);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [vendorDropdownVisible, setVendorDropdownVisible] = useState(false);
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
@@ -84,27 +86,31 @@ export default function Vend() {
     return () => clearTimeout(timer);
   }, [location.state?.openForm]);
 
-  useEffect(() => {
-    setFilteredItems(items);
-    localStorage.setItem("vendors", JSON.stringify(items));
-  }, [items]);
+  // useEffect(() => {
+  //   setFilteredItems(items);
+  //   localStorage.setItem("vendors", JSON.stringify(items));
+  // }, [items]);
 
   useEffect(() => {
-    const storedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
-    setVendors(storedVendors);
+    // const storedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
+    // setVendors(storedVendors);
     setCategories(["IT Hardware Sales", "Printing & Branding"]);
   }, []);
 
   const handleSaveAndSubmit = (data) => {
+    console.log(data);
     setFormData(data);
+    createVendor(data);
     setIsSubmitted(true);
-    const newItem = {
-      ...data,
-      id: (items.length + 1).toString(),
-      category: data.vendorCategory,
-      image: data.image || VendorImage,
-    };
-    setItems([...items, newItem]);
+    // submit logic here
+
+    // const newItem = {
+    //   ...data,
+    //   id: (vendors.length + 1).toString(),
+    //   category: data.vendorCategory,
+    //   image: data.image || VendorImage,
+    // };
+    // setItems([...vendors, newItem]);
     setIsFormVisible(false);
   };
 
@@ -127,10 +133,10 @@ export default function Vend() {
 
   const handleSearch = () => {
     if (searchQuery === "") {
-      setFilteredItems(items);
+      setFilteredItems(vendors);
     } else {
       const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = items.filter(
+      const filtered = vendors.filter(
         (item) =>
           item.id.toLowerCase().includes(lowercasedQuery) ||
           item.vendorName.toLowerCase().includes(lowercasedQuery) ||
@@ -145,7 +151,7 @@ export default function Vend() {
 
   useEffect(() => {
     handleSearch();
-  }, [searchQuery, items]);
+  }, [searchQuery, vendors]);
 
   const handleCardClick = (item) => {
     setSelectedItem(item);
@@ -156,12 +162,14 @@ export default function Vend() {
   };
 
   const handleSaveVendorDetails = (updatedVendor) => {
-    const updatedItems = items.map((item) =>
-      item.id === updatedVendor.id ? updatedVendor : item
-    );
-    setItems(updatedItems);
-    setFilteredItems(updatedItems);
-    localStorage.setItem("vendors", JSON.stringify(updatedItems));
+    // logic to update vendor details
+
+    // const updatedItems = vendors.map((item) =>
+    //   item.id === updatedVendor.id ? updatedVendor : item
+    // );
+    // setItems(updatedItems);
+    // setFilteredItems(updatedItems);
+    // localStorage.setItem("vendors", JSON.stringify(updatedItems));
     setSelectedItem(updatedVendor);
   };
 
@@ -406,19 +414,19 @@ export default function Vend() {
                     />
                   </Box>
 
-                  <a
+                  {/* <a
                     href={ExcelFile}
                     download={ExcelFile}
                     style={{ marginTop: "10px", display: "block" }}
-                  >
-                    <IconButton onClick={() => setShowUploadMedia(true)}>
-                      <img
-                        src={CloudDownload}
-                        alt="Download Excel"
-                        style={{ height: "20px" }}
-                      />
-                    </IconButton>
-                  </a>
+                  > */}
+                  <IconButton onClick={() => setShowUploadMedia(true)}>
+                    <img
+                      src={CloudDownload}
+                      alt="Download Excel"
+                      style={{ height: "20px" }}
+                    />
+                  </IconButton>
+                  {/* </a> */}
                 </Box>
               </Drawer>
 
@@ -541,7 +549,11 @@ export default function Vend() {
         {/* RENDER UPLOAD PRODUCT FILE FORM CONDITIONALLY */}
         {showUploadMedia && (
           <div className="overlay">
-            <UploadMedia onClose={handleCloseUploadMedia} />
+            <UploadMedia
+              onClose={handleCloseUploadMedia}
+              endpoint="/vendors/upload_excel/"
+              excelFile={ExcelFile}
+            />
           </div>
         )}
       </div>

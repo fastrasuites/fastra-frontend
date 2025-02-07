@@ -1,6 +1,7 @@
-// App.js
-import React, { useState, useEffect } from "react";
-import { Switch, Route, useHistory } from "react-router-dom";
+import React from "react";
+import { useTenant } from "./context/TenantContext";
+import { Switch, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 import Register from "./Reglog/Register";
 import EmailVerification from "./Reglog/EmailVerification";
 import Login from "./Reglog/Login";
@@ -37,10 +38,8 @@ import AccessGroups from "./dash/Settings/accessgroups/AccessGroups";
 import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 import NewCompany from "./dash/Settings/company/NewCompanyForm";
 import ResendEmailVerification from "./Reglog/ResendEmailVerification";
-import { useTenant } from "./context/TenantContext";
 import NoHeaderLayout from "./notFound/NoHeaderLayout";
 import NotFound from "./notFound/NotFound";
-// import { components } from "react-select";
 import Inventory from "./dash/Inventory/Inventory";
 import Location from "./dash/Inventory/Location/Location";
 import LocationForm from "./dash/Inventory/Location/LocationForm";
@@ -52,23 +51,7 @@ import NewScrap from "./dash/Inventory/scrap/NewScrap";
 import StockMoves from "./dash/Inventory/StockMoves/StockMoves";
 
 function App() {
-  // const location = useLocation();
-  const { tenant } = useTenant(); // Get tenant from context
-  console.log(tenant);
-
-  const [loading, setLoading] = useState(true);
-  const history = useHistory();
-
-  useEffect(() => {
-    if (tenant !== null) {
-      setLoading(false); // Tenant value is set, stop loadin
-    }
-  }, [tenant]);
-
-  if (loading) {
-    return <p>Loading...</p>; // Show loading while tenant is being se
-  }
-
+  // const { tenant_company_name } = useTenant().tenantData;
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
       <Switch>
@@ -83,50 +66,55 @@ function App() {
         />
 
         {/* Tenant-aware routes */}
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/apk" component={Apk} />
-        <Route path="/company" component={NewCompany} />
-        <Route path="/user" component={User} />
-        <Route path="/accessgroups" component={AccessGroups} />
-        <Route path="/purchase" component={Purchase} />
-        <Route path="/npr" component={Newpr} />
-        <Route path="/papr" component={Papr} />
-        <Route path="/crfq" component={CRfq} />
-        <Route path="/rfq" component={Rfq} />
-        <Route path="/newrfq" component={Rform} />
-        <Route path="/rapr" component={Rapr} />
-        <Route path="/purchase-order" component={PurchaseOrder} />
-        <Route path="/newPurchaseOrder" component={POrderform} />
-        <Route path="/orapr" component={Orapr} />
-        <Route path="/vendor" component={Vend} />
-        <Route path="/vendetails" component={VendorDetails} />
-        <Route path="/Newvendor" component={Newvendor} />
-        <Route path="/varcat" component={Varcat} />
-        <Route path="/edit" component={Edit} />
-        <Route path="/product" component={Prod} />
-        <Route path="/prodetails" component={ProductDetails} />
-        <Route path="/Newprod" component={Newprod} />
-        <Route path="/procat" component={Procat} />
-        <Route path="/pedit" component={Pedit} />
-        <Route
+        <ProtectedRoute path="/dashboard" component={Dashboard} />
+        <ProtectedRoute path="/contact" component={Contact} />
+        <ProtectedRoute path="/settings" component={Settings} />
+        <ProtectedRoute path="/apk" component={Apk} />
+        <ProtectedRoute path="/company" component={NewCompany} />
+        <ProtectedRoute path="/user" component={User} />
+        <ProtectedRoute path="/accessgroups" component={AccessGroups} />
+        <ProtectedRoute path="/purchase" component={Purchase} />
+        <ProtectedRoute path="/npr" component={Newpr} />
+        <ProtectedRoute path="/papr" component={Papr} />
+        <ProtectedRoute path="/crfq" component={CRfq} />
+        <ProtectedRoute path="/rfq" component={Rfq} />
+        <ProtectedRoute path="/newrfq" component={Rform} />
+        <ProtectedRoute path="/rapr" component={Rapr} />
+        <ProtectedRoute path="/purchase-order" component={PurchaseOrder} />
+        <ProtectedRoute path="/newPurchaseOrder" component={POrderform} />
+        <ProtectedRoute path="/orapr" component={Orapr} />
+        <ProtectedRoute path="/vendor" component={Vend} />
+        <ProtectedRoute path="/vendetails" component={VendorDetails} />
+        <ProtectedRoute path="/Newvendor" component={Newvendor} />
+        <ProtectedRoute path="/varcat" component={Varcat} />
+        <ProtectedRoute path="/edit" component={Edit} />
+        <ProtectedRoute path="/product" component={Prod} />
+        <ProtectedRoute path="/prodetails" component={ProductDetails} />
+        <ProtectedRoute path="/Newprod" component={Newprod} />
+        <ProtectedRoute path="/procat" component={Procat} />
+        <ProtectedRoute path="/pedit" component={Pedit} />
+        <ProtectedRoute
           path="/purchase-configuration-settings"
           component={ConfigurationSettings}
         />
         <Route path="/inventory" component={Inventory} />
-        <Route path="/location" component={Location} />
-        <Route path="/create-inventory-location" component={LocationForm} />
-        <Route
+        <ProtectedRoute path="/location" component={Location} />
+        <ProtectedRoute
+          path="/create-inventory-location"
+          component={LocationForm}
+        />
+        <ProtectedRoute
           path="/location-configuration"
           component={LocationConfiguration}
         />
-        <Route path="/stock-adjustment" component={StockAdjustment} />
-        <Route path="/create-new-stock" component={NewStockAdjustment} />
-        <Route path="/scrap" component={Scrap} />
-        <Route path="/new-scrap" component={NewScrap} />
-        <Route path="/stock-moves" component={StockMoves} />
-
+        <ProtectedRoute path="/stock-adjustment" component={StockAdjustment} />
+        <ProtectedRoute
+          path="/create-new-stock"
+          component={NewStockAdjustment}
+        />
+        <ProtectedRoute path="/scrap" component={Scrap} />
+        <ProtectedRoute path="/new-scrap" component={NewScrap} />
+        <ProtectedRoute path="/stock-moves" component={StockMoves} />
         {/* Fallback for 404 */}
         {/* 404 NotFound route with NoHeaderLayout */}
         <Route

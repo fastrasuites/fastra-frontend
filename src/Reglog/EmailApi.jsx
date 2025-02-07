@@ -1,8 +1,8 @@
-const BASE_DOMAIN = "fastrasuiteapi.com.ng";
+const BASE_API_URL = "fastrasuiteapi.com.ng";
 export const verifyEmail = async (tenant, token) => {
   try {
     const response = await fetch(
-      `https://${tenant}.${BASE_DOMAIN}/company/email-verify?token=${token}`,
+      `https://${tenant}.${BASE_API_URL}/company/email-verify?token=${token}`,
       {
         method: "GET",
         headers: {
@@ -13,7 +13,6 @@ export const verifyEmail = async (tenant, token) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.log("checking errorData from EmailApi ", errorData);
       throw new Error(errorData.error); // Handle errors from response
     }
 
@@ -21,14 +20,14 @@ export const verifyEmail = async (tenant, token) => {
     console.log("checking data content from emailApi: ", data);
     return data; // Successful verification response
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(`Verification failed: ${error.message}`, { cause: error });
   }
 };
 
 export const resendVerificationEmail = async (tenant) => {
   try {
     const response = await fetch(
-      `https://${tenant}.${BASE_DOMAIN}/company/resend-verification-email/`,
+      `https://${tenant}.${BASE_API_URL}/company/resend-verification-email/`,
 
       {
         method: "GET", // Assuming it's a GET request

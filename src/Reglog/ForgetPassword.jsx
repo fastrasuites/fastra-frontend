@@ -15,15 +15,15 @@ export default function ForgetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-   // Get tenant name from URL
-   const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
-   const parts = fullUrl.split(".");
-   const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
+  // Get tenant name from URL
+  const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
+  const parts = fullUrl.split(".");
+  const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
 
   // Start countdown timer
   useEffect(() => {
     if (timer > 0) {
-      const countdown = setInterval(() => setTimer(prev => prev - 1), 1000);
+      const countdown = setInterval(() => setTimer((prev) => prev - 1), 1000);
       return () => clearInterval(countdown);
     }
   }, [timer]);
@@ -38,7 +38,8 @@ export default function ForgetPassword() {
       setStep(1); // Move to next step (Enter code)
       toast.success(response.data.detail); // Notify user
     } catch (error) {
-      const errorMsg = error.response?.data.error || "Failed to send code. Please try again.";
+      const errorMsg =
+        error.response?.data.error || "Failed to send code. Please try again.";
       setError(errorMsg); // Show error message
     }
   };
@@ -54,7 +55,8 @@ export default function ForgetPassword() {
       setStep(2); // Move to next step (Reset password)
       toast.success("Code verified successfully!"); // Notify user
     } catch (error) {
-      const errorMsg = error.response?.data.error || "Invalid code. Please try again.";
+      const errorMsg =
+        error.response?.data.error || "Invalid code. Please try again.";
       setError(errorMsg); // Show error message
     }
   };
@@ -79,7 +81,8 @@ export default function ForgetPassword() {
       toast.success(response.data.detail); // Notify user
       setStep(3); // Move to success message
     } catch (error) {
-      const errorMsg = error.response?.data.error || "Failed to reset password.";
+      const errorMsg =
+        error.response?.data.error || "Failed to reset password.";
       setError(errorMsg); // Show error message
     }
   };
