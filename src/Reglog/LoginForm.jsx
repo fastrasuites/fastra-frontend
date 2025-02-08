@@ -49,12 +49,12 @@ export default function LoginForm() {
       const requestUrl = apiBaseUrl + loginEndpoint;
 
       const response = await axios.post(requestUrl, { email, password });
-      const { access_token, tenant_company_name, ...rest } = response.data;
+      const { access_token, tenant_company_name, ...rest } = response.data || {};
       console.log("Login Response:", response.data);
 
       login({ access_token, tenant_company_name, ...rest });
 
-      console.log;
+      console.log('i got here')
 
       // Redirect to dashboard
       const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_company_name}/dashboard`;
@@ -64,7 +64,7 @@ export default function LoginForm() {
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400) {
-          setError("Invalid email or password. Please try again.");
+          setError(error.response.data.error ? error.response.data.error : error.response.data);
         } else {
           setError("An error occurred. Please try again later.");
         }
