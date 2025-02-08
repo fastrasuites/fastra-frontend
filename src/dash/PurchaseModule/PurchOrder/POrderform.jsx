@@ -14,6 +14,7 @@ import TextField from "@mui/material/TextField";
 import { useHistory } from "react-router-dom";
 import "./POrderform.css";
 
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.white,
@@ -327,9 +328,7 @@ export default function POrderform({
               <div className="newpod3bb">
                 <p>Created By</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`}
+                {formState.name}
                 </p>
               </div>
             </div>
@@ -391,18 +390,15 @@ export default function POrderform({
                 <p>Vendor Address</p>
                 {/* this should pick vendor address */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`} 
+                {formState.vendorAddress}
                 </p>
               </div>
               <div className="newpod3bb">
                 <p>Vendor Email</p>
                 {/* this should pick vendor email */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`} 
+                  {
+                    formState.vendorEmail} 
                 </p>
               </div>
               
