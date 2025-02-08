@@ -49,49 +49,34 @@ export default function LoginForm() {
       const requestUrl = apiBaseUrl + loginEndpoint;
 
       const response = await axios.post(requestUrl, { email, password });
-      const { tenant_company_name, access_token, ...rest } = response.data;
+      const { access_token, tenant_company_name, ...rest } =
+        response.data || {};
+      console.log("Login Response:", response.data);
 
-      login({ tenant_company_name, access_token, ...rest });
+      login({ access_token, tenant_company_name, ...rest });
+
+      console.log("i got here");
+
       history.push("/dashboard");
       // Redirect to dashboard
       // const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_company_name}/dashboard`;
       // window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
     } catch (error) {
       if (error.response) {
-        const { status, data } = error.response;
-
-        if (status === 400) {
+        if (error.response.status === 400) {
           setError(
-            data?.message ||
-              "Invalid email or password. Please check your credentials and try again."
+            error.response.data.error
+              ? error.response.data.error
+              : error.response.data
           );
-        } else if (status === 401) {
-          setError(
-            "Unauthorized access. Please check your login details and try again."
-          );
-        } else if (status === 403) {
-          setError(
-            "Access denied. You do not have permission to access this resource."
-          );
-        } else if (status === 404) {
-          setError("Server not found. Please try again later.");
-        } else if (status === 500) {
-          setError("Internal server error. Please try again later.");
         } else {
-          setError(
-            data?.message || "An unexpected error occurred. Please try again."
-          );
+          setError("An error occurred. Please try again later.");
         }
-      } else if (error.request) {
-        setError(
-          "No response from the server. Please check your internet connection and try again."
-        );
       } else {
         setError(
-          "An unexpected error occurred. Please refresh the page and try again."
+          "Unable to connect to the server. Check your internet connection."
         );
       }
-
       console.error("Login Error:", error);
     }
   };

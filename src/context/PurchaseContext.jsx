@@ -16,8 +16,6 @@ export const PurchaseProvider = ({ children }) => {
 
   // const access_token = localStorage.getItem("access_token");
   const { tenant_company_name, access_token } = tenantData || {};
-  console.log(tenant_company_name);
-  console.log(access_token);
 
   // Create a client for tenant-specific API calls
   const client = getTenantClient(tenant_company_name, access_token);
@@ -184,19 +182,27 @@ export const PurchaseProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchVendors();
+    if (tenantData) {
+      fetchVendors();
+    }
   }, []);
 
   useEffect(() => {
-    fetchProducts();
+    if (tenantData) {
+      fetchProducts();
+    }
   }, []);
 
   useEffect(() => {
-    fetchPurchaseRequests();
+    if (tenantData) {
+      fetchPurchaseRequests();
+    }
   }, []);
 
   useEffect(() => {
-    fetchPurchaseOrders();
+    if (tenantData) {
+      fetchPurchaseOrders();
+    }
   }, []);
 
   return (
