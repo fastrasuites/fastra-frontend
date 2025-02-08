@@ -13,15 +13,15 @@ export default function LoginForm() {
   const { login } = useTenant();
   const history = useHistory();
 
-  // checks url for localhost:3000 or app.fastrasuite.com
-  const MAIN_DOMAIN_URL = window.location.href.includes("app.fastrasuite.com")
-    ? "app.fastrasuite.com"
-    : "localhost:3000";
+  // // checks url for localhost:3000 or app.fastrasuite.com
+  // const MAIN_DOMAIN_URL = window.location.href.includes("app.fastrasuite.com")
+  //   ? "app.fastrasuite.com"
+  //   : "localhost:3000";
 
-  // Determine protocol dynamically (http for localhost, https for production)
-  const PROTOCOL = window.location.protocol.includes("https")
-    ? "https"
-    : "http";
+  // // Determine protocol dynamically (http for localhost, https for production)
+  // const PROTOCOL = window.location.protocol.includes("https")
+  //   ? "https"
+  //   : "http";
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -49,30 +49,49 @@ export default function LoginForm() {
       const requestUrl = apiBaseUrl + loginEndpoint;
 
       const response = await axios.post(requestUrl, { email, password });
-      const { access_token, tenant_company_name, ...rest } = response.data;
-      console.log("Login Response:", response.data);
+      const { tenant_company_name, access_token, ...rest } = response.data;
 
-      login({ access_token, tenant_company_name, ...rest });
-
-      console.log;
-
+      login({ tenant_company_name, access_token, ...rest });
+      history.push("/dashboard");
       // Redirect to dashboard
-      const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_company_name}/dashboard`;
-      window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
-
-      // history.push(`/${tenant_company_name}/dashboard` ||`localhost:3000/${tenant_company_name}/dashboard`);
+      // const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_company_name}/dashboard`;
+      // window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
     } catch (error) {
       if (error.response) {
-        if (error.response.status === 400) {
-          setError("Invalid email or password. Please try again.");
+        const { status, data } = error.response;
+
+        if (status === 400) {
+          setError(
+            data?.message ||
+              "Invalid email or password. Please check your credentials and try again."
+          );
+        } else if (status === 401) {
+          setError(
+            "Unauthorized access. Please check your login details and try again."
+          );
+        } else if (status === 403) {
+          setError(
+            "Access denied. You do not have permission to access this resource."
+          );
+        } else if (status === 404) {
+          setError("Server not found. Please try again later.");
+        } else if (status === 500) {
+          setError("Internal server error. Please try again later.");
         } else {
-          setError("An error occurred. Please try again later.");
+          setError(
+            data?.message || "An unexpected error occurred. Please try again."
+          );
         }
+      } else if (error.request) {
+        setError(
+          "No response from the server. Please check your internet connection and try again."
+        );
       } else {
         setError(
-          "Unable to connect to the server. Check your internet connection."
+          "An unexpected error occurred. Please refresh the page and try again."
         );
       }
+
       console.error("Login Error:", error);
     }
   };

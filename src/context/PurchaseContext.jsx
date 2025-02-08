@@ -14,10 +14,8 @@ export const PurchaseProvider = ({ children }) => {
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
 
-
-
   // const access_token = localStorage.getItem("access_token");
-  const { tenant_company_name, access_token } = tenantData;
+  const { tenant_company_name, access_token } = tenantData || {};
   console.log(tenant_company_name);
   console.log(access_token);
 

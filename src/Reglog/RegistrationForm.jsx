@@ -3,6 +3,7 @@ import axios from "axios";
 import { Formik, Form, Field } from "formik";
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import "./RegistrationForm.css";
+import { Link } from "react-router-dom";
 
 export default function RegistrationForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -163,7 +164,8 @@ const CompanyDetails = ({ next, formData }) => {
           </button>
 
           <p className="login-link">
-            <a href="/login">Already have an account</a>
+            {/* <a href="/login">Already have an account</a> */}
+            <Link to="/login">Already have an account</Link>
           </p>
         </Form>
       )}
@@ -273,7 +275,7 @@ const PasswordSetup = ({
           </ul>
 
           <label className="form-label">Confirm Password</label>
-           <div className="password-input-container">
+          <div className="password-input-container">
             <Field
               className={`form-input ${
                 touched.confirmPassword && errors.confirmPassword
