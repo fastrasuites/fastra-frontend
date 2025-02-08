@@ -79,10 +79,10 @@ const AccessListView = ({ AccessGroups }) => {
               />
             </TableCell>
             <TableCell>Company Name</TableCell>
-            <TableCell>Role</TableCell>
+            {/* <TableCell>Role</TableCell> */}
             <TableCell>Application</TableCell>
-            <TableCell>Email Address</TableCell>
-            <TableCell>Phone Number</TableCell>
+            {/* <TableCell>Email Address</TableCell> */}
+            {/* <TableCell>Phone Number</TableCell> */}
             <TableCell>Date of Creation</TableCell>
           </TableRow>
         </TableHead>
@@ -122,18 +122,18 @@ const AccessListView = ({ AccessGroups }) => {
                 />
                 {user.companyName || "N/A"}
               </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {user.role || "N/A"}
-              </TableCell>
+              {/* <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+                {user?.role || "N/A"}
+              </TableCell> */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
                 {user.application || "N/A"}
               </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+              {/* <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
                 {user.email || "N/A"}
-              </TableCell>
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+              </TableCell> */}
+              {/* <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
                 {user.phoneNumber || "N/A"}
-              </TableCell>
+              </TableCell> */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
                 {new Date(user.dateOfCreation).toLocaleDateString() || "N/A"}
               </TableCell>

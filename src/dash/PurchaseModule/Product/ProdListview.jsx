@@ -21,7 +21,10 @@ const ProdListview = ({ items, onItemClick }) => {
     }
     setSelected([]);
   };
-
+  React.useEffect(() => {
+    console.log("Product items:", items);
+  }, [items]);
+  
   const handleSelect = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -82,7 +85,7 @@ const ProdListview = ({ items, onItemClick }) => {
             <TableCell>Product Name</TableCell>
             <TableCell>Category</TableCell>
             <TableCell>Quantity</TableCell>
-            {/* <TableCell>Unit of Measure</TableCell> */}
+            {/* <TableCell>Unit of Measure</TableCell> 
             {/* <TableCell>Selling Price</TableCell> */}
             {/* <TableCell>Cost Price</TableCell> */}
             {/* <TableCell>Type</TableCell> */}

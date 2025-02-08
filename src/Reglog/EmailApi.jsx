@@ -1,7 +1,8 @@
-export const verifyEmail = async (tenantName, token) => {
+const BASE_API_URL = "fastrasuiteapi.com.ng";
+export const verifyEmail = async (tenant, token) => {
   try {
     const response = await fetch(
-      `https://${tenantName}.fastrasuite.com/api/email-verify/?token=${token}`,
+      `https://${tenant}.${BASE_API_URL}/company/email-verify?token=${token}`,
       {
         method: "GET",
         headers: {
@@ -16,16 +17,18 @@ export const verifyEmail = async (tenantName, token) => {
     }
 
     const data = await response.json();
+    console.log("checking data content from emailApi: ", data);
     return data; // Successful verification response
   } catch (error) {
-    throw new Error(error.message);
+    throw new Error(`Verification failed: ${error.message}`, { cause: error });
   }
 };
 
-export const resendVerificationEmail = async (tenantName, token) => {
+export const resendVerificationEmail = async (tenant) => {
   try {
     const response = await fetch(
-      `https://${tenantName}.fastrasuite.com/api/resend-verification-email/${token}/`,
+      `https://${tenant}.${BASE_API_URL}/company/resend-verification-email/`,
+
       {
         method: "GET", // Assuming it's a GET request
       }

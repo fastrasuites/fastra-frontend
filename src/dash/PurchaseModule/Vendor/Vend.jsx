@@ -15,7 +15,7 @@ import Newvendor from "./Newvendor";
 import VendorDetails from "./VendorDetails";
 
 import CloudDownload from "../../../image/cloud-download.svg";
-import ExcelFile from "../../../ExcelFile.xlsx";
+import ExcelFile from "../../../vendorExcelFile.xlsx";
 import { useLocation } from "react-router-dom";
 import {
   Box,
@@ -25,6 +25,9 @@ import {
   IconButton,
   InputBase,
 } from "@mui/material";
+import UploadMedia from "../../../components/UploadMedia";
+import PurchaseHeader from "../PurchaseHeader";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 export const getVendors = (items) => {
   return items.map((item) => ({
@@ -46,16 +49,17 @@ export const getCategories = (items) => {
 export default function Vend() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-  const [items, setItems] = useState(() => {
-    return JSON.parse(localStorage.getItem("vendors")) || [];
-  });
+  // const [items, setItems] = useState(() => {
+  //   return JSON.parse(localStorage.getItem("vendors")) || [];
+  // });
+  // const [vendors, setVendors] = useState([]);
+  const { vendors, createVendor, error } = usePurchase();
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [filteredItems, setFilteredItems] = useState(items);
+  const [filteredItems, setFilteredItems] = useState(vendors);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const [vendors, setVendors] = useState([]);
   const [categories, setCategories] = useState([]);
   const [vendorDropdownVisible, setVendorDropdownVisible] = useState(false);
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
@@ -63,9 +67,14 @@ export default function Vend() {
 
   const [openLeft, setOpenLeft] = useState(false);
   const [openRight, setOpenRight] = useState(false);
+  const [showUploadMedia, setShowUploadMedia] = useState(false);
 
   const toggleLeftDrawer = (open) => () => setOpenLeft(open);
   const toggleRightDrawer = (open) => () => setOpenRight(open);
+
+  const handleCloseUploadMedia = () => {
+    setShowUploadMedia(false);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -77,27 +86,31 @@ export default function Vend() {
     return () => clearTimeout(timer);
   }, [location.state?.openForm]);
 
-  useEffect(() => {
-    setFilteredItems(items);
-    localStorage.setItem("vendors", JSON.stringify(items));
-  }, [items]);
+  // useEffect(() => {
+  //   setFilteredItems(items);
+  //   localStorage.setItem("vendors", JSON.stringify(items));
+  // }, [items]);
 
   useEffect(() => {
-    const storedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
-    setVendors(storedVendors);
+    // const storedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
+    // setVendors(storedVendors);
     setCategories(["IT Hardware Sales", "Printing & Branding"]);
   }, []);
 
   const handleSaveAndSubmit = (data) => {
+    console.log(data);
     setFormData(data);
+    createVendor(data);
     setIsSubmitted(true);
-    const newItem = {
-      ...data,
-      id: (items.length + 1).toString(),
-      category: data.vendorCategory,
-      image: data.image || VendorImage,
-    };
-    setItems([...items, newItem]);
+    // submit logic here
+
+    // const newItem = {
+    //   ...data,
+    //   id: (vendors.length + 1).toString(),
+    //   category: data.vendorCategory,
+    //   image: data.image || VendorImage,
+    // };
+    // setItems([...vendors, newItem]);
     setIsFormVisible(false);
   };
 
@@ -120,10 +133,10 @@ export default function Vend() {
 
   const handleSearch = () => {
     if (searchQuery === "") {
-      setFilteredItems(items);
+      setFilteredItems(vendors);
     } else {
       const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = items.filter(
+      const filtered = vendors.filter(
         (item) =>
           item.id.toLowerCase().includes(lowercasedQuery) ||
           item.vendorName.toLowerCase().includes(lowercasedQuery) ||
@@ -138,7 +151,7 @@ export default function Vend() {
 
   useEffect(() => {
     handleSearch();
-  }, [searchQuery, items]);
+  }, [searchQuery, vendors]);
 
   const handleCardClick = (item) => {
     setSelectedItem(item);
@@ -149,12 +162,14 @@ export default function Vend() {
   };
 
   const handleSaveVendorDetails = (updatedVendor) => {
-    const updatedItems = items.map((item) =>
-      item.id === updatedVendor.id ? updatedVendor : item
-    );
-    setItems(updatedItems);
-    setFilteredItems(updatedItems);
-    localStorage.setItem("vendors", JSON.stringify(updatedItems));
+    // logic to update vendor details
+
+    // const updatedItems = vendors.map((item) =>
+    //   item.id === updatedVendor.id ? updatedVendor : item
+    // );
+    // setItems(updatedItems);
+    // setFilteredItems(updatedItems);
+    // localStorage.setItem("vendors", JSON.stringify(updatedItems));
     setSelectedItem(updatedVendor);
   };
 
@@ -179,183 +194,41 @@ export default function Vend() {
   };
 
   return (
-    <div className="vend" id="vend">
-      <div className="prq1">
-        <div className="prq2">
-          {/* New secondary navbar */}
-          <Grid
-            container
-            spacing={2}
-            alignItems="center"
-            sx={{ height: "40px", marginBottom: "32px" }}
-          >
-            {/* Icon for Left Drawer */}
-            <IconButton
-              onClick={toggleLeftDrawer(true)}
-              sx={{ display: { xs: "block", md: "none" }, color: "#3B7CED" }}
-            >
-              <FaChevronRight /> {/* Updated icon for left drawer */}
-            </IconButton>
-
-            {/* Left side - Hidden on small, shown on large */}
+    <div className="container-bod">
+      <div className="vend" id="vend">
+        <PurchaseHeader />
+        <div className="prq1">
+          <div className="prq2">
+            {/* New secondary navbar */}
             <Grid
-              item
-              xs={12}
-              md={6}
-              sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}
+              container
+              spacing={2}
+              alignItems="center"
+              sx={{ height: "40px", marginBottom: "32px" }}
             >
-              <Button
-                onClick={() => setIsFormVisible(true)}
-                variant="contained"
-                sx={{
-                  height: "100%",
-                  backgroundColor: "#3B7CED",
-                  color: "white",
-                  textTransform: "capitalize",
-                }}
+              {/* Icon for Left Drawer */}
+              <IconButton
+                onClick={toggleLeftDrawer(true)}
+                sx={{ display: { xs: "block", md: "none" }, color: "#3B7CED" }}
               >
-                New Vendor
-              </Button>
+                <FaChevronRight /> {/* Updated icon for left drawer */}
+              </IconButton>
 
-              <Box
+              {/* Left side - Hidden on small, shown on large */}
+              <Grid
+                item
+                xs={12}
+                md={6}
                 sx={{
-                  display: "flex",
+                  display: { xs: "none", md: "flex" },
                   alignItems: "center",
-                  ml: 4,
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                  paddingLeft: "10px",
                 }}
               >
-                <img src={SearchIcon} alt="Search" style={{ height: "20px" }} />
-                <InputBase
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search"
-                  sx={{
-                    ml: 1,
-                    height: "100%",
-
-                    padding: "0 8px",
-                  }}
-                />
-              </Box>
-
-              <a
-                href={ExcelFile}
-                download={ExcelFile}
-                style={{ marginLeft: "24px" }}
-              >
-                <IconButton>
-                  <img
-                    src={CloudDownload}
-                    alt="Download Excel"
-                    style={{ height: "32px" }}
-                  />
-                </IconButton>
-              </a>
-            </Grid>
-
-            {/* Icon for Right Drawer */}
-            <IconButton
-              onClick={toggleRightDrawer(true)}
-              sx={{
-                display: { xs: "block", md: "none" },
-                color: "#3B7CED",
-                marginLeft: "auto",
-              }}
-            >
-              <FaFilter /> {/* Updated icon for right drawer */}
-            </IconButton>
-
-            {/* Right side - Hidden on small, shown on large */}
-            <Grid
-              item
-              xs={12}
-              md={6}
-              sx={{
-                display: { xs: "none", md: "flex" },
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center" }}>
-                <p style={{ margin: 0 }}>1-2 of 2</p>
-                <Box sx={{ display: "flex", ml: 2 }}>
-                  <IconButton
-                    sx={{
-                      backgroundColor: "white",
-                      border: "1px solid #A9B3BC",
-                      borderRadius: "4px 0 0 4px",
-                    }}
-                  >
-                    <FaCaretLeft style={{ color: "#A9B3BC" }} />
-                  </IconButton>
-
-                  <IconButton
-                    sx={{
-                      backgroundColor: "white",
-                      border: "1px solid #A9B3BC",
-                      borderRadius: "0 4px 4px 0",
-                    }}
-                  >
-                    <FaCaretRight style={{ color: "#A9B3BC" }} />
-                  </IconButton>
-                </Box>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  ml: 2,
-                }}
-              >
-                <IconButton
-                  onClick={() => setViewMode("grid")}
-                  sx={{
-                    backgroundColor: "white",
-                    border: "1px solid #A9B3BC",
-                    borderRadius: "4px 0 0 4px",
-                  }}
-                >
-                  <IoGrid
-                    style={{
-                      color: viewMode === "grid" ? "#3B7CED" : "#A9B3BC",
-                    }}
-                  />
-                </IconButton>
-
-                <IconButton
-                  onClick={() => setViewMode("list")}
-                  sx={{
-                    backgroundColor: "white",
-                    border: "1px solid #A9B3BC",
-                    borderRadius: "0 4px 4px 0",
-                  }}
-                >
-                  <FaThList
-                    style={{
-                      color: viewMode === "list" ? "#3B7CED" : "#A9B3BC",
-                    }}
-                  />
-                </IconButton>
-              </Box>
-            </Grid>
-
-            {/* Drawer for Left side on small screens */}
-            <Drawer
-              anchor="left"
-              open={openLeft}
-              onClose={toggleLeftDrawer(false)}
-            >
-              <Box sx={{ p: 2, width: 250 }}>
-                {/* Same content as the left side on large screens */}
                 <Button
                   onClick={() => setIsFormVisible(true)}
                   variant="contained"
-                  fullWidth
                   sx={{
+                    height: "100%",
                     backgroundColor: "#3B7CED",
                     color: "white",
                     textTransform: "capitalize",
@@ -368,18 +241,16 @@ export default function Vend() {
                   sx={{
                     display: "flex",
                     alignItems: "center",
-                    mt: 2,
+                    ml: 4,
                     border: "1px solid #ccc",
                     borderRadius: "4px",
+                    paddingLeft: "10px",
                   }}
                 >
                   <img
                     src={SearchIcon}
                     alt="Search"
-                    style={{
-                      height: "20px",
-                      paddingLeft: "8px",
-                    }}
+                    style={{ height: "20px" }}
                   />
                   <InputBase
                     value={searchQuery}
@@ -388,59 +259,79 @@ export default function Vend() {
                     sx={{
                       ml: 1,
                       height: "100%",
+
                       padding: "0 8px",
                     }}
                   />
                 </Box>
 
-                <a
-                  href={ExcelFile}
-                  download={ExcelFile}
-                  style={{ marginTop: "10px", display: "block" }}
+                <IconButton
+                  style={{ marginLeft: "24px" }}
+                  onClick={() => setShowUploadMedia(true)}
                 >
-                  <IconButton>
-                    <img
-                      src={CloudDownload}
-                      alt="Download Excel"
-                      style={{ height: "20px" }}
-                    />
-                  </IconButton>
-                </a>
-              </Box>
-            </Drawer>
+                  <img
+                    src={CloudDownload}
+                    alt="Download Excel"
+                    style={{ height: "32px" }}
+                  />
+                </IconButton>
+              </Grid>
 
-            {/* Drawer for Right side on small screens */}
-            <Drawer
-              anchor="right"
-              open={openRight}
-              onClose={toggleRightDrawer(false)}
-            >
-              <Box sx={{ p: 2, width: 250 }}>
-                {/* Same content as the right side on large screens */}
-                <p>1-2 of 2</p>
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                  <IconButton
-                    sx={{
-                      backgroundColor: "white",
-                      border: "1px solid #A9B3BC",
-                      borderRadius: "4px 0 0 4px",
-                    }}
-                  >
-                    <FaCaretLeft style={{ color: "#A9B3BC" }} />
-                  </IconButton>
+              {/* Icon for Right Drawer */}
+              <IconButton
+                onClick={toggleRightDrawer(true)}
+                sx={{
+                  display: { xs: "block", md: "none" },
+                  color: "#3B7CED",
+                  marginLeft: "auto",
+                }}
+              >
+                <FaFilter /> {/* Updated icon for right drawer */}
+              </IconButton>
 
-                  <IconButton
-                    sx={{
-                      backgroundColor: "white",
-                      border: "1px solid #A9B3BC",
-                      borderRadius: "0 4px 4px 0",
-                    }}
-                  >
-                    <FaCaretRight style={{ color: "#A9B3BC" }} />
-                  </IconButton>
+              {/* Right side - Hidden on small, shown on large */}
+              <Grid
+                item
+                xs={12}
+                md={6}
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <p style={{ margin: 0 }}>1-2 of 2</p>
+                  <Box sx={{ display: "flex", ml: 2 }}>
+                    <IconButton
+                      sx={{
+                        backgroundColor: "white",
+                        border: "1px solid #A9B3BC",
+                        borderRadius: "4px 0 0 4px",
+                      }}
+                    >
+                      <FaCaretLeft style={{ color: "#A9B3BC" }} />
+                    </IconButton>
+
+                    <IconButton
+                      sx={{
+                        backgroundColor: "white",
+                        border: "1px solid #A9B3BC",
+                        borderRadius: "0 4px 4px 0",
+                      }}
+                    >
+                      <FaCaretRight style={{ color: "#A9B3BC" }} />
+                    </IconButton>
+                  </Box>
                 </Box>
 
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    ml: 2,
+                  }}
+                >
                   <IconButton
                     onClick={() => setViewMode("grid")}
                     sx={{
@@ -471,56 +362,201 @@ export default function Vend() {
                     />
                   </IconButton>
                 </Box>
-              </Box>
-            </Drawer>
-          </Grid>
+              </Grid>
 
-          {/* HERE IS THE CONTAINER THAT CONDITIONALY RENDERS THE LISTVIEW, GRIDVIEW, AND ITEMS DETAIL  */}
-          <div className="prq4">
-            {selectedItem ? (
-              <VendorDetails
-                vendor={selectedItem}
-                onClose={handleCloseVendorDetails}
-                onSave={handleSaveVendorDetails}
-              />
-            ) : viewMode === "grid" ? (
-              filteredItems.map((item) => (
-                <div
-                  className="vr4gv"
-                  key={item.id}
-                  onClick={() => handleCardClick(item)}
-                >
-                  <div className="vendor-image">
+              {/* Drawer for Left side on small screens */}
+              <Drawer
+                anchor="left"
+                open={openLeft}
+                onClose={toggleLeftDrawer(false)}
+              >
+                <Box sx={{ p: 2, width: 250 }}>
+                  {/* Same content as the left side on large screens */}
+                  <Button
+                    onClick={() => setIsFormVisible(true)}
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      backgroundColor: "#3B7CED",
+                      color: "white",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    New Vendor
+                  </Button>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      mt: 2,
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                    }}
+                  >
                     <img
-                      src={item.image}
-                      alt="Vendor"
-                      className="circular-image"
+                      src={SearchIcon}
+                      alt="Search"
+                      style={{
+                        height: "20px",
+                        paddingLeft: "8px",
+                      }}
                     />
+                    <InputBase
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search"
+                      sx={{
+                        ml: 1,
+                        height: "100%",
+                        padding: "0 8px",
+                      }}
+                    />
+                  </Box>
+
+                  {/* <a
+                    href={ExcelFile}
+                    download={ExcelFile}
+                    style={{ marginTop: "10px", display: "block" }}
+                  > */}
+                  <IconButton onClick={() => setShowUploadMedia(true)}>
+                    <img
+                      src={CloudDownload}
+                      alt="Download Excel"
+                      style={{ height: "20px" }}
+                    />
+                  </IconButton>
+                  {/* </a> */}
+                </Box>
+              </Drawer>
+
+              {/* Drawer for Right side on small screens */}
+              <Drawer
+                anchor="right"
+                open={openRight}
+                onClose={toggleRightDrawer(false)}
+              >
+                <Box sx={{ p: 2, width: 250 }}>
+                  {/* Same content as the right side on large screens */}
+                  <p>1-2 of 2</p>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", mt: 2 }}
+                  >
+                    <IconButton
+                      sx={{
+                        backgroundColor: "white",
+                        border: "1px solid #A9B3BC",
+                        borderRadius: "4px 0 0 4px",
+                      }}
+                    >
+                      <FaCaretLeft style={{ color: "#A9B3BC" }} />
+                    </IconButton>
+
+                    <IconButton
+                      sx={{
+                        backgroundColor: "white",
+                        border: "1px solid #A9B3BC",
+                        borderRadius: "0 4px 4px 0",
+                      }}
+                    >
+                      <FaCaretRight style={{ color: "#A9B3BC" }} />
+                    </IconButton>
+                  </Box>
+
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", mt: 2 }}
+                  >
+                    <IconButton
+                      onClick={() => setViewMode("grid")}
+                      sx={{
+                        backgroundColor: "white",
+                        border: "1px solid #A9B3BC",
+                        borderRadius: "4px 0 0 4px",
+                      }}
+                    >
+                      <IoGrid
+                        style={{
+                          color: viewMode === "grid" ? "#3B7CED" : "#A9B3BC",
+                        }}
+                      />
+                    </IconButton>
+
+                    <IconButton
+                      onClick={() => setViewMode("list")}
+                      sx={{
+                        backgroundColor: "white",
+                        border: "1px solid #A9B3BC",
+                        borderRadius: "0 4px 4px 0",
+                      }}
+                    >
+                      <FaThList
+                        style={{
+                          color: viewMode === "list" ? "#3B7CED" : "#A9B3BC",
+                        }}
+                      />
+                    </IconButton>
+                  </Box>
+                </Box>
+              </Drawer>
+            </Grid>
+
+            {/* HERE IS THE CONTAINER THAT CONDITIONALY RENDERS THE LISTVIEW, GRIDVIEW, AND ITEMS DETAIL  */}
+            <div className="prq4">
+              {selectedItem ? (
+                <VendorDetails
+                  vendor={selectedItem}
+                  onClose={handleCloseVendorDetails}
+                  onSave={handleSaveVendorDetails}
+                />
+              ) : viewMode === "grid" ? (
+                filteredItems.map((item) => (
+                  <div
+                    className="vr4gv"
+                    key={item.id}
+                    onClick={() => handleCardClick(item)}
+                  >
+                    <div className="vendor-image">
+                      <img
+                        src={item.image}
+                        alt="Vendor"
+                        className="circular-image"
+                      />
+                    </div>
+                    <p className="vendor-name">{item.vendorName}</p>
+                    <p className="vendor-email">{item.email}</p>
+                    <p className="vendor-phone">{item.phone}</p>
+                    <p className="vendor-address">{item.address}</p>
+                    <p className="vendor-category">{item.category}</p>
                   </div>
-                  <p className="vendor-name">{item.vendorName}</p>
-                  <p className="vendor-email">{item.email}</p>
-                  <p className="vendor-phone">{item.phone}</p>
-                  <p className="vendor-address">{item.address}</p>
-                  <p className="vendor-category">{item.category}</p>
-                </div>
-              ))
-            ) : (
-              <Listview items={filteredItems} onItemClick={handleCardClick} />
-            )}
+                ))
+              ) : (
+                <Listview items={filteredItems} onItemClick={handleCardClick} />
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* RENDERS THE NEW VENDORS FORM CONDITIONALY */}
-      {isFormVisible && (
-        <div className="overlay">
-          <Newvendor
-            onClose={handleFormClose}
-            onSaveAndSubmit={handleSaveAndSubmit}
-            fromPurchaseModuleWizard={location.state?.openForm}
-          />
-        </div>
-      )}
+        {/* RENDERS THE NEW VENDORS FORM CONDITIONALY */}
+        {isFormVisible && (
+          <div className="overlay">
+            <Newvendor
+              onClose={handleFormClose}
+              onSaveAndSubmit={handleSaveAndSubmit}
+              fromPurchaseModuleWizard={location.state?.openForm}
+            />
+          </div>
+        )}
+        {/* RENDER UPLOAD PRODUCT FILE FORM CONDITIONALLY */}
+        {showUploadMedia && (
+          <div className="overlay">
+            <UploadMedia
+              onClose={handleCloseUploadMedia}
+              endpoint="/vendors/upload_excel/"
+              excelFile={ExcelFile}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

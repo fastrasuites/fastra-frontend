@@ -1,15 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import uploadIcon from "../../../image/uploadIcon.svg";
+import { useHistory } from "react-router-dom";
+import { boxSizing } from "@mui/system";
 
-import { useHistory, useLocation } from "react-router-dom";
-
-export default function NewCompany({
-  onClose,
-  onSaveAndSubmit,
-  fromStepModal,
-}) {
+export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) {
   const [formState, setFormState] = useState({
     companyName: "",
     email: "",
@@ -27,19 +23,32 @@ export default function NewCompany({
     size: "",
     image: "",
   });
-
+  const [isEditable, setIsEditable] = useState(false); // State to control if fields are editable
   const [roles, setRoles] = useState([]); // State to manage the list of roles
   const [currentRole, setCurrentRole] = useState(""); // State to manage the current input for the role
-  const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(true); // State to control form visibility
+
+  // Fetch company name and email from localStorage on component mount
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem("registrationData"));
+    if (storedData) {
+      setFormState((prev) => ({
+        ...prev,
+        companyName: storedData.companyName || "",
+        email: storedData.email || "",
+      }));
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormState((prev) => ({
-      ...prev,
+    console.log(`${name}: ${value}`); // Log the field name and value
+    setFormState((prevState) => ({
+      ...prevState,
       [name]: value,
     }));
   };
+  
 
   const handleRoleInputChange = (e) => {
     setCurrentRole(e.target.value);
@@ -78,22 +87,19 @@ export default function NewCompany({
   const history = useHistory();
 
   const handleSubmit = (e) => {
-    console.log("submitted");
     e.preventDefault();
     onSaveAndSubmit(formState);
     onClose();
 
-    // detect if true a user came from dashboard popup, then navigate back for the next step
+    // Detect if true a user came from dashboard popup, then navigate back for the next step
     if (fromStepModal) {
       history.push({ pathname: "/dashboard", state: { step: 2 } });
     }
   };
 
-  const currencyOptions = [
-    { value: "USD", label: "USD" },
-    // Add more options as needed
-  ];
-
+  const handleEditClick = () => {
+    setIsEditable(true); // Enable the fields on Edit button click
+  };
   const industryOptions = [
     { value: "technology", label: "Technology" },
     // Add more options as needed
@@ -138,12 +144,12 @@ export default function NewCompany({
 
   return (
     <div
-      id="newcompany"
+      id="newcompany" style={{margin: "0"}}
       className={`registration-page ${showForm ? "fade-in" : "fade-out"}`}
     >
-      <div className="form-header">
+      <div className="form-header" style={{width: "100%", overflowY: "none", boxSizing: "border-box", margin: "0"}}>
         <div className="form-header-details">
-          <div className="form-header-activity">
+          <div className="form-header-activity" style={{ marginBottom: "10px"}}>
             <h2 className="header-text">New Company</h2>
             <div className="autosave">
               <p>Autosaved</p>
@@ -157,8 +163,8 @@ export default function NewCompany({
             <div className="registration-header-info">
               <h2>Basic Information</h2>
               <div className="reg-action-btn">
-                <button type="button" className="cancel-btn" onClick={onClose}>
-                  Cancel
+                <button type="button" className="cancel-btn" onClick={handleEditClick}>
+                  Edit
                 </button>
                 <button
                   type="submit"
@@ -204,10 +210,13 @@ export default function NewCompany({
                 <label>Company name</label>
                 <input
                   type="text"
+                  style={{border: "none", backgroundColor: "#fff"}}
                   className="form-control"
-                  placeholder="Enter your company name"
+                  placeholder="company.fastrasuite.com"
+                  name="companyName"
                   value={formState.companyName}
                   onChange={handleChange}
+                  disabled // Disable the input field for company name
                 />
               </div>
             </div>
@@ -221,11 +230,13 @@ export default function NewCompany({
                 <label>Email</label>
                 <input
                   type="email"
+                  style={{border: "none", backgroundColor: "#fff"}}
                   className="form-control"
+                  placeholder="company email"
                   name="email"
-                  placeholder="Enter your company email address"
                   value={formState.email}
                   onChange={handleChange}
+                  disabled 
                 />
               </div>
               <div className="form-group">
@@ -237,6 +248,7 @@ export default function NewCompany({
                   placeholder="Enter your company phone number"
                   value={formState.phoneNumber}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
               <div className="form-group">
@@ -248,6 +260,7 @@ export default function NewCompany({
                   placeholder="Enter your company website URL"
                   value={formState.website}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
             </div>
@@ -270,6 +283,7 @@ export default function NewCompany({
                   placeholder="Street & Number"
                   value={formState.street}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
               <div className="form-group">
@@ -280,6 +294,7 @@ export default function NewCompany({
                   placeholder="Local Government"
                   value={formState.localGovernment}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
               <div className="form-group">
@@ -290,6 +305,7 @@ export default function NewCompany({
                   placeholder="State"
                   value={formState.state}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
             </div>
@@ -304,6 +320,7 @@ export default function NewCompany({
                   className="form-control"
                   value={formState.country}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
             </div>
@@ -322,6 +339,7 @@ export default function NewCompany({
                   className="form-control"
                   value={formState.registrationNumber}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
               <div className="form-group">
@@ -333,6 +351,7 @@ export default function NewCompany({
                   className="form-control"
                   value={formState.taxId}
                   onChange={handleChange}
+                  disabled={!isEditable}
                 />
               </div>
             </div>
@@ -343,7 +362,7 @@ export default function NewCompany({
               <h2>Other Information</h2>
             </div>
             <div className="registration-contact-info-grouped">
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label>Currency</label>
                 <Select
                   name="currency"
@@ -354,7 +373,7 @@ export default function NewCompany({
                     handleSelectChange("currency", selectedOption)
                   }
                 />
-              </div>
+              </div> */}
               <div className="form-group">
                 <label>Industry</label>
                 <Select
@@ -366,6 +385,7 @@ export default function NewCompany({
                   onChange={(selectedOption) =>
                     handleSelectChange("industry", selectedOption)
                   }
+                  disabled={!isEditable}
                 />
               </div>
               <div className="form-group">
@@ -379,10 +399,9 @@ export default function NewCompany({
                   onChange={(selectedOption) =>
                     handleSelectChange("language", selectedOption)
                   }
+                  disabled={!isEditable}
                 />
               </div>
-            </div>
-            <div className="registration-contact-info-grouped" id="size">
               <div className="form-group">
                 <label>Size</label>
                 <Select
@@ -394,6 +413,7 @@ export default function NewCompany({
                   onChange={(selectedOption) =>
                     handleSelectChange("size", selectedOption)
                   }
+                  disabled={!isEditable}
                 />
               </div>
             </div>
@@ -401,56 +421,47 @@ export default function NewCompany({
             <hr />
             {/* Role input and display section */}
             <div className="registration-role-grouped">
-              <h2>Roles</h2>
-              <label style={{ fontSize: "18px", fontWeight: "400" }}>
-                Input your Role
-              </label>
-              <div className="form-group">
-                <div className="role-groped">
-                  <input
-                    type="text"
-                    placeholder="Enter a role"
-                    className="form-control"
-                    value={currentRole}
-                    onChange={handleRoleInputChange}
-                  />
-                </div>
-                <div className="add-role-button">
-                  <button
-                    type="button"
-                    onClick={addRole}
-                    className="add-role-btn"
-                  >
-                    <span className="plus-icon">+</span>
-                    <span className="text">&nbsp; &nbsp; Add More Roles</span>
-                  </button>
-                </div>
-              </div>
-              {/* Display list of added roles */}
-              <ul className="role-list">
-                {roles.map((role, index) => (
-                  <li key={index} className="role-item">
-                    {role}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {/* only on mobile submit button */}
+  <h2>Roles</h2>
+  <div className="form-group" style={{ display: "flex", alignItems: "center", alignContent: "center"}}>
+    <label>Add a Role</label>
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Enter a role"
+      value={currentRole}
+      onChange={handleRoleInputChange}
+      disabled={!isEditable}
+    />
+    <button type="button" onClick={addRole} disabled={!isEditable} style={{ padding: "2px 10px", border: "none", backgroundColor: "transparent", color: "#242424"}}>
+       + Add Role
+    </button>
+  </div>
 
-            <div className="reg-action-btn" id="reg-action-btn">
-              <button type="button" className="cancel-btn" onClick={onClose}>
-                Cancel
-              </button>
-              <button
-                type="submit"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+  {roles.length > 0 && (
+    <div className="roles-list">
+      <h3>Assigned Roles</h3>
+      <ul>
+        {roles.map((role, index) => (
+          <li key={index}>{role}</li>
+        ))}
+      </ul>
     </div>
-  );
+  )}
+</div>
+
+{/* Submission Section */}
+{/* <div className="form-group">
+  <button
+    type="submit"
+    className="submit-btn"
+    style={{ marginTop: "20px" }}
+  >
+    Save and Submit
+  </button>
+</div> */}
+</form>
+</div>
+</div>
+</div>
+);
 }

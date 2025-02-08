@@ -13,6 +13,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import { useHistory } from "react-router-dom";
 import "./POrderform.css";
+import PurchaseHeader from "../PurchaseHeader";
+// import { TextField } from "@mui/material";
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -74,7 +76,7 @@ export default function POrderform({
     id: initialData?.id || generateNewID(),
     productName: initialData?.productName || "",
     amount: initialData?.amount || "",
-    status: initialData?.status || "Awaiting Goods",
+    status: initialData?.status || "Pending",
     date: initialData?.date ? new Date(initialData.date) : new Date(),
     expiryDate: initialData?.expiryDate || "",
     vendor: initialData?.vendor || "",
@@ -129,13 +131,11 @@ export default function POrderform({
 
     const formDataWithStringDate = {
       ...formState,
-      date: formState.date.toString(),
+      date: formState.date.toString(), // Convert date to string
       rows,
     };
 
     onSaveAndSubmit(formDataWithStringDate);
-
-    history.push("/orapr");
   };
 
   const addRow = () => {
@@ -144,6 +144,7 @@ export default function POrderform({
       {
         productName: "",
         description: "",
+        unt: "",
         qty: "",
         unitPrice: "",
         totalPrice: "",
@@ -162,14 +163,26 @@ export default function POrderform({
       setPage(page - 1);
     }
   };
+  const [products, setProducts] = useState([]);
 
-  const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
-  const pageCount = Math.ceil(rows.length / rowsPerPage);
-
+  useEffect(() => {
+    const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
+    setProducts(savedProducts);
+  }, []);
+  
+  const calculateTotalPrice = (product) => {
+    const pricePerUnit = parseFloat(product.sp.replace("₦", "")) || 0;
+    const totalQuantity = parseInt(product.availableProductQty) || 0;
+    return `₦${(pricePerUnit * totalQuantity).toFixed(2)}`;
+  };
+ 
   const formatDate = (date) => {
     const options = { day: "numeric", month: "short", year: "numeric" };
     return date.toLocaleDateString("en-US", options);
   };
+
+  const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  const pageCount = Math.ceil(rows.length / rowsPerPage);
 
   const formatTime = (date) => {
     const hours = date.getHours();
@@ -206,67 +219,85 @@ export default function POrderform({
       }));
     }
   };
+  const [purchaseState, setPurchaseState] = React.useState({
+    paymentTerm: "",
+    purchasePolicy: "",
+    deliveryTerm: "",
+  });
 
+  // Load vendor details from localStorage on component mount
+  useEffect(() => {
+    const savedVendorDetails = JSON.parse(
+      localStorage.getItem("vendorDetails")
+    );
+    if (savedVendorDetails) {
+      setPurchaseState(savedVendorDetails);
+    }
+  }, []);
+
+  // Save to localStorage whenever formState changes
+  useEffect(() => {
+    localStorage.setItem("vendorDetails", JSON.stringify(purchaseState));
+  }, [purchaseState]);
+
+  function handlePurchaseChange(e) {
+    const { name, value } = e.target;
+    setPurchaseState((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+  const [vendor, setVendor] = useState({
+    vendorName: "",
+    email: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
+
+    // Fetch data from latest vendor added
+    if (savedVendors.length > 0) {
+      const latestVendor = savedVendors[savedVendors.length - 1];
+      setVendor(latestVendor);
+    }
+  }, []);
   const handleVendorCategoryChange = (event, newValue) => {
     setFormState((prev) => ({
       ...prev,
       vendorCategory: newValue,
     }));
   };
-  const handlePrint = () => {
-    const printWindow = window.open("", "", "width=800,height=600");
-    printWindow.document.write("<html><head><title>Print Order</title>");
-    printWindow.document.write("<style>");
-    printWindow.document.write(`
-      body { font-family: PT Sans, sans-serif; }
-      table { width: 100%; border-collapse: collapse; }
-      th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
-      th { background-color: #f2f2f2; }
-    `);
-    printWindow.document.write("</style></head><body>");
-    printWindow.document.write(`
-      <h1>Purchase Order</h1>
-      <h2>Basic Information</h2>
-      <p><strong>ID:</strong> ${formState.id}</p>
-      <p><strong>Date Created:</strong> ${formatDate(formState.date)}</p>
-      <p><strong>Vendor:</strong> ${formState.vendor}</p>
-      <p><strong>Vendor Category:</strong> ${formState.vendorCategory}</p>
-      <h2>Product Information</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Product Name</th>
-            <th>Description</th>
-            <th>Qty</th>
-            <th>Estimated Unit Price</th>
-            <th>Total Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map(
-              (row) => `
-              <tr>
-                <td>${row.productName}</td>
-                <td>${row.description}</td>
-                <td>${row.qty}</td>
-                <td>${row.unitPrice}</td>
-                <td>${row.totalPrice}</td>
-              </tr>`
-            )
-            .join("")}
-        </tbody>
-      </table>
-      <h2>Total Amount</h2>
-      <p><strong>Total:</strong> $${calculateTotalAmount()}</p>
-    `);
-    printWindow.document.write("</body></html>");
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.addEventListener("afterprint", onClose);
-  };
+// Load saved currencies from localStorage
+const [selectedCurrency, setSelectedCurrency] = useState(null);
+const [savedCurrencies, setSavedCurrencies] = useState([]);
+
+useEffect(() => {
+  // Fetch currencies from localStorage
+  const currencies = JSON.parse(localStorage.getItem("savedCurrencies")) || [];
+  if (currencies.length === 0) {
+    console.warn('No currencies found in localStorage.');
+  }
+  setSavedCurrencies(currencies);
+}, []);  // Only run this effect once, on component mount
+
+const handleCurrencyChange = (event, newValue) => {
+  setSelectedCurrency(newValue);
+  // Assuming you have a form state to update
+  setFormState((prev) => ({
+    ...prev,
+    currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
+  }));
+
+  // Log the selected currency
+  if (newValue) {
+    console.log("Selected Currency:", newValue);
+  }
+};
 
   return (
+    <div className="newpod-contain">
+      <PurchaseHeader />
     <div
       id="newPurchaseOrder"
       className={`newpod ${showForm ? "fade-in" : "fade-out"}`}
@@ -299,15 +330,6 @@ export default function POrderform({
                 <button type="button" className="new3but" onClick={onClose}>
                   Cancel
                 </button>
-                {/* <button type="button" className="new3btn" onClick={handlePrint}>
-                  Print Order
-                </button>
-                <button type="button" className="new3btn" onClick={handleSave}>
-                  Save
-                </button>
-                <button type="submit" className="new3btn">
-                  Save &amp; Send
-                </button> */}
               </div>
             </div>
             <div className="newpod3b">
@@ -328,7 +350,7 @@ export default function POrderform({
               <div className="newpod3bb">
                 <p>Created By</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                {formState.name}
+                  {vendor.vendorName}
                 </p>
               </div>
             </div>
@@ -353,127 +375,113 @@ export default function POrderform({
                   )}
                 />
               </div>
-              {/* <div className="newpod3ca">
-                <p>Vendor Category</p>
-                <Autocomplete
-                  value={formState.vendorCategory}
-                  onChange={handleVendorCategoryChange}
-                  inputValue={formState.vendorCategory}
-                  onInputChange={(event, newInputValue) => {
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorCategory: newInputValue,
-                    }));
-                  }}
-                  options={categories}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Select category"
-                      className="newpod3cb"
-                    />
-                  )}
-                />
-              </div> */}
+
               <button
                 type="button"
                 className="new3but"
                 onClick={addRow}
-                style={{ marginTop: "1rem", color: "#000", fontSize: "15px", opacity: "0.5", padding: "2px", borderRadius: "50px"}}
+                style={{
+                  marginTop: "1rem",
+                  color: "#000",
+                  fontSize: "15px",
+                  opacity: "0.5",
+                  padding: "2px",
+                  borderRadius: "50px",
+                }}
               >
-                 <span style={{ fontSize: "20px", opacity: "0.5", padding: "1px", borderRadius: "50%", }}>+</span> Add New Vendor
+                <span
+                  style={{
+                    fontSize: "20px",
+                    opacity: "0.5",
+                    padding: "1px",
+                    borderRadius: "50%",
+                  }}
+                >
+                  +
+                </span>{" "}
+                Add New Vendor
               </button>
             </div>
-
             <div className="newpod3b">
-            <div className="newpod3bb">
+              <div className="newpod3bb">
                 <p>Vendor Address</p>
                 {/* this should pick vendor address */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                {formState.vendorAddress}
+                  {vendor.address}
                 </p>
               </div>
               <div className="newpod3bb">
                 <p>Vendor Email</p>
                 {/* this should pick vendor email */}
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {
-                    formState.vendorEmail} 
+                  {vendor.email}
                 </p>
               </div>
-              
-            </div> <br />
+            </div>{" "}
+            <br />
             <div className="newpod3c">
+            <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
+                <p>Select Currency</p>
+                <Autocomplete
+                  value={selectedCurrency}
+                  onChange={handleCurrencyChange}
+                  options={savedCurrencies}  // Populate options from localStorage
+                  getOptionLabel={(option) => `${option.name} - ${option.symbol}`}
+                  renderInput={(params) => (
+                    <TextField {...params} label="Select Currency" className="newpod3cb" />
+                  )}
+                />
+                </div>
               <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
                 <p>Payment Term</p>
-                <Autocomplete
-                  value={selectedVendor}
-                  onChange={handleVendorSelect}
-                  inputValue={vendorInputValue}
-                  onInputChange={(event, newInputValue) => {
-                    setVendorInputValue(newInputValue);
-                  }}
-                  options={savedVendors}
-                  getOptionLabel={(option) => option.vendorName}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Payment Term"
-                      className="newpod3cb"
-                    />
-                  )}
+                <TextField
+                  name="paymentTerm"
+                  value={purchaseState.paymentTerm}
+                  onChange={handlePurchaseChange}
+                  label="Type your payment terms here"
+                  placeholder="Type your payment terms here."
+                  variant="outlined" // You can change the variant to 'filled' or 'standard' based on your design
+                  className="newpod3cb"
+                  fullWidth // Makes the input take the full width of its container
+                  margin="normal" // Adds some space around the input
                 />
               </div>
               <div className="newpod3ca">
                 <p>Purchase Policy</p>
-                <Autocomplete
-                  value={formState.vendorCategory}
-                  onChange={handleVendorCategoryChange}
-                  inputValue={formState.vendorCategory}
-                  onInputChange={(event, newInputValue) => {
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorCategory: newInputValue,
-                    }));
-                  }}
-                  options={categories}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Purchase Policy"
-                      className="newpod3cb"
-                    />
-                  )}
+                <TextField
+                  name="purchasePolicy"
+                  value={purchaseState.purchasePolicy}
+                  onChange={handlePurchaseChange}
+                  label="Type your purchase policy here"
+                  placeholder="Type your purchase policy here."
+                  variant="outlined"
+                  className="newpod3cb"
+                  fullWidth
+                  margin="normal"
                 />
               </div>
               <div className="newpod3ca">
                 <p>Delivery Terms</p>
-                <Autocomplete
-                  value={formState.vendorCategory}
-                  onChange={handleVendorCategoryChange}
-                  inputValue={formState.vendorCategory}
-                  onInputChange={(event, newInputValue) => {
-                    setFormState((prev) => ({
-                      ...prev,
-                      vendorCategory: newInputValue,
-                    }));
-                  }}
-                  options={categories}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Delivery Term"
-                      className="newpod3cb"
-                    />
-                  )}
+                <TextField
+                  name="deliveryTerm"
+                  value={purchaseState.deliveryTerm}
+                  onChange={handlePurchaseChange}
+                  label="Type your delivery terms here"
+                  placeholder="Type your delivery terms here."
+                  variant="outlined"
+                  className="newpod3cb"
+                  fullWidth
+                  margin="normal"
                 />
               </div>
             </div>
-            <p style={{ fontSize: "20px", color: "blue", marginTop: "1rem" }}>
+            <p
+              style={{ fontSize: "20px", color: "#3b7ced", marginTop: "1rem" }}
+            >
               Purchase Order Content
             </p>
             <div className="newpod3d">
-              <TableContainer
+               <TableContainer
                 component={Paper}
                 sx={{
                   boxShadow: "none",
@@ -504,6 +512,7 @@ export default function POrderform({
                       <StyledTableCell>Product Name</StyledTableCell>
                       <StyledTableCell>Description</StyledTableCell>
                       <StyledTableCell align="right">Qty</StyledTableCell>
+                      <StyledTableCell align="right">Unit Measurement</StyledTableCell>
                       <StyledTableCell align="right">
                         Estimated Unit Price
                       </StyledTableCell>
@@ -513,45 +522,22 @@ export default function POrderform({
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentRows.map((row, index) => (
+                    {products.map((product, index) => (
                       <StyledTableRow key={index + page * rowsPerPage}>
                         <StyledTableCell component="th" scope="row">
-                          <input
-                            type="text"
-                            placeholder="Enter a product name"
-                            name="productName"
-                            value={row.productName}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "productName",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.name}
                         </StyledTableCell>
                         <StyledTableCell>
-                          <input
-                            type="text"
-                            placeholder="Enter a description"
-                            name="description"
-                            value={row.description}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                          />
+                        {product.productDesc}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
                             type="number"
-                            placeholder="0"
+                            placeholder="0.00"
                             name="qty"
+                            className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.qty}
+                            value={product.qty}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -560,14 +546,18 @@ export default function POrderform({
                               )
                             }
                           />
+                            
+                        </StyledTableCell>
+                        <StyledTableCell align="right">{product.unt}
                         </StyledTableCell>
                         <StyledTableCell align="right">
                           <input
                             type="number"
                             placeholder="0.00"
                             name="unitPrice"
+                            className="no-arrows"
                             style={{ textAlign: "right" }}
-                            value={row.unitPrice}
+                            value={product.unitPrice}
                             onChange={(e) =>
                               handleInputChange(
                                 index + page * rowsPerPage,
@@ -578,20 +568,14 @@ export default function POrderform({
                           />
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            name="totalPrice"
-                            style={{ textAlign: "right" }}
-                            value={row.totalPrice}
-                            readOnly
-                          />
+                        {calculateTotalAmount()}
+
                         </StyledTableCell>
                       </StyledTableRow>
                     ))}
                     <StyledTableRow>
-                      <StyledTableCell colSpan={4} align="right">
-                        Total Amount
+                      <StyledTableCell colSpan={5} align="right">
+                       <b> Total Amount</b>
                       </StyledTableCell>
                       <StyledTableCell align="right">
                         {calculateTotalAmount()}
@@ -601,17 +585,16 @@ export default function POrderform({
                 </Table>
               </TableContainer>
             </div>
-            <br /> <br /><br /> <br />
-            <div className="newpod3a" style={{ justifyContent: "flex-end"}}>
-              
-              <div className="newpod3e" >
-                {/* <button type="button" className="new3but" onClick={onClose}>
-                  Cancel
-                </button>
-                <button type="button" className="new3btn" onClick={handlePrint}>
-                  Print Order
-                </button> */}
-                <button type="button" className="new3but" onClick={handleSave} style={{ border: "1px solid #3b7ced", padding: "12px 20px"}}>
+            <br /> <br />
+            <br /> <br />
+            <div className="newpod3a" style={{ justifyContent: "flex-end" }}>
+              <div className="newpod3e">
+                <button
+                  type="button"
+                  className="new3but"
+                  onClick={handleSave}
+                  style={{ border: "1px solid #3b7ced", padding: "12px 20px" }}
+                >
                   Save
                 </button>
                 <button type="submit" className="new3btn">
@@ -622,6 +605,7 @@ export default function POrderform({
           </form>
         </div>
       </div>
+    </div>
     </div>
   );
 }

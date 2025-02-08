@@ -1,0 +1,151 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  .configure-contain {
+    width: 100%;
+    height: 100%;
+    font-family: Product Sans;
+    display: block;
+  }
+  .configurations {
+    min-height: 100vh;
+    margin-top: 1rem;
+  }
+  
+  .configuration-header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 10px 20px;
+    background: transparent;
+    margin-bottom: 20px;
+    z-index: 1000;
+  }
+  
+  .configuration-header h1 {
+    font-size: 24px;
+    color: #000;
+    font-weight: 500;
+  }
+  
+  .pagination {
+    display: flex;
+    align-items: center;
+  }
+  
+  .pagination span {
+    margin-right: 10px;
+    font-size: 14px;
+    color: #666;
+  }
+  .switch-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 7px 12px;
+  }
+  .pagination button {
+    background: #fff;
+    border: 1.5px solid #ccc;
+    font-size: 16px;
+    color: #ddd;
+    text-align: center;
+    cursor: pointer;
+    padding: 5px 12px;
+  }
+  
+  .pagination button:hover {
+    color: #3B7CED;
+  }
+  
+  /* Container for the form */
+  
+  .configuration-form {
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: transparent;
+      border-radius: 8px;
+      box-sizing: border-box;
+      /* border: 1px solid #ccc; */
+      
+    }
+    .configuration-card {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      padding-top: 30px;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+    .configuration-form h2,
+    .configuration-form h3 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #3B7CED;
+      font-weight: 500;
+      text-align: left;
+    }
+    @media (max-width: 768px) {
+        .configuration-form h2,
+    .configuration-form h3 {
+      font-size: 1.2rem;
+    }
+      }
+      @media (max-width: 412px) {
+        .configuration-form h2,
+    .configuration-form h3 {
+      font-size: 1rem;
+    }
+      }
+    /* Individual form sections */
+    .form-section {
+      margin-bottom: 40px;
+    }
+    
+.switch-container {
+    display: flex;
+    align-items: flex-start;
+    text-align: left;
+    gap: 40rem;
+  }
+  @media (max-width: 768px) {
+    .switch-container {
+        gap: 5rem;
+      }
+  }
+  @media (max-width: 1024px) {
+    .switch-container {
+        gap: 20rem;
+      }
+  }
+  .switch {
+    width: 60px;
+    height: 30px;
+    border-radius: 15px;
+    background-color: #ddd; /* Default background color */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  .switch-on {
+    background-color: #007bff; /* Blue background when enabled */
+  }
+  
+  .switch-handle {
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  
+  .switch-handle-on {
+    transform: translateX(30px); /* Move handle to the right */
+  }
+  

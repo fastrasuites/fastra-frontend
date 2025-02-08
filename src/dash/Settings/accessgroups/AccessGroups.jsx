@@ -85,7 +85,7 @@ export default function AccessGroups() {
             <div className="content-header">
               <div className="header-activity-1">
                 <button className="btn">
-                  Access groups
+                  Accessgroups
                 </button>
                 <button className="btn" onClick={handleNewUser} style={{backgroundColor: "#f7f7f7", color: "#4393e4"}}>
                   Create

@@ -3,25 +3,32 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
 import "./LoginForm.css";
+import { useTenant } from "../context/TenantContext";
 
 export default function LoginForm() {
-  const [username, setUsername] = useState(""); // Changed from email to username
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const { login } = useTenant();
   const history = useHistory();
 
-  // Get tenant name from URL
-  const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
-  const parts = fullUrl.split(".");
-  const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
+  // checks url for localhost:3000 or app.fastrasuite.com
+  const MAIN_DOMAIN_URL = window.location.href.includes("app.fastrasuite.com")
+    ? "app.fastrasuite.com"
+    : "localhost:3000";
+
+  // Determine protocol dynamically (http for localhost, https for production)
+  const PROTOCOL = window.location.protocol.includes("https")
+    ? "https"
+    : "http";
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
   };
 
   const handlePasswordChange = (e) => {
@@ -30,24 +37,43 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (username && password) {
-      try {
-        const response = await axios.post(
-          `https://${tenantName}.fastrasuite.com/api/login/`, // Corrected to HTTPS and endpoint
-          { username, password } // Use username instead of email
-        );
 
-        const { redirect_url } = response.data; // Destructure the redirect_url from response
-        console.log(response.data);
-        window.location.href = redirect_url; // Redirect to the provided URL
-      } catch (error) {
-        if (error.response && error.response.status === 400) {
-          setError("Invalid credentials");
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    try {
+      const apiBaseUrl = `https://fastrasuiteapi.com.ng`;
+      const loginEndpoint = "/login/";
+      const requestUrl = apiBaseUrl + loginEndpoint;
+
+      const response = await axios.post(requestUrl, { email, password });
+      const { access_token, tenant_company_name, ...rest } = response.data;
+      console.log("Login Response:", response.data);
+
+      login({ access_token, tenant_company_name, ...rest });
+
+      console.log;
+
+      // Redirect to dashboard
+      const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_company_name}/dashboard`;
+      window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
+
+      // history.push(`/${tenant_company_name}/dashboard` ||`localhost:3000/${tenant_company_name}/dashboard`);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 400) {
+          setError("Invalid email or password. Please try again.");
         } else {
-          setError("An error occurred. Please try again.");
+          setError("An error occurred. Please try again later.");
         }
-        console.error("Error logging in:", error);
+      } else {
+        setError(
+          "Unable to connect to the server. Check your internet connection."
+        );
       }
+      console.error("Login Error:", error);
     }
   };
 
@@ -60,18 +86,16 @@ export default function LoginForm() {
         <div className="group-container">
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="username" className="form-label">
-                {" "}
-                {/* Changed from email to username */}
-                Username
+              <label htmlFor="email" className="form-label">
+                Email
               </label>
               <input
-                type="text" // Change to text since it's a username
-                id="username"
+                type="email"
+                id="email"
                 className="form-input"
-                placeholder="Enter your Username here"
-                value={username}
-                onChange={handleUsernameChange}
+                placeholder="Enter your email here"
+                value={email}
+                onChange={handleEmailChange}
                 required
               />
             </div>
@@ -108,10 +132,10 @@ export default function LoginForm() {
           </form>
 
           <div className="login-links">
-            <Link to="/register" className="register-link">
+            <Link to="/" className="register-link">
               Don't have an account?
             </Link>
-            <Link to="/forgot-password" className="forgot-password-link">
+            <Link to="/forget-password" className="forgot-password-link">
               Forget Password
             </Link>
           </div>
@@ -120,3 +144,17 @@ export default function LoginForm() {
     </div>
   );
 }
+
+//  // checks url for localhost:3000 or app.fastrasuite.com
+//   const MAIN_DOMAIN = window.location.href.includes("app.fastrasuite.com")
+//     ? "app.fastrasuite.com"
+//     : "localhost:3000";
+
+//   // Determine protocol dynamically (http for localhost, https for production)
+//   const PROTOCOL = window.location.protocol.includes("https")
+//     ? "https"
+//     : "http";
+
+// // Redirect to dashboard
+//       window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
+//       const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN}/${tenant}/dashboard`;

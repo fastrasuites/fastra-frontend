@@ -1,229 +1,139 @@
-import React from "react";
-import { DataGrid } from "@mui/x-data-grid";
+import * as React from "react";
 import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Checkbox,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-const generateProductId = () => {
-  return (
-    "P" +
-    Math.floor(Math.random() * 100000)
-      .toString()
-      .padStart(5, "0")
-  );
-};
+const Orderlistview = ({ items, onItemClick }) => {
+  const [selected, setSelected] = React.useState([]);
+  console.log("checking contents the items: ", items);
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case "Order Approved":
-      return "#2ba24c";
-    case "Awaiting goods":
-      return "#f0b501";
-    case "Cancelled":
-      return "#e43e2b";
-    default:
-      return "#7a8a98";
-  }
-};
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      const newSelected = items.map((item) => item.id);
+      setSelected(newSelected);
+      console.log(selected);
+      return;
+    }
+    setSelected([]);
+  };
 
-const columns = [
-  { field: "id", headerName: "ID", width: 150 },
-  {
-    field: "productName",
-    headerName: "Product Name",
-    width: 250,
-    renderCell: (params) => {
-      const productNames = params.value.split(",");
-      if (productNames.length > 1) {
-        return (
-          <Accordion
-            style={{ backgroundColor: "transparent", boxShadow: "none" }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
-            >
-              {productNames[0]}
-            </AccordionSummary>
-            <AccordionDetails
-              style={{
-                flexDirection: "column",
-                overflowY: "auto",
-                maxHeight: "150px",
-              }}
-            >
-              {productNames.slice(1).map((productName, index) => (
-                <div key={index}>{productName}</div>
-              ))}
-            </AccordionDetails>
-          </Accordion>
-        );
-      } else {
-        return productNames[0];
-      }
-    },
-  },
-  {
-    field: "qty",
-    headerName: "Qty",
-    type: "number",
-    width: 150,
-    renderCell: (params) => {
-      const quantities = params.value.split(",");
-      if (quantities.length > 1) {
-        return (
-          <Accordion
-            style={{ backgroundColor: "transparent", boxShadow: "none" }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header"
-            >
-              {quantities[0]}
-            </AccordionSummary>
-            <AccordionDetails
-              style={{
-                flexDirection: "column",
-                overflowY: "auto",
-                maxHeight: "150px",
-              }}
-            >
-              {quantities.slice(1).map((qty, index) => (
-                <div key={index}>{qty}</div>
-              ))}
-            </AccordionDetails>
-          </Accordion>
-        );
-      } else {
-        return quantities[0];
-      }
-    },
-  },
-  { field: "dateCreated", headerName: "Date Created", width: 180 },
-  {
-    field: "vendor",
-    headerName: "Vendor",
-    width: 250,
-    renderCell: (params) => {
-      if (params.row.status === "Awaiting goods") {
-        return (
-          <div style={{ display: "flex", alignItems: "center", color: "blue" }}>
-            <IconButton style={{ color: "blue" }}>
-              {/* Placeholder for vendor selection */}
-            </IconButton>
-          </div>
-        );
-      } else {
-        return params.value;
-      }
-    },
-  },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 150,
-    renderCell: (params) => {
-      const color = getStatusColor(params.value);
-      return (
-        <div style={{ display: "flex", alignItems: "center", color }}>
-          <div
-            style={{
-              width: "10px",
-              height: "10px",
-              borderRadius: "50%",
-              backgroundColor: color,
-              marginRight: "8px",
-            }}
-          ></div>
-          {params.value}
-        </div>
+  const handleSelect = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
       );
-    },
-  },
-];
+    }
 
-const dummyData = [
-  {
-    id: generateProductId(),
-    productName: "Laptop & Mouse",
-    qty: "4",
-    dateCreated: "2024-05-01",
-    vendor: "Vendor Name",
-    status: "Order Approved",
-  },
-  {
-    id: generateProductId(),
-    productName: "Keyboard & Mouse",
-    qty: "4",
-    dateCreated: "2024-05-03",
-    vendor: "Vendor Name",
-    status: "Cancelled",
-  },
-  {
-    id: generateProductId(),
-    productName: "Keyboard & Mouse",
-    qty: "4",
-    dateCreated: "2024-05-03",
-    vendor: "Vendor Name",
-    status: "Awaiting goods",
-  },
-];
+    setSelected(newSelected);
+  };
 
-const Orderlistview = ({ items = [], onCardClick }) => {
-  const rows = dummyData.map((item) => ({
-    id: item.id,
-    productName: item.productName,
-    qty: item.qty,
-    dateCreated: item.dateCreated,
-    vendor: item.vendor,
-    status: item.status,
-  }));
+  if (items.length === 0) {
+    return <p>No purchase orders available.</p>;
+  }
 
-  const getRowClassName = (params) => {
-    return params.index % 2 === 0 ? "evenRow" : "oddRow";
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Approved":
+        return "#2ba24c"; // Green
+      case "Pending":
+        return "#f0b501"; // Yellow
+      case "Draft":
+        return "#158fec"; //blue
+      case "Cancelled":
+      case "Rejected":
+        return "#e43e2b"; // Red
+      default:
+        return "#7a8a98"; // Gray
+    }
   };
 
   return (
-    <div style={{ height: 500, width: "100%" }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        pageSize={5}
-        checkboxSelection
-        autoHeight
-        getRowClassName={getRowClassName}
-        onRowClick={(params) => onCardClick(params.row)}
+    <TableContainer component={Paper} sx={{ boxShadow: "none", width: "100%" }}>
+      <Table
         sx={{
-          "& .MuiDataGrid-row.evenRow": {
-            backgroundColor: "#f2f2f2",
+          "&.MuiTable-root": {
+            border: "none",
           },
-          "& .MuiDataGrid-row.oddRow": {
-            backgroundColor: "#fff",
+          "& .MuiTableCell-root": {
+            border: "none",
           },
-          "& .MuiDataGrid-cell": {
-            padding: "16px",
-            display: "flex",
-            alignItems: "center",
+          "& .MuiTableCell-head": {
+            border: "none",
           },
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: "#f5f5f5",
-            fontWeight: "bold",
-          },
-          "& .MuiDataGrid-footerContainer": {
-            backgroundColor: "#f5f5f5",
-          },
-          "& .MuiDataGrid-cellContent": {
-            fontSize: "14px",
+          "& .MuiTableCell-body": {
+            border: "none",
           },
         }}
-      />
-    </div>
+      >
+        <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
+          <TableRow>
+            <TableCell padding="checkbox">
+              <Checkbox
+                color="primary"
+                indeterminate={
+                  selected.length > 0 && selected.length < items.length
+                }
+                checked={items.length > 0 && selected.length === items.length}
+                onChange={handleSelectAll}
+              />
+            </TableCell>
+            <TableCell>Purchase Order ID</TableCell>
+            <TableCell>Product Name</TableCell>
+            <TableCell>QTY</TableCell>
+            <TableCell>Date Created</TableCell>
+            <TableCell>Vendor Name</TableCell>
+            <TableCell>Status</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody style={{ fontSize: "16px" }}>
+          {items.map((item, index) => (
+            <TableRow
+              key={item.id}
+              onClick={() => onItemClick(item)}
+              sx={{
+                backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
+                "&:last-child td, &:last-child th": { border: 0 },
+              }}
+            >
+              <TableCell padding="checkbox">
+                <Checkbox
+                  color="primary"
+                  checked={selected.indexOf(item.id) !== -1}
+                  onChange={(event) => handleSelect(event, item.id)}
+                />
+              </TableCell>
+              <TableCell>{item.id}</TableCell>
+              <TableCell>
+                {item.rows.map((item, index) => item.productName)}
+              </TableCell>
+              <TableCell>{item.rows.map((item, index) => item.qty)}</TableCell>
+              <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+              <TableCell>{item.vendor}</TableCell>
+              <TableCell style={{ color: getStatusColor(item.status) }}>
+                {item.status}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

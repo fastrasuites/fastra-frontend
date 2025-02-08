@@ -1,109 +1,166 @@
-// import React, { useEffect, useState } from "react";
-// import { useLocation, useHistory } from "react-router-dom";
-// import { verifyEmail, resendVerificationEmail } from "../Reglog/EmailApi";
+import React, { useEffect, useState } from "react";
+import { useHistory, useLocation } from "react-router-dom";
+import { Alert, CircularProgress, Button, Box } from "@mui/material";
+import { verifyEmail, resendVerificationEmail } from "./EmailApi";
+import Swal from "sweetalert2";
 
-// const EmailVerification = ({ tenantName }) => {
-//   const [status, setStatus] = useState("Verifying...");
-//   const [expired, setExpired] = useState(false);
-//   const location = useLocation();
-//   const history = useHistory();
+// const MAIN_DOMAIN_URL =
+//   process.env.REACT_APP_MAIN_DOMAIN_URL || "localhost:3000";
 
-//   useEffect(() => {
-//     const verifyToken = async () => {
-//       const params = new URLSearchParams(location.search);
-//       const token = params.get("token");
+// const MAIN_DOMAIN_URL = !window.location.href.includes("app.fastrasuite.com")
+//   ? "localhost:3000"
+//   : "app.fastrasuite.com";
 
-//       if (token) {
-//         try {
-//           await verifyEmail(tenantName, token);
-//           setStatus("Email verified successfully. You can now log in.");
-//           setTimeout(() => history.push("/login"), 3000);
-//         } catch (error) {
-//           if (error.message === "Token expired") {
-//             setStatus("Token expired. Click below to resend the verification email.");
-//             setExpired(true);
-//           } else {
-//             setStatus("Email verification failed. Please try again or contact support.");
-//           }
-//         }
-//       } else {
-//         setStatus("Invalid verification link.");
-//       }
-//     };
-
-//     verifyToken();
-//   }, [location, history, tenantName]);
-
-//   const handleResendEmail = async () => {
-//     const params = new URLSearchParams(location.search);
-//     const token = params.get("token");
-
-//     try {
-//       await resendVerificationEmail(tenantName, token);
-//       setStatus("A new verification email has been sent.");
-//       setExpired(false);
-//     } catch (error) {
-//       setStatus("Failed to resend verification email. Please try again later.");
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h2>Email Verification</h2>
-//       <p>{status}</p>
-//       {expired && (
-//         <button onClick={handleResendEmail}>
-//           Resend Verification Email
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default EmailVerification;
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-
-const EmailVerifyStatus = ( { tenantName }) => {
-    const { search } = useLocation();
-    const queryParams = new URLSearchParams(search);
-    const status = queryParams.get('status');
-    const token = queryParams.get('token');
-    const [message, setMessage] = useState('');
-
-    useEffect(() => {
-        if (status) {
-            if (status === 'expired') {
-                setMessage('Your verification link has expired. Please request a new one.');
-            }
-            else {
-                setMessage(status);
-            }
-        }
-    }, [status]);
-
-    const resendVerification = async () => {
-      
-        try {
-            const response = await fetch(`https://${tenantName}.api.fastrasuite.com/resend-verification-email?token=${token}`);
-            const data = await response.json();
-            alert(data.detail || 'Verification email has been sent.');
-          
-        } catch (error) {
-            console.error('Error resending email:', error);
-            alert('An error occurred while resending the verification email.');
-        }
-    };
-
-    return (
-        <div>
-            <h1>Email Verification</h1>
-            <p>{message}</p>
-            {status === 'expired' && token && (
-                <button onClick={resendVerification}>Resend Verification Email</button>
-            )}
-        </div>
-    );
+const STATUS = {
+  VERIFYING: "verifying",
+  SUCCESS: "success",
+  EXPIRED: "expired",
+  ALREADY_VERIFIED: "already_verified",
+  INVALID: "invalid",
+  ERROR: "error",
+  NO_TOKEN: "no_token",
 };
 
-export default EmailVerifyStatus;
+const MESSAGE_MAP = {
+  [STATUS.VERIFYING]: "Verifying your email. Please wait...",
+  [STATUS.SUCCESS]:
+    "Email verified successfully! Redirecting you to login page...",
+  [STATUS.EXPIRED]:
+    "Your verification link has expired. Redirecting to resend verification page...",
+  [STATUS.ALREADY_VERIFIED]:
+    "Your email is already verified. Redirecting you to login page...",
+  [STATUS.INVALID]:
+    "Invalid verification link. Redirecting to resend verification page...",
+  [STATUS.ERROR]:
+    "An error occurred during verification. Please try again later.",
+  [STATUS.NO_TOKEN]:
+    "No verification token provided. Please check your email link.",
+};
+
+const SEVERITY_MAP = {
+  [STATUS.SUCCESS]: "success",
+  [STATUS.EXPIRED]: "warning",
+  [STATUS.ALREADY_VERIFIED]: "info",
+  [STATUS.INVALID]: "error",
+  [STATUS.ERROR]: "error",
+  [STATUS.NO_TOKEN]: "error",
+  [STATUS.VERIFYING]: "info",
+};
+
+function EmailVerification() {
+  const location = useLocation();
+  const history = useHistory();
+  const [status, setStatus] = useState(STATUS.VERIFYING);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    const verifyToken = async () => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token");
+      const tenant = params.get("tenant");
+
+      if (!token) {
+        setStatus(STATUS.NO_TOKEN);
+        return;
+      }
+
+      if (!tenant) {
+        setStatus(STATUS.INVALID);
+        return;
+      }
+
+      try {
+        await verifyEmail(tenant, token);
+        setStatus(STATUS.SUCCESS);
+        setTimeout(() => history.push("/login"), 3000);
+      } catch (error) {
+        console.error("Email verification error:", error);
+        const errorStatus = (
+          error?.response?.data?.status ||
+          error?.status ||
+          ""
+        ).toLowerCase();
+
+        switch (errorStatus) {
+          case STATUS.EXPIRED:
+            setStatus(STATUS.EXPIRED);
+            setTimeout(() => history.push("/resend-email-verification"), 3000);
+            break;
+          case STATUS.ALREADY_VERIFIED:
+            setStatus(STATUS.ALREADY_VERIFIED);
+            setTimeout(() => history.push("/login"), 3000);
+            break;
+          case STATUS.INVALID:
+            setStatus(STATUS.INVALID);
+            setTimeout(() => history.push("/resend-email-verification"), 3000);
+            break;
+          default:
+            setStatus(STATUS.ERROR);
+        }
+      }
+    };
+
+    verifyToken();
+  }, [location.search, history]);
+
+  const handleResendVerification = async () => {
+    const params = new URLSearchParams(location.search);
+    const tenant = params.get("tenant");
+
+    if (!tenant) {
+      Swal.fire("Error", "Tenant information is missing.", "error");
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      await resendVerificationEmail(tenant);
+      Swal.fire(
+        "Email Resent",
+        "A new verification email has been sent. Please check your inbox.",
+        "success"
+      );
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        "Failed to resend verification email. Please try again later.",
+        "error"
+      );
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        height: "100vh",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        bgcolor: "transparent",
+        padding: 2,
+      }}
+    >
+      <Alert severity={SEVERITY_MAP[status]} aria-live="polite">
+        {MESSAGE_MAP[status]}
+      </Alert>
+      {status === STATUS.VERIFYING && <CircularProgress sx={{ mt: 2 }} />}
+      {status === STATUS.ERROR && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleResendVerification}
+          disabled={isResending}
+          sx={{ mt: 2 }}
+        >
+          {isResending ? "Sending..." : "Resend Verification"}
+        </Button>
+      )}
+    </Box>
+  );
+}
+
+export default EmailVerification;

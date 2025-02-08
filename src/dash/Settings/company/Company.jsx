@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// import "./company.css";
 import { BsCaretLeftFill } from "react-icons/bs";
 import { BsCaretRightFill } from "react-icons/bs";
 import { FaBars } from "react-icons/fa";
@@ -175,6 +174,6 @@ export default function Company() {
           </div>
         )}
       </div>
-    </div>
+     </div>
   );
 }

@@ -43,11 +43,11 @@ const ListView = ({ companies, onItemClick }) => {
   };
 
   if (companies.length === 0) {
-    return <p style={{margin: "10px"}}>No companies available. Please add some companies.</p>;
+    return <p style={{margin: "21px"}}>No companies available. Please add some companies.</p>;
   }
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
+    <TableContainer component={Paper} sx={{ boxShadow: "none" }} >
       <Table
         sx={{
           "&.MuiTable-root": {

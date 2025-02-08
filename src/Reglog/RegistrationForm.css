@@ -163,6 +163,7 @@
   border-radius: 4px;
   margin-bottom: 16px;
   font-size: 14px;
+  font-weight: 300;
 }
 
 .confirmation-container {
@@ -250,4 +251,12 @@
   .form-title {
     font-size: 16px;
   }
+}
+.go-back-link {
+  cursor: pointer;
+  /* text-decoration: underline; */
+  background-color: #3b7ced;
+  padding: 5px 10px;
+  color: #fff;
+  border-radius: 8px;
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { usePurchase } from "../../../context/PurchaseContext";
 import "./prod.css";
 import SearchIcon from "../../../image/search.svg";
 import {
@@ -14,7 +15,7 @@ import ProdListview from "./ProdListview";
 import ProductDetails from "./ProductDetails";
 import { useLocation } from "react-router-dom";
 import CloudDownload from "../../../image/cloud-download.svg";
-import ExcelFile from "../../../ExcelFile.xlsx";
+import ExcelFile from "../../../productExcelFile.xlsx";
 import {
   Grid,
   IconButton,
@@ -23,20 +24,26 @@ import {
   InputBase,
   Button,
 } from "@mui/material";
+import UploadMedia from "../../../components/UploadMedia";
+import PurchaseHeader from "../PurchaseHeader";
 
 export default function Prod() {
   const [showNewProd, setShowNewProd] = useState(false);
-  const [products, setProducts] = useState([]);
+  // const [products, setProducts] = useState([]);
+  const { products } = usePurchase();
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [openLeft, setOpenLeft] = useState(false);
   const [openRight, setOpenRight] = useState(false);
+  const [showUploadMedia, setShowUploadMedia] = useState(false);
   const location = useLocation();
 
   const toggleLeftDrawer = (open) => () => setOpenLeft(open);
   const toggleRightDrawer = (open) => () => setOpenRight(open);
+
+  console.log("Product list", products);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -47,17 +54,17 @@ export default function Prod() {
     return () => clearTimeout(timer);
   }, [location.state?.openForm]);
 
-  useEffect(() => {
-    const savedProducts = localStorage.getItem("products");
-    if (savedProducts) {
-      const parsedProducts = JSON.parse(savedProducts);
-      setProducts(parsedProducts);
-      setFilteredProducts(parsedProducts);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedProducts = localStorage.getItem("products");
+  //   if (savedProducts) {
+  //     const parsedProducts = JSON.parse(savedProducts);
+  //     setProducts(parsedProducts);
+  //     setFilteredProducts(parsedProducts);
+  //   }
+  // }, []);
   useEffect(() => {
     setFilteredProducts(products);
-    localStorage.setItem("products", JSON.stringify(products));
+    // localStorage.setItem("products", JSON.stringify(products));
   }, [products]);
 
   const handleNewProduct = () => {
@@ -67,12 +74,17 @@ export default function Prod() {
   const handleCloseNewProd = () => {
     setShowNewProd(false);
   };
+  const handleCloseUploadMedia = () => {
+    setShowUploadMedia(false);
+  };
 
   const handleSaveAndSubmit = (formData) => {
-    const updatedProducts = [...products, formData];
-    setProducts(updatedProducts);
-    setFilteredProducts(updatedProducts);
-    localStorage.setItem("products", JSON.stringify(updatedProducts));
+    // Handle product save logic if needed
+
+    // const updatedProducts = [...products, formData];
+    // setProducts(updatedProducts);
+    // setFilteredProducts(updatedProducts);
+    // localStorage.setItem("products", JSON.stringify(updatedProducts));
     setShowNewProd(false);
   };
 
@@ -110,17 +122,20 @@ export default function Prod() {
   };
 
   const handleSaveProductDetails = (updatedProduct) => {
-    const updatedProducts = products.map((product) =>
-      product.id === updatedProduct.id ? updatedProduct : product
-    );
-    setProducts(updatedProducts);
-    setFilteredProducts(updatedProducts);
-    localStorage.setItem("products", JSON.stringify(updatedProducts));
+    // Handle product update logic if needed
+
+    // const updatedProducts = products.map((product) =>
+    //   product.id === updatedProduct.id ? updatedProduct : product
+    // );
+    // setProducts(updatedProducts);
+    // setFilteredProducts(updatedProducts);
+    // localStorage.setItem("products", JSON.stringify(updatedProducts));
     setSelectedProduct(updatedProduct);
   };
 
   return (
     <div className="pro" id="prod">
+      <PurchaseHeader />
       <div className="pro1">
         <div className="pro2">
           {/* New responsive secondary header for product */}
@@ -182,19 +197,16 @@ export default function Prod() {
                 />
               </Box>
 
-              <a
-                href={ExcelFile}
-                download={ExcelFile}
+              <IconButton
                 style={{ marginLeft: "24px" }}
+                onClick={() => setShowUploadMedia(true)}
               >
-                <IconButton>
-                  <img
-                    src={CloudDownload}
-                    alt="Download Excel"
-                    style={{ height: "32px" }}
-                  />
-                </IconButton>
-              </a>
+                <img
+                  src={CloudDownload}
+                  alt="Download Excel"
+                  style={{ height: "32px" }}
+                />
+              </IconButton>
             </Grid>
 
             {/* Icon for Right Drawer */}
@@ -334,19 +346,22 @@ export default function Prod() {
                   />
                 </Box>
 
-                <a
+                {/* <a
                   href={ExcelFile}
                   download={ExcelFile}
+                  
+                > */}
+                <IconButton
                   style={{ marginTop: "10px", display: "block" }}
+                  onClick={() => setShowUploadMedia(true)}
                 >
-                  <IconButton>
-                    <img
-                      src={CloudDownload}
-                      alt="Download Excel"
-                      style={{ height: "20px" }}
-                    />
-                  </IconButton>
-                </a>
+                  <img
+                    src={CloudDownload}
+                    alt="Download Excel"
+                    style={{ height: "20px" }}
+                  />
+                </IconButton>
+                {/* </a> */}
               </Box>
             </Drawer>
 
@@ -461,6 +476,16 @@ export default function Prod() {
             onClose={handleCloseNewProd}
             onSaveAndSubmit={handleSaveAndSubmit}
             fromPurchaseModuleWizard={location.state?.openForm}
+          />
+        </div>
+      )}
+      {/* RENDER UPLOAD PRODUCT FILE FORM CONDITIONALLY */}
+      {showUploadMedia && (
+        <div className="overlay">
+          <UploadMedia
+            onClose={handleCloseUploadMedia}
+            endpoint="/products/upload_excel/"
+            excelFile={ExcelFile}
           />
         </div>
       )}

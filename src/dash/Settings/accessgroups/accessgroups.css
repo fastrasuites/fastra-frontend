@@ -84,7 +84,7 @@ input {
     cursor: pointer;
   }
   .active {
-    border: 2px solid #4393e4;
+    /* border: 2px solid #4393e4; */
     color: #4393e4;
     margin-left: -20px;
   }

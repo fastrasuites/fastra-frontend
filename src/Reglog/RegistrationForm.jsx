@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Formik, Form, Field } from "formik";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 import "./RegistrationForm.css";
 
 export default function RegistrationForm() {
@@ -13,49 +13,68 @@ export default function RegistrationForm() {
     confirmPassword: "",
   });
   const [apiError, setApiError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleNextStep = (newData, final = false) => {
-    setFormData((prev) => ({ ...prev, ...newData })); // Update state with new data
-
+    setFormData((prev) => ({ ...prev, ...newData }));
     if (final) {
-      makeRequest({ ...formData, ...newData }); // Send complete data on final step
+      makeRequest({ ...formData, ...newData });
     } else {
       setCurrentStep((prev) => prev + 1);
     }
   };
 
+  const handlePreviousStep = () => {
+    setCurrentStep((prev) => (prev > 0 ? prev - 1 : prev));
+  };
+
   const makeRequest = async (finalData) => {
     const registrationData = {
-      schema_name: finalData.companyName.toLowerCase().replace(/\s+/g, "-"),
       company_name: finalData.companyName,
       user: {
         password1: finalData.password,
         password2: finalData.confirmPassword,
         email: finalData.companyEmail,
       },
-      frontend_url: window.location.origin,
     };
+
+    setIsLoading(true);
 
     try {
       const response = await axios.post(
-        // "https://fastrav1-production.up.railway.app/register/",
-        "https://fastrasuite.com/api/register/",
+        "https://www.fastrasuiteapi.com.ng/register/",
         registrationData
       );
       console.log("Registration response:", response.data);
+      localStorage.setItem(
+        "registrationData",
+        JSON.stringify(registrationData)
+      );
       setCurrentStep(2);
     } catch (error) {
       console.error("Registration error:", error.response?.data);
       setApiError(
         error.response?.data || { message: "An unexpected error occurred" }
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const steps = [
-    <CompanyDetails next={handleNextStep} />,
-    <PasswordSetup next={handleNextStep} apiError={apiError} />,
-    <ConfirmationStep companyEmail={formData.companyEmail} />,
+    <CompanyDetails next={handleNextStep} formData={formData} />,
+    <PasswordSetup
+      next={handleNextStep}
+      previous={handlePreviousStep}
+      apiError={apiError}
+      isLoading={isLoading}
+      formData={formData}
+      showBackButton={!!formData.companyName && !!formData.companyEmail}
+    />,
+    <ConfirmationStep
+      companyEmail={formData.companyEmail}
+      isLoading={isLoading}
+    />,
   ];
 
   return (
@@ -65,7 +84,7 @@ export default function RegistrationForm() {
   );
 }
 
-const CompanyDetails = ({ next }) => {
+const CompanyDetails = ({ next, formData }) => {
   const validateForm = (values) => {
     const errors = {};
     if (!values.companyName) errors.companyName = "Company Name is required";
@@ -81,17 +100,18 @@ const CompanyDetails = ({ next }) => {
 
   return (
     <Formik
-      initialValues={{ companyName: "", companyEmail: "" }}
+      initialValues={{
+        companyName: formData.companyName || "",
+        companyEmail: formData.companyEmail || "",
+      }}
       onSubmit={(values) => next(values)}
       validate={validateForm}
     >
       {({ errors, touched }) => (
         <Form className="reg-form">
           <div className="f-group">
-            <div className="">
-              <h2 className="form-title">Register</h2>
-              <p className="form-subtitle">Enter your details to register</p>
-            </div>
+            <h2 className="form-title">Register</h2>
+            <p className="form-subtitle">Enter your details to register</p>
 
             <div className="sub-group">
               <div>
@@ -151,7 +171,14 @@ const CompanyDetails = ({ next }) => {
   );
 };
 
-const PasswordSetup = ({ next, apiError }) => {
+const PasswordSetup = ({
+  next,
+  previous,
+  apiError,
+  isLoading,
+  formData,
+  showBackButton,
+}) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -170,19 +197,35 @@ const PasswordSetup = ({ next, apiError }) => {
 
   return (
     <Formik
-      initialValues={{ password: "", confirmPassword: "" }}
+      initialValues={{
+        password: formData.password || "",
+        confirmPassword: formData.confirmPassword || "",
+      }}
       onSubmit={(values) => next(values, true)}
       validate={validateForm}
     >
       {({ errors, touched, values }) => (
         <Form className="reg-form">
+          {/* {showBackButton && (
+            <div className="back-button-container">
+              <p className="go-back-link" onClick={previous}>
+                <FaArrowLeft /> Go Back
+              </p>
+            </div>
+          )} */}
           <h2 className="form-title">Password</h2>
           <p className="form-subtitle">Create a password for your account</p>
 
           {apiError && (
             <div className="api-error-message">
               {Object.entries(apiError).map(([key, value]) => (
-                <p key={key}>{`${key}: ${value}`}</p>
+                <p key={key}>
+                  {`${key}: ${value}`} -{" "}
+                  <span className="go-back-link" onClick={previous}>
+                    {/* <FaArrowLeft />  */}
+                    Go Back
+                  </span>
+                </p>
               ))}
             </div>
           )}
@@ -230,7 +273,7 @@ const PasswordSetup = ({ next, apiError }) => {
           </ul>
 
           <label className="form-label">Confirm Password</label>
-          <div className="password-input-container">
+           <div className="password-input-container">
             <Field
               className={`form-input ${
                 touched.confirmPassword && errors.confirmPassword
@@ -246,8 +289,8 @@ const PasswordSetup = ({ next, apiError }) => {
             <div className="error-message">{errors.confirmPassword}</div>
           )}
 
-          <button className="submit-button" type="submit">
-            Continue
+          <button className="submit-button" type="submit" disabled={isLoading}>
+            {isLoading ? "Processing..." : "Submit"}
           </button>
         </Form>
       )}
@@ -255,19 +298,15 @@ const PasswordSetup = ({ next, apiError }) => {
   );
 };
 
-const ConfirmationStep = ({ companyEmail }) => {
-  console.log("checkig that companyEmail props got here? ", companyEmail);
-  // Function to detect email provider and open the respective email login page
+const ConfirmationStep = ({ companyEmail, isLoading }) => {
   const handleOpenEmailClient = () => {
     if (!companyEmail) {
       alert("No email found. Please check your registration.");
       return;
     }
 
-    // Extract the domain from the email address
     const emailDomain = companyEmail.split("@")[1];
 
-    // Mapping common email providers to their login pages
     const emailProviders = {
       "gmail.com": "https://mail.google.com",
       "yahoo.com": "https://mail.yahoo.com",
@@ -287,9 +326,7 @@ const ConfirmationStep = ({ companyEmail }) => {
       "rediffmail.com": "https://mail.rediff.com",
     };
 
-    // Check if the email domain is recognized, then open the login page
     if (emailProviders[emailDomain]) {
-      console.log(emailProviders[emailDomain]);
       window.open(emailProviders[emailDomain], "_blank");
     } else {
       alert(
@@ -297,7 +334,6 @@ const ConfirmationStep = ({ companyEmail }) => {
       );
     }
   };
-
   return (
     <div className="confirmation-container">
       <h2 className="confirmation-title">Confirmation</h2>
@@ -306,7 +342,7 @@ const ConfirmationStep = ({ companyEmail }) => {
         to open your email client and retrieve the token.
       </p>
       <button className="confirmation-button" onClick={handleOpenEmailClient}>
-        Continue
+        {isLoading ? "Processing..." : "Continue"}
       </button>
     </div>
   );

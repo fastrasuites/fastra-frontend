@@ -12,6 +12,7 @@ import autosave from "../../../image/autosave.svg";
 import "./Newpr.css";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
+import PurchaseHeader from "../PurchaseHeader";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -142,13 +143,24 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
 
     onSaveAndSubmit(formDataWithStringDate);
   };
-
+  /*
+{
+  "department": "<uri>",
+  "suggested_vendor": "<uri>",
+  "status": "draft",
+  "purpose": "<string>",
+  "is_hidden": "<boolean>",
+  "date_created": -44489739.02090701,
+  "date_updated": false
+}
+*/
   const addRow = () => {
     setRows([
       ...rows,
       {
         productName: "",
         description: "",
+        unt: "",
         qty: "",
         unitPrice: "",
         totalPrice: "",
@@ -167,7 +179,18 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
       setPage(page - 1);
     }
   };
+  const [products, setProducts] = useState([]);
 
+  useEffect(() => {
+    const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
+    setProducts(savedProducts);
+  }, []);
+
+  const calculateTotalPrice = (product) => {
+    const pricePerUnit = parseFloat(product.sp.replace("₦", "")) || 0;
+    const totalQuantity = parseInt(product.availableProductQty) || 0;
+    return `₦${(pricePerUnit * totalQuantity).toFixed(2)}`;
+  };
   const currentRows = rows.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const pageCount = Math.ceil(rows.length / rowsPerPage);
 
@@ -191,267 +214,295 @@ export default function Newpr({ onClose, onSaveAndSubmit, vendors }) {
       .toFixed(2);
   };
 
+  // Load saved currencies from localStorage
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const [savedCurrencies, setSavedCurrencies] = useState([]);
+
+  useEffect(() => {
+    // Fetch currencies from localStorage
+    const currencies =
+      JSON.parse(localStorage.getItem("savedCurrencies")) || [];
+    if (currencies.length === 0) {
+      console.warn("No currencies found in localStorage.");
+    }
+    setSavedCurrencies(currencies);
+  }, []); // Only run this effect once, on component mount
+
+  const handleCurrencyChange = (event, newValue) => {
+    setSelectedCurrency(newValue);
+    // Assuming you have a form state to update
+    setFormState((prev) => ({
+      ...prev,
+      currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
+    }));
+
+    // Log the selected currency
+    if (newValue) {
+      console.log("Selected Currency:", newValue);
+    }
+  };
+
   return (
-    <div id="npr" className={`npr ${showForm ? "fade-in" : "fade-out"}`}>
-      <div className="npr1">
-        <div className="npr2">
-          <div className="npr2a">
-            <p className="nprhed">New Purchase Request</p>
-            <div className="nprauto">
-              <p>Autosaved</p>
-              <img src={autosave} alt="Autosaved" />
+    <div className="npr-contain">
+      <PurchaseHeader />
+      <div id="npr" className={`npr ${showForm ? "fade-in" : "fade-out"}`}>
+        <div className="npr1">
+          <div className="npr2">
+            <div className="npr2a">
+              <p className="nprhed">New Purchase Request</p>
+              <div className="nprauto">
+                <p>Autosaved</p>
+                <img src={autosave} alt="Autosaved" />
+              </div>
+            </div>
+            <div className="npr2b">
+              <p className="nprbpg">
+                {page + 1}-{pageCount} of {pageCount}
+              </p>
+              <div className="nprbnav">
+                <FaCaretLeft className="nr" onClick={handlePreviousPage} />
+                <div className="sep"></div>
+                <FaCaretRight className="nr" onClick={handleNextPage} />
+              </div>
             </div>
           </div>
-          <div className="npr2b">
-            <p className="nprbpg">
-              {page + 1}-{pageCount} of {pageCount}
-            </p>
-            <div className="nprbnav">
-              <FaCaretLeft className="nr" onClick={handlePreviousPage} />
-              <div className="sep"></div>
-              <FaCaretRight className="nr" onClick={handleNextPage} />
-            </div>
-          </div>
-        </div>
-        <div className="npr3">
-          <form className="nprform" onSubmit={handleSubmit}>
-            <div className="npr3a">
-              <p style={{ fontSize: "20px" }}>Basic Information</p>
-              <button
-                type="button"
-                className="npr3but"
-                onClick={onClose}
-                style={{ marginTop: "1rem" }}
-              >
-                Cancel
-              </button>
-            </div>
-
-            <div className="npr3b">
-              <div className="npr3ba">
-                <p>ID</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formState.id}
-                </p>
-              </div>
-              <div className="npr3bc">
-                <p>Date</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`}
-                </p>
-              </div>
-              <div className="npr3bc">
-                <p>Requester</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formState.requester}
-                </p>
-              </div>
-              <div className="npr3bb">
-                <p>Department</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formState.department}
-                </p>
-              </div>
-            </div>
-            <div className="npr3c">
-              <div className="npr3ca">
-                <label>Purpose</label>
-                <input
-                  type="text"
-                  name="purpose"
-                  placeholder="Enter a purpose"
-                  className="npr3cb"
-                  onChange={(e) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      purpose: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="npr3ca">
-                <label>Suggested Vendors</label>
-                <Autocomplete
-  value={selectedVendor}
-  onChange={handleVendorSelect}
-  inputValue={vendorInputValue}
-  onInputChange={(event, newInputValue) => {
-    setVendorInputValue(newInputValue);
-  }}
-  id="vendor-autocomplete"
-  options={savedVendors}
-  getOptionLabel={(option) => option.vendorName}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Select vendor"
-      style={{
-        width: "95%",
-        marginTop: "0.1rem",
-        cursor: "pointer",
-        outline: "none",  // Remove default outline
-        border: "2px solid #e2e6e9",
-        borderRadius: "4px",
-        // padding: "15px",
-        marginBottom: "1rem",
-      }}
-      InputProps={{
-        ...params.InputProps,
-        style: {
-          outline: "none",  // Remove default outline
-        },
-      }}
-    />
-  )}
-/>
-
-              </div>
-              <button type="button" className="npr3but" onClick={addRow}>
-                Add Row
-              </button>
-            </div>
-            <div className="npr3d">
-              <TableContainer
-                component={Paper}
-                sx={{
-                  boxShadow: "none",
-                  border: "1px solid #e2e6e9",
-                  marginTop: "1rem",
-                }}
-              >
-                <Table
-                  sx={{
-                    minWidth: 700,
-                    "&.MuiTable-root": {
-                      border: "none",
-                    },
-                    "& .MuiTableCell-root": {
-                      border: "none",
-                    },
-                    "& .MuiTableCell-head": {
-                      border: "none",
-                    },
-                    "& .MuiTableCell-body": {
-                      border: "none",
-                    },
-                  }}
-                  aria-label="customized table"
+          <div className="npr3">
+            <form className="nprform" onSubmit={handleSubmit}>
+              <div className="npr3a">
+                <p style={{ fontSize: "20px" }}>Basic Information</p>
+                <button
+                  type="button"
+                  className="npr3but"
+                  onClick={onClose}
+                  style={{ marginTop: "1rem" }}
                 >
-                  <TableHead>
-                    <TableRow>
-                      <StyledTableCell>Product Name</StyledTableCell>
-                      <StyledTableCell>Description</StyledTableCell>
-                      <StyledTableCell align="right">Qty</StyledTableCell>
-                      <StyledTableCell align="right">
-                        Estimated Unit Price
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        Total Price
-                      </StyledTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {currentRows.map((row, index) => (
-                      <StyledTableRow key={index + page * rowsPerPage}>
-                        <StyledTableCell component="th" scope="row">
-                          <input
-                            type="text"
-                            placeholder="Enter a product name"
-                            name="productName"
-                            value={row.productName}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "productName",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </StyledTableCell>
-                        <StyledTableCell>
-                          <input
-                            type="text"
-                            placeholder="Enter a description"
-                            name="description"
-                            value={row.description}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                          />
+                  Cancel
+                </button>
+              </div>
+              <br />
+              <div className="npr3b">
+                <div className="npr3ba">
+                  <p>ID</p>
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {formState.id}
+                  </p>
+                </div>
+                <div className="npr3bc">
+                  <p>Date</p>
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {`${formatDate(formState.date)} - ${formatTime(
+                      formState.date
+                    )}`}
+                  </p>
+                </div>
+                <div className="npr3bc">
+                  <p>Requester</p>
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {formState.requester}
+                  </p>
+                </div>
+                <div className="npr3bb">
+                  <p>Department</p>
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {formState.department}
+                  </p>
+                </div>
+              </div>{" "}
+              <br />
+              <br />
+              <div className="npr3c">
+                <div className="npr3ca">
+                  <p>Select Currency</p>
+                  <Autocomplete
+                    value={selectedCurrency}
+                    onChange={handleCurrencyChange}
+                    options={savedCurrencies} // Populate options from localStorage
+                    getOptionLabel={(option) =>
+                      `${option.name} - ${option.symbol}`
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Select Currency"
+                        className="newpod3cb"
+                      />
+                    )}
+                  />
+                </div>
+                <div className="npr3ca">
+                  <label>Purpose</label>
+                  <input
+                    type="text"
+                    name="purpose"
+                    placeholder="Enter a purpose"
+                    className="npr3cb"
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        purpose: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="npr3ca">
+                  <label>Suggested Vendors</label>
+                  <Autocomplete
+                    value={selectedVendor}
+                    onChange={handleVendorSelect}
+                    inputValue={vendorInputValue}
+                    onInputChange={(event, newInputValue) => {
+                      setVendorInputValue(newInputValue);
+                    }}
+                    id="vendor-autocomplete"
+                    options={savedVendors}
+                    getOptionLabel={(option) => option.vendorName}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Select vendor"
+                        style={{
+                          width: "95%",
+                          marginTop: "0.1rem",
+                          cursor: "pointer",
+                          outline: "none", // Remove default outline
+                          border: "2px solid #e2e6e9",
+                          borderRadius: "4px",
+                          // padding: "15px",
+                          marginBottom: "1rem",
+                        }}
+                        InputProps={{
+                          ...params.InputProps,
+                          style: {
+                            outline: "none", // Remove default outline
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+                <button type="button" className="npr3but" onClick={addRow}>
+                  Add Row
+                </button>
+              </div>{" "}
+              <br />
+              {/* product line */}
+              <div className="npr3d">
+                <TableContainer
+                  component={Paper}
+                  sx={{
+                    boxShadow: "none",
+                    border: "1px solid #e2e6e9",
+                    marginTop: "1rem",
+                  }}
+                >
+                  <Table
+                    sx={{
+                      minWidth: 700,
+                      "&.MuiTable-root": {
+                        border: "none",
+                      },
+                      "& .MuiTableCell-root": {
+                        border: "none",
+                      },
+                      "& .MuiTableCell-head": {
+                        border: "none",
+                      },
+                      "& .MuiTableCell-body": {
+                        border: "none",
+                      },
+                    }}
+                    aria-label="customized table"
+                  >
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell>Product Name</StyledTableCell>
+                        <StyledTableCell>Description</StyledTableCell>
+                        <StyledTableCell align="right">Qty</StyledTableCell>
+                        <StyledTableCell align="right">
+                          Unit Measurement
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            name="qty"
-                            className="no-arrows"
-                            style={{ textAlign: "right" }}
-                            value={row.qty}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "qty",
-                                e.target.value
-                              )
-                            }
-                          />
+                          Estimated Unit Price
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            name="unitPrice"
-                            className="no-arrows"
-                            style={{ textAlign: "right" }}
-                            value={row.unitPrice}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "unitPrice",
-                                e.target.value
-                              )
-                            }
-                          />
+                          Total Price
+                        </StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {products.map((product, index) => (
+                        <StyledTableRow key={index + page * rowsPerPage}>
+                          <StyledTableCell component="th" scope="row">
+                            {product.name}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {product.productDesc}
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            <input
+                              type="number"
+                              placeholder="0.00"
+                              name="qty"
+                              className="no-arrows"
+                              style={{ textAlign: "right" }}
+                              value={product.qty}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index + page * rowsPerPage,
+                                  "qty",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            {product.unt}
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            <input
+                              type="number"
+                              placeholder="0.00"
+                              name="unitPrice"
+                              className="no-arrows"
+                              style={{ textAlign: "right" }}
+                              value={product.unitPrice}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index + page * rowsPerPage,
+                                  "unitPrice",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            {calculateTotalAmount()}
+                          </StyledTableCell>
+                        </StyledTableRow>
+                      ))}
+                      <StyledTableRow>
+                        <StyledTableCell colSpan={5} align="right">
+                          <b> Total Amount</b>
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="000,000"
-                            name="totalPrice"
-                            style={{ textAlign: "right" }}
-                            value={row.totalPrice}
-                            readOnly
-                          />
+                          {calculateTotalAmount()}
                         </StyledTableCell>
                       </StyledTableRow>
-                    ))}
-                    <StyledTableRow>
-                      <StyledTableCell colSpan={4} align="right">
-                        Total Amount
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {calculateTotalAmount()}
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </div>
-            <div className="npr3e">
-              <button type="button" className="npr3btn" onClick={handleSave}>
-                Save
-              </button>
-              <button type="submit" className="npr3btn">
-                Save & Submit
-              </button>
-            </div>
-          </form>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
+              <div className="npr3e">
+                <button type="button" className="npr3btn" onClick={handleSave}>
+                  Save
+                </button>
+                <button type="submit" className="npr3btn">
+                  Save & Submit
+                </button>
+              </div>
+            </form>
+            <br />
+          </div>
         </div>
       </div>
     </div>

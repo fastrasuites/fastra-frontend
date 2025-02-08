@@ -1,23 +1,19 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Switch,
-  useLocation,
-} from "react-router-dom";
+import { useTenant } from "./context/TenantContext";
+import { Switch, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 import Register from "./Reglog/Register";
 import EmailVerification from "./Reglog/EmailVerification";
 import Login from "./Reglog/Login";
 import ForgetPassword from "./Reglog/ForgetPassword";
 import Dashboard from "./dash/Dashboard";
-import GlobalStyle from "./GlobalStyle";
+// import GlobalStyle from "./GlobalStyle";
 import Contact from "./dash/Contact";
 import Settings from "./dash/Settings/Setting";
-import Sethead from "./dash/Settings/Sethead";
+// import Sethead from "./dash/Settings/Sethead";
 import Apk from "./dash/App/Apk";
-import Company from "./dash/Settings/company/Company";
 import User from "./dash/Settings/user/User";
-import Purchead from "./dash/PurchaseModule/Purchead";
+// import Purchead from "./dash/PurchaseModule/Purchead";
 import Purchase from "./dash/PurchaseModule/Purchase";
 import Newpr from "./dash/PurchaseModule/PurchRequest/Newpr";
 import Papr from "./dash/PurchaseModule/PurchRequest/Papr";
@@ -39,98 +35,99 @@ import Newprod from "../src/dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
 import AccessGroups from "./dash/Settings/accessgroups/AccessGroups";
-import EmailVerifyStatus from "./Reglog/EmailVerification";
-
+import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
+import NewCompany from "./dash/Settings/company/NewCompanyForm";
+import ResendEmailVerification from "./Reglog/ResendEmailVerification";
+import NoHeaderLayout from "./notFound/NoHeaderLayout";
+import NotFound from "./notFound/NotFound";
+import Inventory from "./dash/Inventory/Inventory";
+import Location from "./dash/Inventory/Location/Location";
+import LocationForm from "./dash/Inventory/Location/LocationForm";
+import LocationConfiguration from "./dash/Inventory/LocationConfiguration/LocationConfig";
+import StockAdjustment from "./dash/Inventory/stock/StockAdjustment";
+import NewStockAdjustment from "./dash/Inventory/stock/NewStockAdjustment";
+import Scrap from "./dash/Inventory/scrap/Scrap";
+import NewScrap from "./dash/Inventory/scrap/NewScrap";
+import StockMoves from "./dash/Inventory/StockMoves/StockMoves";
 
 function App() {
-  const location = useLocation();
-  const noHeaderRoutes = [
-    "/",
-    "/login",
-    "/dashboard",
-    "/fogpas",
-    "/contact",
-    "/settings",
-    "/company",
-    "/apk",
-    "/user",
-  ];
-  const noHeadRoutes = [
-    "/",
-    "/login",
-    "/dashboard",
-    "/fogpas",
-    "/contact",
-    "/purchase",
-    "/npr",
-    "/papr",
-    "/crfq",
-    "/rfq",
-    "/newrfq",
-    "/rapr",
-    "/pod",
-    "/newPurchaseOrder",
-    "/orapr",
-    "/vend",
-    "/vendetails",
-    "/Newvendor",
-    "/varcat",
-    "/edit",
-    "/prod",
-    "/prodetails",
-    "/Newprod",
-    "/procat",
-    "/pedit",
-  ];
+  // const { tenant_company_name } = useTenant().tenantData;
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
-      {!noHeaderRoutes.includes(location.pathname) && <Purchead />}
-      {!noHeadRoutes.includes(location.pathname) && <Sethead />}
-      <GlobalStyle />
       <Switch>
+        {/* Global (non-tenant-specific) routes */}
         <Route exact path="/" component={Register} />
-        {/* <Route path="/verify-email" component={EmailVerification} /> */}
-        <Route path="/email-verify-status" component={EmailVerifyStatus} />
         <Route path="/login" component={Login} />
-        <Route path="/forgot-password" component={ForgetPassword} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/settings" component={Settings} />
-        <Route path="/apk" component={Apk} />
-        <Route path="/company" component={Company} />
-        <Route path="/user" component={User} />
-        <Route path="/purchase" component={Purchase} />
-        <Route path="/npr" component={Newpr} />
-        <Route path="/papr" component={Papr} />
-        <Route path="/crfq" component={CRfq} />
-        <Route path="/rfq" component={Rfq} />
-        <Route path="/newrfq" component={Rform} />
-        <Route path="/rapr" component={Rapr} />
-        <Route path="/pod" component={PurchaseOrder} />
-        <Route path="/newPurchaseOrder" component={POrderform} />
-        <Route path="/orapr" component={Orapr} />
-        <Route path="/vend" component={Vend} />
-        <Route path="/vendetails" component={VendorDetails} />
-        <Route path="/Newvendor" component={Newvendor} />
-        <Route path="/varcat" component={Varcat} />
-        <Route path="/edit" component={Edit} />
-        <Route path="/prod" component={Prod} />
-        <Route path="/prodetails" component={ProductDetails} />
-        <Route path="/Newprod" component={Newprod} />
-        <Route path="/procat" component={Procat} />
-        <Route path="/pedit" component={Pedit} />
-        <Route path="/accessgroups" component={AccessGroups } />
+        <Route path="/forget-password" component={ForgetPassword} />
+        <Route path="/verify-email" component={EmailVerification} />
+        <Route
+          path="/resend-email-verification"
+          component={ResendEmailVerification}
+        />
+
+        {/* Tenant-aware routes */}
+        <ProtectedRoute path="/dashboard" component={Dashboard} />
+        <ProtectedRoute path="/contact" component={Contact} />
+        <ProtectedRoute path="/settings" component={Settings} />
+        <ProtectedRoute path="/apk" component={Apk} />
+        <ProtectedRoute path="/company" component={NewCompany} />
+        <ProtectedRoute path="/user" component={User} />
+        <ProtectedRoute path="/accessgroups" component={AccessGroups} />
+        <ProtectedRoute path="/purchase" component={Purchase} />
+        <ProtectedRoute path="/npr" component={Newpr} />
+        <ProtectedRoute path="/papr" component={Papr} />
+        <ProtectedRoute path="/crfq" component={CRfq} />
+        <ProtectedRoute path="/rfq" component={Rfq} />
+        <ProtectedRoute path="/newrfq" component={Rform} />
+        <ProtectedRoute path="/rapr" component={Rapr} />
+        <ProtectedRoute path="/purchase-order" component={PurchaseOrder} />
+        <ProtectedRoute path="/newPurchaseOrder" component={POrderform} />
+        <ProtectedRoute path="/orapr" component={Orapr} />
+        <ProtectedRoute path="/vendor" component={Vend} />
+        <ProtectedRoute path="/vendetails" component={VendorDetails} />
+        <ProtectedRoute path="/Newvendor" component={Newvendor} />
+        <ProtectedRoute path="/varcat" component={Varcat} />
+        <ProtectedRoute path="/edit" component={Edit} />
+        <ProtectedRoute path="/product" component={Prod} />
+        <ProtectedRoute path="/prodetails" component={ProductDetails} />
+        <ProtectedRoute path="/Newprod" component={Newprod} />
+        <ProtectedRoute path="/procat" component={Procat} />
+        <ProtectedRoute path="/pedit" component={Pedit} />
+        <ProtectedRoute
+          path="/purchase-configuration-settings"
+          component={ConfigurationSettings}
+        />
+        <Route path="/inventory" component={Inventory} />
+        <ProtectedRoute path="/location" component={Location} />
+        <ProtectedRoute
+          path="/create-inventory-location"
+          component={LocationForm}
+        />
+        <ProtectedRoute
+          path="/location-configuration"
+          component={LocationConfiguration}
+        />
+        <ProtectedRoute path="/stock-adjustment" component={StockAdjustment} />
+        <ProtectedRoute
+          path="/create-new-stock"
+          component={NewStockAdjustment}
+        />
+        <ProtectedRoute path="/scrap" component={Scrap} />
+        <ProtectedRoute path="/new-scrap" component={NewScrap} />
+        <ProtectedRoute path="/stock-moves" component={StockMoves} />
+        {/* Fallback for 404 */}
+        {/* 404 NotFound route with NoHeaderLayout */}
+        <Route
+          path="*"
+          render={() => (
+            <NoHeaderLayout>
+              <NotFound />
+            </NoHeaderLayout>
+          )}
+        />
       </Switch>
     </div>
   );
 }
 
-function AppWrapper() {
-  return (
-    <Router>
-      <App />
-    </Router>
-  );
-}
-
-export default AppWrapper;
+export default App;

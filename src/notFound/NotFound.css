@@ -1,0 +1,40 @@
+.navbar404 {
+  display: block;
+  width: 100%;
+}
+.not-found-container {
+    text-align: center;
+    padding: 50px;
+  }
+  .notFoundImg {
+    width: 100%;
+    max-width: 400px;
+    margin-top: -4rem;
+  }
+  .not-found-container h1 {
+    font-size: 3.5rem;
+    color: #3b7ced;
+    margin-top: -25px;
+  }
+  
+  .not-found-container p {
+    font-size: 1.2rem;
+    margin: 20px 0;
+    font-weight: 100;
+  }
+
+  .home-link {
+    text-decoration: none;
+    background-color: #3b7ced;
+    color: #fff;
+    font-size: 20px;
+    border: none;
+    padding: 8px 25px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  .home-link:hover {
+    background-color: #4a8af8;
+   
+  }

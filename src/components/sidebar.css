@@ -3,10 +3,12 @@
   top: 0;
   left: -120px;
   bottom: 0;
-  width: 120px;
+  width: 130px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  text-align: center;
+  align-items: center;
   z-index: 1000;
   transition: all 0.3s ease;
   overflow-y: auto;

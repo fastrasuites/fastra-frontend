@@ -1,3 +1,4 @@
+// Purchreq.jsx
 import React, { useState, useEffect } from "react";
 import "./Purchreq.css";
 import SearchIcon from "../../../image/search.svg";
@@ -9,11 +10,12 @@ import Papr from "./Papr";
 import CRfq from "./CRfq";
 import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
 import { useLocation } from "react-router-dom";
-import draft from '../../../../src/image/icons/draft (1).png';
-import approved from '../../../../src/image/icons/approved.png';
-import rejected from '../../../../src/image/icons/rejected.png';
-import pending from '../../../../src/image/icons/pending.png';
-
+import draft from "../../../../src/image/icons/draft (1).png";
+import approved from "../../../../src/image/icons/approved.png";
+import rejected from "../../../../src/image/icons/rejected.png";
+import pending from "../../../../src/image/icons/pending.png";
+import PurchaseHeader from "../PurchaseHeader";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 export default function Purchreq() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,13 +24,15 @@ export default function Purchreq() {
   const [pendingCount, setPendingCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [viewMode, setViewMode] = useState("list");
-  const [items, setItems] = useState(() => {
-    const storedItems =
-      JSON.parse(localStorage.getItem("purchaseRequests")) || [];
-    return storedItems;
-  });
+  const { purchaseRequests } = usePurchase();
+  // const [items, setItems] = useState(() => {
+  //   const storedItems =
+  //     JSON.parse(localStorage.getItem("purchaseRequests")) || [];
+  //   return storedItems;
+  // });
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [filteredItems, setFilteredItems] = useState(items);
+  // const [filteredItems, setFilteredItems] = useState(items);
+  const [filteredItems, setFilteredItems] = useState(purchaseRequests);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -37,6 +41,7 @@ export default function Purchreq() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
+  // -------------------------------------
 
   useEffect(() => {
     if (location.state?.step) {
@@ -54,13 +59,17 @@ export default function Purchreq() {
     setIsModalOpen(false);
   };
   // End ===================================
+
+  console.log("Purchase Requests:", purchaseRequests);
+
   const handleSaveAndSubmit = (data) => {
     const newData = { ...data, status: "Pending" }; // Set status to Pending
     setFormData(newData);
     setIsSubmitted(true);
-    const updatedItems = [...items, newData];
-    setItems(updatedItems);
-    localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
+    // const updatedItems = [...items, newData];
+    const updatedItems = [...purchaseRequests, newData];
+    // setItems(updatedItems);
+    // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
     setIsFormVisible(false);
     setSelectedItem(newData); // Immediately select the new item
   };
@@ -84,11 +93,11 @@ export default function Purchreq() {
   };
 
   const handleUpdateStatus = (id, status) => {
-    const updatedItems = items.map((item) =>
+    const updatedItems = purchaseRequests.map((item) =>
       item.id === id ? { ...item, status } : item
     );
-    setItems(updatedItems);
-    localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
+    // setItems(updatedItems);
+    // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
     setIsSubmitted(false);
     setIsFormVisible(false);
     setSelectedItem(null);
@@ -127,16 +136,20 @@ export default function Purchreq() {
   };
 
   useEffect(() => {
-    updateCounts(items);
-    setFilteredItems(items);
-  }, [items]);
+    // updateCounts(items);
+    // setFilteredItems(items);
+    updateCounts(purchaseRequests);
+    setFilteredItems(purchaseRequests);
+  }, [purchaseRequests]);
 
   const handleSearch = () => {
     if (searchQuery === "") {
-      setFilteredItems(items);
+      // setFilteredItems(items);
+      setFilteredItems(purchaseRequests);
     } else {
       const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = items.filter(
+      // const filtered = items.filter(
+      const filtered = purchaseRequests.filter(
         (item) =>
           item.id.toLowerCase().includes(lowercasedQuery) ||
           item.productName.toLowerCase().includes(lowercasedQuery) ||
@@ -158,47 +171,68 @@ export default function Purchreq() {
 
   return (
     <div className="purchase-request" id="purchase">
+      <PurchaseHeader />
       <div className="purchase-request-heading">
         <div className="purchase-request-content">
-          <p>Purchase Requests</p>
+          <p style={{ fontSize: "17px" }}>Purchase Requests</p>
           <div className="purchase-request-status">
             <div className="status-field purchase-draft">
               <img src={draft} alt="draft" className="status-img" />
-              <p className={`purchase-list-count ${draftCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  draftCount === 0 ? "zero" : ""
+                }`}
+              >
                 {draftCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Draft</p>
+              <p style={{ fontSize: "20px" }}>Draft</p>
             </div>
             <div className="status-field purchase-approved">
               <img src={approved} alt="approved" className="status-img" />
-              <p className={`purchase-list-count ${approvedCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  approvedCount === 0 ? "zero" : ""
+                }`}
+              >
                 {approvedCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Approved</p>
+              <p style={{ fontSize: "20px" }}>Approved</p>
             </div>
             <div className="status-field purchase-pending">
               <img src={pending} alt="pending" className="status-img" />
-              <p className={`purchase-list-count ${pendingCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  pendingCount === 0 ? "zero" : ""
+                }`}
+              >
                 {pendingCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Pending</p>
+              <p style={{ fontSize: "20px" }}>Pending</p>
             </div>
             <div className="status-field purchase-rejected">
               <img src={rejected} alt="rejected" className="status-img" />
-              <p className={`purchase-list-count ${rejectedCount === 0 ? "zero" : ""}`}>
+              <p
+                className={`purchase-list-count ${
+                  rejectedCount === 0 ? "zero" : ""
+                }`}
+              >
                 {rejectedCount}
               </p>
               <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px"}}>Rejected</p>
+              <p style={{ fontSize: "20px" }}>Rejected</p>
             </div>
           </div>
-          
+
           <div className="purchase-nav">
             <div className="purchase-content">
-              <button className="purchase-contentbtn" onClick={handleNewPurchaseRequest}>
+              <button
+                className="purchase-contentbtn"
+                onClick={handleNewPurchaseRequest}
+                style={{ fontSize: "17px" }}
+              >
                 New Purchase Request
               </button>
               <div className="prqsash">
@@ -239,6 +273,7 @@ export default function Purchreq() {
               </div>
             </div>
           </div>
+
           {isFormVisible ? (
             <div className="overlay">
               <Newpr
@@ -298,9 +333,7 @@ export default function Purchreq() {
               ))}
             </div>
           ) : (
-            
-             <ListView items={filteredItems} onItemClick={handleCardClick} />
-            
+            <ListView items={filteredItems} onItemClick={handleCardClick} />
           )}
         </div>
       </div>
