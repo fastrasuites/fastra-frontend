@@ -15,10 +15,10 @@ export const PurchaseProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // const access_token = localStorage.getItem("access_token");
-  const { tenant_company_name, access_token } = tenantData || {};
+  const { tenant_schema_name, access_token } = tenantData || {};
 
   // Create a client for tenant-specific API calls
-  const client = getTenantClient(tenant_company_name, access_token);
+  const client = getTenantClient(tenant_schema_name, access_token);
 
   // upload file
   const uploadFile = async (file, endpoint) => {

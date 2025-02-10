@@ -49,17 +49,16 @@ export default function LoginForm() {
       const requestUrl = apiBaseUrl + loginEndpoint;
 
       const response = await axios.post(requestUrl, { email, password });
-      const { access_token, tenant_company_name, ...rest } =
-        response.data || {};
+      const { access_token, tenant_schema_name, ...rest } = response.data || {};
       console.log("Login Response:", response.data);
 
-      login({ access_token, tenant_company_name, ...rest });
+      login({ access_token, tenant_schema_name, ...rest });
 
       console.log("i got here");
 
-      history.push("/dashboard");
       // Redirect to dashboard
-      // const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_company_name}/dashboard`;
+      history.push(`/${tenant_schema_name}/dashboard`);
+      // const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN_URL}/${tenant_schema_name}/dashboard`;
       // window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
     } catch (error) {
       if (error.response) {

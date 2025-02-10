@@ -1,39 +1,45 @@
-import React from 'react';
-import DashboardHeader from '../DashboardHeader/DashboardHeader';
-
+import React from "react";
+import DashboardHeader from "../DashboardHeader/DashboardHeader";
+import { useTenant } from "../../context/TenantContext";
 
 const PurchaseHeader = () => {
-    const menuItems = [
-        { label: 'Purchase Requests', link: '/Purchase' },
-        { label: 'RFQs', link: '/rfq' },
-        { label: 'Purchase Orders', link: '/purchase-order' },
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+  const menuItems = [
+    { label: "Purchase Requests", link: `/${tenant_schema_name}/Purchase` },
+    { label: "RFQs", link: `/${tenant_schema_name}/rfq` },
+    { label: "Purchase Orders", link: `/${tenant_schema_name}/purchase-order` },
+    {
+      label: "Vendors",
+      link: `/${tenant_schema_name}/vendor`,
+      subItems: [
+        { label: "Vendors Bills", link: `/${tenant_schema_name}/vendor-bill` },
+        { label: "Vendors", link: `/${tenant_schema_name}/vendor` },
+      ],
+    },
+    {
+      label: "Products",
+      link: `/${tenant_schema_name}/prod`,
+      subItems: [
         {
-          label: 'Vendors',
-          link: '/vendor',
-          subItems: [
-            { label: 'Vendors Bills', link: '/vendor-bill' },
-            { label: 'Vendors', link: '/vendor' },
-          ],
+          label: "Incoming Products",
+          link: `/${tenant_schema_name}/incoming-product`,
         },
-        {
-          label: 'Products',
-          link: '/prod',
-          subItems: [
-            { label: 'Incoming Products', link: '/incoming-product' },
-            { label: 'Products', link: '/product' },
-          ],
-        },
-        { label: 'Configurations', link: 'purchase-configuration-settings' },
-      ];
-    
+        { label: "Products", link: `/${tenant_schema_name}/product` },
+      ],
+    },
+    {
+      label: "Configurations",
+      link: `/${tenant_schema_name}purchase-configuration-settings`,
+    },
+  ];
+
   return (
     <div>
-     {/* Header Component */}
+      {/* Header Component */}
       <DashboardHeader title="Purchase" menuItems={menuItems} />
-      
     </div>
   );
 };
 
 export default PurchaseHeader;
-

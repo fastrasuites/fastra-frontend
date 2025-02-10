@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTenant } from "../context/TenantContext";
 import { Dialog, DialogContent } from "@mui/material";
 import { Link } from "react-router-dom";
 import admin from "../image/admin.svg";
@@ -20,11 +21,15 @@ const users = [
 ];
 
 // Profile menu list for configurations
-const configs = [
-  { url: "/company", desc: "Company Profile", icon: userIcon },
-  { url: "/apk", desc: "Settings", icon: settingIcon },
-  { url: "/user", desc: "Users", icon: usergroupIcon },
-];
+// const configs = [
+//   {
+//     url: `/${tenant_schema_name}/company`,
+//     desc: "Company Profile",
+//     icon: userIcon,
+//   },
+//   { url: `/${tenant_schema_name}/apk`, desc: "Settings", icon: settingIcon },
+//   { url: `/${tenant_schema_name}/user`, desc: "Users", icon: usergroupIcon },
+// ];
 
 const UserCard = ({ handleClickOpen, users }) => {
   return (
@@ -55,7 +60,20 @@ const ProfileConfigs = ({ url, icon, desc, handleClose }) => {
 };
 
 const ProfileMenuDropdown = () => {
+  const { tenantData, logout } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
   const [open, setOpen] = useState(false);
+
+  // Profile menu list for configurations
+  const configs = [
+    {
+      url: `/${tenant_schema_name}/company`,
+      desc: "Company Profile",
+      icon: userIcon,
+    },
+    { url: `/${tenant_schema_name}/apk`, desc: "Settings", icon: settingIcon },
+    { url: `/${tenant_schema_name}/user`, desc: "Users", icon: usergroupIcon },
+  ];
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -65,9 +83,8 @@ const ProfileMenuDropdown = () => {
     setOpen(false);
   };
 
-  const logout = () => {
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("access_token");
+  const handlelogout = () => {
+    logout(); // from useTenant
     setOpen(false);
     console.log("logged out user");
   };
@@ -115,9 +132,9 @@ const ProfileMenuDropdown = () => {
           />
           <ProfileConfigs
             desc="Logout"
-            url="/"
+            url="/login"
             icon={logoutIcon}
-            handleClose={logout}
+            handleClose={handlelogout}
           />
         </DialogContent>
       </Dialog>
