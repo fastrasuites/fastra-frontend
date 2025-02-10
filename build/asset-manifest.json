@@ -1,17 +1,19 @@
 {
   "files": {
-    "main.css": "/static/css/main.f964ad21.css",
-    "main.js": "/static/js/main.bad3d151.js",
+    "main.css": "/static/css/main.f2dad269.css",
+    "main.js": "/static/js/main.9a7957eb.js",
     "static/js/453.5dcf098e.chunk.js": "/static/js/453.5dcf098e.chunk.js",
     "static/media/background.png": "/static/media/background.168ca9e00c6e5781ac66.png",
     "static/media/bg.svg": "/static/media/bg.17c063f174eddaad2c2103ec5c2a2b88.svg",
     "static/media/404.png": "/static/media/404.6df9f08d2e41beecab20.png",
     "static/media/ProductSansRegular.ttf": "/static/media/ProductSansRegular.d165384076551a756b3c.ttf",
     "static/media/logo.svg": "/static/media/logo.9436c9df216ee9a9abb8a33b1a42e8cb.svg",
+    "static/media/logo2.svg": "/static/media/logo2.5a424feb5d3f4bbb09e1a7e2bc28ad58.svg",
     "static/media/admin.svg": "/static/media/admin.3f765d49510b414f939c2c74ef4638bf.svg",
     "static/media/product-logo.svg": "/static/media/product-logo.9331098b5299ad190d40c5e2de9d8e8f.svg",
     "static/media/vendor-logo.svg": "/static/media/vendor-logo.3081fe133683b3719ea9b7d49a0520a8.svg",
-    "static/media/ExcelFile.xlsx": "/static/media/ExcelFile.680949c7e1940fa53342.xlsx",
+    "static/media/vendorExcelFile.xlsx": "/static/media/vendorExcelFile.2063afe8b0c399d23960.xlsx",
+    "static/media/productExcelFile.xlsx": "/static/media/productExcelFile.680949c7e1940fa53342.xlsx",
     "static/media/autosave-text.svg": "/static/media/autosave-text.1d30b46efa8a435bd0d576a86f6e6b95.svg",
     "static/media/costing.svg": "/static/media/costing.3684e9b5f67ed634d3f32e632954db0c.svg",
     "static/media/account.svg": "/static/media/account.70f7c6cad8c77c898ce0b551368d8e52.svg",
@@ -46,12 +48,12 @@
     "static/media/dots.svg": "/static/media/dots.3ac60a9949973054a1459e709ef5b582.svg",
     "static/media/search.svg": "/static/media/search.f4efbdddf8927037839dbaec808eb9f3.svg",
     "static/media/arrow-left.svg": "/static/media/arrow-left.aba5de772addcdaaf9a608b369584c72.svg",
-    "main.f964ad21.css.map": "/static/css/main.f964ad21.css.map",
-    "main.bad3d151.js.map": "/static/js/main.bad3d151.js.map",
+    "main.f2dad269.css.map": "/static/css/main.f2dad269.css.map",
+    "main.9a7957eb.js.map": "/static/js/main.9a7957eb.js.map",
     "453.5dcf098e.chunk.js.map": "/static/js/453.5dcf098e.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f964ad21.css",
-    "static/js/main.bad3d151.js"
+    "static/css/main.f2dad269.css",
+    "static/js/main.9a7957eb.js"
   ]
 }
