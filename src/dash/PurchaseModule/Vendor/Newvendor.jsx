@@ -5,78 +5,153 @@ import "./Newvendor.css";
 import vendorLogo from "../../../image/vendor-logo.svg";
 import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
 import PurchaseHeader from "../PurchaseHeader";
+import { useTenant } from "../../../context/TenantContext";
 
 export default function Newvendor({ onClose, onSaveAndSubmit }) {
-  const generateNewID = () => {
-    const lastID = localStorage.getItem("lastGeneratedID");
-    let newID = "PR00001";
+  const { tenantData } = useTenant();
+  const { tenant_schema_name, access_token } = tenantData || {};
 
-    if (lastID) {
-      const idNumber = parseInt(lastID.slice(2), 10) + 1;
-      newID = "PR" + idNumber.toString().padStart(5, "0");
-    }
+  // const generateNewID = () => {
+  //   const lastID = localStorage.getItem("lastGeneratedID");
+  //   let newID = "PR00001";
 
-    localStorage.setItem("lastGeneratedID", newID);
-    return newID;
-  };
+  //   if (lastID) {
+  //     const idNumber = parseInt(lastID.slice(2), 10) + 1;
+  //     newID = "PR" + idNumber.toString().padStart(5, "0");
+  //   }
+
+  //   localStorage.setItem("lastGeneratedID", newID);
+  //   return newID;
+  // };
 
   const [formState, setFormState] = useState({
-    // id: generateNewID(),
-    vendorName: "",
-    vendorCategory: "",
+    vendor_name: "",
     email: "",
-    phone: "",
+    phone_number: "",
     address: "",
-    // image: "",
-    requester: "Firstname Lastname",
-    department: "Sales",
-    status: "Pending",
+    image: "",
+    // vendorCategory: "",
+    // id: generateNewID(),
+    // requester: "Firstname Lastname",
+    // department: "Sales",
+    // status: "Pending",
     // date: new Date(),
   });
 
   const [showForm] = useState(true);
 
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setFormState((prevState) => ({
+  //       ...prevState,
+  //       date: new Date(),
+  //     }));
+  //   }, 1000);
+
+  //   return () => clearInterval(timer);
+  // }, []);
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setFormState((prevState) => ({
-        ...prevState,
-        date: new Date(),
-      }));
-    }, 1000);
-
-    return () => clearInterval(timer);
+    setFormState((prevState) => ({
+      ...prevState,
+      company_name: tenant_schema_name,
+    }));
   }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const formDataWithStringDate = {
-      ...formState,
-      date: formState.date.toString(),
-    };
-
-    // Save the vendor details to local storage
-    const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
-    savedVendors.push(formDataWithStringDate);
-    localStorage.setItem("vendors", JSON.stringify(savedVendors));
-
-    onSaveAndSubmit(formDataWithStringDate);
-    onClose();
-  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormState((prev) => ({
-          ...prev,
-          image: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+      setFormState((prev) => ({
+        ...prev,
+        image: file,
+      }));
     }
   };
+
+  // Start here ---------------------------------------
+  // ---- handling the create vendor within this component still error: "request entity too large"
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   const formData = new FormData();
+  //   formData.append("vendor_name", formState.vendor_name);
+  //   formData.append("email", formState.email);
+  //   formData.append("phone_number", formState.phone_number);
+  //   formData.append("address", formState.address);
+  //   if (formState.image) {
+  //     formData.append("image", formState.image);
+  //   }
+
+  //   const endPoint = "/purchase/vendors/";
+  //   try {
+  //     const response = await fetch(
+  //       `https://${tenant_schema_name}.fastrasuiteapi.com.ng${endPoint}`,
+  //       {
+  //         method: "POST",
+  //         body: formData,
+  //         headers: {
+  //           Authorization: `Bearer ${access_token}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to create vendor");
+  //     }
+
+  //     const result = await response.json();
+  //     setFormState((prev) => ({
+  //       ...prev,
+  //       image_url: result.vendor.image_url, // Store the URL received from backend
+  //     }));
+
+  //     // onSaveAndSubmit();
+  //     onClose();
+  //   } catch (error) {
+  //     console.error("Error submitting vendor:", error);
+  //   }
+  // };
+  // End here ------------------------------------------
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // const formDataWithStringDate = {
+    //   ...formState,
+    //   date: formState.date.toString(),
+    // };
+
+    // Save the vendor details to local storage
+    // const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
+    // savedVendors.push(formDataWithStringDate);
+    // localStorage.setItem("vendors", JSON.stringify(savedVendors));
+
+    const formData = new FormData();
+    formData.append("vendor_name", formState.vendor_name);
+    formData.append("email", formState.email);
+    formData.append("address", formState.address);
+    formData.append("phone_number", formState.phone_number);
+    if (formState.image) {
+      formData.append("image", formState.image);
+    }
+
+    onSaveAndSubmit(formData);
+    onClose();
+  };
+
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setFormState((prev) => ({
+  //         ...prev,
+  //         image: reader.result,
+  //       }));
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   return (
     <div className="nvr-contain">
@@ -126,11 +201,11 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                       fullWidth
                       variant="outlined"
                       placeholder="Cee Que Enterprise"
-                      value={formState.vendorName}
+                      value={formState.vendor_name}
                       onChange={(e) =>
                         setFormState((prev) => ({
                           ...prev,
-                          vendorName: e.target.value,
+                          vendor_name: e.target.value,
                         }))
                       }
                     />
@@ -241,11 +316,11 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                     name="phone"
                     placeholder="Enter a valid phone number"
                     // className="nvr3cb"
-                    value={formState.phone}
+                    value={formState.phone_number}
                     onChange={(e) =>
                       setFormState((prev) => ({
                         ...prev,
-                        phone: e.target.value,
+                        phone_number: e.target.value,
                       }))
                     }
                   />

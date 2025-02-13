@@ -18,7 +18,6 @@ import dots from "../image/dots.svg";
 import { Link } from "react-router-dom";
 
 const Card = ({ name, description, link }) => {
-  console.log("card link is: ", link);
   let icon;
   switch (name) {
     case "Account":
@@ -131,7 +130,6 @@ const Card = ({ name, description, link }) => {
 const DashCard = () => {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
-  console.log(tenant_schema_name);
   const fastra = [
     {
       name: "Account",

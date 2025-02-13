@@ -86,7 +86,7 @@ const ListView = ({ items, onItemClick }) => {
         <TableBody>
           {items.map((item, index) => (
             <TableRow
-              key={item.id}
+              key={item.vendor_name}
               onClick={() => onItemClick(item)}
               sx={{
                 backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
@@ -100,7 +100,7 @@ const ListView = ({ items, onItemClick }) => {
                   onChange={(event) => handleSelect(event, item.id)}
                 />
               </TableCell>
-              <TableCell>{item.vendorName}</TableCell>
+              <TableCell>{item.vendor_name}</TableCell>
               <TableCell>{item.email}</TableCell>
               <TableCell>{item.phone}</TableCell>
               <TableCell>{item.address}</TableCell>

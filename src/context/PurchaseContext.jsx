@@ -13,6 +13,7 @@ export const PurchaseProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
+  console.log(vendors);
 
   // const access_token = localStorage.getItem("access_token");
   const { tenant_schema_name, access_token } = tenantData || {};
@@ -86,7 +87,11 @@ export const PurchaseProvider = ({ children }) => {
   // create new vendor
   const createVendor = async (newVendor) => {
     try {
-      const response = await client.post("/purchase/vendors/", newVendor);
+      const response = await client.post("/purchase/vendors/", newVendor, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setVendors([...vendors, response.data]);
     } catch (err) {
       setError(err);

@@ -13,7 +13,6 @@ import Bg from "../../../src/image/bg.svg";
 export default function Purchase() {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
-  console.log("Purchase module mounted");
   return (
     <Router>
       <Purcont id="purchase">

@@ -52,7 +52,6 @@ import StockMoves from "./dash/Inventory/StockMoves/StockMoves";
 
 function App() {
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
-  console.log(tenant_schema_name);
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
       <Switch>

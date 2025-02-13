@@ -56,6 +56,7 @@ export default function Vend() {
   const { vendors, createVendor, error } = usePurchase();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(vendors);
+  console.log(filteredItems);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -129,6 +130,7 @@ export default function Vend() {
   const handleFormClose = () => {
     setIsFormVisible(false);
     setIsSubmitted(false);
+    console.log("handle form close");
   };
 
   const handleSearch = () => {
@@ -522,9 +524,9 @@ export default function Vend() {
                         className="circular-image"
                       />
                     </div>
-                    <p className="vendor-name">{item.vendorName}</p>
+                    <p className="vendor-name">{item.vendor_name}</p>
                     <p className="vendor-email">{item.email}</p>
-                    <p className="vendor-phone">{item.phone}</p>
+                    <p className="vendor-phone">{item.phone_number}</p>
                     <p className="vendor-address">{item.address}</p>
                     <p className="vendor-category">{item.category}</p>
                   </div>
