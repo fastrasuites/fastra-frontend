@@ -552,7 +552,7 @@ export default function Vend() {
           <div className="overlay">
             <UploadMedia
               onClose={handleCloseUploadMedia}
-              endpoint="/vendors/upload_excel/"
+              endpoint="/purchase/vendors/upload_excel/"
               excelFile={ExcelFile}
             />
           </div>
