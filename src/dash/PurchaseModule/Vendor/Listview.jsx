@@ -12,7 +12,8 @@ import {
 
 const ListView = ({ items, onItemClick }) => {
   const [selected, setSelected] = React.useState([]);
-
+  console.log(" checking items :", items);
+  // item contains url and not id - this will be considered later.
   const handleSelectAll = (event) => {
     if (event.target.checked) {
       const newSelected = items.map((item) => item.id);
@@ -86,7 +87,7 @@ const ListView = ({ items, onItemClick }) => {
         <TableBody>
           {items.map((item, index) => (
             <TableRow
-              key={item.vendor_name}
+              key={item.company_name}
               onClick={() => onItemClick(item)}
               sx={{
                 backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
@@ -100,9 +101,9 @@ const ListView = ({ items, onItemClick }) => {
                   onChange={(event) => handleSelect(event, item.id)}
                 />
               </TableCell>
-              <TableCell>{item.vendor_name}</TableCell>
+              <TableCell>{item.company_name}</TableCell>
               <TableCell>{item.email}</TableCell>
-              <TableCell>{item.phone}</TableCell>
+              <TableCell>{item.phone_number}</TableCell>
               <TableCell>{item.address}</TableCell>
               {/* <TableCell>{item.category}</TableCell> */}
             </TableRow>

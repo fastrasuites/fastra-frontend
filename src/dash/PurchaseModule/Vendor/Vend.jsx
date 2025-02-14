@@ -519,16 +519,15 @@ export default function Vend() {
                   >
                     <div className="vendor-image">
                       <img
-                        src={item.image}
+                        src={item.profile_picture}
                         alt="Vendor"
                         className="circular-image"
                       />
                     </div>
-                    <p className="vendor-name">{item.vendor_name}</p>
+                    <p className="vendor-name">{item.company_name}</p>
                     <p className="vendor-email">{item.email}</p>
                     <p className="vendor-phone">{item.phone_number}</p>
                     <p className="vendor-address">{item.address}</p>
-                    <p className="vendor-category">{item.category}</p>
                   </div>
                 ))
               ) : (

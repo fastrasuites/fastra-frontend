@@ -5,58 +5,16 @@ import "./Newvendor.css";
 import vendorLogo from "../../../image/vendor-logo.svg";
 import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
 import PurchaseHeader from "../PurchaseHeader";
-import { useTenant } from "../../../context/TenantContext";
 
 export default function Newvendor({ onClose, onSaveAndSubmit }) {
-  const { tenantData } = useTenant();
-  const { tenant_schema_name, access_token } = tenantData || {};
-
-  // const generateNewID = () => {
-  //   const lastID = localStorage.getItem("lastGeneratedID");
-  //   let newID = "PR00001";
-
-  //   if (lastID) {
-  //     const idNumber = parseInt(lastID.slice(2), 10) + 1;
-  //     newID = "PR" + idNumber.toString().padStart(5, "0");
-  //   }
-
-  //   localStorage.setItem("lastGeneratedID", newID);
-  //   return newID;
-  // };
-
+  const [showForm] = useState(true);
   const [formState, setFormState] = useState({
     vendor_name: "",
     email: "",
     phone_number: "",
     address: "",
     image: "",
-    // vendorCategory: "",
-    // id: generateNewID(),
-    // requester: "Firstname Lastname",
-    // department: "Sales",
-    // status: "Pending",
-    // date: new Date(),
   });
-
-  const [showForm] = useState(true);
-
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setFormState((prevState) => ({
-  //       ...prevState,
-  //       date: new Date(),
-  //     }));
-  //   }, 1000);
-
-  //   return () => clearInterval(timer);
-  // }, []);
-
-  useEffect(() => {
-    setFormState((prevState) => ({
-      ...prevState,
-      company_name: tenant_schema_name,
-    }));
-  }, []);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -68,90 +26,21 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
     }
   };
 
-  // Start here ---------------------------------------
-  // ---- handling the create vendor within this component still error: "request entity too large"
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   const formData = new FormData();
-  //   formData.append("vendor_name", formState.vendor_name);
-  //   formData.append("email", formState.email);
-  //   formData.append("phone_number", formState.phone_number);
-  //   formData.append("address", formState.address);
-  //   if (formState.image) {
-  //     formData.append("image", formState.image);
-  //   }
-
-  //   const endPoint = "/purchase/vendors/";
-  //   try {
-  //     const response = await fetch(
-  //       `https://${tenant_schema_name}.fastrasuiteapi.com.ng${endPoint}`,
-  //       {
-  //         method: "POST",
-  //         body: formData,
-  //         headers: {
-  //           Authorization: `Bearer ${access_token}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to create vendor");
-  //     }
-
-  //     const result = await response.json();
-  //     setFormState((prev) => ({
-  //       ...prev,
-  //       image_url: result.vendor.image_url, // Store the URL received from backend
-  //     }));
-
-  //     // onSaveAndSubmit();
-  //     onClose();
-  //   } catch (error) {
-  //     console.error("Error submitting vendor:", error);
-  //   }
-  // };
-  // End here ------------------------------------------
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // const formDataWithStringDate = {
-    //   ...formState,
-    //   date: formState.date.toString(),
-    // };
-
-    // Save the vendor details to local storage
-    // const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
-    // savedVendors.push(formDataWithStringDate);
-    // localStorage.setItem("vendors", JSON.stringify(savedVendors));
-
     const formData = new FormData();
-    formData.append("vendor_name", formState.vendor_name);
+    formData.append("company_name", formState.vendor_name);
     formData.append("email", formState.email);
     formData.append("address", formState.address);
     formData.append("phone_number", formState.phone_number);
     if (formState.image) {
-      formData.append("image", formState.image);
+      formData.append("profile_picture", formState.image);
     }
 
     onSaveAndSubmit(formData);
     onClose();
   };
-
-  // const handleImageUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setFormState((prev) => ({
-  //         ...prev,
-  //         image: reader.result,
-  //       }));
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
 
   return (
     <div className="nvr-contain">
