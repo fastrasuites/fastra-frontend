@@ -7,75 +7,39 @@ import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
 import PurchaseHeader from "../PurchaseHeader";
 
 export default function Newvendor({ onClose, onSaveAndSubmit }) {
-  const generateNewID = () => {
-    const lastID = localStorage.getItem("lastGeneratedID");
-    let newID = "PR00001";
-
-    if (lastID) {
-      const idNumber = parseInt(lastID.slice(2), 10) + 1;
-      newID = "PR" + idNumber.toString().padStart(5, "0");
-    }
-
-    localStorage.setItem("lastGeneratedID", newID);
-    return newID;
-  };
-
-  const [formState, setFormState] = useState({
-    // id: generateNewID(),
-    vendorName: "",
-    vendorCategory: "",
-    email: "",
-    phone: "",
-    address: "",
-    // image: "",
-    requester: "Firstname Lastname",
-    department: "Sales",
-    status: "Pending",
-    // date: new Date(),
-  });
-
   const [showForm] = useState(true);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFormState((prevState) => ({
-        ...prevState,
-        date: new Date(),
-      }));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const formDataWithStringDate = {
-      ...formState,
-      date: formState.date.toString(),
-    };
-
-    // Save the vendor details to local storage
-    const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
-    savedVendors.push(formDataWithStringDate);
-    localStorage.setItem("vendors", JSON.stringify(savedVendors));
-
-    onSaveAndSubmit(formDataWithStringDate);
-    onClose();
-  };
+  const [formState, setFormState] = useState({
+    vendor_name: "",
+    email: "",
+    phone_number: "",
+    address: "",
+    image: "",
+  });
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormState((prev) => ({
-          ...prev,
-          image: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+      setFormState((prev) => ({
+        ...prev,
+        image: file,
+      }));
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("company_name", formState.vendor_name);
+    formData.append("email", formState.email);
+    formData.append("address", formState.address);
+    formData.append("phone_number", formState.phone_number);
+    if (formState.image) {
+      formData.append("profile_picture", formState.image);
+    }
+
+    onSaveAndSubmit(formData);
+    onClose();
   };
 
   return (
@@ -126,11 +90,11 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                       fullWidth
                       variant="outlined"
                       placeholder="Cee Que Enterprise"
-                      value={formState.vendorName}
+                      value={formState.vendor_name}
                       onChange={(e) =>
                         setFormState((prev) => ({
                           ...prev,
-                          vendorName: e.target.value,
+                          vendor_name: e.target.value,
                         }))
                       }
                     />
@@ -241,11 +205,11 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                     name="phone"
                     placeholder="Enter a valid phone number"
                     // className="nvr3cb"
-                    value={formState.phone}
+                    value={formState.phone_number}
                     onChange={(e) =>
                       setFormState((prev) => ({
                         ...prev,
-                        phone: e.target.value,
+                        phone_number: e.target.value,
                       }))
                     }
                   />

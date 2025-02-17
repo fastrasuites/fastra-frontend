@@ -1,4 +1,5 @@
 import "./DashCard.css";
+import { useTenant } from "../context/TenantContext";
 import account from "../image/account.svg";
 import purchase from "../image/purchase.svg";
 import sales from "../image/sales.svg";
@@ -126,98 +127,104 @@ const Card = ({ name, description, link }) => {
   );
 };
 
-const fastra = [
-  {
-    name: "Account",
-    description:
-      "Manage all financial transactions, including invoicing, billing, and ledger entries, to ensure accurate accounting records and financial reporting.",
-    link: "/account",
-  },
-  {
-    name: "Purchase",
-    description:
-      "Streamline procurement processes by tracking purchase orders, vendor management, and inventory replenishment to optimize supply chain efficiency and cost savings.",
-    link: "/purchase",
-  },
-  {
-    name: "Sales",
-    description:
-      "Track sales leads, manage customer relationships, and monitor sales performance to drive revenue growth and customer satisfaction.",
-    link: "/sales",
-  },
-  {
-    name: "Inventory",
-    description:
-      "Monitor stock levels, track inventory movements, and optimize warehouse operations to ensure optimal inventory management and minimize stockouts.",
-    link: "/inventory",
-  },
-  {
-    name: "HR",
-    description:
-      "Manage employee information, track attendance, process payroll, and oversee performance evaluations to support efficient HR administration and talent management.",
-    link: "/hr",
-  },
-  {
-    name: "Project Costing",
-    description:
-      "Track project expenses, monitor budget allocations, and analyze project profitability to ensure projects are delivered on time and within budget.",
-    link: "/project-costing",
-  },
-  {
-    name: "CRM",
-    description:
-      "Maintain a centralized database of customer information, track interactions, and manage sales pipelines to enhance customer relationships and boost sales effectiveness.",
-    link: "/crm",
-  },
-  {
-    name: "Contact",
-    description:
-      "Store and organize contact information for customers, vendors, and other stakeholders to facilitate communication and collaboration.",
-    link: "/contact",
-  },
-  {
-    name: "Planning",
-    description:
-      "Collaborate on strategic planning, set goals, allocate resources, and track progress towards objectives to drive organizational growth and success.",
-    link: "/planning",
-  },
-  {
-    name: "Manufacturing",
-    description:
-      "Manage production processes, track work orders, and optimize resource allocation to maximize manufacturing efficiency and product quality.",
-    link: "/manufacturing",
-  },
-  {
-    name: "Logistics",
-    description:
-      "Coordinate transportation, manage delivery schedules, and track shipment statuses to ensure timely and cost-effective logistics operations.",
-    link: "/logistics",
-  },
-  {
-    name: "Reports",
-    description:
-      "Generate customizable reports, analyze key performance metrics, and gain actionable insights to support data-driven decision-making and business optimization.",
-    link: "/reports",
-  },
-  {
-    name: "App",
-    description:
-      "Explore additional applications and integrations to extend the functionality of the Fastra suite and address specific business needs and requirements.",
-    link: "/apk",
-  },
-  {
-    name: "Settings",
-    description:
-      "Configure system preferences, manage user permissions, and customize application settings to align with organizational requirements and user preferences.",
-    link: "/settings",
-  },
-];
-
 const DashCard = () => {
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+  const fastra = [
+    {
+      name: "Account",
+      description:
+        "Manage all financial transactions, including invoicing, billing, and ledger entries, to ensure accurate accounting records and financial reporting.",
+      link: `/${tenant_schema_name}/account`,
+    },
+    {
+      name: "Purchase",
+      description:
+        "Streamline procurement processes by tracking purchase orders, vendor management, and inventory replenishment to optimize supply chain efficiency and cost savings.",
+      link: `/${tenant_schema_name}/purchase`,
+    },
+    {
+      name: "Sales",
+      description:
+        "Track sales leads, manage customer relationships, and monitor sales performance to drive revenue growth and customer satisfaction.",
+      link: `/${tenant_schema_name}/sales`,
+    },
+    {
+      name: "Inventory",
+      description:
+        "Monitor stock levels, track inventory movements, and optimize warehouse operations to ensure optimal inventory management and minimize stockouts.",
+      link: `/${tenant_schema_name}/inventory`,
+    },
+    {
+      name: "HR",
+      description:
+        "Manage employee information, track attendance, process payroll, and oversee performance evaluations to support efficient HR administration and talent management.",
+      link: `/${tenant_schema_name}/hr`,
+    },
+    {
+      name: "Project Costing",
+      description:
+        "Track project expenses, monitor budget allocations, and analyze project profitability to ensure projects are delivered on time and within budget.",
+      link: `/${tenant_schema_name}/costing`,
+    },
+    {
+      name: "CRM",
+      description:
+        "Maintain a centralized database of customer information, track interactions, and manage sales pipelines to enhance customer relationships and boost sales effectiveness.",
+      link: `/${tenant_schema_name}/crm`,
+    },
+    {
+      name: "Contact",
+      description:
+        "Store and organize contact information for customers, vendors, and other stakeholders to facilitate communication and collaboration.",
+      link: `/${tenant_schema_name}/contact`,
+    },
+    {
+      name: "Planning",
+      description:
+        "Collaborate on strategic planning, set goals, allocate resources, and track progress towards objectives to drive organizational growth and success.",
+      link: `/${tenant_schema_name}/planning`,
+    },
+    {
+      name: "Manufacturing",
+      description:
+        "Manage production processes, track work orders, and optimize resource allocation to maximize manufacturing efficiency and product quality.",
+      link: `/${tenant_schema_name}/manufacturing`,
+    },
+    {
+      name: "Logistics",
+      description:
+        "Coordinate transportation, manage delivery schedules, and track shipment statuses to ensure timely and cost-effective logistics operations.",
+      link: `/${tenant_schema_name}/logistics`,
+    },
+    {
+      name: "Reports",
+      description:
+        "Generate customizable reports, analyze key performance metrics, and gain actionable insights to support data-driven decision-making and business optimization.",
+      link: `/${tenant_schema_name}/reports`,
+    },
+    {
+      name: "App",
+      description:
+        "Explore additional applications and integrations to extend the functionality of the Fastra suite and address specific business needs and requirements.",
+      link: `/${tenant_schema_name}/apk`,
+    },
+    {
+      name: "Settings",
+      description:
+        "Configure system preferences, manage user permissions, and customize application settings to align with organizational requirements and user preferences.",
+      link: `/${tenant_schema_name}/settings`,
+    },
+  ];
   return (
     <div className="cardlist">
       {fastra.map((fastra, index) => (
-        <Card key={index} name={fastra.name} description={fastra.description} link={fastra.link}/>
+        <Card
+          key={index}
+          name={fastra.name}
+          description={fastra.description}
+          link={fastra.link}
+        />
       ))}
     </div>
   );
