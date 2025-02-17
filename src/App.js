@@ -49,9 +49,12 @@ import NewStockAdjustment from "./dash/Inventory/stock/NewStockAdjustment";
 import Scrap from "./dash/Inventory/scrap/Scrap";
 import NewScrap from "./dash/Inventory/scrap/NewScrap";
 import StockMoves from "./dash/Inventory/StockMoves/StockMoves";
+import { useRouteWithSubdomain } from "./context/getsubdomain";
 
 function App() {
   // const tenant_company_name = useTenant().tenantData?.tenant_company_name;
+  const getRoute = useRouteWithSubdomain();
+
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
       <Switch>
@@ -66,7 +69,7 @@ function App() {
         />
 
         {/* Tenant-aware routes */}
-        <ProtectedRoute path="/dashboard" component={Dashboard} />
+        <ProtectedRoute path={getRoute("/dashboard")} component={Dashboard} />
         <ProtectedRoute path="/contact" component={Contact} />
         <ProtectedRoute path="/settings" component={Settings} />
         <ProtectedRoute path="/apk" component={Apk} />
