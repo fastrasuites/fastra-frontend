@@ -7,9 +7,11 @@ import { NavLink } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 import { Center } from "@chakra-ui/react";
-
+import { useTenant } from "../../context/TenantContext";
 
 export default function Purchead() {
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
   const [notifications, setNotifications] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // const [showMenu, setShowMenu] = useState(false);
@@ -67,7 +69,7 @@ export default function Purchead() {
               className="purst"
               activeClassName="active"
               onClick={handleLinkClick}
-              style={{ paddingLeft: "20px"}}
+              style={{ paddingLeft: "20px" }}
             >
               Purchase Requests
             </NavLink>
@@ -109,7 +111,10 @@ export default function Purchead() {
                 <IoIosArrowDown className="ardan" />
               </NavLink>
               {showVendorDropdown && (
-                <div className="prolst" style={{ backgroundColor: "#fff", width: "100%"}}>
+                <div
+                  className="prolst"
+                  style={{ backgroundColor: "#fff", width: "100%" }}
+                >
                   <NavLink
                     to="#"
                     className="dropdownlink"
@@ -162,21 +167,19 @@ export default function Purchead() {
                   >
                     Products
                   </NavLink>
-                 
                 </div>
               )}
-              
+
               <NavLink
-              exact
-              to="/configurations"
-              className="purst"
-              activeClassName="active"
-              style={{ paddingLeft: "20px"}}
-              onClick={handleLinkClick}
-            >
-              Configurations
-            </NavLink>
-           
+                exact
+                to="/configurations"
+                className="purst"
+                activeClassName="active"
+                style={{ paddingLeft: "20px" }}
+                onClick={handleLinkClick}
+              >
+                Configurations
+              </NavLink>
             </div>
           </div>
         </li>

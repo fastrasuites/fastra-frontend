@@ -30,7 +30,7 @@ import PurchaseHeader from "../PurchaseHeader";
 export default function Prod() {
   const [showNewProd, setShowNewProd] = useState(false);
   // const [products, setProducts] = useState([]);
-  const { products } = usePurchase();
+  const { products, createProduct } = usePurchase();
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
@@ -85,6 +85,7 @@ export default function Prod() {
     // setProducts(updatedProducts);
     // setFilteredProducts(updatedProducts);
     // localStorage.setItem("products", JSON.stringify(updatedProducts));
+    createProduct(formData);
     setShowNewProd(false);
   };
 

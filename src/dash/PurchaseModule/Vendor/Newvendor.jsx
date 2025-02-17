@@ -19,9 +19,10 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const imageUrl = URL.createObjectURL(file);
       setFormState((prev) => ({
         ...prev,
-        image: file,
+        image: imageUrl,
       }));
     }
   };
