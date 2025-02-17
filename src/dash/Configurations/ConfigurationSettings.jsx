@@ -10,6 +10,9 @@ import {
 } from '@mui/material';
 import './ConfigurationForm.css'; 
 import PurchaseHeader from '../PurchaseModule/PurchaseHeader';
+import { getTenantClient } from "../../services/apiService";
+import { useTenant } from "../../context/TenantContext";
+
 
 const ConfigurationSettings = () => {
   const [selectedCurrency, setSelectedCurrency] = useState('');
@@ -18,6 +21,10 @@ const ConfigurationSettings = () => {
   const [unitCategory, setUnitCategory] = useState('');
   const [savedCurrencies, setSavedCurrencies] = useState([]);
   const [savedUnits, setSavedUnits] = useState([]);
+
+  const { tenantData } = useTenant();
+  const { tenant_schema_name, access_token } = tenantData || {};
+  const client = getTenantClient(tenant_schema_name, access_token);
   
   // Complete list of currencies with symbols
   const currencyOptions = [
@@ -83,15 +90,23 @@ const ConfigurationSettings = () => {
   };
 
   // Handle submission for creating a unit of measure
-  const handleUnitSubmit = (event) => {
+  const handleUnitSubmit = async (event) => {
     event.preventDefault();
 
-    const newUnit = { unitName: unitName, unitCategory: unitCategory };
+    const newUnit = { unit_name: unitName, unit_category: unitCategory };
     const updatedUnits = [...savedUnits, newUnit];
     localStorage.setItem('savedUnits', JSON.stringify(updatedUnits));
     setSavedUnits(updatedUnits);
 
     // Reset unit form fields
+    console.log(newUnit)
+    try {
+      const response = await client.post(`/purchase/unit-of-measure/`, newUnit);
+        console.log(response.data)
+    } catch (err) {
+      console.error("Error saving unit-measure:", err);
+    }
+
     setUnitName('');
     setUnitCategory('');
   };

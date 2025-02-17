@@ -8,6 +8,8 @@ import { useHistory } from "react-router-dom";
 import { Grid, TextField } from "@mui/material";
 import styled from "styled-components";
 import PurchaseHeader from "../PurchaseHeader";
+import { getTenantClient } from "../../../services/apiService";
+import { useTenant } from "../../../context/TenantContext";
 // import Select from "react-select";
 
 export default function Newprod({
@@ -45,10 +47,10 @@ export default function Newprod({
 
   const [showForm] = useState(true);
   const [error, setError] = useState(null);
+  const { tenantData } = useTenant();
+  const { tenant_schema_name, access_token } = tenantData || {};
+  const client = getTenantClient(tenant_schema_name, access_token);
 
-  useEffect(() => {
-    console.log("Current Form State:", formState);
-  }, [formState]);
 
   const handleChange = (e) => {
     const { name, value, productDesc, availableProductQty, totalQtyPurchased } =
@@ -121,10 +123,6 @@ export default function Newprod({
     //   cp: formatCurrency(formState.cp),
     //   date: formState.date ? formState.date.toString() : new Date().toString(),
     // };
-    formData.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
-    
     handleSaveAndSubmit(formData);
     onClose();
 
@@ -139,20 +137,33 @@ export default function Newprod({
   const [savedUnits, setSavedUnits] = useState([]);
 
   useEffect(() => {
-    // Fetch units from localStorage
-    const units = JSON.parse(localStorage.getItem("savedUnits")) || [];
-    if (units.length === 0) {
-      console.warn("No units found in localStorage.");
+    async function fetchData() {
+      let units;
+      try {
+        const response = await client.get(`/purchase/unit-of-measure/`);
+        console.log(response.data);
+        units = response.data;
+      } catch (err) {
+        console.error("Error fetching unit-measure:", err);
+      }
+  
+      if (units?.length === 0) {
+        console.warn("No units found in database.");
+      }
+      setSavedUnits(units);
     }
-    setSavedUnits(units);
-  }, []); // Only run this effect once, on component mount
+  
+    fetchData();
+  }, [tenantData]); // Only run this effect once, on component mount
+  
 
   const handleUnitChange = (newUnit) => {
     // Simplified the event parameter
+    
     setSelectedUnit(newUnit);
     setFormState((prev) => ({
       ...prev,
-      unt: newUnit ? newUnit.unitName : "", // Assuming you want to update the unit in form state
+      unt: newUnit ? newUnit.url  : "", // Assuming you want to update the unit in form state
     }));
 
     // Log the selected unit
@@ -162,9 +173,9 @@ export default function Newprod({
   };
 
   const categoryOptions = [
-    { value: "Consumables", label: "Consumables" },
-    { value: "Stockable", label: "Stockable" },
-    { value: "Service Product", label: "Service Product" },
+    { value: "consumable", label: "Consumable" },
+    { value: "stockable", label: "Stockable" },
+    { value: "service Product", label: "Service Product" },
   ];
 
   const customStyles = {
@@ -345,7 +356,7 @@ export default function Newprod({
                     onChange={handleUnitChange}
                     options={savedUnits} // Populate options from localStorage
                     getOptionLabel={(option) =>
-                      `${option.unitName} - ${option.unitCategory}`
+                      `${option.unit_name} - ${option.unit_category}`
                     }
                     renderInput={(params) => (
                       <TextField
