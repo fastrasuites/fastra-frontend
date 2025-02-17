@@ -46,6 +46,10 @@ export default function Newprod({
   const [showForm] = useState(true);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    console.log("Current Form State:", formState);
+  }, [formState]);
+
   const handleChange = (e) => {
     const { name, value, productDesc, availableProductQty, totalQtyPurchased } =
       e.target;
@@ -97,7 +101,7 @@ export default function Newprod({
     formData.append("product_name", formState.name);
     formData.append("unit_of_measure", formState.unt);
     // formData.append("type", formState.type);
-    formData.append("category_category", formState.category);
+    formData.append("product_category", formState.category);
     // formData.append("sp", formState.sp);
     // formData.append("cp", formState.cp);
     formData.append("product_description", formState.productDesc);
@@ -234,7 +238,6 @@ export default function Newprod({
                     id="imageInput"
                     name="image"
                     style={{ display: "none" }}
-                    required
                   />
                   {formState.image ? (
                     <img

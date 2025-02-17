@@ -49,10 +49,10 @@ import NewStockAdjustment from "./dash/Inventory/stock/NewStockAdjustment";
 import Scrap from "./dash/Inventory/scrap/Scrap";
 import NewScrap from "./dash/Inventory/scrap/NewScrap";
 import StockMoves from "./dash/Inventory/StockMoves/StockMoves";
-import { useRouteWithSubdomain } from "./context/getsubdomain";
 
 function App() {
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+
   return (
     <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
       <Switch>
