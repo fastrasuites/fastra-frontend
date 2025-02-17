@@ -97,6 +97,7 @@ export default function Newprod({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(formState)
     const formData = new FormData();
     formData.append("product_name", formState.name);
     formData.append("unit_of_measure", formState.unt);
@@ -120,7 +121,10 @@ export default function Newprod({
     //   cp: formatCurrency(formState.cp),
     //   date: formState.date ? formState.date.toString() : new Date().toString(),
     // };
-
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+    
     handleSaveAndSubmit(formData);
     onClose();
 
