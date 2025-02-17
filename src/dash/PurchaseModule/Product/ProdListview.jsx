@@ -116,10 +116,10 @@ const ProdListview = ({ items, onItemClick }) => {
                 scope="row"
                 id={`product-list-label-${item.id}`}
               >
-                {item.name}
+                {item.product_name}
               </TableCell>
-              <TableCell>{item.category}</TableCell>
-              <TableCell>{item.availableProductQty}</TableCell>
+              <TableCell>{item.product_category}</TableCell>
+              <TableCell>{item.available_product_quantity}</TableCell>
               {/* <TableCell sx={{ color: "#3b7ced" }}>{item.sp}</TableCell> */}
               {/* <TableCell sx={{ color: "#3b7ced" }}>{item.cp}</TableCell> */}
               {/* <TableCell>{item.type}</TableCell> */}

@@ -454,7 +454,7 @@ export default function Prod() {
                       className="cirmage"
                     />
                   </div>
-                  <p className="proname">{product.name}</p>
+                  <p className="proname">{product.product_name}</p>
                   <p className="promount">Category</p>
                   <p className="protype">{product.category}</p>
                   <p className="procat">QTY {product.availableProductQty}</p>
