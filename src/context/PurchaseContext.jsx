@@ -110,6 +110,18 @@ export const PurchaseProvider = ({ children }) => {
     }
   };
 
+  // create product
+  const createProduct = async (newProduct) => {
+    try {
+      const response = await client.post("/purchase/products/", newProduct);
+      console.log("response", response);
+      setProducts([...products, response.data]);
+    } catch (err) {
+      setError(err);
+      console.error("Error creating product:", err);
+    }
+  };
+
   // Fetch all purchase requests
   const fetchPurchaseRequests = async () => {
     try {
@@ -217,6 +229,8 @@ export const PurchaseProvider = ({ children }) => {
         vendors,
         createVendor,
         products,
+        createProduct,
+        productCategories,
         purchaseRequests,
         fetchPurchaseRequests,
         purchaseOrders,

@@ -16,27 +16,27 @@ export default function Newprod({
   fromPurchaseModuleWizard,
 }) {
   const history = useHistory();
-  const generateNewID = () => {
-    const lastID = localStorage.getItem("lastGeneratedID");
-    let newID = "PR00001";
+  // const generateNewID = () => {
+  //   const lastID = localStorage.getItem("lastGeneratedID");
+  //   let newID = "PR00001";
 
-    if (lastID) {
-      const idNumber = parseInt(lastID.slice(2), 10) + 1;
-      newID = "PR" + idNumber.toString().padStart(5, "0");
-    }
+  //   if (lastID) {
+  //     const idNumber = parseInt(lastID.slice(2), 10) + 1;
+  //     newID = "PR" + idNumber.toString().padStart(5, "0");
+  //   }
 
-    localStorage.setItem("lastGeneratedID", newID);
-    return newID;
-  };
+  //   localStorage.setItem("lastGeneratedID", newID);
+  //   return newID;
+  // };
 
   const [formState, setFormState] = useState({
-    id: generateNewID(),
+    // id: generateNewID(),
     name: "",
     unt: "",
     type: "",
     category: "",
-    sp: "",
-    cp: "",
+    // sp: "",
+    // cp: "",
     image: null, // New state for image
     productDesc: "",
     availableProductQty: "",
@@ -61,17 +61,12 @@ export default function Newprod({
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
       setFormState((prev) => ({
         ...prev,
-        image: reader.result, // Set image to base64 encoded string
+        image: imageUrl,
       }));
-    };
-
-    if (file) {
-      reader.readAsDataURL(file);
     }
   };
 
@@ -82,10 +77,10 @@ export default function Newprod({
 
   const handleSaveAndSubmit = (formData) => {
     try {
-      const existingProducts =
-        JSON.parse(localStorage.getItem("products")) || [];
-      existingProducts.push(formData);
-      localStorage.setItem("products", JSON.stringify(existingProducts));
+      // const existingProducts =
+      //   JSON.parse(localStorage.getItem("products")) || [];
+      // existingProducts.push(formData);
+      // localStorage.setItem("products", JSON.stringify(existingProducts));
       onSaveAndSubmit(formData);
     } catch (e) {
       if (e.name === "QuotaExceededError") {
@@ -98,15 +93,31 @@ export default function Newprod({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("product_name", formState.name);
+    formData.append("unit_of_measure", formState.unt);
+    // formData.append("type", formState.type);
+    formData.append("category_category", formState.category);
+    // formData.append("sp", formState.sp);
+    // formData.append("cp", formState.cp);
+    formData.append("product_description", formState.productDesc);
+    formData.append(
+      "available_product_quantity",
+      formState.availableProductQty
+    );
+    formData.append("total_quantity_Purchased", formState.totalQtyPurchased);
+    // if (formState.image) {
+    //   formData.append("image", formState.image);
+    // }
 
-    const formDataWithFormattedPrices = {
-      ...formState,
-      sp: formatCurrency(formState.sp),
-      cp: formatCurrency(formState.cp),
-      date: formState.date ? formState.date.toString() : new Date().toString(),
-    };
+    // const formDataWithFormattedPrices = {
+    //   ...formState,
+    //   sp: formatCurrency(formState.sp),
+    //   cp: formatCurrency(formState.cp),
+    //   date: formState.date ? formState.date.toString() : new Date().toString(),
+    // };
 
-    handleSaveAndSubmit(formDataWithFormattedPrices);
+    handleSaveAndSubmit(formData);
     onClose();
 
     // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
@@ -115,31 +126,32 @@ export default function Newprod({
     }
   };
 
- // Load saved units from localStorage
-const [selectedUnit, setSelectedUnit] = useState(null); // Changed variable name for clarity
-const [savedUnits, setSavedUnits] = useState([]);
+  // Load saved units from localStorage
+  const [selectedUnit, setSelectedUnit] = useState(null); // Changed variable name for clarity
+  const [savedUnits, setSavedUnits] = useState([]);
 
-useEffect(() => {
-  // Fetch units from localStorage
-  const units = JSON.parse(localStorage.getItem("savedUnits")) || [];
-  if (units.length === 0) {
-    console.warn('No units found in localStorage.');
-  }
-  setSavedUnits(units);
-}, []); // Only run this effect once, on component mount
+  useEffect(() => {
+    // Fetch units from localStorage
+    const units = JSON.parse(localStorage.getItem("savedUnits")) || [];
+    if (units.length === 0) {
+      console.warn("No units found in localStorage.");
+    }
+    setSavedUnits(units);
+  }, []); // Only run this effect once, on component mount
 
-const handleUnitChange = (newUnit) => { // Simplified the event parameter
-  setSelectedUnit(newUnit);
-  setFormState((prev) => ({
-    ...prev,
-    unt: newUnit ? newUnit.unitName : "", // Assuming you want to update the unit in form state
-  }));
+  const handleUnitChange = (newUnit) => {
+    // Simplified the event parameter
+    setSelectedUnit(newUnit);
+    setFormState((prev) => ({
+      ...prev,
+      unt: newUnit ? newUnit.unitName : "", // Assuming you want to update the unit in form state
+    }));
 
-  // Log the selected unit
-  if (newUnit) {
-    console.log("Selected unit:", newUnit);
-  }
-};
+    // Log the selected unit
+    if (newUnit) {
+      console.log("Selected unit:", newUnit);
+    }
+  };
 
   const categoryOptions = [
     { value: "Consumables", label: "Consumables" },
@@ -175,163 +187,168 @@ const handleUnitChange = (newUnit) => { // Simplified the event parameter
 
   return (
     <div className="newp-contain ">
-    <PurchaseHeader />
-    <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
-      <div className="newp1">
-        <div className="newp2">
-          <div className="newp2a">
-            <p className="newphed">New Product</p>
-            <div className="newpauto">
-              <p>Autosaved</p>
-              <img src={autosave} alt="Autosaved" />
+      <PurchaseHeader />
+      <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
+        <div className="newp1">
+          <div className="newp2">
+            <div className="newp2a">
+              <p className="newphed">New Product</p>
+              <div className="newpauto">
+                <p>Autosaved</p>
+                <img src={autosave} alt="Autosaved" />
+              </div>
             </div>
-          </div>
-          {/* <div className="newp2b">
+            {/* <div className="newp2b">
             <div className="newpbnav">
               <FaCaretLeft className="nr" />
               <div className="sep"></div>
               <FaCaretRight className="nr" />
             </div>
           </div> */}
-        </div>
-        {/* form for create/add new products starts here */}
-        <div className="newp3">
-          <form className="newpform" onSubmit={handleSubmit}>
-            <div className="newp3a">
-              <p style={{ fontSize: "20px" }}>Basic Information</p>
-              <button
-                type="button"
-                className="newp3but"
-                onClick={onClose}
-                style={{ marginTop: "1rem" }}
-              >
-                Cancel
-              </button>
-            </div>
-
-            {/* Upload product logo */}
-            <div className="newuser3ba" style={{ marginBlock: "24px" }}>
-              <div
-                className="image-upload"
-                onClick={() => document.getElementById("imageInput").click()}
-              >
-                <input
-                  type="file"
-                  accept=".png, .jpg, .jpeg"
-                  onChange={handleImageChange}
-                  id="imageInput"
-                  name="image"
-                  style={{ display: "none" }}
-                  required
-                />
-                {formState.image ? (
-                  <img
-                    src={formState.image}
-                    alt="Preview"
-                    className="image-preview"
-                  />
-                ) : (
-                  <div className="image-upload-text">
-                    <img src={productLogo} alt="Upload" />
-                    {/* <span style={{ fontSize: "10px" }}>Click to upload</span> */}
-                  </div>
-                )}
+          </div>
+          {/* form for create/add new products starts here */}
+          <div className="newp3">
+            <form className="newpform" onSubmit={handleSubmit}>
+              <div className="newp3a">
+                <p style={{ fontSize: "20px" }}>Basic Information</p>
+                <button
+                  type="button"
+                  className="newp3but"
+                  onClick={onClose}
+                  style={{ marginTop: "1rem" }}
+                >
+                  Cancel
+                </button>
               </div>
-            </div>
 
-            <Grid container spacing={3}>
-              {" "}
-              {/* spacing adds equidistant gaps */}
-              <Grid item xs={12} sm={6} md={4}>
+              {/* Upload product logo */}
+              <div className="newuser3ba" style={{ marginBlock: "24px" }}>
+                <div
+                  className="image-upload"
+                  onClick={() => document.getElementById("imageInput").click()}
+                >
+                  <input
+                    type="file"
+                    accept=".png, .jpg, .jpeg"
+                    onChange={handleImageChange}
+                    id="imageInput"
+                    name="image"
+                    style={{ display: "none" }}
+                    required
+                  />
+                  {formState.image ? (
+                    <img
+                      src={formState.image}
+                      alt="Preview"
+                      className="image-preview"
+                    />
+                  ) : (
+                    <div className="image-upload-text">
+                      <img src={productLogo} alt="Upload" />
+                      {/* <span style={{ fontSize: "10px" }}>Click to upload</span> */}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Grid container spacing={3}>
                 {" "}
-                {/* Full width on xs, 2 cols on sm, 3 cols on md */}
-                <div style={{ marginBottom: "8px" }}>
-                  <label>Product Name</label>
-                </div>
-                <TextField
-                  fullWidth
-                  type="text"
-                  name="name"
-                  placeholder="Meat Burger"
-                  value={formState.name}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <div style={{ marginBottom: "8px" }}>
-                  <label>Product Description</label>
-                </div>
-                <TextField
-                  fullWidth
-                  type="text"
-                  name="productDesc"
-                  placeholder="White"
-                  value={formState.productDesc}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <div style={{ marginBottom: "8px" }}>
-                  <label>Available Product Quantity</label>
-                </div>
+                {/* spacing adds equidistant gaps */}
+                <Grid item xs={12} sm={6} md={4}>
+                  {" "}
+                  {/* Full width on xs, 2 cols on sm, 3 cols on md */}
+                  <div style={{ marginBottom: "8px" }}>
+                    <label>Product Name</label>
+                  </div>
+                  <TextField
+                    fullWidth
+                    type="text"
+                    name="name"
+                    placeholder="Meat Burger"
+                    value={formState.name}
+                    onChange={handleChange}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <label>Product Description</label>
+                  </div>
+                  <TextField
+                    fullWidth
+                    type="text"
+                    name="productDesc"
+                    placeholder="White"
+                    value={formState.productDesc}
+                    onChange={handleChange}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <label>Available Product Quantity</label>
+                  </div>
 
-                <TextField
-                  fullWidth
-                  type="number"
-                  name="availableProductQty"
-                  placeholder="0"
-                  value={formState.availableProductQty}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <div style={{ marginBottom: "8px" }}>
-                  <label>Total Quantity Purchased</label>
-                </div>
-                <TextField
-                  fullWidth
-                  type="number"
-                  name="totalQtyPurchased"
-                  placeholder="0"
-                  value={formState.totalQtyPurchased}
-                  onChange={handleChange}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <div style={{ marginBottom: "8px" }}>
-                  <label>Category</label>
-                </div>
-                <Select
-                  placeholder="Select Product Category"
-                  options={categoryOptions}
-                  name="category"
-                  styles={customStyles}
-                  value={categoryOptions.find(
-                    (option) => option.value === formState.category
-                  )}
-                  onChange={(selectedOption) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      category: selectedOption ? selectedOption.value : "",
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <div style={{ marginBottom: "8px" }}>
-                  <label>Unit of Measure</label>
-                </div>
-                <Select
-                 value={selectedUnit}
-                  onChange={handleUnitChange}
-                  
-                  options={savedUnits}  // Populate options from localStorage
-                  getOptionLabel={(option) => `${option.unitName} - ${option.unitCategory}`}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Select Currency" className="newpod3cb" />
-                  )}
-                />
-                {/* <Select
+                  <TextField
+                    fullWidth
+                    type="number"
+                    name="availableProductQty"
+                    placeholder="0"
+                    value={formState.availableProductQty}
+                    onChange={handleChange}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <label>Total Quantity Purchased</label>
+                  </div>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    name="totalQtyPurchased"
+                    placeholder="0"
+                    value={formState.totalQtyPurchased}
+                    onChange={handleChange}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <label>Category</label>
+                  </div>
+                  <Select
+                    placeholder="Select Product Category"
+                    options={categoryOptions}
+                    name="category"
+                    styles={customStyles}
+                    value={categoryOptions.find(
+                      (option) => option.value === formState.category
+                    )}
+                    onChange={(selectedOption) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        category: selectedOption ? selectedOption.value : "",
+                      }))
+                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <label>Unit of Measure</label>
+                  </div>
+                  <Select
+                    value={selectedUnit}
+                    onChange={handleUnitChange}
+                    options={savedUnits} // Populate options from localStorage
+                    getOptionLabel={(option) =>
+                      `${option.unitName} - ${option.unitCategory}`
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Select Currency"
+                        className="newpod3cb"
+                      />
+                    )}
+                  />
+                  {/* <Select
                   placeholder="Select your Unit of Measure"
                   options={unitOptions}
                   name="unt"
@@ -346,12 +363,14 @@ const handleUnitChange = (newUnit) => { // Simplified the event parameter
                     }))
                   }
                 /> */}
+                </Grid>
               </Grid>
-            </Grid>
-            <hr style={{ border: "1.2px solid #E2E6E9", marginTop: "32px" }} />
+              <hr
+                style={{ border: "1.2px solid #E2E6E9", marginTop: "32px" }}
+              />
 
-            {/* Tobe deleted later */}
-            {/* <div className="newp3ba">
+              {/* Tobe deleted later */}
+              {/* <div className="newp3ba">
                 <label>Type</label>
                 <input
                   type="text"
@@ -362,11 +381,11 @@ const handleUnitChange = (newUnit) => { // Simplified the event parameter
                   onChange={handleChange}
                 />
               </div> */}
-            {/* </div> */}
-            {/* <div className="newp3c"> */}
+              {/* </div> */}
+              {/* <div className="newp3c"> */}
 
-            {/* To be deactivated: form bottom for cost and selling price  */}
-            {/* <div className="newp3a2">
+              {/* To be deactivated: form bottom for cost and selling price  */}
+              {/* <div className="newp3a2">
               <p style={{ fontSize: "20px" }}>Pricing</p>
             </div>
             <div className="newp3d">
@@ -393,8 +412,8 @@ const handleUnitChange = (newUnit) => { // Simplified the event parameter
                 />
               </div>
             </div>*/}
-            <Button type="submit">Create Product</Button>
-            {/* <div className="newp3e">
+              <Button type="submit">Create Product</Button>
+              {/* <div className="newp3e">
               <button
                 type="submit"
                 className="newp3btn"
@@ -403,11 +422,11 @@ const handleUnitChange = (newUnit) => { // Simplified the event parameter
                 Create Product
               </button>
             </div> */}
-            {error && <p className="error-message">{error}</p>}
-          </form>
+              {error && <p className="error-message">{error}</p>}
+            </form>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }
