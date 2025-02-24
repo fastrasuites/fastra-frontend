@@ -54,7 +54,7 @@ function App() {
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
   return (
-    <div className="App" style={{ maxWidth: "1440px", marginInline: "auto" }}>
+  <div className="App" style={{ width: "100vw", minHeight: "100vh"}}>
       <Switch>
         {/* Global (non-tenant-specific) routes */}
         <Route exact path="/" component={Register} />

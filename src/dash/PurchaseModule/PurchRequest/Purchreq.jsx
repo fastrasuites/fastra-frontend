@@ -83,6 +83,7 @@ export default function Purchreq() {
   };
 
   const handleNewPurchaseRequest = () => {
+    console.log('i am here')
     setIsFormVisible(true);
   };
 
@@ -174,108 +175,112 @@ export default function Purchreq() {
       <PurchaseHeader />
       <div className="purchase-request-heading">
         <div className="purchase-request-content">
-          <p style={{ fontSize: "17px" }}>Purchase Requests</p>
-          <div className="purchase-request-status">
-            <div className="status-field purchase-draft">
-              <img src={draft} alt="draft" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  draftCount === 0 ? "zero" : ""
-                }`}
-              >
-                {draftCount}
-              </p>
-              <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px" }}>Draft</p>
-            </div>
-            <div className="status-field purchase-approved">
-              <img src={approved} alt="approved" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  approvedCount === 0 ? "zero" : ""
-                }`}
-              >
-                {approvedCount}
-              </p>
-              <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px" }}>Approved</p>
-            </div>
-            <div className="status-field purchase-pending">
-              <img src={pending} alt="pending" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  pendingCount === 0 ? "zero" : ""
-                }`}
-              >
-                {pendingCount}
-              </p>
-              <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px" }}>Pending</p>
-            </div>
-            <div className="status-field purchase-rejected">
-              <img src={rejected} alt="rejected" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  rejectedCount === 0 ? "zero" : ""
-                }`}
-              >
-                {rejectedCount}
-              </p>
-              <p className="status-desc">Purchase Request</p>
-              <p style={{ fontSize: "20px" }}>Rejected</p>
-            </div>
-          </div>
 
-          <div className="purchase-nav">
-            <div className="purchase-content">
-              <button
-                className="purchase-contentbtn"
-                onClick={handleNewPurchaseRequest}
-                style={{ fontSize: "17px" }}
-              >
-                New Purchase Request
-              </button>
-              <div className="prqsash">
-                <label
-                  htmlFor="searchInput"
-                  className="search-box"
-                  onClick={handleSearch}
+        {!isFormVisible && !selectedItem && <div className="purchase-request-first">
+            <p style={{ fontSize: "17px" }}>Purchase Requests</p>
+            <div className="purchase-request-status">
+              <div className="status-field purchase-draft">
+                <img src={draft} alt="draft" className="status-img" />
+                <p
+                  className={`purchase-list-count ${
+                    draftCount === 0 ? "zero" : ""
+                  }`}
                 >
-                  <img src={SearchIcon} alt="Search" className="search-icon" />
-                  <input
-                    id="searchInput"
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="search-input"
-                  />
-                </label>
+                  {draftCount}
+                </p>
+                <p className="status-desc">Purchase Request</p>
+                <p style={{ fontSize: "20px" }}>Draft</p>
+              </div>
+              <div className="status-field purchase-approved">
+                <img src={approved} alt="approved" className="status-img" />
+                <p
+                  className={`purchase-list-count ${
+                    approvedCount === 0 ? "zero" : ""
+                  }`}
+                >
+                  {approvedCount}
+                </p>
+                <p className="status-desc">Purchase Request</p>
+                <p style={{ fontSize: "20px" }}>Approved</p>
+              </div>
+              <div className="status-field purchase-pending">
+                <img src={pending} alt="pending" className="status-img" />
+                <p
+                  className={`purchase-list-count ${
+                    pendingCount === 0 ? "zero" : ""
+                  }`}
+                >
+                  {pendingCount}
+                </p>
+                <p className="status-desc">Purchase Request</p>
+                <p style={{ fontSize: "20px" }}>Pending</p>
+              </div>
+              <div className="status-field purchase-rejected">
+                <img src={rejected} alt="rejected" className="status-img" />
+                <p
+                  className={`purchase-list-count ${
+                    rejectedCount === 0 ? "zero" : ""
+                  }`}
+                >
+                  {rejectedCount}
+                </p>
+                <p className="status-desc">Purchase Request</p>
+                <p style={{ fontSize: "20px" }}>Rejected</p>
               </div>
             </div>
-            <div className="pagination">
-              <p className="purchase-pagination">1-2 of 2</p>
-              <div className="purchase-pagination-nav">
-                <FaCaretLeft className="lr" />
-                <div className="stroke"></div>
-                <FaCaretRight className="lr" />
+
+            <div className="purchase-nav">
+              <div className="purchase-content">
+                <button
+                  className="purchase-contentbtn"
+                  onClick={handleNewPurchaseRequest}
+                  style={{ fontSize: "17px" }}
+                >
+                  New Purchase Request
+                </button>
+                <div className="prqsash">
+                  <label
+                    htmlFor="searchInput"
+                    className="search-box"
+                    onClick={handleSearch}
+                  >
+                    <img src={SearchIcon} alt="Search" className="search-icon" />
+                    <input
+                      id="searchInput"
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="search-input"
+                    />
+                  </label>
+                </div>
               </div>
-              <div className="p3bview">
-                <IoGrid
-                  className={`toggle ${viewMode === "grid" ? "active" : ""}`}
-                  onClick={() => toggleViewMode("grid")}
-                />
-                <div className="stroke"></div>&nbsp; &nbsp;
-                <FaBars
-                  className={`toggle ${viewMode === "list" ? "active" : ""}`}
-                  onClick={() => toggleViewMode("list")}
-                />
+              <div className="pagination">
+                <p className="purchase-pagination">1-2 of 2</p>
+                <div className="purchase-pagination-nav">
+                  <FaCaretLeft className="lr" />
+                  <div className="stroke"></div>
+                  <FaCaretRight className="lr" />
+                </div>
+                <div className="p3bview">
+                  <IoGrid
+                    className={`toggle ${viewMode === "grid" ? "active" : ""}`}
+                    onClick={() => toggleViewMode("grid")}
+                  />
+                  <div className="stroke"></div>&nbsp; &nbsp;
+                  <FaBars
+                    className={`toggle ${viewMode === "list" ? "active" : ""}`}
+                    onClick={() => toggleViewMode("list")}
+                  />
+                </div>
               </div>
             </div>
           </div>
+          }
 
           {isFormVisible ? (
-            <div className="overlay">
+            <div className="overlay1">
               <Newpr
                 onSaveAndSubmit={handleSaveAndSubmit}
                 onFormDataChange={handleFormDataChange}
@@ -291,7 +296,7 @@ export default function Purchreq() {
                 />
               </div>
             ) : (
-              <div className="overlay">
+              <div className="overlay1">
                 <Papr
                   formData={selectedItem}
                   onUpdateStatus={handleUpdateStatus}

@@ -85,9 +85,9 @@ const ProdListview = ({ items, onItemClick }) => {
             <TableCell>Product Name</TableCell>
             <TableCell>Category</TableCell>
             <TableCell>Quantity</TableCell>
-            {/* <TableCell>Unit of Measure</TableCell> 
-            {/* <TableCell>Selling Price</TableCell> */}
-            {/* <TableCell>Cost Price</TableCell> */}
+            {/*<TableCell>Unit of Measure</TableCell>*/} 
+            <TableCell>Product Description</TableCell> 
+            <TableCell>Quantity Purchased</TableCell>
             {/* <TableCell>Type</TableCell> */}
           </TableRow>
         </TableHead>
@@ -120,9 +120,10 @@ const ProdListview = ({ items, onItemClick }) => {
               </TableCell>
               <TableCell>{item.product_category}</TableCell>
               <TableCell>{item.available_product_quantity}</TableCell>
-              {/* <TableCell sx={{ color: "#3b7ced" }}>{item.sp}</TableCell> */}
-              {/* <TableCell sx={{ color: "#3b7ced" }}>{item.cp}</TableCell> */}
-              {/* <TableCell>{item.type}</TableCell> */}
+              {/*<TableCell sx={{ color: "#3b7ced" }}>{item.unit_ of_measure}</TableCell>*/}
+              <TableCell sx={{ color: "#3b7ced" }}>{item.product_description}</TableCell>
+              <TableCell>{item.total_quantity_purchased
+              }</TableCell>
             </TableRow>
           ))}
         </TableBody>

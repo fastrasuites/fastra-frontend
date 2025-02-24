@@ -371,6 +371,7 @@
   align-items: center;
   animation: fadeIn 0.3s ease-in-out;
   /* overflow-y: auto; */
+  overflow-y: auto;
 }
 
 @keyframes fadeIn {

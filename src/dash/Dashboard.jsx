@@ -42,7 +42,7 @@ export default function Dashboard() {
   // };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
+    setIsModalOpen(prevState => !prevState);
   };
 
   //End ---------------------------------------------------------------------------
@@ -53,8 +53,13 @@ export default function Dashboard() {
   };
 
   const toggleMenu = () => {
-    setShowMenu(!showMenu);
+    setShowMenu(prevState => !prevState)
   };
+
+  const closeSidebar = () => {
+    setShowMenu(prevState => !prevState);
+  };
+
 
   return (
     <div id="dashboard" className="dash">
@@ -105,7 +110,7 @@ export default function Dashboard() {
           </li> */}
         </ul>
       </div>
-      {showMenu && <Sidebar />}
+      {showMenu && <Sidebar sidebarOpen={showMenu} handleCloseSidebar={closeSidebar} />}
       {/*  */}
 
       <div className="dashbody">

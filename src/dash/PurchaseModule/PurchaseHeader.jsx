@@ -35,7 +35,7 @@ const PurchaseHeader = () => {
   ];
 
   return (
-    <div>
+    <div style={{width: "100%", background: "#fff"}}>
       {/* Header Component */}
       <DashboardHeader title="Purchase" menuItems={menuItems} />
     </div>

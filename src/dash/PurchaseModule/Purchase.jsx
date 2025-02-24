@@ -42,7 +42,7 @@ export default function Purchase() {
 
 // Styled component for background
 const Purcont = styled.div`
-  height: 120vh;
+  min-height: 100vh;
   width: 100%;
   background-image: url(${Bg});
   background-size: contain;

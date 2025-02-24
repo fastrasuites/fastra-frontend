@@ -1,16 +1,23 @@
-
+.dash-Head {
+  width: 100%;
+  position: relative;
+  background: #fff;
+}
 .header {
     display: flex;
+    width: 100%;
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    background-color: #fff;
+    background-color: white;
     border-bottom: 1px solid #ddd;
+    z-index: 12;
   }
   
   .leftSection {
     display: flex;
     align-items: center;
+    width: 70%;
   }
   
   .menuButton {
@@ -87,6 +94,9 @@
   .rightSection {
     display: flex;
     align-items: center;
+    z-index: 12;
+    width: 20%;
+
   }
   
   .notification {

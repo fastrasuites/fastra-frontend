@@ -1,5 +1,5 @@
 .vend {
-  height: 180vh;
+  min-height: 180vh;
   width: 100%;
   background-size: contain;
   padding: 0;

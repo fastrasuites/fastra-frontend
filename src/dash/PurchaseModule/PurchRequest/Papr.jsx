@@ -71,7 +71,7 @@ const TextArea = styled("textarea")(({ theme }) => ({
 }));
 
 const InputField = styled("input")(({ theme }) => ({
-  width: "30%",
+  width: "30% !important",
   padding: "0.5rem",
   borderRadius: "5px",
   border: "1px solid #ccc",
@@ -80,13 +80,15 @@ const InputField = styled("input")(({ theme }) => ({
 }));
 
 const SendButton = styled("button")(({ theme }) => ({
+  marginTop: '1rem',
   backgroundColor: "blue",
+  width: '10%',
   color: "white",
   border: "none",
   padding: "10px 20px",
   borderRadius: "5px",
   cursor: "pointer",
-  marginLeft: "10px",
+  /*marginLeft: "10px",*/
 }));
 
 export default function Papr({ formData, onUpdateStatus }) {
@@ -293,7 +295,7 @@ export default function Papr({ formData, onUpdateStatus }) {
                 onChange={handleRejectionReasonChange}
               />
             </div>
-            <div style={{ marginBottom: "1rem" }}>
+            <div style={{ marginBottom: "1rem", width: "100%", display: 'flex', flexDirection: "column" }}>
               <label htmlFor="stakeholderUsername">
                 Send to another stakeholder
               </label>

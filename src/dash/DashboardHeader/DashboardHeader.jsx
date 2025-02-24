@@ -16,11 +16,12 @@ const DashboardHeader = ({ title, menuItems }) => {
   };
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    console.log("i was opened")
+    setIsSidebarOpen(prevState => !prevState);
   };
 
   const closeSidebar = () => {
-    setIsSidebarOpen(false);
+    setIsSidebarOpen(prevState => !prevState);
   };
 
   const toggleProfileMenu = () => {
@@ -32,7 +33,7 @@ const DashboardHeader = ({ title, menuItems }) => {
   };
 
   return (
-    <>
+    <div className="dash-Head">
       <header className="header">
         <div className="leftSection">
           <button className="menuButton" onClick={toggleSidebar}>
@@ -95,7 +96,7 @@ const DashboardHeader = ({ title, menuItems }) => {
 
       {/* Conditionally render the Sidebar */}
       <Sidebar sidebarOpen={isSidebarOpen} handleCloseSidebar={closeSidebar} />
-    </>
+    </div>
   );
 };
 
