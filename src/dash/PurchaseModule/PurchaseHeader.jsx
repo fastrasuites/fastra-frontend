@@ -6,7 +6,7 @@ const PurchaseHeader = () => {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const menuItems = [
-    { label: "Purchase Requests", link: `/${tenant_schema_name}/Purchase` },
+    { label: "Purchase Requests", link: `/${tenant_schema_name}/purchase` },
     { label: "RFQs", link: `/${tenant_schema_name}/rfq` },
     { label: "Purchase Orders", link: `/${tenant_schema_name}/purchase-order` },
     {

@@ -19,14 +19,14 @@ import { products } from "./products";
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.white,
-    color: '#7A8A98',
+    color: "#7A8A98",
     border: 0,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
     border: 0,
-    backgroundColor: '#F2F2F2',
-    color:'#A9B3BC'
+    backgroundColor: "#F2F2F2",
+    color: "#A9B3BC",
   },
 }));
 
@@ -39,9 +39,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-
-export default function Newpr({onSaveAndSubmit,onFormDataChange, onClose }) {
-  const { vendors } = usePurchase();
+export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
+  const { vendors, createPurchaseRequest, currencies } = usePurchase();
 
   const [rows, setRows] = useState([
     {
@@ -52,8 +51,6 @@ export default function Newpr({onSaveAndSubmit,onFormDataChange, onClose }) {
       totalPrice: "",
     },
   ]);
-
-  
 
   const generateNewID = () => {
     const lastID = localStorage.getItem("lastGeneratedID");
@@ -84,13 +81,16 @@ export default function Newpr({onSaveAndSubmit,onFormDataChange, onClose }) {
 
   const [vendorInputValue, setVendorInputValue] = useState("");
   const [selectedVendor, setSelectedVendor] = useState(null);
-  const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
+  // const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
+  const savedVendors = vendors;
+  console.log("Saved Vendors:", savedVendors);
   const handleVendorSelect = (event, newValue) => {
     setSelectedVendor(newValue);
     if (newValue) {
       setFormState((prev) => ({
         ...prev,
-        vendor: newValue.vendorName,
+        vendor: newValue ? newValue.url : "",
+        // vendor: newValue? newValue.vendorName,
       }));
     } else {
       setFormState((prev) => ({
@@ -119,7 +119,7 @@ export default function Newpr({onSaveAndSubmit,onFormDataChange, onClose }) {
     newRows[index][key] = value;
     if (key === "qty" || key === "unitPrice") {
       newRows[index]["totalPrice"] = (
-        (newRows[index]["qty"]) * (newRows[index]["unitPrice"] || 0)
+        newRows[index]["qty"] * (newRows[index]["unitPrice"] || 0)
       ).toFixed(2);
     }
     setRows(newRows);
@@ -136,14 +136,33 @@ export default function Newpr({onSaveAndSubmit,onFormDataChange, onClose }) {
     }));
   };
 
-
   const handleSave = () => {
     console.log("Input data saved:", rows);
+    if (!formState.vendor) {
+      alert("Please select a vendor");
+      return;
+    }
+    const payload = {
+      status: "draft",
+      // currency: formState.currency,
+      currency: formState.currency, // url from API
+      purpose: formState.purpose,
+      vendor: formState.vendor,
+      is_hidden: false,
+    };
+    createPurchaseRequest(payload);
     alert("Data saved successfully!");
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const payload = {
+      status: "pending",
+      currency: formState.currency,
+      purpose: formState.purpose,
+      vendor: formState.vendor,
+      is_hidden: false,
+    };
 
     const formDataWithStringDate = {
       ...formState,
@@ -151,7 +170,8 @@ export default function Newpr({onSaveAndSubmit,onFormDataChange, onClose }) {
       rows,
     };
 
-    onSaveAndSubmit(formDataWithStringDate);
+    // onSaveAndSubmit(formDataWithStringDate);
+    onSaveAndSubmit(payload);
   };
   /*
 {
@@ -165,23 +185,21 @@ export default function Newpr({onSaveAndSubmit,onFormDataChange, onClose }) {
 }
 */
 
-
-
-const handleProductChange = (index, selectedProduct) => {
-  console.log(selectedProduct)
-  if (selectedProduct) {
-    const updatedRows = [...rows];
-    updatedRows[index] = {
-      ...updatedRows[index],
-      productName: selectedProduct.product_name,
-      description: selectedProduct.description,
-      unitPrice: selectedProduct.unit_price,
-      unt: selectedProduct.unit_of_Measure,
-      totalPrice: selectedProduct.unit_price * (updatedRows[index].qty || 0),
-    };
-    setRows(updatedRows);
-  }
-};
+  const handleProductChange = (index, selectedProduct) => {
+    console.log(selectedProduct);
+    if (selectedProduct) {
+      const updatedRows = [...rows];
+      updatedRows[index] = {
+        ...updatedRows[index],
+        productName: selectedProduct.product_name,
+        description: selectedProduct.description,
+        unitPrice: selectedProduct.unit_price,
+        unt: selectedProduct.unit_of_Measure,
+        totalPrice: selectedProduct.unit_price * (updatedRows[index].qty || 0),
+      };
+      setRows(updatedRows);
+    }
+  };
 
   const addRow = () => {
     console.log("Adding a new row...");
@@ -209,7 +227,7 @@ const handleProductChange = (index, selectedProduct) => {
       setPage(page - 1);
     }
   };
- /* const [products, setProducts] = useState([]);
+  /* const [products, setProducts] = useState([]);
 
   useEffect(() => {
    const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
@@ -257,7 +275,7 @@ const handleProductChange = (index, selectedProduct) => {
       console.warn("No currencies found in localStorage.");
     }
     setSavedCurrencies(currencies);
-  }, []); // Only run this effect once, on component mount 
+  }, []); // Only run this effect once, on component mount
 
   const handleCurrencyChange = (event, newValue) => {
     setSelectedCurrency(newValue);
@@ -275,8 +293,11 @@ const handleProductChange = (index, selectedProduct) => {
 
   return (
     <div className="npr-contain">
-     {/* <PurchaseHeader /> */}
-      <div id="npr" /*className={`npr ${showForm ? "fade-in" : "fade-out"}`}*/ className="npr">
+      {/* <PurchaseHeader /> */}
+      <div
+        id="npr"
+        /*className={`npr ${showForm ? "fade-in" : "fade-out"}`}*/ className="npr"
+      >
         <div className="npr1">
           <div className="npr2">
             <div className="npr2a">
@@ -345,16 +366,31 @@ const handleProductChange = (index, selectedProduct) => {
                 <div className="npr3ca">
                   <p>Select Currency</p>
                   <Autocomplete
-                    value={selectedCurrency}
-                    onChange={handleCurrencyChange}
-                    options={savedCurrencies} // Populate options from localStorage
+                    // value={selectedCurrency}
+                    value={
+                      currencies.find((c) => c.url === formState.currency) ||
+                      null
+                    }
+                    // onChange={handleCurrencyChange}
+                    onChange={(event, newValue) => {
+                      setFormState((prev) => ({
+                        ...prev,
+                        currency: newValue?.url || "",
+                      }));
+                    }}
+                    options={currencies} // Populate options from PurchaseContext
                     getOptionLabel={(option) =>
-                      `${option.name} - ${option.symbol}`
+                      `${option.currency_name} - ${option.currency_symbol}`
                     }
                     renderInput={(params) => (
                       <TextField
                         {...params}
                         label="Select Currency"
+                        required
+                        error={!formState.currency}
+                        helperText={
+                          !formState.currency && "Currency is required"
+                        }
                         className="newpod3cb"
                       />
                     )}
@@ -380,13 +416,13 @@ const handleProductChange = (index, selectedProduct) => {
                   <Autocomplete
                     value={selectedVendor}
                     onChange={handleVendorSelect}
-                    inputValue={vendorInputValue}
-                    onInputChange={(event, newInputValue) => {
-                      setVendorInputValue(newInputValue);
-                    }}
+                    // inputValue={vendorInputValue}
+                    // onInputChange={(event, newInputValue) => {
+                    //   setVendorInputValue(newInputValue);
+                    // }}
                     id="vendor-autocomplete"
                     options={savedVendors}
-                    getOptionLabel={(option) => option.vendorName}
+                    getOptionLabel={(option) => option.company_name}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -461,109 +497,152 @@ const handleProductChange = (index, selectedProduct) => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                        {rows.map((row, index) => (
-
-                          <StyledTableRow key={index + page * rowsPerPage}>
-                              <StyledTableCell component="th" scope="row">
-                                  <Autocomplete
-                                    options={products || []}
-                                    getOptionLabel={(option) => option.product_name || ""}
-                                    value={products.find((p) => p.product_name === row.productName) || null}
-                                    onChange={(event, newValue) => handleProductChange(index, newValue)}
-                                    disableClearable 
-                                    popupIcon={null}
-                                    renderInput={(params) => <TextField  className="no-arrows" {...params} variant="standard" sx={{ width: "100%",  "& .MuiInput-underline:before": {
-                                      borderBottomColor: "#C6CCD2"},
-                                      "& .MuiInputBase-input": {
-                                        color: "#A9B3BC", // Change text color
-                                      }
-                                     }} />}
-                                  />
-                              </StyledTableCell>
-                              <StyledTableCell>
-                                <TextField value={row.description}  variant="standard" InputProps={{ readOnly: true }} 
-                                sx={{ width: "100%",  "& .MuiInput-underline:before": {
-                                  borderBottomColor: "#C6CCD2", // Default border color
-                                } ,
-                                "& .MuiInputBase-input": {
-                                  color: "#A9B3BC", 
-                                },}}  />
-                              </StyledTableCell>
-                              <StyledTableCell>
+                      {rows.map((row, index) => (
+                        <StyledTableRow key={index + page * rowsPerPage}>
+                          <StyledTableCell component="th" scope="row">
+                            <Autocomplete
+                              options={products || []}
+                              getOptionLabel={(option) =>
+                                option.product_name || ""
+                              }
+                              value={
+                                products.find(
+                                  (p) => p.product_name === row.productName
+                                ) || null
+                              }
+                              onChange={(event, newValue) =>
+                                handleProductChange(index, newValue)
+                              }
+                              disableClearable
+                              popupIcon={null}
+                              renderInput={(params) => (
                                 <TextField
-                                  type="number"
-                                  placeholder="0"
-                                  value={row.qty}
-                                  sx={{ width: "100%",
-                                    "& .MuiInput-underline:before": {
-                                  borderBottomColor: "#C6CCD2"},
-                                  "& .MuiInputBase-input": {
-                                  color: "#A9B3BC",
-                                }
-                                   }}
                                   className="no-arrows"
-                                  style={{ textAlign: "right" }}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      index + page * rowsPerPage,
-                                      "qty",
-                                      e.target.value || 0
-                                    )
-                                  }
+                                  {...params}
                                   variant="standard"
+                                  sx={{
+                                    width: "100%",
+                                    "& .MuiInput-underline:before": {
+                                      borderBottomColor: "#C6CCD2",
+                                    },
+                                    "& .MuiInputBase-input": {
+                                      color: "#A9B3BC", // Change text color
+                                    },
+                                  }}
                                 />
-                              </StyledTableCell>
-
-                              {/* Unit of Measure (Editable) */}
-                              <StyledTableCell  align="right">
-                                <TextField 
-                                value={row.unt}
-                                 placeholder="kg"
-                                sx={{ width: "100%",
-                                  "& .MuiInput-underline:before": {
-                                  borderBottomColor: "#C6CCD2"},
-                                  "& .MuiInputBase-input": {
+                              )}
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            <TextField
+                              value={row.description}
+                              variant="standard"
+                              InputProps={{ readOnly: true }}
+                              sx={{
+                                width: "100%",
+                                "& .MuiInput-underline:before": {
+                                  borderBottomColor: "#C6CCD2", // Default border color
+                                },
+                                "& .MuiInputBase-input": {
                                   color: "#A9B3BC",
-                                }
-                                 }}
-                                className="no-arrows"
-                                style={{ textAlign: "right" }}
-                                InputProps={{ readOnly: true }} 
-                                variant="standard" />
-                              </StyledTableCell>
-
-                              {/* Unit Price (Autofilled) */}
-                              <StyledTableCell>
-                                <TextField value={row.unitPrice}  placeholder="000,000" sx={{ width: "100%",
-                                  "& .MuiInput-underline:before": {
-                                  borderBottomColor: "#C6CCD2"},
-                                  "& .MuiInputBase-input": {
+                                },
+                              }}
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            <TextField
+                              type="number"
+                              placeholder="0"
+                              value={row.qty}
+                              sx={{
+                                width: "100%",
+                                "& .MuiInput-underline:before": {
+                                  borderBottomColor: "#C6CCD2",
+                                },
+                                "& .MuiInputBase-input": {
                                   color: "#A9B3BC",
-                                }
-                                 }} variant="standard" InputProps={{ readOnly: true }} />
-                              </StyledTableCell>
+                                },
+                              }}
+                              className="no-arrows"
+                              style={{ textAlign: "right" }}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index + page * rowsPerPage,
+                                  "qty",
+                                  e.target.value || 0
+                                )
+                              }
+                              variant="standard"
+                            />
+                          </StyledTableCell>
 
-                              
+                          {/* Unit of Measure (Editable) */}
+                          <StyledTableCell align="right">
+                            <TextField
+                              value={row.unt}
+                              placeholder="kg"
+                              sx={{
+                                width: "100%",
+                                "& .MuiInput-underline:before": {
+                                  borderBottomColor: "#C6CCD2",
+                                },
+                                "& .MuiInputBase-input": {
+                                  color: "#A9B3BC",
+                                },
+                              }}
+                              className="no-arrows"
+                              style={{ textAlign: "right" }}
+                              InputProps={{ readOnly: true }}
+                              variant="standard"
+                            />
+                          </StyledTableCell>
 
-                              {/* Total Price (Autofilled) */}
-                              <StyledTableCell>
-                                <TextField value={row.totalPrice} placeholder="000,000"  variant="standard" sx={{ width: "100%",
-                                  "& .MuiInput-underline:before": {
-                                  borderBottomColor: "#C6CCD2"},
-                                  "& .MuiInputBase-input": {
-                                  color: "#A9B3BC", 
-                                }
-                                 }} InputProps={{ readOnly: true }} />
-                              </StyledTableCell>
-                          </StyledTableRow>
-                        ))}
-                        <StyledTableRow>
-                          <TableCell colSpan={5} align="right">
-                            <b> Total Amount</b>
-                          </TableCell>
-                          <TableCell align="right">
-                            {calculateTotalAmount()}
-                          </TableCell>
+                          {/* Unit Price (Autofilled) */}
+                          <StyledTableCell>
+                            <TextField
+                              value={row.unitPrice}
+                              placeholder="000,000"
+                              sx={{
+                                width: "100%",
+                                "& .MuiInput-underline:before": {
+                                  borderBottomColor: "#C6CCD2",
+                                },
+                                "& .MuiInputBase-input": {
+                                  color: "#A9B3BC",
+                                },
+                              }}
+                              variant="standard"
+                              InputProps={{ readOnly: true }}
+                            />
+                          </StyledTableCell>
+
+                          {/* Total Price (Autofilled) */}
+                          <StyledTableCell>
+                            <TextField
+                              value={row.totalPrice}
+                              placeholder="000,000"
+                              variant="standard"
+                              sx={{
+                                width: "100%",
+                                "& .MuiInput-underline:before": {
+                                  borderBottomColor: "#C6CCD2",
+                                },
+                                "& .MuiInputBase-input": {
+                                  color: "#A9B3BC",
+                                },
+                              }}
+                              InputProps={{ readOnly: true }}
+                            />
+                          </StyledTableCell>
+                        </StyledTableRow>
+                      ))}
+                      <StyledTableRow>
+                        <TableCell colSpan={5} align="right">
+                          <b> Total Amount</b>
+                        </TableCell>
+                        <TableCell align="right">
+                          {calculateTotalAmount()}
+                        </TableCell>
                       </StyledTableRow>
                     </TableBody>
                     {/*(<TableBody>

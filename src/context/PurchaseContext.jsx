@@ -7,19 +7,41 @@ const PurchaseContext = createContext();
 
 export const PurchaseProvider = ({ children }) => {
   const { tenantData } = useTenant();
+  const [currencies, setCurrencies] = useState([]);
   const [productCategories, setProductCategories] = useState([]);
-  const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [purchaseRequests, setPurchaseRequests] = useState([]);
   const [products, setProducts] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
-  console.log(vendors);
+  console.log("from database in purchaseCaontext: ", vendors);
 
   // const access_token = localStorage.getItem("access_token");
   const { tenant_schema_name, access_token } = tenantData || {};
 
   // Create a client for tenant-specific API calls
   const client = getTenantClient(tenant_schema_name, access_token);
+
+  // fetch currencies
+  const fetchCurrencies = async () => {
+    try {
+      const response = await client.get("/purchase/currency/");
+      setCurrencies(response.data);
+    } catch (err) {
+      setError(err);
+      console.error("Error fetching currencies:", err);
+    }
+  };
+  // create currency
+  const createCurrency = async (newCurrency) => {
+    try {
+      const response = await client.post("/purchase/currency/", newCurrency);
+      setCurrencies([...currencies, response.data]);
+      return response.data;
+    } catch (err) {
+      setError(err);
+      console.error("Error creating currency:", err);
+    }
+  };
 
   // upload file
   const uploadFile = async (file, endpoint) => {
@@ -40,39 +62,6 @@ export const PurchaseProvider = ({ children }) => {
     }
   };
 
-  // Fetch single purchase order by ID
-  const fetchSinglePurchaseOrder = async (id) => {
-    try {
-      const response = await client.get(`/purchase/purchase-order/${id}/`);
-      return response.data;
-    } catch (err) {
-      setError(err);
-      console.error("Error fetching purchase order:", err);
-    }
-  };
-
-  // Fetch all product categories
-  const fetchProductCategories = async () => {
-    try {
-      const response = await client.get("/purchase/product-categories/");
-      setProductCategories(response.data);
-    } catch (err) {
-      setError(err);
-      console.error("Error fetching product categories:", err);
-    }
-  };
-
-  // Fetch a single product by ID
-  // const fetchSingleProductByID = async () => {
-  //   try {
-  //     const response = await client.get(`/purchase/products/${id}/`);
-  //     setProducts(response.data);
-  //   } catch (err) {
-  //     setError(err);
-  //     console.error("Error fetching product:", err);
-  //   }
-  // };
-
   // Fetch all vendors
   const fetchVendors = async () => {
     try {
@@ -89,7 +78,7 @@ export const PurchaseProvider = ({ children }) => {
     try {
       const response = await client.post("/purchase/vendors/", newVendor, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-type": "multipart/form-data",
         },
       });
       setVendors([...vendors, response.data]);
@@ -133,68 +122,17 @@ export const PurchaseProvider = ({ children }) => {
     }
   };
 
-  // Fetch all purchase orders (GET)
-  const fetchPurchaseOrders = async () => {
+  // Save/create a new purchase request (POST)
+  const createPurchaseRequest = async (newRequest) => {
     try {
-      const response = await client.get("/purchase/purchase-order/");
-      setPurchaseOrders(response.data);
-    } catch (err) {
-      setError(err);
-      console.error("Error fetching purchase orders:", err);
-    }
-  };
-
-  // Create a new purchase order (POST)
-  const createPurchaseOrder = async (newOrder) => {
-    try {
-      const response = await client.post("/purchase/purchase-order/", newOrder);
-      setPurchaseOrders([...purchaseOrders, response.data]);
-    } catch (err) {
-      setError(err);
-      console.error("Error creating purchase order:", err);
-    }
-  };
-
-  // Update a purchase order (PUT)
-  const updatePurchaseOrder = async (id, updatedOrder) => {
-    try {
-      const response = await client.put(
-        `/purchase/purchase-order/${id}/`,
-        updatedOrder
+      const response = await client.post(
+        "/purchase/purchase-request/",
+        newRequest
       );
-      setPurchaseOrders(
-        purchaseOrders.map((order) => (order.id === id ? response.data : order))
-      );
+      setPurchaseRequests([...purchaseRequests, response.data]);
     } catch (err) {
       setError(err);
-      console.error("Error updating purchase order:", err);
-    }
-  };
-
-  // Partially update a purchase order (PATCH)
-  const partialUpdatePurchaseOrder = async (id, updatedFields) => {
-    try {
-      const response = await client.patch(
-        `/purchase/purchase-order/${id}/`,
-        updatedFields
-      );
-      setPurchaseOrders(
-        purchaseOrders.map((order) => (order.id === id ? response.data : order))
-      );
-    } catch (err) {
-      setError(err);
-      console.error("Error partially updating purchase order:", err);
-    }
-  };
-
-  // Delete a purchase order (DELETE)
-  const deletePurchaseOrder = async (id) => {
-    try {
-      await client.delete(`/purchase/purchase-order/${id}/`);
-      setPurchaseOrders(purchaseOrders.filter((order) => order.id !== id));
-    } catch (err) {
-      setError(err);
-      console.error("Error deleting purchase order:", err);
+      console.error("Error creating purchase request:", err);
     }
   };
 
@@ -216,28 +154,20 @@ export const PurchaseProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    if (tenantData) {
-      fetchPurchaseOrders();
-    }
-  }, []);
-
   return (
     <PurchaseContext.Provider
       value={{
+        currencies,
+        fetchCurrencies,
+        createCurrency,
         uploadFile,
         vendors,
         createVendor,
         products,
         createProduct,
-        productCategories,
         purchaseRequests,
         fetchPurchaseRequests,
-        purchaseOrders,
-        createPurchaseOrder,
-        updatePurchaseOrder,
-        partialUpdatePurchaseOrder,
-        deletePurchaseOrder,
+        createPurchaseRequest,
         error,
       }}
     >

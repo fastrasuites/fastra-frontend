@@ -5,24 +5,27 @@ import "./Newvendor.css";
 import vendorLogo from "../../../image/vendor-logo.svg";
 import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
 import PurchaseHeader from "../PurchaseHeader";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 export default function Newvendor({ onClose, onSaveAndSubmit }) {
+  const { createVendor } = usePurchase();
   const [showForm] = useState(true);
   const [formState, setFormState] = useState({
     vendor_name: "",
     email: "",
     phone_number: "",
     address: "",
-    image: "",
+    imageFile: null, // Store actual file
+    imagePreview: "", // Store image URL for preview
   });
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
       setFormState((prev) => ({
         ...prev,
-        image: imageUrl,
+        imageFile: file, // Store file
+        imagePreview: URL.createObjectURL(file), // Store preview
       }));
     }
   };
@@ -35,11 +38,13 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
     formData.append("email", formState.email);
     formData.append("address", formState.address);
     formData.append("phone_number", formState.phone_number);
-    if (formState.image) {
-      formData.append("profile_picture", formState.image);
+
+    // Ensure imageFile is a File before appending
+    if (formState.imageFile instanceof File) {
+      formData.append("profile_picture", formState.imageFile);
     }
 
-    onSaveAndSubmit(formData);
+    createVendor(formData);
     onClose();
   };
 
@@ -137,9 +142,9 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                         name="image"
                         style={{ display: "none" }}
                       />
-                      {formState.image ? (
+                      {formState.imagePreview ? (
                         <img
-                          src={formState.image}
+                          src={formState.imagePreview}
                           alt="Preview"
                           style={{
                             width: "98px",

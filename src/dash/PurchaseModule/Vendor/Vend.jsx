@@ -54,6 +54,7 @@ export default function Vend() {
   // });
   // const [vendors, setVendors] = useState([]);
   const { vendors, createVendor, error } = usePurchase();
+  console.log("vendors from database", vendors);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(vendors);
   console.log(filteredItems);
