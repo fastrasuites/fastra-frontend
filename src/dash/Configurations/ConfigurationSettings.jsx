@@ -38,16 +38,7 @@ const ConfigurationSettings = () => {
     { currency_name: "USD", currency_symbol: "$" },
     { currency_name: "EUR", currency_symbol: "€" },
     { currency_name: "GBP", currency_symbol: "£" },
-    // { name: "Pound", symbol: "£" },
-    // { name: "Yen", symbol: "¥" },
-    // { name: "Rupee", symbol: "₹" },
-    // { name: "Australian Dollar", symbol: "A$" },
-    // { name: "Canadian Dollar", symbol: "C$" },
-    // { name: "Swiss Franc", symbol: "CHF" },
-    // { name: "Yuan", symbol: "元" },
-    // { name: "Krona", symbol: "kr" },
-    // { name: "Ruble", symbol: "₽" },
-    // { name: "Rand", symbol: "R" },
+    { currency_name: "JPY", currency_symbol: "¥" },
   ];
 
   useEffect(() => {
@@ -88,10 +79,6 @@ const ConfigurationSettings = () => {
       return;
     }
 
-    // const newCurrency = { name: selectedCurrency, symbol: selectedSymbol };
-    // const updatedCurrencies = [...savedCurrencies, newCurrency];
-    // localStorage.setItem("savedCurrencies", JSON.stringify(updatedCurrencies));
-    // setSavedCurrencies(updatedCurrencies);
     try {
       await createCurrency(selectedCurrency);
       setSelectedCurrency({ currency_name: "", currency_symbol: "" });
@@ -194,22 +181,6 @@ const ConfigurationSettings = () => {
                   </MenuItem>
                 ))}
               </TextField>
-
-              {/* Currency Symbol dropdown */}
-              {/* <FormControl fullWidth>
-                <InputLabel>Currency Symbol</InputLabel>
-                <Select
-                  value={selectedSymbol}
-                  onChange={handleSymbolChange}
-                  label="Currency Symbol"
-                >
-                  {currencyOptions.map((currency) => (
-                    <MenuItem key={currency.symbol} value={currency.symbol}>
-                      {currency.symbol}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl> */}
             </div>
 
             <div className="create-button">

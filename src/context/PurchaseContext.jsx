@@ -14,12 +14,18 @@ export const PurchaseProvider = ({ children }) => {
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
   console.log("from database in purchaseCaontext: ", vendors);
+  console.log("from database in purchaseCaontext: ", products);
+  console.log("from database in purchaseCaontext: ", purchaseRequests);
 
   // const access_token = localStorage.getItem("access_token");
-  const { tenant_schema_name, access_token } = tenantData || {};
+  const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
   // Create a client for tenant-specific API calls
-  const client = getTenantClient(tenant_schema_name, access_token);
+  const client = getTenantClient(
+    tenant_schema_name,
+    access_token,
+    refresh_token
+  );
 
   // fetch currencies
   const fetchCurrencies = async () => {
@@ -138,6 +144,12 @@ export const PurchaseProvider = ({ children }) => {
 
   useEffect(() => {
     if (tenantData) {
+      fetchCurrencies();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tenantData) {
       fetchVendors();
     }
   }, []);
@@ -157,6 +169,8 @@ export const PurchaseProvider = ({ children }) => {
   return (
     <PurchaseContext.Provider
       value={{
+        fetchVendors,
+        fetchProducts,
         currencies,
         fetchCurrencies,
         createCurrency,

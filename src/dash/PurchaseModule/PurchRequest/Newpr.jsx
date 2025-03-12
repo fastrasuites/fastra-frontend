@@ -14,7 +14,8 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
-import { products } from "./products";
+// import { products } from "./products";
+import { useTenant } from "../../../context/TenantContext";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -40,14 +41,32 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
-  const { vendors, createPurchaseRequest, currencies } = usePurchase();
+  const { tenantData } = useTenant();
+  const {
+    products,
+    fetchProducts,
+    vendors,
+    createPurchaseRequest,
+    currencies,
+    fetchCurrencies,
+    fetchVendors,
+  } = usePurchase();
+
+  useEffect(() => {
+    if (tenantData) {
+      fetchVendors();
+      fetchCurrencies();
+      fetchProducts();
+    }
+  }, [tenantData]);
 
   const [rows, setRows] = useState([
     {
       productName: "",
       description: "",
       qty: "",
-      unitPrice: "",
+      unt: "", // unit_of_measure
+      unitPrice: "", // estimated_unit_price
       totalPrice: "",
     },
   ]);
@@ -83,7 +102,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   const [selectedVendor, setSelectedVendor] = useState(null);
   // const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
   const savedVendors = vendors;
-  console.log("Saved Vendors:", savedVendors);
+  // console.log("Saved Vendors:", savedVendors);
   const handleVendorSelect = (event, newValue) => {
     setSelectedVendor(newValue);
     if (newValue) {
@@ -137,51 +156,88 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   };
 
   const handleSave = () => {
-    console.log("Input data saved:", rows);
     if (!formState.vendor) {
       alert("Please select a vendor");
       return;
     }
+
+    const items = rows.map((row) => ({
+      product: row.productName,
+      description: row?.product_description,
+      qty: parseInt(row.qty) || 0,
+      unit_of_measure: row.unt,
+      estimated_unit_price: parseFloat(row.unitPrice) || 0,
+    }));
+    console.log("items ", items);
+
     const payload = {
       status: "draft",
-      // currency: formState.currency,
       currency: formState.currency, // url from API
       purpose: formState.purpose,
       vendor: formState.vendor,
+      items: items,
       is_hidden: false,
     };
+
     createPurchaseRequest(payload);
+    console.log("Input data saved:", rows);
     alert("Data saved successfully!");
+  };
+
+  const validateSubmission = () => {
+    return rows.every(
+      (row) => row.productName && row.qty && row.unitPrice && row.unt
+    );
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!formState.vendor) {
+      alert("Please fill all required fields in the product rows");
+      return;
+    }
+
+    if (!validateSubmission()) {
+      alert("Please fill all required fields in the product rows");
+      return;
+    }
+
+    const items = rows.map((row) => ({
+      product: row.productName,
+      description: row.description,
+      qty: parseInt(row.qty) || 0,
+      unit_of_measure: row.unt,
+      estimated_unit_price: parseFloat(row.unitPrice) || 0,
+    }));
+
     const payload = {
       status: "pending",
       currency: formState.currency,
       purpose: formState.purpose,
       vendor: formState.vendor,
+      items: items,
       is_hidden: false,
     };
 
-    const formDataWithStringDate = {
-      ...formState,
-      date: formState.date.toString(), // Convert date to string
-      rows,
-    };
-
-    // onSaveAndSubmit(formDataWithStringDate);
     onSaveAndSubmit(payload);
   };
   /*
 {
-  "department": "<uri>",
-  "suggested_vendor": "<uri>",
   "status": "draft",
-  "purpose": "<string>",
-  "is_hidden": "<boolean>",
-  "date_created": -44489739.02090701,
-  "date_updated": false
+  "currency": "string",
+  "purpose": "string",
+  "vendor": "string",
+  "items": [
+    {
+      "product": "string",
+      "description": "string",
+      "qty": 2147483647,
+      "unit_of_measure": "string",
+      "estimated_unit_price": "0.98"
+    }
+  ],
+  "is_hidden": true
 }
 */
 
@@ -191,11 +247,12 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       const updatedRows = [...rows];
       updatedRows[index] = {
         ...updatedRows[index],
-        productName: selectedProduct.product_name,
-        description: selectedProduct.description,
-        unitPrice: selectedProduct.unit_price,
-        unt: selectedProduct.unit_of_Measure,
-        totalPrice: selectedProduct.unit_price * (updatedRows[index].qty || 0),
+        // productName: selectedProduct.product_name,
+        description: selectedProduct.product_description,
+        unitPrice: "",
+        unt: selectedProduct.unit_of_measure,
+        // totalPrice: selectedProduct.unit_price * (updatedRows[index].qty || 0),
+        totalPrice: "",
       };
       setRows(updatedRows);
     }
@@ -227,13 +284,6 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       setPage(page - 1);
     }
   };
-  /* const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-   const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
-    setProducts(savedProducts);
-  }, []);
-  */
 
   const calculateTotalPrice = (product) => {
     const pricePerUnit = parseFloat(product.sp.replace("₦", "")) || 0;
@@ -290,6 +340,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       console.log("Selected Currency:", newValue);
     }
   };
+  // console.log(rows);
 
   return (
     <div className="npr-contain">
@@ -507,12 +558,17 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                               }
                               value={
                                 products.find(
-                                  (p) => p.product_name === row.productName
+                                  (p) => p.url === row.productName
                                 ) || null
                               }
-                              onChange={(event, newValue) =>
-                                handleProductChange(index, newValue)
-                              }
+                              onChange={(event, newValue) => {
+                                handleProductChange(index, newValue);
+                                handleInputChange(
+                                  index,
+                                  "productName",
+                                  newValue?.url || ""
+                                );
+                              }}
                               disableClearable
                               popupIcon={null}
                               renderInput={(params) => (
@@ -600,8 +656,17 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                           {/* Unit Price (Autofilled) */}
                           <StyledTableCell>
                             <TextField
+                              type="number"
                               value={row.unitPrice}
-                              placeholder="000,000"
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index + page * rowsPerPage,
+                                  "unitPrice",
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              placeholder="0.00"
+                              inputProps={{ min: 0, step: 0.01 }}
                               sx={{
                                 width: "100%",
                                 "& .MuiInput-underline:before": {
@@ -612,7 +677,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                                 },
                               }}
                               variant="standard"
-                              InputProps={{ readOnly: true }}
+                              // InputProps={{ readOnly: true }}
                             />
                           </StyledTableCell>
 
@@ -645,66 +710,6 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                         </TableCell>
                       </StyledTableRow>
                     </TableBody>
-                    {/*(<TableBody>
-                      {products.map((product, index) => (
-                        <StyledTableRow key={index + page * rowsPerPage}>
-                          <StyledTableCell component="th" scope="row">
-                            {product.name}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {product.productDesc}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            <input
-                              type="number"
-                              placeholder="0.00"
-                              name="qty"
-                              className="no-arrows"
-                              style={{ textAlign: "right" }}
-                              value={product.qty}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  index + page * rowsPerPage,
-                                  "qty",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            {product.unt}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            <input
-                              type="number"
-                              placeholder="0.00"
-                              name="unitPrice"
-                              className="no-arrows"
-                              style={{ textAlign: "right" }}
-                              value={product.unitPrice}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  index + page * rowsPerPage,
-                                  "unitPrice",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            {calculateTotalAmount()}
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      ))}
-                      <StyledTableRow>
-                        <StyledTableCell colSpan={5} align="right">
-                          <b> Total Amount</b>
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          {calculateTotalAmount()}
-                        </StyledTableCell>
-                      </StyledTableRow>
-                    </TableBody>*/}
                   </Table>
                 </TableContainer>
               </div>
