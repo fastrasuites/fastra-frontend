@@ -71,7 +71,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       totalPrice: "",
     },
   ]);
-
+  console.log(rows);
 
   // Generate unique Purchase Request ID
   const generateNewID = () => {
@@ -158,9 +158,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       const defaultQty = selectedProduct.default_qty || 1;
       // Use estimated_unit_price or fallback to unit_price.
       const estimatedUnitPrice =
-        selectedProduct.estimated_unit_price ||
-        selectedProduct.unit_price ||
-        0;
+        selectedProduct.estimated_unit_price || selectedProduct.unit_price || 0;
       updatedRows[actualIndex] = {
         ...updatedRows[actualIndex],
         productName: selectedProduct.url,
@@ -298,7 +296,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       try {
         const localCurrencies =
           JSON.parse(localStorage.getItem("savedCurrencies")) || [];
-        setSavedCurrencies(Array.isArray(localCurrencies) ? localCurrencies : []);
+        setSavedCurrencies(
+          Array.isArray(localCurrencies) ? localCurrencies : []
+        );
       } catch (error) {
         console.error("Error parsing savedCurrencies:", error);
         setSavedCurrencies([]);
@@ -321,9 +321,8 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   const startIndex = page * rowsPerPage;
   const currentRows = rows.slice(startIndex, startIndex + rowsPerPage);
   const pageCount = Math.ceil(rows.length / rowsPerPage);
-  
 
-  console.log(products)
+  console.log(products);
 
   return (
     <div className="npr-contain">
@@ -373,7 +372,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                 <div className="npr3bc">
                   <p>Date</p>
                   <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                    {`${formatDate(formState.date)} - ${formatTime(formState.date)}`}
+                    {`${formatDate(formState.date)} - ${formatTime(
+                      formState.date
+                    )}`}
                   </p>
                 </div>
                 <div className="npr3bc">
@@ -396,8 +397,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                   <p>Select Currency</p>
                   <Autocomplete
                     value={
-                      savedCurrencies.find((c) => c.url === formState.currency) ||
-                      null
+                      savedCurrencies.find(
+                        (c) => c.url === formState.currency
+                      ) || null
                     }
                     onChange={handleCurrencyChange}
                     options={savedCurrencies}
@@ -410,7 +412,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                         label="Select Currency"
                         required
                         error={!formState.currency}
-                        helperText={!formState.currency && "Currency is required"}
+                        helperText={
+                          !formState.currency && "Currency is required"
+                        }
                         className="newpod3cb"
                       />
                     )}
@@ -493,7 +497,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                         <StyledTableCell align="left">
                           Estimated Unit Price
                         </StyledTableCell>
-                        <StyledTableCell align="left">Total Price</StyledTableCell>
+                        <StyledTableCell align="left">
+                          Total Price
+                        </StyledTableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -508,8 +514,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                                   option.product_name || ""
                                 }
                                 value={
-                                  products.find((p) => p.url === row.productName) ||
-                                  null
+                                  products.find(
+                                    (p) => p.url === row.productName
+                                  ) || null
                                 }
                                 // When a product is selected, autofill its details.
                                 onChange={(event, newValue) =>
@@ -526,7 +533,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                                       "& .MuiInput-underline:before": {
                                         borderBottomColor: "#C6CCD2",
                                       },
-                                      "& .MuiInputBase-input": { color: "#A9B3BC" },
+                                      "& .MuiInputBase-input": {
+                                        color: "#A9B3BC",
+                                      },
                                     }}
                                   />
                                 )}
@@ -553,14 +562,20 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                                 value={row.qty}
                                 sx={{
                                   width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+                                  "& .MuiInput-underline:before": {
+                                    borderBottomColor: "#C6CCD2",
+                                  },
                                   "& .MuiInputBase-input": { color: "#A9B3BC" },
                                 }}
                                 className="no-arrows"
                                 style={{ textAlign: "right" }}
                                 // Allow manual update if needed
                                 onChange={(e) =>
-                                  handleInputChange(actualIndex, "qty", e.target.value || 0)
+                                  handleInputChange(
+                                    actualIndex,
+                                    "qty",
+                                    e.target.value || 0
+                                  )
                                 }
                                 variant="standard"
                               />
@@ -571,7 +586,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                                 placeholder="kg"
                                 sx={{
                                   width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+                                  "& .MuiInput-underline:before": {
+                                    borderBottomColor: "#C6CCD2",
+                                  },
                                   "& .MuiInputBase-input": { color: "#A9B3BC" },
                                 }}
                                 className="no-arrows"
@@ -585,13 +602,19 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                                 type="number"
                                 value={row.unitPrice}
                                 onChange={(e) =>
-                                  handleInputChange(actualIndex, "unitPrice", e.target.value || 0)
+                                  handleInputChange(
+                                    actualIndex,
+                                    "unitPrice",
+                                    e.target.value || 0
+                                  )
                                 }
                                 placeholder="0.00"
                                 inputProps={{ min: 0, step: 0.01 }}
                                 sx={{
                                   width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+                                  "& .MuiInput-underline:before": {
+                                    borderBottomColor: "#C6CCD2",
+                                  },
                                   "& .MuiInputBase-input": { color: "#A9B3BC" },
                                 }}
                                 variant="standard"
@@ -604,7 +627,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                                 variant="standard"
                                 sx={{
                                   width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+                                  "& .MuiInput-underline:before": {
+                                    borderBottomColor: "#C6CCD2",
+                                  },
                                   "& .MuiInputBase-input": { color: "#A9B3BC" },
                                 }}
                                 InputProps={{ readOnly: true }}
@@ -617,7 +642,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                         <TableCell colSpan={5} align="right">
                           <b>Total Amount</b>
                         </TableCell>
-                        <TableCell align="right">{calculateTotalAmount()}</TableCell>
+                        <TableCell align="right">
+                          {calculateTotalAmount()}
+                        </TableCell>
                       </StyledTableRow>
                     </TableBody>
                   </Table>
