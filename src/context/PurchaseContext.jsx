@@ -13,9 +13,9 @@ export const PurchaseProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
-  console.log("from database in purchaseCaontext: ", vendors);
-  console.log("from database in purchaseCaontext: ", products);
-  console.log("from database in purchaseCaontext: ", purchaseRequests);
+  // console.log("from database in purchaseCaontext: ", vendors);
+  // console.log("from database in purchaseCaontext: ", products);
+  // console.log("from database in purchaseCaontext: ", purchaseRequests);
 
   // const access_token = localStorage.getItem("access_token");
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
@@ -97,8 +97,38 @@ export const PurchaseProvider = ({ children }) => {
   // Fetch all products
   const fetchProducts = async () => {
     try {
-      const response = await client.get("/purchase/products/");
-      setProducts(response.data); // Set products state
+      // Fetch the list of products from the tenant API.
+      const productsResponse = await client.get("/purchase/products/");
+      const productsData = productsResponse.data;
+
+      const productsWithRealUnits = await Promise.all(
+        productsData.map(async (product) => {
+          try {
+
+            const originalUnit = product.unit_of_measure;
+            // Convert the unit_of_measure URL to HTTPS if needed.
+            const unitUrl = product.unit_of_measure.replace(
+              /^http:\/\//i,
+              "https://"
+            );
+            const unitResponse = await client.get(unitUrl);
+            const unitData = unitResponse.data;
+
+            const realUnit = unitData.unit_category || "";
+            return { ...product, unit_of_measure: [originalUnit, realUnit] };
+          } catch (error) {
+            console.error(
+              "Error fetching unit measure for product:",
+              product.url,
+              error
+            );
+            // Return the product unchanged if fetching fails.
+            return product;
+          }
+        })
+      );
+
+      setProducts(productsWithRealUnits);
     } catch (err) {
       setError(err);
       console.error("Error fetching products:", err);
