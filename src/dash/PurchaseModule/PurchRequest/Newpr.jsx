@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -12,10 +12,11 @@ import autosave from "../../../image/autosave.svg";
 import "./Newpr.css";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-import PurchaseHeader from "../PurchaseHeader";
+// import PurchaseHeader from "../PurchaseHeader"; // Not used currently
 import { usePurchase } from "../../../context/PurchaseContext";
 import { useTenant } from "../../../context/TenantContext";
 
+// Styled components for table cells/rows
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.white,
@@ -39,6 +40,123 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
+// Memoized ProductRow component to reduce unnecessary re-renders
+const ProductRow = React.memo(
+  ({ row, index, products, onProductChange, onInputChange }) => {
+    return (
+      <StyledTableRow>
+        {/* Product Name Autocomplete */}
+        <StyledTableCell component="th" scope="row">
+          <Autocomplete
+            options={products}
+            getOptionLabel={(option) => option.product_name || ""}
+            value={products.find((p) => p.url === row.productName) || null}
+            onChange={(event, newValue) => onProductChange(index, newValue)}
+            disableClearable
+            popupIcon={null}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                sx={{
+                  width: "100%",
+                  "& .MuiInput-underline:before": {
+                    borderBottomColor: "#C6CCD2",
+                  },
+                  "& .MuiInputBase-input": { color: "#A9B3BC" },
+                }}
+              />
+            )}
+          />
+        </StyledTableCell>
+
+        {/* Description (read-only) */}
+        <StyledTableCell>
+          <TextField
+            value={row.description}
+            variant="standard"
+            InputProps={{ readOnly: true }}
+            sx={{
+              width: "100%",
+              "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+              "& .MuiInputBase-input": { color: "#A9B3BC" },
+            }}
+          />
+        </StyledTableCell>
+
+        {/* Quantity Input */}
+        <StyledTableCell>
+          <TextField
+            type="number"
+            placeholder="0"
+            value={row.qty}
+            sx={{
+              width: "100%",
+              "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+              "& .MuiInputBase-input": { color: "#A9B3BC" },
+            }}
+            className="no-arrows"
+            style={{ textAlign: "right" }}
+            onChange={(e) => onInputChange(index, "qty", e.target.value || 0)}
+            variant="standard"
+          />
+        </StyledTableCell>
+
+        {/* Unit Measurement (read-only) */}
+        <StyledTableCell align="right">
+          <TextField
+            value={row.unt[1] || ""}
+            placeholder="kg"
+            sx={{
+              width: "100%",
+              "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+              "& .MuiInputBase-input": { color: "#A9B3BC" },
+            }}
+            className="no-arrows"
+            style={{ textAlign: "right" }}
+            InputProps={{ readOnly: true }}
+            variant="standard"
+          />
+        </StyledTableCell>
+
+        {/* Estimated Unit Price Input */}
+        <StyledTableCell>
+          <TextField
+            type="number"
+            value={row.unitPrice}
+            onChange={(e) =>
+              onInputChange(index, "unitPrice", e.target.value || 0)
+            }
+            placeholder="0.00"
+            inputProps={{ min: 0, step: 0.01 }}
+            sx={{
+              width: "100%",
+              "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+              "& .MuiInputBase-input": { color: "#A9B3BC" },
+            }}
+            variant="standard"
+          />
+        </StyledTableCell>
+
+        {/* Total Price (read-only) */}
+        <StyledTableCell>
+          <TextField
+            value={row.totalPrice}
+            placeholder="0.00"
+            variant="standard"
+            sx={{
+              width: "100%",
+              "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+              "& .MuiInputBase-input": { color: "#A9B3BC" },
+            }}
+            InputProps={{ readOnly: true }}
+          />
+        </StyledTableCell>
+      </StyledTableRow>
+    );
+  }
+);
+
 export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   const { tenantData } = useTenant();
   const {
@@ -51,7 +169,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     fetchVendors,
   } = usePurchase();
 
-  // Fetch vendors, currencies, and products when tenantData is available.
+  // Fetch related data when tenantData is available
   useEffect(() => {
     if (tenantData) {
       fetchVendors();
@@ -60,21 +178,20 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     }
   }, [tenantData, fetchVendors, fetchCurrencies, fetchProducts]);
 
-  // Rows state for product items
+  // Initialize product rows with consistent data types
   const [rows, setRows] = useState([
     {
       productName: "",
       description: "",
       qty: "",
-      unt: [], // unit_of_measure
+      unt: [],
       unitPrice: "",
       totalPrice: "",
     },
   ]);
 
-
-  // Generate unique Purchase Request ID
-  const generateNewID = () => {
+  // Generate a unique Purchase Request ID
+  const generateNewID = useCallback(() => {
     const lastID = localStorage.getItem("lastGeneratedID");
     let newID = "PR00001";
     if (lastID) {
@@ -83,13 +200,14 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     }
     localStorage.setItem("lastGeneratedID", newID);
     return newID;
-  };
+  }, []);
 
+  // Form state initialization (controlled inputs)
   const [formState, setFormState] = useState({
     id: generateNewID(),
     productName: "",
     amount: "",
-    requester: "Firstname Lastname", // Assuming requester is the logged-in user
+    requester: "Firstname Lastname",
     department: "Sales",
     status: "Pending",
     date: new Date(),
@@ -106,126 +224,136 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const savedVendors = vendors || [];
 
-  const handleVendorSelect = (event, newValue) => {
+  const handleVendorSelect = useCallback((event, newValue) => {
     setSelectedVendor(newValue);
     setFormState((prev) => ({
       ...prev,
       vendor: newValue ? newValue.url : "",
     }));
-  };
-
-  // Update the date in formState every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFormState((prevState) => ({
-        ...prevState,
-        date: new Date(),
-      }));
-    }, 1000);
-    return () => clearInterval(timer);
   }, []);
 
-  // Handle input changes for product rows (for non-product based fields)
-  const handleInputChange = (actualIndex, key, value) => {
-    const newRows = [...rows];
-    if (key === "qty" || key === "unitPrice") {
-      value = Math.max(0, parseFloat(value) || 0);
-    }
-    newRows[actualIndex][key] = value;
-    if (key === "qty" || key === "unitPrice") {
-      newRows[actualIndex]["totalPrice"] = (
-        newRows[actualIndex]["qty"] * (newRows[actualIndex]["unitPrice"] || 0)
-      ).toFixed(2);
-    }
-    setRows(newRows);
+  // Handle row input changes and recalculate totals
+  const handleInputChange = useCallback((index, key, value) => {
+    setRows((prevRows) => {
+      const newRows = [...prevRows];
+      if (key === "qty" || key === "unitPrice") {
+        value = Math.max(0, parseFloat(value) || 0);
+      }
+      newRows[index] = { ...newRows[index], [key]: value };
 
-    // Calculate total amount for all rows
-    const totalAmount = newRows.reduce(
-      (sum, row) => sum + parseFloat(row.totalPrice || 0),
-      0
-    );
-    setFormState((prevState) => ({
-      ...prevState,
-      amount: totalAmount.toFixed(2),
-    }));
-  };
+      if (key === "qty" || key === "unitPrice") {
+        const qty = newRows[index].qty;
+        const unitPrice = newRows[index].unitPrice || 0;
+        newRows[index].totalPrice = (qty * unitPrice).toFixed(2);
+      }
 
-  // Handle product selection and autofill row details
-  const handleProductChange = (actualIndex, selectedProduct) => {
+      const totalAmount = newRows.reduce(
+        (sum, row) => sum + parseFloat(row.totalPrice || 0),
+        0
+      );
+      setFormState((prevState) => ({
+        ...prevState,
+        amount: totalAmount.toFixed(2),
+      }));
+
+      return newRows;
+    });
+  }, []);
+
+  // Handle product selection to autofill row details
+  const handleProductChange = useCallback((index, selectedProduct) => {
     if (selectedProduct) {
-      const updatedRows = [...rows];
-      // Use default quantity from product if available, otherwise default to 1.
-      const defaultQty = selectedProduct.default_qty || 1;
-      // Use estimated_unit_price or fallback to unit_price.
-      const estimatedUnitPrice =
-        selectedProduct.estimated_unit_price ||
-        selectedProduct.unit_price ||
-        0;
-      updatedRows[actualIndex] = {
-        ...updatedRows[actualIndex],
-        productName: selectedProduct.url,
-        description: selectedProduct.product_description,
-        qty: defaultQty,
-        unt: selectedProduct.unit_of_measure,
-        unitPrice: estimatedUnitPrice,
-        totalPrice: (defaultQty * estimatedUnitPrice).toFixed(2),
-      };
-      setRows(updatedRows);
-    }
-  };
+      setRows((prevRows) => {
+        const newRows = [...prevRows];
+        const defaultQty = selectedProduct.default_qty || 1;
+        const estimatedUnitPrice =
+          selectedProduct.estimated_unit_price ||
+          selectedProduct.unit_price ||
+          0;
+        newRows[index] = {
+          ...newRows[index],
+          productName: selectedProduct.url,
+          description: selectedProduct.product_description,
+          qty: defaultQty,
+          unt: selectedProduct.unit_of_measure,
+          unitPrice: estimatedUnitPrice,
+          totalPrice: (defaultQty * estimatedUnitPrice).toFixed(2),
+        };
 
-  // Add a new row for product items
-  const addRow = () => {
-    setRows([
-      ...rows,
+        const totalAmount = newRows.reduce(
+          (sum, row) => sum + parseFloat(row.totalPrice || 0),
+          0
+        );
+        setFormState((prevState) => ({
+          ...prevState,
+          amount: totalAmount.toFixed(2),
+        }));
+
+        return newRows;
+      });
+    }
+  }, []);
+
+  // Add a new row with consistent initialization
+  const addRow = useCallback(() => {
+    setRows((prevRows) => [
+      ...prevRows,
       {
         productName: "",
         description: "",
-        unt: "",
+        unt: [],
         qty: "",
         unitPrice: "",
         totalPrice: "",
       },
     ]);
-  };
+  }, []);
 
   // Pagination handlers
-  const handleNextPage = () => {
-    if ((page + 1) * rowsPerPage < rows.length) {
-      setPage(page + 1);
-    }
-  };
+  const handleNextPage = useCallback(() => {
+    setPage((prevPage) =>
+      (prevPage + 1) * rowsPerPage < rows.length ? prevPage + 1 : prevPage
+    );
+  }, [rows.length, rowsPerPage]);
 
-  const handlePreviousPage = () => {
-    if (page > 0) {
-      setPage(page - 1);
-    }
-  };
+  const handlePreviousPage = useCallback(() => {
+    setPage((prevPage) => (prevPage > 0 ? prevPage - 1 : prevPage));
+  }, []);
 
-  // Calculate total amount for display
-  const calculateTotalAmount = () => {
+  // Derived values for total amount, current rows, and page count
+  const totalAmount = useMemo(() => {
     return rows
       .reduce((sum, row) => sum + parseFloat(row.totalPrice || 0), 0)
       .toFixed(2);
-  };
+  }, [rows]);
 
-  // Date and time formatting functions
-  const formatDate = (date) => {
+  const currentRows = useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    return rows.slice(startIndex, startIndex + rowsPerPage);
+  }, [rows, page, rowsPerPage]);
+
+  const pageCount = useMemo(
+    () => Math.ceil(rows.length / rowsPerPage),
+    [rows, rowsPerPage]
+  );
+
+  // Date/time formatting functions
+  const formatDate = useCallback((date) => {
     const options = { day: "numeric", month: "short", year: "numeric" };
     return date.toLocaleDateString("en-US", options);
-  };
+  }, []);
 
-  const formatTime = (date) => {
+  const formatTime = useCallback((date) => {
     const hours = date.getHours();
     const minutes = date.getMinutes();
     const ampm = hours >= 12 ? "pm" : "am";
     const formattedHours = hours % 12 || 12;
     const formattedMinutes = minutes.toString().padStart(2, "0");
     return `${formattedHours}:${formattedMinutes}${ampm}`;
-  };
+  }, []);
 
-  // Handle Save button click (draft)
-  const handleSave = () => {
+  // Save draft handler
+  const handleSave = useCallback(() => {
     if (!formState.vendor) {
       alert("Please select a vendor");
       return;
@@ -234,7 +362,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       product: row.productName,
       description: row.description,
       qty: parseInt(row.qty) || 0,
-      unit_of_measure: row.unt[0],
+      unit_of_measure: Array.isArray(row.unt) ? row.unt[0] : row.unt,
       estimated_unit_price: parseFloat(row.unitPrice) || 0,
     }));
     const payload = {
@@ -242,63 +370,68 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       currency: formState.currency,
       purpose: formState.purpose,
       vendor: formState.vendor,
-      items: items,
+      items,
       is_hidden: false,
     };
-    // console.log
+    console.log("Payload:", payload);
     createPurchaseRequest(payload);
     alert("Data saved successfully!");
-  };
+  }, [formState, rows, createPurchaseRequest]);
 
-  // Validate submission before final submit
-  const validateSubmission = () => {
+  // Validate product rows before submission
+  const validateSubmission = useCallback(() => {
     return rows.every(
       (row) => row.productName && row.qty && row.unitPrice && row.unt
     );
-  };
+  }, [rows]);
 
-  // Handle form submission (Save & Submit)
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formState.vendor) {
-      alert("Please select a vendor");
-      return;
-    }
-    if (!validateSubmission()) {
-      alert("Please fill all required fields in the product rows");
-      return;
-    }
-    const items = rows.map((row) => ({
-      product: row.productName,
-      description: row.description,
-      qty: parseInt(row.qty) || 0,
-      unit_of_measure: row.unt,
-      estimated_unit_price: parseFloat(row.unitPrice) || 0,
-    }));
-    const payload = {
-      status: "pending",
-      currency: formState.currency,
-      purpose: formState.purpose,
-      vendor: formState.vendor,
-      items: items,
-      is_hidden: false,
-    };
-    onSaveAndSubmit(payload);
-  };
+  // Final submit handler
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!formState.vendor) {
+        alert("Please select a vendor");
+        return;
+      }
+      if (!validateSubmission()) {
+        alert("Please fill all required fields in the product rows");
+        return;
+      }
+      const items = rows.map((row) => ({
+        product: row.productName,
+        description: row.description,
+        qty: parseInt(row.qty) || 0,
+        unit_of_measure: row.unt,
+        estimated_unit_price: parseFloat(row.unitPrice) || 0,
+      }));
+      const payload = {
+        status: "pending",
+        currency: formState.currency,
+        purpose: formState.purpose,
+        vendor: formState.vendor,
+        items,
+        is_hidden: false,
+      };
+      onSaveAndSubmit(payload);
+    },
+    [formState, rows, validateSubmission, onSaveAndSubmit]
+  );
 
-  // Currency selection state and handling
+  // Currency selection state
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [savedCurrencies, setSavedCurrencies] = useState([]);
 
+  // Load currencies from context or localStorage
   useEffect(() => {
-    // Prefer using currencies from context if available; otherwise, load from localStorage.
     if (currencies && currencies.length > 0) {
       setSavedCurrencies(currencies);
     } else {
       try {
         const localCurrencies =
           JSON.parse(localStorage.getItem("savedCurrencies")) || [];
-        setSavedCurrencies(Array.isArray(localCurrencies) ? localCurrencies : []);
+        setSavedCurrencies(
+          Array.isArray(localCurrencies) ? localCurrencies : []
+        );
       } catch (error) {
         console.error("Error parsing savedCurrencies:", error);
         setSavedCurrencies([]);
@@ -306,30 +439,19 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     }
   }, [currencies]);
 
-  const handleCurrencyChange = (event, newValue) => {
+  const handleCurrencyChange = useCallback((event, newValue) => {
     setSelectedCurrency(newValue);
     setFormState((prev) => ({
       ...prev,
       currency: newValue ? newValue.url : "",
     }));
-    if (newValue) {
-      console.log("Selected Currency:", newValue);
-    }
-  };
-
-  // Determine rows to display based on pagination
-  const startIndex = page * rowsPerPage;
-  const currentRows = rows.slice(startIndex, startIndex + rowsPerPage);
-  const pageCount = Math.ceil(rows.length / rowsPerPage);
-  
-
-  console.log(products)
+  }, []);
 
   return (
     <div className="npr-contain">
-      {/* <PurchaseHeader /> */}
       <div id="npr" className="npr">
         <div className="npr1">
+          {/* Header Section */}
           <div className="npr2">
             <div className="npr2a">
               <p className="nprhed">New Purchase Request</p>
@@ -344,13 +466,16 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
               </p>
               <div className="nprbnav">
                 <FaCaretLeft className="nr" onClick={handlePreviousPage} />
-                <div className="sep"></div>
+                <div className="sep" />
                 <FaCaretRight className="nr" onClick={handleNextPage} />
               </div>
             </div>
           </div>
+
+          {/* Main Form */}
           <div className="npr3">
             <form className="nprform" onSubmit={handleSubmit}>
+              {/* Basic Information */}
               <div className="npr3a">
                 <p style={{ fontSize: "20px" }}>Basic Information</p>
                 <button
@@ -373,7 +498,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                 <div className="npr3bc">
                   <p>Date</p>
                   <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                    {`${formatDate(formState.date)} - ${formatTime(formState.date)}`}
+                    {`${formatDate(formState.date)} - ${formatTime(
+                      formState.date
+                    )}`}
                   </p>
                 </div>
                 <div className="npr3bc">
@@ -391,13 +518,16 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
               </div>
               <br />
               <br />
+
+              {/* Currency, Purpose, and Vendor Selection */}
               <div className="npr3c">
                 <div className="npr3ca">
                   <p>Select Currency</p>
                   <Autocomplete
                     value={
-                      savedCurrencies.find((c) => c.url === formState.currency) ||
-                      null
+                      savedCurrencies.find(
+                        (c) => c.url === formState.currency
+                      ) || null
                     }
                     onChange={handleCurrencyChange}
                     options={savedCurrencies}
@@ -410,7 +540,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                         label="Select Currency"
                         required
                         error={!formState.currency}
-                        helperText={!formState.currency && "Currency is required"}
+                        helperText={
+                          !formState.currency && "Currency is required"
+                        }
                         className="newpod3cb"
                       />
                     )}
@@ -423,6 +555,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                     name="purpose"
                     placeholder="Enter a purpose"
                     className="npr3cb"
+                    value={formState.purpose}
                     onChange={(e) =>
                       setFormState((prev) => ({
                         ...prev,
@@ -436,9 +569,11 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                   <Autocomplete
                     value={selectedVendor}
                     onChange={handleVendorSelect}
-                    id="vendor-autocomplete"
                     options={savedVendors}
                     getOptionLabel={(option) => option.company_name || ""}
+                    isOptionEqualToValue={(option, value) =>
+                      option.url === value.url
+                    }
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -464,7 +599,8 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                 </button>
               </div>
               <br />
-              {/* Product line table */}
+
+              {/* Product Lines Table */}
               <div className="npr3d">
                 <TableContainer
                   component={Paper}
@@ -493,142 +629,40 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
                         <StyledTableCell align="left">
                           Estimated Unit Price
                         </StyledTableCell>
-                        <StyledTableCell align="left">Total Price</StyledTableCell>
+                        <StyledTableCell align="left">
+                          Total Price
+                        </StyledTableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {currentRows.map((row, i) => {
-                        const actualIndex = startIndex + i;
-                        return (
-                          <StyledTableRow key={actualIndex}>
-                            <StyledTableCell component="th" scope="row">
-                              <Autocomplete
-                                options={products || []}
-                                getOptionLabel={(option) =>
-                                  option.product_name || ""
-                                }
-                                value={
-                                  products.find((p) => p.url === row.productName) ||
-                                  null
-                                }
-                                // When a product is selected, autofill its details.
-                                onChange={(event, newValue) =>
-                                  handleProductChange(actualIndex, newValue)
-                                }
-                                disableClearable
-                                popupIcon={null}
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    variant="standard"
-                                    sx={{
-                                      width: "100%",
-                                      "& .MuiInput-underline:before": {
-                                        borderBottomColor: "#C6CCD2",
-                                      },
-                                      "& .MuiInputBase-input": { color: "#A9B3BC" },
-                                    }}
-                                  />
-                                )}
-                              />
-                            </StyledTableCell>
-                            <StyledTableCell>
-                              <TextField
-                                value={row.description}
-                                variant="standard"
-                                InputProps={{ readOnly: true }}
-                                sx={{
-                                  width: "100%",
-                                  "& .MuiInput-underline:before": {
-                                    borderBottomColor: "#C6CCD2",
-                                  },
-                                  "& .MuiInputBase-input": { color: "#A9B3BC" },
-                                }}
-                              />
-                            </StyledTableCell>
-                            <StyledTableCell>
-                              <TextField
-                                type="number"
-                                placeholder="0"
-                                value={row.qty}
-                                sx={{
-                                  width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
-                                  "& .MuiInputBase-input": { color: "#A9B3BC" },
-                                }}
-                                className="no-arrows"
-                                style={{ textAlign: "right" }}
-                                // Allow manual update if needed
-                                onChange={(e) =>
-                                  handleInputChange(actualIndex, "qty", e.target.value || 0)
-                                }
-                                variant="standard"
-                              />
-                            </StyledTableCell>
-                            <StyledTableCell align="right">
-                              <TextField
-                                value={row.unt[1]}
-                                placeholder="kg"
-                                sx={{
-                                  width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
-                                  "& .MuiInputBase-input": { color: "#A9B3BC" },
-                                }}
-                                className="no-arrows"
-                                style={{ textAlign: "right" }}
-                                InputProps={{ readOnly: true }}
-                                variant="standard"
-                              />
-                            </StyledTableCell>
-                            <StyledTableCell>
-                              <TextField
-                                type="number"
-                                value={row.unitPrice}
-                                onChange={(e) =>
-                                  handleInputChange(actualIndex, "unitPrice", e.target.value || 0)
-                                }
-                                placeholder="0.00"
-                                inputProps={{ min: 0, step: 0.01 }}
-                                sx={{
-                                  width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
-                                  "& .MuiInputBase-input": { color: "#A9B3BC" },
-                                }}
-                                variant="standard"
-                              />
-                            </StyledTableCell>
-                            <StyledTableCell>
-                              <TextField
-                                value={row.totalPrice}
-                                placeholder="0.00"
-                                variant="standard"
-                                sx={{
-                                  width: "100%",
-                                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
-                                  "& .MuiInputBase-input": { color: "#A9B3BC" },
-                                }}
-                                InputProps={{ readOnly: true }}
-                              />
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        );
-                      })}
+                      {currentRows.map((row, i) => (
+                        <ProductRow
+                          key={i + page * rowsPerPage}
+                          row={row}
+                          index={i + page * rowsPerPage}
+                          products={products || []}
+                          onProductChange={handleProductChange}
+                          onInputChange={handleInputChange}
+                        />
+                      ))}
                       <StyledTableRow>
                         <TableCell colSpan={5} align="right">
                           <b>Total Amount</b>
                         </TableCell>
-                        <TableCell align="right">{calculateTotalAmount()}</TableCell>
+                        <TableCell align="right">{totalAmount}</TableCell>
                       </StyledTableRow>
                     </TableBody>
                   </Table>
                 </TableContainer>
               </div>
+
+              {/* Form Action Buttons */}
               <div className="npr3e">
                 <button type="button" className="npr3btn" onClick={handleSave}>
                   Save
                 </button>
                 <button type="submit" className="npr3btn">
-                  Save & Submit
+                  Save &amp; Submit
                 </button>
               </div>
             </form>

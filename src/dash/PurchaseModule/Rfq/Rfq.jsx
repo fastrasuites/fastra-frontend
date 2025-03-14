@@ -23,7 +23,7 @@ export default function Rfq() {
   const [viewMode, setViewMode] = useState("list");
   const [items, setItems] = useState(() => {
     const storedItems = JSON.parse(localStorage.getItem("rfqs")) || [];
-    console.log("Initial items:", storedItems);
+    // console.log("Initial items:", storedItems);
     return storedItems;
   });
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -36,7 +36,7 @@ export default function Rfq() {
   const locationFormData = location.state?.formData;
 
   const updateCounts = useCallback((currentItems) => {
-    console.log("Updating counts with items:", currentItems);
+    // console.log("Updating counts with items:", currentItems);
     const vendorSelected = currentItems.filter(
       (item) => item.status === "Vendor selected"
     ).length;
@@ -47,11 +47,11 @@ export default function Rfq() {
       (item) => item.status === "Cancelled"
     ).length;
 
-    console.log("New counts:", {
-      vendorSelected,
-      awaitingVendorSelection,
-      cancelled,
-    });
+    // console.log("New counts:", {
+    //   vendorSelected,
+    //   awaitingVendorSelection,
+    //   cancelled,
+    // });
 
     setVendorSelectedCount(vendorSelected);
     setAwaitingVendorSelectionCount(awaitingVendorSelection);
@@ -63,7 +63,7 @@ export default function Rfq() {
   }, []);
 
   useEffect(() => {
-    console.log("Items changed, updating counts");
+    // console.log("Items changed, updating counts");
     updateCounts(items);
   }, [items, updateCounts]);
 
