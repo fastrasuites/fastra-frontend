@@ -365,6 +365,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       unit_of_measure: Array.isArray(row.unt) ? row.unt[0] : row.unt,
       estimated_unit_price: parseFloat(row.unitPrice) || 0,
     }));
+    console.log(items);
     const payload = {
       status: "draft",
       currency: formState.currency,
