@@ -60,7 +60,7 @@ export default function Purchreq() {
   };
   // End ===================================
 
-  console.log("Purchase Requests:", purchaseRequests);
+  // console.log("Purchase Requests:", purchaseRequests);
 
   const handleSaveAndSubmit = (data) => {
     const newData = { ...data, status: "Pending" }; // Set status to Pending
@@ -84,7 +84,7 @@ export default function Purchreq() {
   };
 
   const handleNewPurchaseRequest = () => {
-    console.log("i am here");
+    // console.log("i am here");
     setIsFormVisible(true);
   };
 

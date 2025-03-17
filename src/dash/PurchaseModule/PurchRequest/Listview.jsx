@@ -45,7 +45,7 @@ const ListView = ({ items, onItemClick }) => {
   };
 
   React.useEffect(() => {
-    console.log("Product items:", items);
+    // console.log("Product items:", items);
   }, [items]);
   const [selectedUser, setSelectedUser] = useState({});
 

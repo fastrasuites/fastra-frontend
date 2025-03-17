@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -13,6 +13,9 @@ import "./Rform.css";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import PurchaseHeader from "../PurchaseHeader";
+import { useRFQ } from "../../../context/RequestForQuotation";
+import { useTenant } from "../../../context/TenantContext";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 // ---------- Subcomponents ----------
 
@@ -39,7 +42,6 @@ const BasicInformation = ({
   formState,
   formatDate,
   formatTime,
-  selectedCurrency,
   handleCurrencyChange,
   savedCurrencies,
 }) => (
@@ -57,14 +59,19 @@ const BasicInformation = ({
     <div className="npr3ca">
       <p>Select Currency</p>
       <Autocomplete
-        value={selectedCurrency}
+        value={formState.currency || null}
         onChange={handleCurrencyChange}
         options={savedCurrencies}
-        getOptionLabel={(option) => `${option.name} - ${option.symbol}`}
+        getOptionLabel={(option) =>
+          `${option.currency_name} - ${option.currency_symbol}`
+        }
         renderInput={(params) => (
           <TextField
             {...params}
             label="Select Currency"
+            required
+            error={!formState.currency}
+            helperText={!formState.currency && "Currency is required"}
             className="newpod3cb"
           />
         )}
@@ -79,9 +86,9 @@ const VendorDetails = ({
   setFormState,
   vendorInputValue,
   setVendorInputValue,
-  selectedVendor,
   handleVendorSelect,
   addRow,
+  vendors,
 }) => (
   <div className="rpr3c">
     <div className="rpr3ca">
@@ -99,13 +106,13 @@ const VendorDetails = ({
     <div className="rpr3ca">
       <label>Vendor</label>
       <Autocomplete
-        value={selectedVendor}
+        value={formState.vendor || null}
         onChange={handleVendorSelect}
         inputValue={vendorInputValue}
         onInputChange={(event, newInputValue) =>
           setVendorInputValue(newInputValue)
         }
-        options={JSON.parse(localStorage.getItem("vendors")) || []}
+        options={vendors}
         getOptionLabel={(option) => option.vendorName}
         renderInput={(params) => (
           <TextField {...params} label="Select vendor" className="rpr3cb" />
@@ -119,8 +126,8 @@ const VendorDetails = ({
         type="text"
         value={formState.vendorCategory}
         onChange={(e) =>
-          setFormState((prevState) => ({
-            ...prevState,
+          setFormState((prev) => ({
+            ...prev,
             vendorCategory: e.target.value,
           }))
         }
@@ -139,14 +146,12 @@ const VendorDetails = ({
 
 // Product Table Component
 const ProductTable = ({
-  products,
   rows,
   handleInputChange,
   page,
   rowsPerPage,
   calculateTotalAmount,
 }) => {
-  // Styled Table Components defined locally for this subcomponent.
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
       backgroundColor: theme.palette.common.white,
@@ -167,6 +172,9 @@ const ProductTable = ({
       border: 0,
     },
   }));
+
+  const startIndex = page * rowsPerPage;
+  const currentRows = rows.slice(startIndex, startIndex + rowsPerPage);
 
   return (
     <TableContainer
@@ -196,12 +204,12 @@ const ProductTable = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {products.map((product, index) => (
-            <StyledTableRow key={index + page * rowsPerPage}>
+          {currentRows.map((row, idx) => (
+            <StyledTableRow key={idx + startIndex}>
               <StyledTableCell component="th" scope="row">
-                {product.name}
+                {row.productName}
               </StyledTableCell>
-              <StyledTableCell>{product.productDesc}</StyledTableCell>
+              <StyledTableCell>{row.description}</StyledTableCell>
               <StyledTableCell align="right">
                 <input
                   type="number"
@@ -209,17 +217,15 @@ const ProductTable = ({
                   name="qty"
                   className="no-arrows"
                   style={{ textAlign: "right" }}
-                  value={product.qty}
+                  value={row.qty}
                   onChange={(e) =>
-                    handleInputChange(
-                      index + page * rowsPerPage,
-                      "qty",
-                      e.target.value
-                    )
+                    handleInputChange(idx + startIndex, "qty", e.target.value)
                   }
                 />
               </StyledTableCell>
-              <StyledTableCell align="right">{product.unt}</StyledTableCell>
+              <StyledTableCell align="right">
+                {row.unitOfMeasure}
+              </StyledTableCell>
               <StyledTableCell align="right">
                 <input
                   type="number"
@@ -227,19 +233,17 @@ const ProductTable = ({
                   name="unitPrice"
                   className="no-arrows"
                   style={{ textAlign: "right" }}
-                  value={product.unitPrice}
+                  value={row.unitPrice}
                   onChange={(e) =>
                     handleInputChange(
-                      index + page * rowsPerPage,
+                      idx + startIndex,
                       "unitPrice",
                       e.target.value
                     )
                   }
                 />
               </StyledTableCell>
-              <StyledTableCell align="right">
-                {calculateTotalAmount()}
-              </StyledTableCell>
+              <StyledTableCell align="right">{row.totalPrice}</StyledTableCell>
             </StyledTableRow>
           ))}
           <StyledTableRow>
@@ -258,14 +262,7 @@ const ProductTable = ({
 
 // ---------- Main Rform Component ----------
 
-export default function Rform({
-  onClose,
-  onSaveAndSubmit,
-  vendors = [],
-  categories = [],
-}) {
-  // ---- STATE DECLARATIONS (at the top) ----
-
+export default function Rform({ onClose, onSaveAndSubmit, vendors = [] }) {
   const defaultRows = [
     {
       productName: "",
@@ -276,127 +273,84 @@ export default function Rform({
       totalPrice: "",
     },
   ];
-  const [rows, setRows] = useState(defaultRows);
-  const [products, setProducts] = useState([]);
-  const [formState, setFormState] = useState({
-    id:  generateNewID(),
-    productName: "",
-    description: "string",
+
+  // Combine form data (including rows, vendor, currency, etc.) into one state
+  const [formData, setFormData] = useState({
+    id: generateNewID(),
+    purchaseRequest: "string",
+    items: [],
     date: new Date(),
-    expiryDate: "",
-    vendor: "",
+    vendor: null,
     vendorCategory: "",
+    currency: null,
+    rows: defaultRows,
   });
+
   const [page, setPage] = useState(0);
-  const rowsPerPage = 2;
-  const [showForm] = useState(true);
-  const [selectedCurrency, setSelectedCurrency] = useState(null);
-  const [savedCurrencies, setSavedCurrencies] = useState([]);
   const [vendorInputValue, setVendorInputValue] = useState("");
-  const [selectedVendor, setSelectedVendor] = useState(null);
-  const savedVendors = JSON.parse(localStorage.getItem("vendors")) || [];
 
-  // ---- SIDE EFFECTS (useEffect hooks) ----
+  const { fetchCurrencies, currencies } = usePurchase();
+  const { createRFQ, error, rfqList } = useRFQ();
 
+  const [savedCurrencies, setSavedCurrencies] = useState([]);
   useEffect(() => {
-    const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
-    setProducts(savedProducts);
-  }, []);
-
-  useEffect(() => {
-    const currencies = JSON.parse(localStorage.getItem("savedCurrencies")) || [];
-    if (currencies.length === 0) {
-      console.warn("No currencies found in localStorage.");
-    }
+    fetchCurrencies();
     setSavedCurrencies(currencies);
-  }, []);
+  }, [fetchCurrencies, currencies]);
 
-  // ---- HELPER & EVENT HANDLER FUNCTIONS ----
-
-  // Generate a new RFQ ID (this function can be moved outside the component if needed)
+  // Dummy ID generator; replace with your API logic when needed.
   function generateNewID() {
-    const lastID = localStorage.getItem("lastGeneratedID");
-    let newID = "RFQ00001";
-    if (lastID && /^RFQ\d{5}$/.test(lastID)) {
-      const idNumber = parseInt(lastID.slice(3), 10);
-      if (!isNaN(idNumber)) {
-        newID = "RFQ" + (idNumber + 1).toString().padStart(5, "0");
-      }
-    }
-    localStorage.setItem("lastGeneratedID", newID);
-    return newID;
+    return "RFQ" + Date.now();
   }
 
   const handleInputChange = (index, key, value) => {
-    const newRows = [...rows];
+    const newRows = [...formData.rows];
     newRows[index][key] = value;
     if (key === "qty" || key === "unitPrice") {
-      newRows[index]["totalPrice"] = (
-        newRows[index]["qty"] * newRows[index]["unitPrice"]
-      ).toFixed(2);
+      const qty = parseFloat(newRows[index].qty) || 0;
+      const unitPrice = parseFloat(newRows[index].unitPrice) || 0;
+      newRows[index].totalPrice = (qty * unitPrice).toFixed(2);
     }
-    setRows(newRows);
-    const totalAmount = newRows.reduce(
-      (sum, row) => sum + parseFloat(row.totalPrice || 0),
-      0
-    );
-    setFormState((prevState) => ({
-      ...prevState,
-      productName: key === "productName" ? value : prevState.productName,
-      amount: totalAmount.toFixed(2),
-    }));
+    setFormData((prev) => ({ ...prev, rows: newRows }));
   };
 
   const handleSave = () => {
-    console.log("Input data saved:", rows);
+    console.log("Data saved:", formData);
     alert("Data saved successfully!");
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formDataWithStringDate = {
-      ...formState,
-      date: formState.date.toString(),
-      rows,
-    };
-    onSaveAndSubmit(formDataWithStringDate);
+    onSaveAndSubmit({ ...formData, date: formData.date.toString() });
   };
 
   const addRow = () => {
-    setRows([
-      ...rows,
-      {
-        productName: "",
-        description: "",
-        qty: "",
-        unt: " ",
-        unitPrice: "",
-        totalPrice: "",
-      },
-    ]);
+    setFormData((prev) => ({
+      ...prev,
+      rows: [
+        ...prev.rows,
+        {
+          productName: "",
+          description: "",
+          qty: "",
+          unitOfMeasure: "",
+          unitPrice: "",
+          totalPrice: "",
+        },
+      ],
+    }));
   };
 
   const handleNextPage = () => {
-    if ((page + 1) * rowsPerPage < rows.length) {
-      setPage(page + 1);
-    }
+    if ((page + 1) * 2 < formData.rows.length) setPage(page + 1);
   };
 
   const handlePreviousPage = () => {
-    if (page > 0) {
-      setPage(page - 1);
-    }
+    if (page > 0) setPage(page - 1);
   };
 
   const handleCurrencyChange = (event, newValue) => {
-    setSelectedCurrency(newValue);
-    setFormState((prev) => ({
-      ...prev,
-      currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
-    }));
-    if (newValue) {
-      console.log("Selected Currency:", newValue);
-    }
+    setFormData((prev) => ({ ...prev, currency: newValue }));
   };
 
   const formatDate = (date) => {
@@ -413,37 +367,26 @@ export default function Rform({
     return `${formattedHours}:${formattedMinutes}${ampm}`;
   };
 
-  const calculateTotalAmount = () => {
-    return rows
+  const calculateTotalAmount = useCallback(() => {
+    return formData.rows
       .reduce((sum, row) => sum + parseFloat(row.totalPrice || 0), 0)
       .toFixed(2);
-  };
+  }, [formData.rows]);
 
   const handleVendorSelect = (event, newValue) => {
-    setSelectedVendor(newValue);
-    if (newValue) {
-      setFormState((prev) => ({
-        ...prev,
-        vendor: newValue.vendorName,
-        vendorCategory: newValue.vendorCategory,
-      }));
-    } else {
-      setFormState((prev) => ({
-        ...prev,
-        vendor: "",
-        vendorCategory: "",
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      vendor: newValue,
+      vendorCategory: newValue ? newValue.vendorCategory : "",
+    }));
   };
 
-  const pageCount = Math.ceil(rows.length / rowsPerPage);
-
-  // ---- RENDER ----
+  const pageCount = Math.ceil(formData.rows.length / 2);
 
   return (
     <div className="rpr-contain">
       <PurchaseHeader />
-      <div id="newrfq" className={`rpr ${showForm ? "fade-in" : "fade-out"}`}>
+      <div id="newrfq" className="rpr fade-in">
         <div className="rpr1">
           <div className="rpr2">
             <div className="rpr2a">
@@ -468,28 +411,26 @@ export default function Rform({
             <form className="rprform" onSubmit={handleSubmit}>
               <ActionButtons onClose={onClose} handleSave={handleSave} />
               <BasicInformation
-                formState={formState}
+                formState={formData}
                 formatDate={formatDate}
                 formatTime={formatTime}
-                selectedCurrency={selectedCurrency}
                 handleCurrencyChange={handleCurrencyChange}
                 savedCurrencies={savedCurrencies}
               />
               <VendorDetails
-                formState={formState}
-                setFormState={setFormState}
+                formState={formData}
+                setFormState={setFormData}
                 vendorInputValue={vendorInputValue}
                 setVendorInputValue={setVendorInputValue}
-                selectedVendor={selectedVendor}
                 handleVendorSelect={handleVendorSelect}
                 addRow={addRow}
+                vendors={vendors}
               />
               <ProductTable
-                products={products}
-                rows={rows}
+                rows={formData.rows}
                 handleInputChange={handleInputChange}
                 page={page}
-                rowsPerPage={rowsPerPage}
+                rowsPerPage={2}
                 calculateTotalAmount={calculateTotalAmount}
               />
             </form>
