@@ -10,6 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 // Function to get status color
 const getStatusColor = (status) => {
@@ -33,7 +34,14 @@ const ListView = ({ items, onItemClick }) => {
   const userName = queryParams.get("name");
   const userRole = queryParams.get("role");
 
-  const [selected, setSelected] = React.useState([]);
+  const [selected, setSelected] = useState([]);
+  const { fetchPurchaseRequests, purchaseRequests } = usePurchase();
+
+  useEffect(() => {
+    fetchPurchaseRequests();
+  }, []);
+
+  console.log(purchaseRequests);
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
@@ -44,14 +52,6 @@ const ListView = ({ items, onItemClick }) => {
     setSelected([]);
   };
 
-  React.useEffect(() => {
-    // console.log("Product items:", items);
-  }, [items]);
-  const [selectedUser, setSelectedUser] = useState({});
-
-  const handleUserSelect = (user) => {
-    setSelectedUser(user);
-  };
   const handleSelect = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -68,11 +68,10 @@ const ListView = ({ items, onItemClick }) => {
         selected.slice(selectedIndex + 1)
       );
     }
-
     setSelected(newSelected);
   };
 
-  if (items.length === 0) {
+  if (!items || items.length === 0) {
     return <p>No items available. Please fill the form to add items.</p>;
   }
 
