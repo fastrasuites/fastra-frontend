@@ -84,7 +84,7 @@
 .rfq-pending {
   background: linear-gradient(225deg, #f0b501 0%, #8a6801 100%);
 }
-.rfq-rejected {
+.rfq-cancelled {
   background: linear-gradient(225deg, #e43e2b 0%, #7e2218 100%);
 }
 .plnum {
@@ -145,14 +145,13 @@
   background: #335db2;
 }
 .rfqsash {
-  width: 50%;
-  height: 50%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  /* display: flex; */
   border-radius: 4px;
-  background-color: white;
-  border: 1px solid #e2e6e9;
-  @media screen and (max-width: 450px) {
-    gap: 0;
-  }
+  position: relative;
+  border: 2px solid red;
 }
 .rs1 {
   display: flex;

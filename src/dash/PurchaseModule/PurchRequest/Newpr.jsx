@@ -362,7 +362,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       product: row.productName,
       description: row.description,
       qty: parseInt(row.qty) || 0,
-      unit_of_measure: Array.isArray(row.unt) ? row.unt[0] : row.unt,
+      unit_of_measure: Array.isArray(row.unt) && row.unt[0],
       estimated_unit_price: parseFloat(row.unitPrice) || 0,
     }));
     const payload = {
@@ -373,9 +373,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       items,
       is_hidden: false,
     };
-    console.log("Payload:", payload);
-    createPurchaseRequest(payload);
-    alert("Data saved successfully!");
+    // console.log("Payload:", payload);
+    createPurchaseRequest(payload)
+    // alert("Data saved successfully!");
   }, [formState, rows, createPurchaseRequest]);
 
   // Validate product rows before submission
@@ -401,7 +401,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
         product: row.productName,
         description: row.description,
         qty: parseInt(row.qty) || 0,
-        unit_of_measure: row.unt,
+        unit_of_measure: Array.isArray(row.unt) && row.unt[0],
         estimated_unit_price: parseFloat(row.unitPrice) || 0,
       }));
       const payload = {
@@ -418,6 +418,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   );
 
   // Currency selection state
+  // eslint-disable-next-line no-unused-vars
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [savedCurrencies, setSavedCurrencies] = useState([]);
 

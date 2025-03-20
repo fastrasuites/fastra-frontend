@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -10,6 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
+import { usePurchase } from '../../../context/PurchaseContext';
 
 // Function to get status color
 const getStatusColor = (status) => {
@@ -33,7 +34,14 @@ const ListView = ({ items, onItemClick }) => {
   const userName = queryParams.get("name");
   const userRole = queryParams.get("role");
 
-  const [selected, setSelected] = React.useState([]);
+  const [selected, setSelected] = useState([]);
+  const { fetchPurchaseRequests, purchaseRequests } = usePurchase();
+
+  useEffect(() => {
+    fetchPurchaseRequests();
+  }, []);
+
+  console.log(purchaseRequests);
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
@@ -44,14 +52,6 @@ const ListView = ({ items, onItemClick }) => {
     setSelected([]);
   };
 
-  React.useEffect(() => {
-    // console.log("Product items:", items);
-  }, [items]);
-  const [selectedUser, setSelectedUser] = useState({});
-
-  const handleUserSelect = (user) => {
-    setSelectedUser(user);
-  };
   const handleSelect = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -68,11 +68,10 @@ const ListView = ({ items, onItemClick }) => {
         selected.slice(selectedIndex + 1)
       );
     }
-
     setSelected(newSelected);
   };
 
-  if (items.length === 0) {
+  if (!items || items.length === 0) {
     return <p>No items available. Please fill the form to add items.</p>;
   }
 
@@ -91,9 +90,7 @@ const ListView = ({ items, onItemClick }) => {
             <TableCell padding="checkbox">
               <Checkbox
                 color="primary"
-                indeterminate={
-                  selected.length > 0 && selected.length < items.length
-                }
+                indeterminate={selected.length > 0 && selected.length < items.length}
                 checked={items.length > 0 && selected.length === items.length}
                 onChange={handleSelectAll}
               />
@@ -107,56 +104,52 @@ const ListView = ({ items, onItemClick }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {items.map((item, index) => (
-            <TableRow
-              key={item.id}
-              sx={{
-                backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
-                "&:last-child td, &:last-child th": { border: 0 },
-              }}
-              onClick={() => onItemClick(item)}
-              style={{ cursor: "pointer" }}
-            >
-              <TableCell padding="checkbox">
-                <Checkbox
-                  color="primary"
-                  checked={selected.indexOf(item.id) !== -1}
-                  onChange={(event) => handleSelect(event, item.id)}
-                />
-              </TableCell>
-              <TableCell>{item.id}</TableCell>
-
-              {/* Displaying productName correctly */}
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-              {Array.isArray(item.name)
-                  ? item.productNames.join(", ")
-                  : ""}
-              </TableCell>
-
-              {/* Displaying qty correctly */}
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.rows.map((product) => product.qty).join(", ")}
-              </TableCell>
-
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.amount}
-              </TableCell>
-
-              {/* Displaying Requester Name correctly */}
-              <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-              {item.user?.name || "N/A"} 
-              </TableCell>
-
-              <TableCell
+          {items.map((item, index) => {
+            // Normalize status so that "draft" becomes "Draft" for color matching.
+            const normalizedStatus = item.status
+              ? item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase()
+              : "";
+            return (
+              <TableRow
+                key={item.id}
                 sx={{
-                  color: getStatusColor(item.status),
-                  fontWeight: "bold",
+                  backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
+                  "&:last-child td, &:last-child th": { border: 0 },
                 }}
+                onClick={() => onItemClick && onItemClick(item)}
+                style={{ cursor: onItemClick ? "pointer" : "default" }}
               >
-                {item.status}
-              </TableCell>
-            </TableRow>
-          ))}
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    color="primary"
+                    checked={selected.indexOf(item.id) !== -1}
+                    onChange={(event) => handleSelect(event, item.id)}
+                  />
+                </TableCell>
+                <TableCell>{item.id}</TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+                  {item.description}
+                </TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+                  {item.qty}
+                </TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+                  {item.total_price}
+                </TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
+                  {item.user?.name || "N/A"}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: getStatusColor(normalizedStatus),
+                    fontWeight: "bold",
+                  }}
+                >
+                  {normalizedStatus}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>

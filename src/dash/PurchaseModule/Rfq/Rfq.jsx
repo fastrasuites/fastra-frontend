@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import "./Rfq.css";
 import SearchIcon from "../../../image/search.svg";
@@ -7,131 +7,134 @@ import { IoGrid } from "react-icons/io5";
 import RListView from "./RListView";
 import Rform from "./Rform";
 import Rapr from "./Rapr";
-import { getVendors, getCategories } from "../Vendor/Vend";
-import draft from '../../../../src/image/icons/draft (1).png';
-import approved from '../../../../src/image/icons/approved.png';
-import rejected from '../../../../src/image/icons/rejected.png';
-import pending from '../../../../src/image/icons/pending.png';
 import PurchaseHeader from "../PurchaseHeader";
+import draft from "../../../../src/image/icons/draft (1).png";
+import approved from "../../../../src/image/icons/approved.png";
+import rejected from "../../../../src/image/icons/rejected.png";
+import pending from "../../../../src/image/icons/pending.png";
+import RfqStatus from "./RfqStatus";
+import { formatDate } from "../../../helper/helper";
+import { quotations } from "../../../data/quotations";
+import RfqForm from "./RfqForm/RfqForm";
+import { Box, TextField } from "@mui/material";
+import { Search, SearchCheck } from "lucide-react";
+import { usePurchase } from "../../../context/PurchaseContext";
+import { useRFQ } from "../../../context/RequestForQuotation";
 
 export default function Rfq() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [vendorSelectedCount, setVendorSelectedCount] = useState(0);
-  const [awaitingVendorSelectionCount, setAwaitingVendorSelectionCount] =
-    useState(0);
-  const [cancelledCount, setCancelledCount] = useState(0);
+  const [quotationsData, setQuotationsData] = useState([]);
   const [viewMode, setViewMode] = useState("list");
-  const [items, setItems] = useState(() => {
-    const storedItems = JSON.parse(localStorage.getItem("rfqs")) || [];
-    // console.log("Initial items:", storedItems);
-    return storedItems;
-  });
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [filteredItems, setFilteredItems] = useState(items);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [initialFormData, setInitialFormData] = useState(null);
-  const [, forceUpdate] = useState();
+  const [selectedStatus, setSelectedStatus] = useState(null);
+
+  const {
+    fetchPurchaseRequests,
+    purchaseRequests,
+    setPurchaseRequests,
+    setError,
+  } = usePurchase();
+
+  const { getRFQList, error, rfqList, isLoading } = useRFQ();
+
+  useEffect(() => {
+    fetchPurchaseRequests();
+    getRFQList().then((data) => {
+      if (data.success) {
+        const normalizedRFQ = rfqList.map((item) => {
+          // const segments = item.items.request_for_quotation
+          //   .split("/")
+          //   .filter(Boolean);
+          // const rfqID = segments[segments.length - 1];
+          // return { url: item.url, rfqID };
+
+          return item.items.request_for_quotation
+        });
+        console.log(normalizedRFQ)
+        setQuotationsData(rfqList);
+      }
+    });
+  }, []);
+
+  // console.log(rfqList)
+
+  const normalizedPRs = purchaseRequests.map((item) => {
+    const segments = item.url.split("/").filter(Boolean);
+    const prID = segments[segments.length - 1];
+    return { url: item.url, prID };
+  });
 
   const location = useLocation();
   const locationFormData = location.state?.formData;
 
-  const updateCounts = useCallback((currentItems) => {
-    // console.log("Updating counts with items:", currentItems);
-    const vendorSelected = currentItems.filter(
-      (item) => item.status === "Vendor selected"
-    ).length;
-    const awaitingVendorSelection = currentItems.filter(
-      (item) => item.status === "Awaiting vendor selection"
-    ).length;
-    const cancelled = currentItems.filter(
-      (item) => item.status === "Cancelled"
-    ).length;
-
-    // console.log("New counts:", {
-    //   vendorSelected,
-    //   awaitingVendorSelection,
-    //   cancelled,
-    // });
-
-    setVendorSelectedCount(vendorSelected);
-    setAwaitingVendorSelectionCount(awaitingVendorSelection);
-    setCancelledCount(cancelled);
-    setFilteredItems(currentItems);
-
-    // Force a re-render
-    forceUpdate({});
-  }, []);
-
-  useEffect(() => {
-    // console.log("Items changed, updating counts");
-    updateCounts(items);
-  }, [items, updateCounts]);
-
   useEffect(() => {
     if (locationFormData) {
-      setInitialFormData(locationFormData);
       setIsFormVisible(true);
     }
   }, [locationFormData]);
 
+  // Filter quotations on the fly based on the search query
+  const filteredQuotations = quotationsData.filter((item) => {
+    if (!searchQuery) return true;
+    const lowercasedQuery = searchQuery.toLowerCase();
+    return (
+      item.rfq_total_price.toLowerCase().includes(lowercasedQuery) ||
+      formatDate(item.expiry_date).includes(lowercasedQuery) ||
+      item.status.toLowerCase().includes(lowercasedQuery) ||
+      item.currency.toLowerCase().includes(lowercasedQuery) ||
+      item.vendor.toLowerCase().includes(lowercasedQuery) ||
+      item.vendor_category.toLowerCase().includes(lowercasedQuery)
+    );
+  });
   const handleSaveAndSubmit = (data) => {
     console.log("Saving new item:", data);
-    const updatedItems = [...items, data];
-    setItems(updatedItems);
-    localStorage.setItem("rfqs", JSON.stringify(updatedItems));
+    const updatedData = [...quotationsData, data];
+    setQuotationsData(updatedData);
     setIsFormVisible(false);
-    updateCounts(updatedItems);
   };
 
-
-    const handleFormDataChange = (data) => {
-      // This function should update the form data if needed
-    };
-
-
-  const handleUpdateStatus = (id, status) => {
-    console.log("Updating status:", id, status);
-    const updatedItems = items.map((item) =>
-      item.id === id ? { ...item, status: status } : item
-    );
-    setItems(updatedItems);
-    localStorage.setItem("rfqs", JSON.stringify(updatedItems));
-    setSelectedItem(null);
-    updateCounts(updatedItems);
+  const handleUpdateRFQ = (data) => {
+    // This function should update the form data if needed
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Vendor selected":
+    switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
+      case "Approved":
         return "#2ba24c";
-      case "Awaiting vendor selection":
+      case "Pending":
         return "#f0b501";
       case "Cancelled":
         return "#e43e2b";
       default:
-        return "#7a8a98";
+        return "#3B7CED";
     }
   };
 
-  const handleSearch = () => {
-    if (searchQuery === "") {
-      setFilteredItems(items);
-    } else {
-      const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = items.filter(
-        (item) =>
-          item.vendorName.toLowerCase().includes(lowercasedQuery) ||
-          item.date.includes(lowercasedQuery) ||
-          item.status.toLowerCase().includes(lowercasedQuery)
-      );
-      setFilteredItems(filtered);
+  const statuses = [
+    { key: "draft", label: "Draft", img: draft },
+    { key: "approved", label: "Approved", img: approved },
+    { key: "pending", label: "Pending", img: pending },
+    { key: "cancelled", label: "Rejected", img: rejected },
+  ];
+
+  // status-field rfq-rejected
+  const groupedByStatus = quotationsData.reduce((acc, quotation) => {
+    const { status, url } = quotation;
+    if (!acc[status]) {
+      acc[status] = [];
     }
+    acc[status].push(url);
+    return acc;
+  }, {});
+
+  const handleRfqStatusClick = (urlList, status) => {
+    setSelectedStatus([urlList, status]);
   };
 
   const handleCardClick = (item) => {
     setSelectedItem(item);
   };
-
 
   const toggleViewMode = (mode) => {
     setViewMode(mode);
@@ -145,79 +148,61 @@ export default function Rfq() {
     setIsFormVisible(false);
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
   return (
     <div className="rfq" id="rfq">
       <PurchaseHeader />
       <div className="rfq1">
         <div className="rfq2">
-          <p style={{ fontSize: "17px"}}>RFQs</p>
+          <p style={{ fontSize: "17px" }}>RFQs</p>
           <div className="rfq-status">
-          <div className="status-field rfq-draft">
-            <img src={draft} alt="approved" className="status-img" />
-              <p className={`plnum ${vendorSelectedCount === 0 ? "zero" : ""}`}>
-                {vendorSelectedCount}
-              </p>
-              <p style={{ lineHeight: "1rem" }} className="status-desc" >Request for Quote</p>
-              <p style={{ fontSize: "20px"}}>Draft</p>
-            </div>
-            <div className="status-field rfq-approved">
-            <img src={approved} alt="approved" className="status-img" />
-              <p className={`plnum ${vendorSelectedCount === 0 ? "zero" : ""}`}>
-                {vendorSelectedCount}
-              </p>
-              <p style={{ lineHeight: "1rem" }} className="status-desc">Request for Quote</p>
-              <p style={{ fontSize: "20px"}}>Approved</p>
-            </div>
-            <div className="status-field rfq-pending">
-            <img src={pending} alt="pending" className="status-img" />
-              <p
-                className={`plnum ${
-                  awaitingVendorSelectionCount === 0 ? "zero" : ""
-                }`}
-              >
-                {awaitingVendorSelectionCount}
-              </p>
-              <p style={{ lineHeight: "1rem" }} className="status-desc">Request for Quote</p>
-              <p style={{ fontSize: "20px"}}>Pending</p>
-            </div>
-            <div className="status-field rfq-rejected">
-            <img src={rejected} alt="approved" className="status-img" />
-              <p className={`plnum ${cancelledCount === 0 ? "zero" : ""}`}>
-                {cancelledCount}
-              </p>
-              <p style={{ lineHeight: "1rem" }} className="status-desc">Request for Quote</p>
-              <p style={{ fontSize: "20px"}}>Rejected</p>
-            </div>
+            {statuses.map(({ key, label, img }) => {
+              const count = groupedByStatus[key]?.length || 0;
+              return (
+                <div
+                  className={`status-field rfq-${key}`}
+                  key={key}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    handleRfqStatusClick(groupedByStatus[key], key)
+                  }
+                >
+                  <img
+                    src={img}
+                    alt={label.toLowerCase()}
+                    className="status-img"
+                  />
+                  <p className={`plnum ${count === 0 ? "zero" : ""}`}>
+                    {count}
+                  </p>
+                  <p style={{ lineHeight: "1rem" }} className="status-desc">
+                    Request for Quote
+                  </p>
+                  <p style={{ fontSize: "20px" }}>{label}</p>
+                </div>
+              );
+            })}
           </div>
           <div className="rfq3">
             <div className="r3a">
-              <button className="r3abtn" onClick={handleNewRfq} style={{ fontSize: "17px"}}>
+              <button
+                className="r3abtn"
+                onClick={handleNewRfq}
+                style={{ fontSize: "17px" }}
+              >
                 New RFQ
               </button>
               <div className="rfqsash">
-                <label
-                  htmlFor="searchInput"
-                  className="search-box"
-                  onClick={handleSearch}
-                >
-                  <img src={SearchIcon} alt="Search" className="search-icon" />
-                  <input
-                    id="searchInput"
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="search-input"
-                  />
-                </label>
+                <Search
+                  style={{ color: "#C6CCD2" }}
+                  className="rfqsearch-icon"
+                />
+                <input
+                  id="searchInput"
+                  type="search"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </div>
             <div className="r3b">
@@ -242,31 +227,39 @@ export default function Rfq() {
           </div>
           {isFormVisible ? (
             <div className="overlay">
-              <Rform
-                onSaveAndSubmit={handleSaveAndSubmit}
-                onFormDataChange={handleFormDataChange}
-                onClose={handleFormClose}
-                initialData={initialFormData}
+              <RfqForm
+                open={isFormVisible}
+                onCancel={handleFormClose}
+                quotation={{}}
+                formUse={"New RFQ"}
+                prID={normalizedPRs}
+                // onSave={handleEditSave}
               />
             </div>
           ) : selectedItem ? (
             <div className="overlay">
-              <Rapr
-                formData={selectedItem}
-                onUpdateStatus={handleUpdateStatus}
+              <Rapr formData={selectedItem} onUpdateRfq={handleUpdateRFQ} />
+            </div>
+          ) : selectedStatus ? (
+            <div className="overlay">
+              <RfqStatus
+                selectedStatus={selectedStatus}
+                getStatusColor={getStatusColor}
+                statusColor={getStatusColor}
+                formatDate={formatDate}
               />
             </div>
           ) : viewMode === "grid" ? (
             <div className="rfq4">
-              {filteredItems.map((item) => (
+              {filteredQuotations.map((item) => (
                 <div
                   className="rfq4gv"
                   key={item.id}
                   onClick={() => handleCardClick(item)}
                 >
-                  <p className="cardid">{item.id}</p>
+                  <p className="cardid">{item.purchase_request}</p>
+                  <p className="cardate">{formatDate(item.expiry_date)}</p>
                   <p className="vendname">{item.vendor}</p>
-                  <p className="cardate">{formatDate(item.date)}</p>
                   <p
                     className="status"
                     style={{
@@ -280,12 +273,11 @@ export default function Rfq() {
             </div>
           ) : (
             <div className="rfq5">
-              <RListView
-                items={filteredItems}
-                onCardClick={handleCardClick} // Pass handleCardClick to RListView
-                updateStatus={handleUpdateStatus}
-                statusColors={getStatusColor}
-              />
+              {/* <RListView
+                items={filteredQuotations}
+                onCardClick={handleCardClick}
+                getStatusColor={getStatusColor}
+              /> */}
             </div>
           )}
         </div>
