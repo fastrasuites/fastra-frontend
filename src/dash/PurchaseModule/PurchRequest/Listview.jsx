@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -20,7 +20,7 @@ const getStatusColor = (status) => {
       return "#f0b501";
     case "Rejected":
       return "#e43e2b";
-    case "Draft":
+    case "draft":
       return "#3b7ded";
     default:
       return "#7a8a98";
@@ -128,14 +128,12 @@ const ListView = ({ items, onItemClick }) => {
 
               {/* Displaying productName correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-              {Array.isArray(item.name)
-                  ? item.productNames.join(", ")
-                  : ""}
+                {Array.isArray(item.name) ? item.productNames.join(", ") : ""}
               </TableCell>
 
               {/* Displaying qty correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.rows.map((product) => product.qty).join(", ")}
+                {/* {item.rows.map((product) => product.qty).join(", ")} */}
               </TableCell>
 
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
@@ -144,7 +142,7 @@ const ListView = ({ items, onItemClick }) => {
 
               {/* Displaying Requester Name correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-              {item.user?.name || "N/A"} 
+                {item.user?.name || "N/A"}
               </TableCell>
 
               <TableCell

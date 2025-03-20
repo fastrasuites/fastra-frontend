@@ -63,7 +63,7 @@ export default function Purchreq() {
   // console.log("Purchase Requests:", purchaseRequests);
 
   const handleSaveAndSubmit = (data) => {
-    const newData = { ...data, status: "Pending" }; // Set status to Pending
+    const newData = { ...data, status: "pending" }; // Set status to Pending
     console.log("inspecting new data: ", data);
     setFormData(newData);
     setIsSubmitted(true);

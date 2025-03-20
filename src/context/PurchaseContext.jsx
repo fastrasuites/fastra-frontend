@@ -8,14 +8,15 @@ const PurchaseContext = createContext();
 export const PurchaseProvider = ({ children }) => {
   const { tenantData } = useTenant();
   const [currencies, setCurrencies] = useState([]);
-  const [productCategories, setProductCategories] = useState([]);
   const [purchaseRequests, setPurchaseRequests] = useState([]);
   const [products, setProducts] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
-  // console.log("from database in purchaseCaontext: ", vendors);
-  // console.log("from database in purchaseCaontext: ", products);
-  // console.log("from database in purchaseCaontext: ", purchaseRequests);
+
+  console.log(
+    "purchase requests from db in purchaseContext: ",
+    purchaseRequests
+  );
 
   // const access_token = localStorage.getItem("access_token");
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
@@ -104,7 +105,6 @@ export const PurchaseProvider = ({ children }) => {
       const productsWithRealUnits = await Promise.all(
         productsData.map(async (product) => {
           try {
-
             const originalUnit = product.unit_of_measure;
             // Convert the unit_of_measure URL to HTTPS if needed.
             const unitUrl = product.unit_of_measure.replace(
@@ -172,6 +172,39 @@ export const PurchaseProvider = ({ children }) => {
     }
   };
 
+  // Update existing purchase request (PATCH)
+  const updatePurchaseRequest = async (url, updatedData) => {
+    try {
+      const response = await client.patch(url, updatedData);
+      setPurchaseRequests((prev) =>
+        prev.map((req) => (req.url === url ? response.data : req))
+      );
+      return response.data;
+    } catch (err) {
+      setError(err);
+      console.error("Error updating purchase request:", err);
+      throw err;
+    }
+  };
+
+  // Submit purchase request (PUT for full update)
+  const submitPurchaseRequest = async (url, submitData) => {
+    try {
+      const response = await client.put(url, {
+        ...submitData,
+        status: "pending",
+      });
+      setPurchaseRequests((prev) =>
+        prev.map((req) => (req.url === url ? response.data : req))
+      );
+      return response.data;
+    } catch (err) {
+      setError(err);
+      console.error("Error submitting purchase request:", err);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     if (tenantData) {
       fetchCurrencies();
@@ -212,6 +245,8 @@ export const PurchaseProvider = ({ children }) => {
         purchaseRequests,
         fetchPurchaseRequests,
         createPurchaseRequest,
+        updatePurchaseRequest,
+        submitPurchaseRequest,
         error,
       }}
     >
