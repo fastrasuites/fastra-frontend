@@ -8,17 +8,22 @@ import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa6";
 import { IoGrid } from "react-icons/io5";
 import RfqGrid from "./RfqGrid";
 import RListView from "./RListView";
-import { quotations as allquotations } from "../../../data/quotations";
+import { Button } from "@mui/material";
+import { extractRFQID } from "../../../helper/helper";
+import { Search } from "lucide-react";
 
 const RfqStatus = ({
   selectedStatus,
   formatDate,
   statusColor,
-  handleNewRfq,
+  onCancel,
+  // handleNewRfq,
+  quotationsData,
 }) => {
   const [quotations, setQuotations] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [viewMode, setViewMode] = useState("list");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // const { error, isLoading, singerRFQ, getRFQById } = useRFQ();
 
@@ -33,40 +38,38 @@ const RfqStatus = ({
   const handleEdit = (item) => {
     setSelectedItem(item);
   };
-
-  //   useEffect(() => {
-  //     if (quotationsUrl && quotationsUrl.length) {
-  //       // Assuming quotationsUrl is an array of IDs
-  //       Promise.all(quotationsUrl.map((id) => getRFQById(id)))
-  //         .then((data) => {
-  //           // Update state with fetched quotation objects
-  //           setQuotations(data);
-  //         })
-  //         .catch((err) => {
-  //           console.error("Error fetching quotations:", err);
-  //         });
-  //     }
-  //   }, [quotationsUrl, getRFQById]);
-
-  //   if (isLoading) {
-  //     return <div>Loading quotations...</div>;
-  //   }
-
-  //   if (error) {
-  //     return <div>Error: {error.message || error.toString()}</div>;
-  //   }
+  
 
   useEffect(() => {
     if (selectedStatus[0] && selectedStatus[0].length) {
       setQuotations(() =>
-        allquotations.filter((item) => item.status === selectedStatus[1])
+        quotationsData.filter((item) => item.status === selectedStatus[1])
       );
     }
   }, [selectedStatus]);
 
-  // const getQuotationsByUrl = allquotations.filter(
-  //   (item) => item.status === selectedStatus[1]
-  // );
+ const filteredQuotations = quotations.filter((item) => {
+    if (!searchQuery) return true;
+    const lowercasedQuery = searchQuery.toLowerCase();
+
+    const price = item?.rfq_total_price?.toString().toLowerCase() || "";
+    const expiryDate = formatDate(item.expiry_date).toLowerCase();
+    const status = item?.status?.toLowerCase() || "";
+    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
+    const purchaseID = extractRFQID(item.purchase_request)?.toLowerCase() || "";
+    const vendor =
+      typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
+    const vendorCategory = item.vendor_category?.toLowerCase() || "";
+    return (
+      price.includes(lowercasedQuery) ||
+      expiryDate.includes(lowercasedQuery) ||
+      status.includes(lowercasedQuery) ||
+      currencyName.includes(lowercasedQuery) ||
+      purchaseID.includes(lowercasedQuery) ||
+      vendor.includes(lowercasedQuery) ||
+      vendorCategory.includes(lowercasedQuery)
+    );
+  });
 
   const toggleViewMode = (mode) => {
     setViewMode(mode);
@@ -75,22 +78,28 @@ const RfqStatus = ({
   return (
     <div className="rfqStatus">
       <PurchaseHeader />
+      <div className="rfqStatusCancel">
+        <Button variant="outlined" className="cancel" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
       <div className="rfqHeader">
         <div className="rfqHeaderContent">
           <h2 className="rfqHeaderTitle">{selectedStatus[1]}</h2>
           <div className="rfqsash">
-            <label htmlFor="searchInput" className="search-box">
-              <img src={SearchIcon} alt="Search" className="search-icon" />
-              <input
-                id="searchInput"
-                type="text"
-                placeholder="Search..."
-                // value={searchQuery}
-                // onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-            </label>
-          </div>
+                <Search
+                  style={{ color: "#C6CCD2" }}
+                  className="rfqsearch-icon"
+                />
+                <input
+                  id="searchInput"
+                  type="search"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="searchInput"
+                />
+              </div>
         </div>
 
         <div className="r3b">
@@ -115,7 +124,7 @@ const RfqStatus = ({
       </div>
       {viewMode === "grid" ? (
         <RfqGrid
-          quotations={quotations}
+          quotations={filteredQuotations}
           handleClick={handleClick}
           formatDate={formatDate}
           statusColor={statusColor}
@@ -123,7 +132,7 @@ const RfqStatus = ({
       ) : (
         <div className="rfqStatusList">
           <RListView
-            items={quotations}
+            items={filteredQuotations}
             onCardClick={handleClick}
             getStatusColor={statusColor}
           />
@@ -137,7 +146,7 @@ const RfqStatus = ({
             formatDate={formatDate}
             statusColor={statusColor}
             onCancel={handleCancel}
-            handleNewRfq={handleNewRfq}
+            // handleNewRfq={handleNewRfq}
             onEdit={handleEdit}
           />
         </div>

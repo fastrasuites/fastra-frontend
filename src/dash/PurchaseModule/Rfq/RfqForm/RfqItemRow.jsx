@@ -7,6 +7,7 @@ const cellStyle = (index) => ({
 });
 
 const RfqItemRow = ({ row, index, handleRowChange, products}) => {
+  // console.log(row)
   return (
     <TableRow
       key={row.id || index}
@@ -78,12 +79,13 @@ const RfqItemRow = ({ row, index, handleRowChange, products}) => {
       </TableCell>
       <TableCell sx={cellStyle(index)}>
         <TextField
-          // If unit_of_measure is an array, display the second element; otherwise display the value.
           value={
             Array.isArray(row.unit_of_measure)
               ? row.unit_of_measure[1]
-              : row.unit_of_measure || ""
+              : row.unit_of_measure.
+              unit_category || ""
           }
+          
           variant="standard"
           sx={{
             width: "100%",

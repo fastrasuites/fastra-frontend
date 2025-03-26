@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -111,7 +111,10 @@ const ListView = ({ items, onItemClick }) => {
                 backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
                 "&:last-child td, &:last-child th": { border: 0 },
               }}
-              onClick={() => onItemClick(item.url)}
+              onClick={() => {
+                console.log(item);
+                onItemClick(item.url);
+              }}
               style={{ cursor: "pointer" }}
             >
               <TableCell padding="checkbox">

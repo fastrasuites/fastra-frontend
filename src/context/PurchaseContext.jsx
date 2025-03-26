@@ -12,11 +12,6 @@ export const PurchaseProvider = ({ children }) => {
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
 
-  // console.log(
-  //   "purchase requests from db in purchaseContext: ",
-  //   purchaseRequests
-  // );
-
   // const access_token = localStorage.getItem("access_token");
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
@@ -215,6 +210,27 @@ export const PurchaseProvider = ({ children }) => {
     }
   };
 
+  const fetchApprovedPurchaseRequests = async () => {
+    try {
+      const response = await client.get(
+        "/purchase/purchase-request/approved_list/"
+      );
+      const rawData = response.data;
+
+      // Normalize each purchase request
+      const normalizedData = await Promise.all(
+        rawData.map(async (pr) => await normalizePurchaseRequest(pr))
+      );
+
+      setPurchaseRequests(normalizedData);
+      return { success: true, data: normalizedData };
+    } catch (err) {
+      setError(err);
+      console.error("Error fetching purchase requests:", err);
+      return { success: false, err };
+    }
+  };
+
   // Save/create a new purchase request (POST)
   const createPurchaseRequest = async (newRequest) => {
     try {
@@ -334,6 +350,7 @@ export const PurchaseProvider = ({ children }) => {
         createProduct,
         purchaseRequests,
         fetchPurchaseRequests,
+        fetchApprovedPurchaseRequests,
         createPurchaseRequest,
         updatePurchaseRequest,
         submitPurchaseRequest,
