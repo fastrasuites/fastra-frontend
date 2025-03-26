@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import "./Rfq.css";
-import SearchIcon from "../../../image/search.svg";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import RListView from "./RListView";
-import Rform from "./Rform";
-import Rapr from "./Rapr";
 import PurchaseHeader from "../PurchaseHeader";
 import draft from "../../../../src/image/icons/draft (1).png";
 import approved from "../../../../src/image/icons/approved.png";
@@ -31,7 +28,7 @@ export default function Rfq() {
   // const []
 
   const { fetchApprovedPurchaseRequests, purchaseRequests } = usePurchase();
-  const { getRFQList, rfqList, deleteRFQ } = useRFQ();
+  const { getRFQList, deleteRFQ } = useRFQ();
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -53,7 +50,7 @@ export default function Rfq() {
         localStorage.setItem("quotationsData", JSON.stringify(data.data));
       }
     });
-  }, [getRFQList, rfqList]);
+  }, [getRFQList]);
 
   const normalizedPRs = purchaseRequests.map((item) => {
     const segments = item.url.split("/").filter(Boolean);
@@ -96,30 +93,29 @@ export default function Rfq() {
     );
   });
 
-    // onDeleteSelected: iterates over selected IDs and deletes them.
-    const handleDeleteSelected = useCallback(
-      async (selectedIds) => {
-        try {
-          // Delete each selected RFQ in parallel.
-          await Promise.all(selectedIds.map((id) => deleteRFQ(extractRFQID(id)))).then((data) => {
-            console.log("Deleted RFQs:", data);
-            // Update the list of RFQs after deletion.
-            getRFQList().then((data) => {
-              if (data.success) {
-                setQuotationsData(data.data);
-                localStorage.setItem("quotationsData", JSON.stringify(data.data));
-              }
-            });
+  // onDeleteSelected: iterates over selected IDs and deletes them.
+  const handleDeleteSelected = useCallback(
+    async (selectedIds) => {
+      try {
+        // Delete each selected RFQ in parallel.
+        await Promise.all(
+          selectedIds.map((id) => deleteRFQ(extractRFQID(id)))
+        ).then((data) => {
+          console.log("Deleted RFQs:", data);
+          // Update the list of RFQs after deletion.
+          getRFQList().then((data) => {
+            if (data.success) {
+              setQuotationsData(data.data);
+              localStorage.setItem("quotationsData", JSON.stringify(data.data));
+            }
           });
-        } catch (err) {
-          console.error("Error deleting selected RFQs:", err);
-        }
-      },
-      [deleteRFQ, getRFQList]
-    );
-  
-
-
+        });
+      } catch (err) {
+        console.error("Error deleting selected RFQs:", err);
+      }
+    },
+    [deleteRFQ, getRFQList]
+  );
 
   const getStatusColor = (status) => {
     switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
@@ -269,21 +265,16 @@ export default function Rfq() {
                 quotation={{}}
                 formUse={"New RFQ"}
                 prID={normalizedPRs}
-                // onSave={handleEditSave}
               />
             </div>
           ) : selectedItem ? (
             <div className="overlay">
               <RfqStatusModal
-                // formData={selectedItem}
-                // onUpdateRfq={handleUpdateRFQ}
-                // selectedStatus
                 item={selectedItem}
                 formatDate={formatDate}
                 statusColor={getStatusColor}
                 onEdit={handleEdit}
                 onCancel={handleCancel}
-                // onNewRfq={handleNewRfq}
               />
             </div>
           ) : selectedStatus ? (

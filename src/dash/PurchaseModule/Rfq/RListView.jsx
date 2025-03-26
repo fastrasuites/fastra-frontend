@@ -67,7 +67,6 @@ const RListView = ({
   }, [onDeleteSelected, selected]);
 
   // Memoize the rendered rows for performance.
-  // Memoize the rendered rows for performance.
   const renderedRows = React.useMemo(() => {
     return items.map((item, index) => (
       <TableRow

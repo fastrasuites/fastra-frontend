@@ -17,18 +17,20 @@ import pending from "../../../../src/image/icons/pending.png";
 import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { extractRFQID, formatDate } from "../../../helper/helper";
+import PurchaseRequestModule from "./PurchaseRequestModule";
+import PurchaseRequestStatus from "./PurchaseRequestStatus";
 
 export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
+  const [selectedStatus, setSelectedStatus] = useState(null);
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  // Used by Purchase Module wizard ===========================
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
@@ -37,7 +39,7 @@ export default function Purchreq() {
     createPurchaseRequest,
     fetchPurchaseRequests,
   } = usePurchase();
-  // -------------------------------------
+
   useEffect(() => {
     const savedPR = localStorage.getItem("purchaseRequestData");
     if (savedPR) {
@@ -160,6 +162,7 @@ export default function Purchreq() {
     acc[status].push(url);
     return acc;
   }, {});
+  
 
   const handleSelectedRequest = (item) => {
     setSelectedItem(item);
@@ -190,9 +193,22 @@ export default function Purchreq() {
     }
   };
 
-  // console.log(filteredItems);
-  // console.log(purchaseRequests);
-  // console.log(selectedItem);
+  const handleRfqStatusClick = (urlList, status) => {
+    setSelectedStatus([urlList, status]);
+  };
+
+  const handleCancel = () => {
+    setSelectedItem(null)
+  }
+
+  const handleEdit = (item) => {
+    setSelectedItem(item);
+  };
+
+  const handleStatusCancel = () => {
+    setSelectedStatus(null);
+  };
+
   return (
     <div className="purchase-request" id="purchase">
       <PurchaseHeader />
@@ -302,33 +318,39 @@ export default function Purchreq() {
             </div>
           ) : selectedItem ? (
             <div className="overlay1">
-              <Papr
-                prData={selectedItem}
-                onClose={() => setSelectedItem(null)}
-                onStatusChange={handleUpdateStatus}
+              <PurchaseRequestModule
+                item={selectedItem}
+                formatDate={formatDate}
+                statusColor={getStatusColor}
+                onEdit={handleEdit}
+                onCancel={handleCancel}
               />
+             
             </div>
           ) : viewMode === "grid" ? (
-            <div className="prq4">
-              {filteredPurchaseRequest.map((item) => (
-                <div
-                  className="rfqStatusCard"
-                  key={item.id}
-                  onClick={() => handleCardClick(item)}
-                >
-                  <p className="cardid">{extractRFQID(item?.url)}</p>
-                  <p className="cardate">{formatDate(item.expiry_date)}</p>
-                  <p className="vendname">{item?.vendor?.company_name}</p>
-                  <p
-                    className="status"
-                    style={{
-                      color: getStatusColor(item.status),
-                    }}
+            <div className="rfqStatusCards">
+              {filteredPurchaseRequest.map((item) => {
+                return (
+                  <div
+                    className="rfqStatusCard"
+                    key={item?.id}
+                    onClick={() => handleCardClick(item)}
                   >
-                    {item.status}
-                  </p>
-                </div>
-              ))}
+                    <p className="cardid">{extractRFQID(item?.url)}</p>
+                    <p className="cardate">{formatDate(item.date_created)}</p>
+                    <p className="vendname">{item?.vendor?.company_name}</p>
+                    <p className="cardid">{item?.purpose}</p>
+                    <p
+                      className="status"
+                      style={{
+                        color: getStatusColor(item.status),
+                      }}
+                    >
+                      {item.status}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <ListView
@@ -337,15 +359,30 @@ export default function Purchreq() {
               getStatusColor={getStatusColor}
             />
           )}
+
+          {
+            selectedStatus && (
+              <div className="overlay">
+              <PurchaseRequestStatus
+                selectedStatus={selectedStatus}
+                getStatusColor={getStatusColor}
+                statusColor={getStatusColor}
+                formatDate={formatDate}
+                onCancel={handleStatusCancel}
+                quotationsData={purchaseRequestData}
+              />
+            </div>
+            )
+          }
         </div>
       </div>
 
       {/* controls the 'Purchase Module Wizard' following user clicking the Purchase card from the Home page */}
-      <PurchaseModuleWizard
+      {/* <PurchaseModuleWizard
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-      />
+      /> */}
     </div>
   );
 }
