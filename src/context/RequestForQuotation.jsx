@@ -13,7 +13,7 @@ const RFQContext = createContext();
 export const RFQProvider = ({ children }) => {
   const { tenantData } = useTenant();
   const [rfqList, setRfqList] = useState([]);
-  const [singerRFQ, setSingerRFQ] = useState([]);
+  const [singleRFQ, setSingleRFQ] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,6 +56,7 @@ export const RFQProvider = ({ children }) => {
     }
     return true;
   };
+
   // Helper function to fetch a resource from a URL
   async function fetchResource(url) {
     try {
@@ -105,6 +106,7 @@ export const RFQProvider = ({ children }) => {
     async (info) => {
       if (!validateRFQFields(info)) {
         const errMsg = "All fields are required and must be valid.";
+        console.log(info);
         setError(errMsg);
         return Promise.reject(new Error(errMsg));
       }
@@ -117,17 +119,17 @@ export const RFQProvider = ({ children }) => {
       try {
         setIsLoading(true);
         const response = await client.post(
-          "/purchase/request-for-quotation/",
+          `/purchase/request-for-quotation/`,
           info
         );
         setError(null);
         // Append the new RFQ to the list.
         setRfqList((prevRFQs) => [...prevRFQs, response.data]);
-        return {success: true, data: response.data};
+        return { success: true, data: response.data };
       } catch (err) {
         setError(err);
         console.error("Error creating RFQ:", err);
-        return {success: false, message: Promise.reject(err)};
+        return { success: false, message: Promise.reject(err) };
       } finally {
         setIsLoading(false);
       }
@@ -148,8 +150,8 @@ export const RFQProvider = ({ children }) => {
       const response = await client.get("/purchase/request-for-quotation/");
       const rawData = response.data;
 
-       // Normalize each purchase request
-       const normalizedData = await Promise.all(
+      // Normalize each purchase request
+      const normalizedData = await Promise.all(
         rawData.map(async (pr) => await normalizeRFQList(pr))
       );
 
@@ -185,7 +187,7 @@ export const RFQProvider = ({ children }) => {
           `/purchase/request-for-quotation/${id}/`
         );
         setError(null);
-        setSingerRFQ(response.data);
+        setSingleRFQ(response.data);
         return response.data;
       } catch (err) {
         setError(err);
@@ -209,8 +211,9 @@ export const RFQProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        const response = await client.put(
-          `/purchase/request-for-quotation/${id}`,
+        console.log(id, info);
+        const response = await client.patch(
+          `/purchase/request-for-quotation/${id}/`,
           info
         );
         setError(null);
@@ -222,8 +225,45 @@ export const RFQProvider = ({ children }) => {
         );
         return response.data;
       } catch (err) {
-        setError(err);
         console.error("Error updating RFQ:", err);
+        console.error("Request config:", err.config.data);
+        setError(err);
+        return Promise.reject(err);
+      }
+    },
+    [client]
+  );
+
+  // Update RFQ Status to approved.
+  const approveRFQ = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+      try {
+        setIsLoading(true);
+        // Using PUT as per the API documentation for the approve endpoint
+        const response = await client.put(
+          `/purchase/request-for-quotation/${id}/approve/`,
+          info
+        );
+        setError(null);
+        // Update the RFQ in the list if it exists.
+        setRfqList((prevRFQs) =>
+          prevRFQs.map((rfq) =>
+            rfq.id === id ? { ...rfq, ...response.data } : rfq
+          )
+        );
+        return response.data;
+      } catch (err) {
+        console.error("Error updating RFQ Approved Status:", err);
+        if (err.response && err.response.data) {
+          console.error("Backend error details:", err.response.data);
+        }
+        setError(err);
         return Promise.reject(err);
       } finally {
         setIsLoading(false);
@@ -232,6 +272,107 @@ export const RFQProvider = ({ children }) => {
     [client]
   );
 
+  // Update RFQ Status to approved.
+  const pendingRFQ = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+      try {
+        setIsLoading(true);
+        // Using PUT as per the API documentation for the approve endpoint
+        const response = await client.put(
+          `/purchase/request-for-quotation/${id}/submit/`,
+          info
+        );
+        setError(null);
+        // Update the RFQ in the list if it exists.
+        setRfqList((prevRFQs) =>
+          prevRFQs.map((rfq) =>
+            rfq.id === id ? { ...rfq, ...response.data } : rfq
+          )
+        );
+        return response.data;
+      } catch (err) {
+        console.error("Error updating RFQ Pending Status:", err);
+        if (err.response && err.response.data) {
+          console.error("Backend error details:", err.response.data);
+        }
+        setError(err);
+        return Promise.reject(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  // Update RFQ Status to rejected.
+  const rejectRFQ = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+      try {
+        setIsLoading(true);
+        console.log(id, info);
+        const response = await client.patch(
+          `/purchase/request-for-quotation/${id}/reject/`,
+          info
+        );
+        setError(null);
+        // Update the RFQ in the list if it exists.
+        setRfqList((prevRFQs) =>
+          prevRFQs.map((rfq) =>
+            rfq.id === id ? { ...rfq, ...response.data } : rfq
+          )
+        );
+        return response.data;
+      } catch (err) {
+        console.error("Error updating RFQ Reject Status:", err);
+        console.error("Request config:", err.config.data);
+        setError(err);
+        return Promise.reject(err);
+      }
+    },
+    [client]
+  );
+
+  const deleteRFQ = useCallback(
+    async (id) => {
+      if (!client) {
+        const errMsg = "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+      setIsLoading(true);
+      try {
+        console.log(id);
+        const response = await client.delete(
+          `/purchase/request-for-quotation/${id}/soft_delete/`
+        );
+        setError(null);
+        // Remove the deleted RFQ from the list using filter.
+        setRfqList((prevRFQs) => prevRFQs.filter((rfq) => rfq.id !== id));
+        return response.data;
+      } catch (err) {
+        console.error("Error deleting RFQ:", err);
+        setError(err);
+        return Promise.reject(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+  
+
   // Memoize the context value to avoid unnecessary re-renders.
   const contextValue = useMemo(
     () => ({
@@ -239,7 +380,11 @@ export const RFQProvider = ({ children }) => {
       getRFQList,
       updateRFQ,
       getRFQById,
-      singerRFQ,
+      approveRFQ,
+      rejectRFQ,
+      pendingRFQ,
+      deleteRFQ,
+      singleRFQ,
       error,
       rfqList,
       isLoading,
@@ -249,9 +394,13 @@ export const RFQProvider = ({ children }) => {
       getRFQList,
       updateRFQ,
       getRFQById,
+      approveRFQ,
+      rejectRFQ,
+      pendingRFQ,
+      deleteRFQ,
       error,
       rfqList,
-      singerRFQ,
+      singleRFQ,
       isLoading,
     ]
   );
@@ -270,126 +419,121 @@ export const useRFQ = () => {
   return context;
 };
 
+// // // Helper function to fetch a resource from a URL
+// // async function fetchResource(url) {
+// //   try {
+// //     // Ensure the URL uses HTTPS
+// //     const secureUrl = url.replace(/^http:\/\//i, "https://");
+// //     const response = await client.get(secureUrl);
+// //     return response.data;
+// //   } catch (err) {
+// //     console.error("Error fetching resource from", url, err);
+// //     return null;
+// //   }
+// }
 
+// // Normalizes a purchase request by fetching sub-data for currency, vendor, and purchase_request,
+// // as well as for each item: product, unit_of_measure, and purchase_request.
+// async function normalizePurchaseRequest(pr) {
+//   // Fetch top-level related resources
+//   const currencyDetail = await fetchResource(pr.currency);
+//   const vendorDetail = await fetchResource(pr.vendor);
 
-  // Helper function to fetch a resource from a URL
-  async function fetchResource(url) {
-    try {
-      // Ensure the URL uses HTTPS
-      const secureUrl = url.replace(/^http:\/\//i, "https://");
-      const response = await client.get(secureUrl);
-      return response.data;
-    } catch (err) {
-      console.error("Error fetching resource from", url, err);
-      return null;
-    }
-  }
+//   // Normalize items by fetching related data for each item field.
+//   const normalizedItems = await Promise.all(
+//     pr.items.map(async (item) => {
+//       const productDetail = item.product
+//         ? await fetchResource(item.product)
+//         : null;
+//       const unitDetail = item.unit_of_measure
+//         ? await fetchResource(item.unit_of_measure)
+//         : null;
+//       const itemPrDetail = item.purchase_request
+//         ? await fetchResource(item.purchase_request)
+//         : null;
 
-  // // Normalizes a purchase request by fetching sub-data for currency, vendor, and purchase_request,
-  // // as well as for each item: product, unit_of_measure, and purchase_request.
-  // async function normalizePurchaseRequest(pr) {
-  //   // Fetch top-level related resources
-  //   const currencyDetail = await fetchResource(pr.currency);
-  //   const vendorDetail = await fetchResource(pr.vendor);
+//       return {
+//         ...item,
+//         product: productDetail,
+//         unit_of_measure: unitDetail,
+//         purchase_request: itemPrDetail,
+//       };
+//     })
+//   );
 
-  //   // Normalize items by fetching related data for each item field.
-  //   const normalizedItems = await Promise.all(
-  //     pr.items.map(async (item) => {
-  //       const productDetail = item.product
-  //         ? await fetchResource(item.product)
-  //         : null;
-  //       const unitDetail = item.unit_of_measure
-  //         ? await fetchResource(item.unit_of_measure)
-  //         : null;
-  //       const itemPrDetail = item.purchase_request
-  //         ? await fetchResource(item.purchase_request)
-  //         : null;
+//   return {
+//     ...pr,
+//     currency: currencyDetail,
+//     vendor: vendorDetail,
+//     items: normalizedItems,
+//   };
+// }
 
-  //       return {
-  //         ...item,
-  //         product: productDetail,
-  //         unit_of_measure: unitDetail,
-  //         purchase_request: itemPrDetail,
-  //       };
-  //     })
-  //   );
+// const fetchPurchaseRequests = async () => {
+//   try {
+//     const response = await client.get("/purchase/purchase-request/");
+//     const rawData = response.data;
 
-  //   return {
-  //     ...pr,
-  //     currency: currencyDetail,
-  //     vendor: vendorDetail,
-  //     items: normalizedItems,
-  //   };
-  // }
+//     // Normalize each purchase request
+//     const normalizedData = await Promise.all(
+//       rawData.map(async (pr) => await normalizePurchaseRequest(pr))
+//     );
 
-  // const fetchPurchaseRequests = async () => {
-  //   try {
-  //     const response = await client.get("/purchase/purchase-request/");
-  //     const rawData = response.data;
+//     setPurchaseRequests(normalizedData);
+//     return { success: true, data: normalizedData };
+//   } catch (err) {
+//     setError(err);
+//     console.error("Error fetching purchase requests:", err);
+//     return { success: false, err };
+//   }
+// };
 
-  //     // Normalize each purchase request
-  //     const normalizedData = await Promise.all(
-  //       rawData.map(async (pr) => await normalizePurchaseRequest(pr))
-  //     );
+// const fetchSubData = async (dataArray, key) => {
+//   try {
+//     const results = await Promise.all(
+//       dataArray.map(async (item) => {
+//         try {
+//           // Get the original URL from the object using the provided key.
+//           const originalUrl = item[key];
+//           if (!originalUrl) return item;
 
-  //     setPurchaseRequests(normalizedData);
-  //     return { success: true, data: normalizedData };
-  //   } catch (err) {
-  //     setError(err);
-  //     console.error("Error fetching purchase requests:", err);
-  //     return { success: false, err };
-  //   }
-  // };
+//           // Convert the URL to HTTPS if needed.
+//           const secureUrl = originalUrl.replace(/^http:\/\//i, "https://");
+//           const response = await client.get(secureUrl);
+//           const fetchedData = response.data;
 
+//           // Return the object with the key replaced by the fetched data.
+//           return { ...item, [key]: fetchedData };
+//         } catch (err) {
+//           console.error(`Error fetching ${key} data for item:`, item, err);
+//           // Return the item with a fallback value if the fetch fails.
+//           return { ...item, [key]: [item[key], ""] };
+//         }
+//       })
+//     );
+//     return results;
+//   } catch (err) {
+//     console.error("Error in fetchSubData:", err);
+//     throw err;
+//   }
+// };
 
+// // Fetch all purchase requests
+// const fetchPurchaseRequests = async () => {
+//   try {
+//     const response = await client.get("/purchase/purchase-request/");
+//     const purchaseRequestResponse = response.data;
 
-  
-  // const fetchSubData = async (dataArray, key) => {
-  //   try {
-  //     const results = await Promise.all(
-  //       dataArray.map(async (item) => {
-  //         try {
-  //           // Get the original URL from the object using the provided key.
-  //           const originalUrl = item[key];
-  //           if (!originalUrl) return item;
+//     // Use the sub-fetch helper to normalize the "currency" field.
+//     const normalizedRequests = await fetchSubData(
+//       purchaseRequestResponse,
+//       "currency"
+//     );
+//     const fullyNormalized = await fetchSubData(normalizedRequests, "vendor");
 
-  //           // Convert the URL to HTTPS if needed.
-  //           const secureUrl = originalUrl.replace(/^http:\/\//i, "https://");
-  //           const response = await client.get(secureUrl);
-  //           const fetchedData = response.data;
-
-  //           // Return the object with the key replaced by the fetched data.
-  //           return { ...item, [key]: fetchedData };
-  //         } catch (err) {
-  //           console.error(`Error fetching ${key} data for item:`, item, err);
-  //           // Return the item with a fallback value if the fetch fails.
-  //           return { ...item, [key]: [item[key], ""] };
-  //         }
-  //       })
-  //     );
-  //     return results;
-  //   } catch (err) {
-  //     console.error("Error in fetchSubData:", err);
-  //     throw err;
-  //   }
-  // };
-
-  // // Fetch all purchase requests
-  // const fetchPurchaseRequests = async () => {
-  //   try {
-  //     const response = await client.get("/purchase/purchase-request/");
-  //     const purchaseRequestResponse = response.data;
-
-  //     // Use the sub-fetch helper to normalize the "currency" field.
-  //     const normalizedRequests = await fetchSubData(
-  //       purchaseRequestResponse,
-  //       "currency"
-  //     );
-  //     const fullyNormalized = await fetchSubData(normalizedRequests, "vendor");
-
-  //     setPurchaseRequests(fullyNormalized);
-  //   } catch (err) {
-  //     setError(err);
-  //     console.error("Error fetching purchase requests:", err);
-  //   }
-  // };
+//     setPurchaseRequests(fullyNormalized);
+//   } catch (err) {
+//     setError(err);
+//     console.error("Error fetching purchase requests:", err);
+//   }
+// };

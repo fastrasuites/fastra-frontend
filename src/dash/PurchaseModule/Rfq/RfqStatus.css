@@ -76,3 +76,12 @@
 .rfqStatusList {
   padding: 10px 50px;
 }
+
+
+.rfqStatusCancel {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 20px;
+  margin: 40px 50px 0 0;
+}

@@ -14,6 +14,9 @@ import {
 } from "@mui/material";
 import "./RfqStatusModal.css";
 import RfqForm from "./RfqForm/RfqForm";
+import { extractRFQID } from "../../../helper/helper";
+import { useRFQ } from "../../../context/RequestForQuotation";
+import { useHistory } from "react-router-dom";
 
 // Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
@@ -31,13 +34,15 @@ const RfqStatusModal = ({
   onNewRfq,
 }) => {
   const [edit, setEdit] = useState(false);
-  const {
-    items = [],
-    status = "pending",
-    purchase_request,
-    currency,
-    expiry_date,
-  } = item;
+  const { items = [], status = "pending", currency, expiry_date } = item;
+
+  const { approveRFQ, rejectRFQ, pendingRFQ } = useRFQ();
+
+  const handleReload = () => {
+    setTimeout(() => {
+    window.location.reload();
+    }, 1000);
+  };
 
   const handleEdit = () => {
     setEdit(true);
@@ -45,28 +50,74 @@ const RfqStatusModal = ({
   };
 
   const handleEditClose = () => {
-    setEdit(false)
-    onEdit(null)
-    console.log("hello")
-  } 
+    setEdit(false);
+    onEdit(null);
+    console.log("hello");
+  };
+
+  const handleSubmit = (formData, status = "pending") => {
+    // e.preventDefault();
+    const url = formData.url;
+    console.log(url);
+    const cleanedFormData = {
+      expiry_date: formData.expiry_date || "",
+      vendor: formData.vendor.url || formData.vendor,
+      vendor_category: formData.vendor_category || "",
+      purchase_request: formData.purchase_request || "",
+      currency: formData?.currency?.url || formData?.currency,
+      status: status,
+      items: Array.isArray(formData.items)
+        ? formData.items.map((item) => ({
+            product: item.product.url,
+            description: item.description,
+            qty: Number(item.qty) || 0,
+            unit_of_measure:
+              item.unit_of_measure.url || item.unit_of_measure[0],
+            estimated_unit_price: item.estimated_unit_price,
+          }))
+        : [],
+      is_hidden: formData?.is_hidden,
+    };
+    if (status === "pending") {
+      const id = extractRFQID(url);
+      console.log("Updating RFQ:", cleanedFormData);
+      pendingRFQ(cleanedFormData, id).then((data) => {
+        console.log(data);
+      });
+    } else if (status === "approve") {
+      const id = extractRFQID(url);
+      console.log("Updating RFQ:", cleanedFormData);
+      approveRFQ(cleanedFormData, id).then((data) => {
+        console.log(data);
+      });
+    } else if (status === "reject") {
+      const id = extractRFQID(url);
+      console.log("Updating RFQ:", cleanedFormData);
+      rejectRFQ(cleanedFormData, id).then((data) => {
+        console.log(data);
+      });
+    }
+  };
 
   const renderedRows = useMemo(() => {
     if (Array.isArray(items) && items.length > 0) {
       return items.map((row, index) => (
         <TableRow
-          key={row.url || index}
+          key={row?.url || index}
           sx={{
             cursor: "pointer",
             "&:last-child td, &:last-child th": { border: 0 },
           }}
         >
-          <TableCell sx={cellStyle(index)}>{row?.product || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(index)}>
+            {row?.product?.product_name || "N/A"}
+          </TableCell>
           <TableCell sx={cellStyle(index)}>
             {row?.description || "N/A"}
           </TableCell>
           <TableCell sx={cellStyle(index)}>{row?.qty || "N/A"}</TableCell>
           <TableCell sx={cellStyle(index)}>
-            {row?.unit_of_measure || "N/A"}
+            {row?.unit_of_measure?.unit_category || "N/A"}
           </TableCell>
           <TableCell sx={cellStyle(index)}>
             {row?.estimated_unit_price || "N/A"}
@@ -90,7 +141,6 @@ const RfqStatusModal = ({
     );
   }, [items]);
 
-  console.log(edit);
   return (
     <div className="rfqStatus">
       <PurchaseHeader />
@@ -116,18 +166,20 @@ const RfqStatusModal = ({
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            <Button
-              className="edit"
-              onClick={handleEdit}
-              style={{
-                display:
-                  status === "approved" || status === "cancelled"
-                    ? "none"
-                    : "block",
-              }}
-            >
-              Edit
-            </Button>
+            {status !== "pending" && status !== "approved" && (
+              <Button
+                className="edit"
+                onClick={handleEdit}
+                style={{
+                  display:
+                    status === "approved" || status === "cancelled"
+                      ? "none"
+                      : "block",
+                }}
+              >
+                Edit
+              </Button>
+             )}
             <Button variant="outlined" className="cancel" onClick={onCancel}>
               Cancel
             </Button>
@@ -194,7 +246,7 @@ const RfqStatusModal = ({
                       fontSize: "12px",
                     }}
                   >
-                    {purchase_request || "N/A"}
+                    {extractRFQID(item?.url) || "N/A"}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -212,7 +264,9 @@ const RfqStatusModal = ({
                       fontSize: "12px",
                     }}
                   >
-                    {currency || "N/A"}
+                    {`${currency.currency_name}${" - "}${
+                      currency.currency_symbol
+                    }` || "N/A"}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -229,7 +283,7 @@ const RfqStatusModal = ({
           </TableContainer>
         </div>
 
-        <p className="rfqContent">RFQ Content</p>
+        <p className="rfqContent">RFQ Items</p>
 
         {/* RFQ Items Table Section */}
         <div className="rfqStatusTable">
@@ -296,28 +350,62 @@ const RfqStatusModal = ({
                 Drafted
               </p>
             </div>
+            <div className="rfqStatusDraftFooterBtns">
+              <Button
+                variant="contained"
+                className="newRfqBtn"
+                disableElevation
+                onClick={onNewRfq}
+              >
+                Share
+              </Button>
 
-            <Button
-              variant="contained"
-              className="newRfqBtn"
-              disableElevation
-              onClick={onNewRfq}
-            >
-              Share
-            </Button>
+              <Button
+                variant="contained"
+                className="newRfqBtn"
+                disableElevation
+                onClick={() => {
+                  handleSubmit(item, "pending");
+                  onCancel();
+                }}
+              >
+                Save
+              </Button>
+            </div>
           </div>
         )}
 
         {status === "pending" && (
           <div className="rfqStatusFooter">
-            <p
-              style={{
-                color: statusColor ? statusColor(status) : "#000",
-                textTransform: "capitalize",
-              }}
-            >
-              pending
-            </p>
+            <br />
+
+            <div className="rfqStatusDraftFooterBtns">
+              <Button
+                variant="contained"
+                color="success"
+                className="newRfqBtn"
+                disableElevation
+                onClick={() => {
+                  handleSubmit(item, "approve");
+                  handleReload();
+                }}
+              >
+                Approve
+              </Button>
+
+              <Button
+                variant="contained"
+                color="error"
+                className="newRfqBtn"
+                disableElevation
+                onClick={() => {
+                  handleSubmit(item, "reject");
+                 handleReload();
+                }}
+              >
+                Reject
+              </Button>
+            </div>
           </div>
         )}
 

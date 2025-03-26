@@ -4,6 +4,7 @@
   background-image: url("../../../image/bg.svg");
   background-size: contain;
   font-family: Product Sans;
+  z-index: 999;
 }
 
 .rfqHeaderLeft {
@@ -132,3 +133,11 @@ color: #3B7CED;
     align-items: center;
     gap: 10px;
 }
+
+.rfqStatusDraftFooterBtns {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 20px;
+}
+

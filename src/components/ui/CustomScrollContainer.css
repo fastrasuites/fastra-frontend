@@ -1,0 +1,33 @@
+.custom-scroll-container {
+    position: relative;
+    overflow-y: scroll;
+    /* Firefox: hide native scrollbar */
+    scrollbar-width: none;
+  }
+  .custom-scroll-container::-webkit-scrollbar {
+    display: none; /* Hide native scrollbar for WebKit */
+  }
+  
+  /* Fake scrollbar track */
+  .fake-scrollbar-track {
+    position: absolute;
+    right: 2px;
+    top: 10px;       /* 10px margin from top */
+    bottom: 10px;    /* 10px margin from bottom */
+    width: 6px;
+    background: #f2f2f2;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  
+  /* Fake scrollbar thumb */
+  .fake-scrollbar-thumb {
+    position: absolute;
+    width: 100%;
+    background: #888;
+    border-radius: 3px;
+    transition: top 0.5s ease-out; /* Animate top change over 0.5s */
+  }
+  .fake-scrollbar-thumb:hover {
+    background: #555;
+  }
