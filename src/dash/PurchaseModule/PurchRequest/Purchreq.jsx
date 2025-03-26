@@ -16,39 +16,42 @@ import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
+import { extractRFQID, formatDate } from "../../../helper/helper";
 
 export default function Purchreq() {
+  const [purchaseRequestData, setPurchaseRequestData] = useState([]);
   const [editMode, setEditMode] = useState(false);
-  const [currentPR, setCurrentPR] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [draftCount, setDraftCount] = useState(0);
-  const [approvedCount, setApprovedCount] = useState(0);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [rejectedCount, setRejectedCount] = useState(0);
   const [viewMode, setViewMode] = useState("list");
-  const {
-    purchaseRequests,
-    fetchSinglePurchaseRequest,
-    createPurchaseRequest,
-    fetchPurchaseRequests,
-  } = usePurchase();
-  // const [items, setItems] = useState(() => {
-  //   const storedItems =
-  //     JSON.parse(localStorage.getItem("purchaseRequests")) || [];
-  //   return storedItems;
-  // });
+
   const [isFormVisible, setIsFormVisible] = useState(false);
-  // const [filteredItems, setFilteredItems] = useState(items);
-  const [filteredItems, setFilteredItems] = useState(purchaseRequests);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
   // Used by Purchase Module wizard ===========================
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
+  const {
+    fetchSinglePurchaseRequest,
+    createPurchaseRequest,
+    fetchPurchaseRequests,
+  } = usePurchase();
   // -------------------------------------
+  useEffect(() => {
+    const savedPR = localStorage.getItem("purchaseRequestData");
+    if (savedPR) {
+      setPurchaseRequestData(JSON.parse(savedPR));
+    }
+  }, []);
+  useEffect(() => {
+    fetchPurchaseRequests().then((data) => {
+      if (data.success) {
+        setPurchaseRequestData(data.data);
+        localStorage.setItem("purchaseRequestData", JSON.stringify(data.data));
+      }
+    });
+  }, [fetchPurchaseRequests]);
 
   useEffect(() => {
     if (location.state?.step) {
@@ -67,23 +70,6 @@ export default function Purchreq() {
   };
   // End ===================================
 
-  // console.log("Purchase Requests:", purchaseRequests);
-
-  // const handleSaveAndSubmit = (data) => {
-  //   const newData = { ...data, status: "pending" }; // Set status to Pending
-  //   console.log("inspecting new data: ", data);
-  //   createPurchaseRequest(newData);
-
-  //   setFormData(newData);
-  //   setIsSubmitted(true);
-  //   // const updatedItems = [...items, newData];
-  //   const updatedItems = [...purchaseRequests, newData];
-  //   // setItems(updatedItems);
-  //   // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
-  //   setIsFormVisible(false);
-  //   setSelectedItem(newData); // Immediately select the new item
-  // };
-
   const handleSaveAndSubmit = async (data) => {
     // console.log("inspecting new data within handleSaveAndSubmit: ", data);
     const result = data;
@@ -94,12 +80,6 @@ export default function Purchreq() {
     setSelectedRequest(result); // Store the newly created PR
     setIsFormVisible(false);
     setSelectedItem(result); // Auto-open Papr component
-    // try {
-    //   // const result = await createPurchaseRequest(data);
-    //   // fetchPurchaseRequests(); // Refresh the list
-    // } catch (error) {
-    //   console.error("Submission failed:", error);
-    // }
   };
 
   const handleFormDataChange = (data) => {
@@ -132,64 +112,57 @@ export default function Purchreq() {
     setSelectedItem(null);
   };
 
+  // Filter quotations on the fly based on the search query
+  const filteredPurchaseRequest = purchaseRequestData.filter((item) => {
+    if (!searchQuery) return true;
+    const lowercasedQuery = searchQuery.toLowerCase();
+
+    const price = item?.total_price?.toString().toLowerCase() || "";
+    const status = item?.status?.toLowerCase() || "";
+    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
+    const purchaseID = item.id?.toLowerCase() || "";
+    const vendor =
+      typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
+    return (
+      price.includes(lowercasedQuery) ||
+      status.includes(lowercasedQuery) ||
+      currencyName.includes(lowercasedQuery) ||
+      purchaseID.includes(lowercasedQuery) ||
+      vendor.includes(lowercasedQuery)
+    );
+  });
+
   const getStatusColor = (status) => {
-    switch (status) {
-      case "approved":
+    switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
+      case "Approved":
         return "#2ba24c";
-      case "pending":
+      case "Pending":
         return "#f0b501";
-      case "rejected":
+      case "Rejected":
         return "#e43e2b";
-      case "draft":
-        return "#3b7ded";
       default:
-        return "#7a8a98";
+        return "#3B7CED";
     }
   };
 
-  const updateCounts = (items) => {
-    const draftCount = items.filter((item) => item.status === "draft").length;
-    const approvedCount = items.filter(
-      (item) => item.status === "approved"
-    ).length;
-    const pendingCount = items.filter(
-      (item) => item.status === "pending"
-    ).length;
-    const rejectedCount = items.filter(
-      (item) => item.status === "rejected"
-    ).length;
-    setDraftCount(draftCount);
-    setApprovedCount(approvedCount);
-    setPendingCount(pendingCount);
-    setRejectedCount(rejectedCount);
-  };
+  const statuses = [
+    { key: "draft", label: "Draft", img: draft },
+    { key: "approved", label: "Approved", img: approved },
+    { key: "pending", label: "Pending", img: pending },
+    { key: "rejected", label: "Rejected", img: rejected },
+  ];
 
-  useEffect(() => {
-    // updateCounts(items);
-    // setFilteredItems(items);
-    updateCounts(purchaseRequests);
-    setFilteredItems(purchaseRequests);
-  }, [purchaseRequests]);
-
-  const handleSearch = () => {
-    if (searchQuery === "") {
-      // setFilteredItems(items);
-      setFilteredItems(purchaseRequests);
-    } else {
-      const lowercasedQuery = searchQuery.toLowerCase();
-      // const filtered = items.filter(
-      const filtered = purchaseRequests.filter(
-        (item) =>
-          item.url.toLowerCase().includes(lowercasedQuery) ||
-          item.productName.toLowerCase().includes(lowercasedQuery) ||
-          item.qty.toLowerCase().includes(lowercasedQuery) ||
-          item.amount.toLowerCase().includes(lowercasedQuery) ||
-          item.requester.toLowerCase().includes(lowercasedQuery) ||
-          item.date.includes(lowercasedQuery) ||
-          item.status.toLowerCase().includes(lowercasedQuery)
-      );
-      setFilteredItems(filtered);
+  const groupedByStatus = purchaseRequestData.reduce((acc, quotation) => {
+    const { status, url } = quotation;
+    if (!acc[status]) {
+      acc[status] = [];
     }
+    acc[status].push(url);
+    return acc;
+  }, {});
+
+  const handleSelectedRequest = (item) => {
+    setSelectedItem(item);
   };
 
   // const handleCardClick = (item) => {
@@ -228,55 +201,33 @@ export default function Purchreq() {
           {!isFormVisible && !selectedItem && (
             <div className="purchase-request-first">
               <p style={{ fontSize: "17px" }}>Purchase Requests</p>
-              <div className="purchase-request-status">
-                <div className="status-field purchase-draft">
-                  <img src={draft} alt="draft" className="status-img" />
-                  <p
-                    className={`purchase-list-count ${
-                      draftCount === 0 ? "zero" : ""
-                    }`}
-                  >
-                    {draftCount}
-                  </p>
-                  <p className="status-desc">Purchase Request</p>
-                  <p style={{ fontSize: "20px" }}>Draft</p>
-                </div>
-                <div className="status-field purchase-approved">
-                  <img src={approved} alt="approved" className="status-img" />
-                  <p
-                    className={`purchase-list-count ${
-                      approvedCount === 0 ? "zero" : ""
-                    }`}
-                  >
-                    {approvedCount}
-                  </p>
-                  <p className="status-desc">Purchase Request</p>
-                  <p style={{ fontSize: "20px" }}>Approved</p>
-                </div>
-                <div className="status-field purchase-pending">
-                  <img src={pending} alt="pending" className="status-img" />
-                  <p
-                    className={`purchase-list-count ${
-                      pendingCount === 0 ? "zero" : ""
-                    }`}
-                  >
-                    {pendingCount}
-                  </p>
-                  <p className="status-desc">Purchase Request</p>
-                  <p style={{ fontSize: "20px" }}>Pending</p>
-                </div>
-                <div className="status-field purchase-rejected">
-                  <img src={rejected} alt="rejected" className="status-img" />
-                  <p
-                    className={`purchase-list-count ${
-                      rejectedCount === 0 ? "zero" : ""
-                    }`}
-                  >
-                    {rejectedCount}
-                  </p>
-                  <p className="status-desc">Purchase Request</p>
-                  <p style={{ fontSize: "20px" }}>Rejected</p>
-                </div>
+              <div className="rfq-status">
+                {statuses.map(({ key, label, img }) => {
+                  const count = groupedByStatus[key]?.length || 0;
+                  return (
+                    <div
+                      className={`status-field rfq-${key}`}
+                      key={key}
+                      style={{ cursor: "pointer" }}
+                      onClick={() =>
+                        handleRfqStatusClick(groupedByStatus[key], key)
+                      }
+                    >
+                      <img
+                        src={img}
+                        alt={label.toLowerCase()}
+                        className="status-img"
+                      />
+                      <p className={`plnum ${count === 0 ? "zero" : ""}`}>
+                        {count}
+                      </p>
+                      <p style={{ lineHeight: "1rem" }} className="status-desc">
+                        Purchase Requests
+                      </p>
+                      <p style={{ fontSize: "20px" }}>{label}</p>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="purchase-nav">
@@ -292,7 +243,7 @@ export default function Purchreq() {
                     <label
                       htmlFor="searchInput"
                       className="search-box"
-                      onClick={handleSearch}
+                      // onClick={handleSearch}
                     >
                       <img
                         src={SearchIcon}
@@ -359,42 +310,32 @@ export default function Purchreq() {
             </div>
           ) : viewMode === "grid" ? (
             <div className="prq4">
-              {filteredItems.map((item) => (
+              {filteredPurchaseRequest.map((item) => (
                 <div
-                  className={`prq4gv ${
-                    item.status === "approved" ||
-                    (item === selectedItem && isSubmitted)
-                      ? "clickable"
-                      : "not-clickable"
-                  }`}
-                  key={item.url}
+                  className="rfqStatusCard"
+                  key={item.id}
                   onClick={() => handleCardClick(item)}
                 >
-                  <p className="cardid">{item.id}</p>
-                  <p className="carddate">
-                    {new Date(item.date_created).toLocaleDateString()}
-                  </p>
-                  <p className="cardcreator">{item.created_by || "System"}</p>
-
+                  <p className="cardid">{extractRFQID(item?.url)}</p>
+                  <p className="cardate">{formatDate(item.expiry_date)}</p>
+                  <p className="vendname">{item?.vendor?.company_name}</p>
                   <p
                     className="status"
-                    style={{ color: getStatusColor(item.status) }}
+                    style={{
+                      color: getStatusColor(item.status),
+                    }}
                   >
-                    <strong
-                      style={{
-                        fontSize: "20px",
-                        color: getStatusColor(item.status),
-                      }}
-                    >
-                      &#x2022;
-                    </strong>{" "}
                     {item.status}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <ListView items={filteredItems} onItemClick={handleCardClick} />
+            <ListView
+              items={filteredPurchaseRequest}
+              onCardClick={handleSelectedRequest}
+              getStatusColor={getStatusColor}
+            />
           )}
         </div>
       </div>
