@@ -79,7 +79,6 @@ const PurchaseRequestStatus = ({
 
   return (
     <div className="rfqStatus">
-      <PurchaseHeader />
       <div className="rfqStatusCancel">
         <Button variant="outlined" className="cancel" onClick={onCancel}>
           Cancel

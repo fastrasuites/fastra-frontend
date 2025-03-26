@@ -240,6 +240,7 @@ export const PurchaseProvider = ({ children }) => {
           newRequest
         );
         setPurchaseRequests((prev) => [...prev, response.data]);
+        return { success: true, data: response.data };
       } catch (err) {
         setError(err);
         console.error("Error creating purchase request:", err);
@@ -249,13 +250,17 @@ export const PurchaseProvider = ({ children }) => {
   );
 
   const updatePurchaseRequest = useCallback(
-    async (url, updatedData) => {
+    async (id, updatedData) => {
+      console.log("Updating purchase request:", id, updatedData);
       try {
-        const response = await client.patch(url, updatedData);
-        setPurchaseRequests((prev) =>
-          prev.map((req) => (req.url === url ? response.data : req))
+        const response = await client.patch(
+          `/purchase/purchase-request/${id}/`,
+          updatedData
         );
-        return response.data;
+        setPurchaseRequests((prev) =>
+          prev.map((req) => (req.url === id ? response.data : req))
+        );
+        return { success: true, data: response.data };
       } catch (err) {
         setError(err);
         console.error("Error updating purchase request:", err);

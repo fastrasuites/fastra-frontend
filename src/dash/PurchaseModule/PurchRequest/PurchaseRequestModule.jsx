@@ -15,6 +15,7 @@ import {
 import "../Rfq/RfqStatusModal.css";
 import { extractRFQID } from "../../../helper/helper";
 import { usePurchase } from "../../../context/PurchaseContext";
+import PRForm from "./PRForm/PRForm";
 // import RfqForm from "./RfqForm/RfqForm"; // Uncomment if RfqForm is needed
 
 // Helper for cell styles
@@ -43,8 +44,11 @@ const PurchaseRequestModule = ({
     url,
   } = item;
 
-  const { approvePurchaseRequest, rejectPurchaseRequest, pendingPurchaseRequest } =
-    usePurchase();
+  const {
+    approvePurchaseRequest,
+    rejectPurchaseRequest,
+    pendingPurchaseRequest,
+  } = usePurchase();
 
   // Reloads the page after a slight delay
   const handleReload = () => {
@@ -57,10 +61,10 @@ const PurchaseRequestModule = ({
     onEdit(item);
   };
 
-  // const handleEditClose = () => {
-  //   setEdit(false);
-  //   onEdit(null);
-  // };
+  const handleEditClose = () => {
+    setEdit(false);
+    onEdit(null);
+  };
 
   // Handles submission for various statuses in a unified way
   const handleSubmit = (formData, newStatus = "pending") => {
@@ -114,7 +118,9 @@ const PurchaseRequestModule = ({
           <TableCell sx={cellStyle(index)}>
             {row?.product?.product_name || "N/A"}
           </TableCell>
-          <TableCell sx={cellStyle(index)}>{row?.description || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(index)}>
+            {row?.description || "N/A"}
+          </TableCell>
           <TableCell sx={cellStyle(index)}>{row?.qty || "N/A"}</TableCell>
           <TableCell sx={cellStyle(index)}>
             {row?.unit_of_measure?.unit_category || "N/A"}
@@ -130,7 +136,11 @@ const PurchaseRequestModule = ({
     }
     return (
       <TableRow>
-        <TableCell colSpan={6} align="center" sx={{ color: "#7a8a98", fontSize: "12px" }}>
+        <TableCell
+          colSpan={6}
+          align="center"
+          sx={{ color: "#7a8a98", fontSize: "12px" }}
+        >
           No items available
         </TableCell>
       </TableRow>
@@ -139,10 +149,14 @@ const PurchaseRequestModule = ({
 
   return (
     <div className="rfqStatus">
-      <PurchaseHeader />
       <div className="rfqHeader">
         <div className="rfqHeaderLeft">
-          <Button variant="contained" className="newRfqBtn" disableElevation onClick={onNewRfq}>
+          <Button
+            variant="contained"
+            className="newRfqBtn"
+            disableElevation
+            onClick={onNewRfq}
+          >
             New RFQ
           </Button>
           <div className="rfqAutosave">
@@ -157,7 +171,11 @@ const PurchaseRequestModule = ({
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            {!(status === "pending" || status === "approved" || status === "rejected") && (
+            {!(
+              status === "pending" ||
+              status === "approved" ||
+              status === "rejected"
+            ) && (
               <Button className="edit" onClick={handleEdit}>
                 Edit
               </Button>
@@ -171,7 +189,12 @@ const PurchaseRequestModule = ({
         {/* Status Section */}
         <div className="rfqStatusInfo">
           <p>Status</p>
-          <p style={{ color: statusColor ? statusColor(status) : "#000", textTransform: "capitalize" }}>
+          <p
+            style={{
+              color: statusColor ? statusColor(status) : "#000",
+              textTransform: "capitalize",
+            }}
+          >
             {status}
           </p>
         </div>
@@ -180,35 +203,78 @@ const PurchaseRequestModule = ({
         <div className="rfqRequestInfo">
           <TableContainer
             component={Paper}
-            sx={{ maxWidth: "1000px", boxShadow: "none", borderTop: "none", borderLeft: "none", borderRight: "none" }}
+            sx={{
+              maxWidth: "1000px",
+              boxShadow: "none",
+              borderTop: "none",
+              borderLeft: "none",
+              borderRight: "none",
+            }}
           >
-            <Table sx={{ "&.MuiTable-root": { border: "none" }, "& .MuiTableCell-root": { border: "none" } }}>
-              <TableHead sx={{ backgroundColor: "#f2f2f2", padding: 0, margin: 0, lineHeight: 0 }}>
+            <Table
+              sx={{
+                "&.MuiTable-root": { border: "none" },
+                "& .MuiTableCell-root": { border: "none" },
+              }}
+            >
+              <TableHead
+                sx={{
+                  backgroundColor: "#f2f2f2",
+                  padding: 0,
+                  margin: 0,
+                  lineHeight: 0,
+                }}
+              >
                 <TableRow>
                   <TableCell sx={{ paddingBottom: 0 }}>ID</TableCell>
                   <TableCell sx={{ paddingBottom: 0 }}>Date</TableCell>
                   <TableCell sx={{ paddingBottom: 0 }}>Requester</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody sx={{borderBottom: "1px solid #E2E6E9"}}>
+              <TableBody sx={{ borderBottom: "1px solid #E2E6E9" }}>
                 <TableRow
                   sx={{
                     cursor: "pointer",
                     "&:last-child td, &:last-child th": { border: 0 },
                   }}
                 >
-                  <TableCell sx={{ backgroundColor: "#fff", color: "#7a8a98", fontSize: "12px" }}>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
                     {extractRFQID(url) || "N/A"}
                   </TableCell>
-                  <TableCell sx={{ backgroundColor: "#fff", color: "#7a8a98", fontSize: "12px" }}>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
                     {formatDate(date_created) || "N/A"}
                   </TableCell>
-                  <TableCell sx={{ backgroundColor: "#fff", color: "#7a8a98", fontSize: "12px" }}>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
                     {requester || "N/A"}
                   </TableCell>
                 </TableRow>
               </TableBody>
-              <TableHead sx={{ backgroundColor: "#f2f2f2", padding: 0, margin: 0, lineHeight: 0 }}>
+              <TableHead
+                sx={{
+                  backgroundColor: "#f2f2f2",
+                  padding: 0,
+                  margin: 0,
+                  lineHeight: 0,
+                }}
+              >
                 <TableRow>
                   <TableCell sx={{ paddingBottom: 0 }}>Purpose</TableCell>
                   <TableCell sx={{ paddingBottom: 0 }}>Vendor</TableCell>
@@ -221,10 +287,22 @@ const PurchaseRequestModule = ({
                     "&:last-child td, &:last-child th": { border: 0 },
                   }}
                 >
-                  <TableCell sx={{ backgroundColor: "#fff", color: "#7a8a98", fontSize: "12px" }}>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
                     {purpose || "N/A"}
                   </TableCell>
-                  <TableCell sx={{ backgroundColor: "#fff", color: "#7a8a98", fontSize: "12px" }}>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
                     {vendor?.company_name || "N/A"}
                   </TableCell>
                 </TableRow>
@@ -237,8 +315,16 @@ const PurchaseRequestModule = ({
 
         {/* RFQ Items Table */}
         <div className="rfqStatusTable">
-          <TableContainer component={Paper} sx={{ boxShadow: "none", borderRadius: "10px" }}>
-            <Table sx={{ "&.MuiTable-root": { border: "none" }, "& .MuiTableCell-root": { border: "none" } }}>
+          <TableContainer
+            component={Paper}
+            sx={{ boxShadow: "none", borderRadius: "10px" }}
+          >
+            <Table
+              sx={{
+                "&.MuiTable-root": { border: "none" },
+                "& .MuiTableCell-root": { border: "none" },
+              }}
+            >
               <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
                 <TableRow>
                   <TableCell>Product Name</TableCell>
@@ -259,11 +345,21 @@ const PurchaseRequestModule = ({
           <div className="rfqStatusFooter">
             <div className="approvedIcon">
               <img src={approvedIcon} alt="approved" />
-              <p style={{ color: statusColor ? statusColor(status) : "#000", textTransform: "capitalize" }}>
+              <p
+                style={{
+                  color: statusColor ? statusColor(status) : "#000",
+                  textTransform: "capitalize",
+                }}
+              >
                 Successfully Sent
               </p>
             </div>
-            <Button variant="contained" className="newRfqBtn" disableElevation onClick={onNewRfq}>
+            <Button
+              variant="contained"
+              className="newRfqBtn"
+              disableElevation
+              onClick={onNewRfq}
+            >
               Convert to PO
             </Button>
           </div>
@@ -272,12 +368,22 @@ const PurchaseRequestModule = ({
         {status === "draft" && (
           <div className="rfqStatusFooter">
             <div className="approvedIcon">
-              <p style={{ color: statusColor ? statusColor(status) : "#000", textTransform: "capitalize" }}>
+              <p
+                style={{
+                  color: statusColor ? statusColor(status) : "#000",
+                  textTransform: "capitalize",
+                }}
+              >
                 Drafted
               </p>
             </div>
             <div className="rfqStatusDraftFooterBtns">
-              <Button variant="contained" className="newRfqBtn" disableElevation onClick={onNewRfq}>
+              <Button
+                variant="contained"
+                className="newRfqBtn"
+                disableElevation
+                onClick={onNewRfq}
+              >
                 Share
               </Button>
               <Button
@@ -328,7 +434,12 @@ const PurchaseRequestModule = ({
 
         {status === "cancelled" && (
           <div className="rfqStatusFooter">
-            <p style={{ color: statusColor ? statusColor(status) : "#000", textTransform: "capitalize" }}>
+            <p
+              style={{
+                color: statusColor ? statusColor(status) : "#000",
+                textTransform: "capitalize",
+              }}
+            >
               Rejected
             </p>
           </div>
@@ -338,7 +449,12 @@ const PurchaseRequestModule = ({
       {/* Overlay for editing; uncomment RfqForm import and component if needed */}
       {edit && (
         <div className="overlay">
-          {/* <RfqForm open={edit} onCancel={handleEditClose} quotation={item} formUse="Edit RFQ" /> */}
+          <PRForm
+            open={edit}
+            onCancel={handleEditClose}
+            quotation={item}
+            formUse="Edit Purchase Request"
+          />
         </div>
       )}
     </div>

@@ -19,6 +19,7 @@ import { usePurchase } from "../../../context/PurchaseContext";
 import { extractRFQID, formatDate } from "../../../helper/helper";
 import PurchaseRequestModule from "./PurchaseRequestModule";
 import PurchaseRequestStatus from "./PurchaseRequestStatus";
+import PRForm from "./PRForm/PRForm";
 
 export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
@@ -162,7 +163,6 @@ export default function Purchreq() {
     acc[status].push(url);
     return acc;
   }, {});
-  
 
   const handleSelectedRequest = (item) => {
     setSelectedItem(item);
@@ -198,8 +198,8 @@ export default function Purchreq() {
   };
 
   const handleCancel = () => {
-    setSelectedItem(null)
-  }
+    setSelectedItem(null);
+  };
 
   const handleEdit = (item) => {
     setSelectedItem(item);
@@ -306,7 +306,7 @@ export default function Purchreq() {
 
           {isFormVisible ? (
             <div className="overlay1">
-              <Newpr
+              {/* <Newpr
                 onSaveAndSubmit={handleSaveAndSubmit}
                 onClose={() => {
                   setIsFormVisible(false);
@@ -314,6 +314,12 @@ export default function Purchreq() {
                   setCurrentPR(null);
                 }}
                 existingRequest={editMode ? currentPR : null}
+              /> */}
+
+              <PRForm
+                onCancel={handleFormClose}
+                quotation={{}}
+                formUse={"New RFQ"}
               />
             </div>
           ) : selectedItem ? (
@@ -325,7 +331,6 @@ export default function Purchreq() {
                 onEdit={handleEdit}
                 onCancel={handleCancel}
               />
-             
             </div>
           ) : viewMode === "grid" ? (
             <div className="rfqStatusCards">
@@ -360,9 +365,8 @@ export default function Purchreq() {
             />
           )}
 
-          {
-            selectedStatus && (
-              <div className="overlay">
+          {selectedStatus && (
+            <div className="overlay">
               <PurchaseRequestStatus
                 selectedStatus={selectedStatus}
                 getStatusColor={getStatusColor}
@@ -372,17 +376,16 @@ export default function Purchreq() {
                 quotationsData={purchaseRequestData}
               />
             </div>
-            )
-          }
+          )}
         </div>
       </div>
 
       {/* controls the 'Purchase Module Wizard' following user clicking the Purchase card from the Home page */}
-      {/* <PurchaseModuleWizard
+      <PurchaseModuleWizard
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-      /> */}
+      />
     </div>
   );
 }
