@@ -18,13 +18,20 @@ import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
 
 export default function Purchreq() {
+  const [editMode, setEditMode] = useState(false);
+  const [currentPR, setCurrentPR] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [draftCount, setDraftCount] = useState(0);
   const [approvedCount, setApprovedCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [viewMode, setViewMode] = useState("list");
-  const { purchaseRequests } = usePurchase();
+  const {
+    purchaseRequests,
+    fetchSinglePurchaseRequest,
+    createPurchaseRequest,
+    fetchPurchaseRequests,
+  } = usePurchase();
   // const [items, setItems] = useState(() => {
   //   const storedItems =
   //     JSON.parse(localStorage.getItem("purchaseRequests")) || [];
@@ -62,17 +69,37 @@ export default function Purchreq() {
 
   // console.log("Purchase Requests:", purchaseRequests);
 
-  const handleSaveAndSubmit = (data) => {
-    const newData = { ...data, status: "pending" }; // Set status to Pending
-    console.log("inspecting new data: ", data);
-    setFormData(newData);
-    setIsSubmitted(true);
-    // const updatedItems = [...items, newData];
-    const updatedItems = [...purchaseRequests, newData];
-    // setItems(updatedItems);
-    // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
+  // const handleSaveAndSubmit = (data) => {
+  //   const newData = { ...data, status: "pending" }; // Set status to Pending
+  //   console.log("inspecting new data: ", data);
+  //   createPurchaseRequest(newData);
+
+  //   setFormData(newData);
+  //   setIsSubmitted(true);
+  //   // const updatedItems = [...items, newData];
+  //   const updatedItems = [...purchaseRequests, newData];
+  //   // setItems(updatedItems);
+  //   // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
+  //   setIsFormVisible(false);
+  //   setSelectedItem(newData); // Immediately select the new item
+  // };
+
+  const handleSaveAndSubmit = async (data) => {
+    // console.log("inspecting new data within handleSaveAndSubmit: ", data);
+    const result = data;
+    console.log(
+      "inspecting result(response) within handleSaveAndSubmit: ",
+      result
+    );
+    setSelectedRequest(result); // Store the newly created PR
     setIsFormVisible(false);
-    setSelectedItem(newData); // Immediately select the new item
+    setSelectedItem(result); // Auto-open Papr component
+    // try {
+    //   // const result = await createPurchaseRequest(data);
+    //   // fetchPurchaseRequests(); // Refresh the list
+    // } catch (error) {
+    //   console.error("Submission failed:", error);
+    // }
   };
 
   const handleFormDataChange = (data) => {
@@ -94,9 +121,9 @@ export default function Purchreq() {
     setSelectedItem(null);
   };
 
-  const handleUpdateStatus = (id, status) => {
+  const handleUpdateStatus = (url, status) => {
     const updatedItems = purchaseRequests.map((item) =>
-      item.id === id ? { ...item, status } : item
+      item.url === url ? { ...item, status } : item
     );
     // setItems(updatedItems);
     // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
@@ -107,13 +134,13 @@ export default function Purchreq() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Approved":
+      case "approved":
         return "#2ba24c";
-      case "Pending":
+      case "pending":
         return "#f0b501";
-      case "Rejected":
+      case "rejected":
         return "#e43e2b";
-      case "Draft":
+      case "draft":
         return "#3b7ded";
       default:
         return "#7a8a98";
@@ -121,15 +148,15 @@ export default function Purchreq() {
   };
 
   const updateCounts = (items) => {
-    const draftCount = items.filter((item) => item.status === "Draft").length;
+    const draftCount = items.filter((item) => item.status === "draft").length;
     const approvedCount = items.filter(
-      (item) => item.status === "Approved"
+      (item) => item.status === "approved"
     ).length;
     const pendingCount = items.filter(
-      (item) => item.status === "Pending"
+      (item) => item.status === "pending"
     ).length;
     const rejectedCount = items.filter(
-      (item) => item.status === "Rejected"
+      (item) => item.status === "rejected"
     ).length;
     setDraftCount(draftCount);
     setApprovedCount(approvedCount);
@@ -153,7 +180,7 @@ export default function Purchreq() {
       // const filtered = items.filter(
       const filtered = purchaseRequests.filter(
         (item) =>
-          item.id.toLowerCase().includes(lowercasedQuery) ||
+          item.url.toLowerCase().includes(lowercasedQuery) ||
           item.productName.toLowerCase().includes(lowercasedQuery) ||
           item.qty.toLowerCase().includes(lowercasedQuery) ||
           item.amount.toLowerCase().includes(lowercasedQuery) ||
@@ -165,12 +192,34 @@ export default function Purchreq() {
     }
   };
 
-  const handleCardClick = (item) => {
-    setSelectedItem(item);
-    setSelectedRequest(item); // Update selected request
-    setIsFormVisible(false);
+  // const handleCardClick = (item) => {
+  //   console.log("within handleCardClick ", item);
+  //   setSelectedItem(item);
+  //   setSelectedRequest(item); // Update selected request
+  //   setIsFormVisible(false);
+  // };
+
+  const handleCardClick = async (item) => {
+    console.log(item);
+    // store the return response in a variable
+    const result = await fetchSinglePurchaseRequest(item);
+    setSelectedItem({ result });
+    // check the status of the response
+    console.log(result.status);
+    console.log(selectedItem);
+    if (item.status === "draft") {
+      setEditMode(true);
+      setCurrentPR(result);
+      setIsFormVisible(true);
+    } else {
+      setSelectedItem(item);
+      setIsFormVisible(false);
+    }
   };
 
+  // console.log(filteredItems);
+  // console.log(purchaseRequests);
+  // console.log(selectedItem);
   return (
     <div className="purchase-request" id="purchase">
       <PurchaseHeader />
@@ -292,43 +341,41 @@ export default function Purchreq() {
             <div className="overlay1">
               <Newpr
                 onSaveAndSubmit={handleSaveAndSubmit}
-                onFormDataChange={handleFormDataChange}
-                onClose={handleFormClose}
+                onClose={() => {
+                  setIsFormVisible(false);
+                  setEditMode(false);
+                  setCurrentPR(null);
+                }}
+                existingRequest={editMode ? currentPR : null}
               />
             </div>
           ) : selectedItem ? (
-            selectedItem.status === "Approved" ? (
-              <div className="overlay">
-                <CRfq
-                  formData={selectedItem}
-                  onUpdateStatus={handleUpdateStatus}
-                />
-              </div>
-            ) : (
-              <div className="overlay1">
-                <Papr
-                  formData={selectedItem}
-                  onUpdateStatus={handleUpdateStatus}
-                />
-              </div>
-            )
+            <div className="overlay1">
+              <Papr
+                prData={selectedItem}
+                onClose={() => setSelectedItem(null)}
+                onStatusChange={handleUpdateStatus}
+              />
+            </div>
           ) : viewMode === "grid" ? (
             <div className="prq4">
               {filteredItems.map((item) => (
                 <div
                   className={`prq4gv ${
-                    item.status === "Approved" ||
+                    item.status === "approved" ||
                     (item === selectedItem && isSubmitted)
                       ? "clickable"
                       : "not-clickable"
                   }`}
-                  key={item.id}
+                  key={item.url}
                   onClick={() => handleCardClick(item)}
                 >
                   <p className="cardid">{item.id}</p>
-                  <p className="cardnum">{item.amount}</p>
-                  <p className="refname">{item.requester}</p>
-                  <p className="sales">{item.department}</p>
+                  <p className="carddate">
+                    {new Date(item.date_created).toLocaleDateString()}
+                  </p>
+                  <p className="cardcreator">{item.created_by || "System"}</p>
+
                   <p
                     className="status"
                     style={{ color: getStatusColor(item.status) }}

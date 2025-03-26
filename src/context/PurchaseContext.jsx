@@ -12,10 +12,10 @@ export const PurchaseProvider = ({ children }) => {
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
 
-  console.log(
-    "purchase requests from db in purchaseContext: ",
-    purchaseRequests
-  );
+  // console.log(
+  //   "purchase requests from db in purchaseContext: ",
+  //   purchaseRequests
+  // );
 
   // const access_token = localStorage.getItem("access_token");
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
@@ -262,6 +262,39 @@ export const PurchaseProvider = ({ children }) => {
     }
   };
 
+  // Convert to RFQ
+  const convertToRFQ = async (prId) => {
+    try {
+      const response = await client.post(
+        `/purchase/purchase-request/${prId}/convert_to_rfq/`
+      );
+      return response.data;
+    } catch (err) {
+      setError(err);
+      console.error("RFQ conversion failed:", err);
+      throw err;
+    }
+  };
+
+  // get single purchase request by id not url
+  const fetchSinglePurchaseRequest = async (id) => {
+    // remove trailing slash if any
+    id = id.replace(/\/$/, "");
+    //extract the PR000004 from http://lukudigital.fastrasuiteapi.com.ng/purchase/purchase-request/PR000004/
+    id = id.split("/").pop();
+    console.log(id);
+    try {
+      const response = await client.get(`/purchase/purchase-request/${id}/`);
+      const data = await normalizePurchaseRequest(response.data);
+      console.log("data", data);
+      return data;
+    } catch (err) {
+      setError(err);
+      console.error("Error fetching single purchaseRequest:", err);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     if (tenantData) {
       fetchCurrencies();
@@ -304,6 +337,8 @@ export const PurchaseProvider = ({ children }) => {
         createPurchaseRequest,
         updatePurchaseRequest,
         submitPurchaseRequest,
+        convertToRFQ,
+        fetchSinglePurchaseRequest,
         error,
       }}
     >

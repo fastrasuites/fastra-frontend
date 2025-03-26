@@ -9,6 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import "./Papr.css";
 import autosave from "../../../image/autosave.svg";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -80,9 +81,9 @@ const InputField = styled("input")(({ theme }) => ({
 }));
 
 const SendButton = styled("button")(({ theme }) => ({
-  marginTop: '1rem',
+  marginTop: "1rem",
   backgroundColor: "blue",
-  width: '10%',
+  width: "10%",
   color: "white",
   border: "none",
   padding: "10px 20px",
@@ -91,33 +92,61 @@ const SendButton = styled("button")(({ theme }) => ({
   /*marginLeft: "10px",*/
 }));
 
-export default function Papr({ formData, onUpdateStatus }) {
+// export default function Papr({ formDAta, onUpdateStatus }) {
+export default function Papr({ prData, onClose, onStatusChange }) {
+  const { updatePurchaseRequest } = usePurchase();
+  const [status, setStatus] = useState(prData.status);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [stakeholderUsername, setStakeholderUsername] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
   const [rows, setRows] = useState([]);
 
+  console.log(prData);
+  console.log(prData.result);
+  console.log(prData.items);
+
   useEffect(() => {
-    if (formData && formData.rows) {
-      const total = formData.rows.reduce((sum, row) => {
+    if (prData && prData.rows) {
+      const total = prData.rows.reduce((sum, row) => {
         const rowTotal = parseFloat(row.totalPrice) || 0;
         return sum + rowTotal;
       }, 0);
       setTotalPrice(total);
-      setRows(formData.rows);
+      setRows(prData.rows);
     }
-  }, [formData]);
+  }, [prData]);
 
-  const handleRejection = () => {
-    onUpdateStatus(formData.id, "Rejected");
-    console.log("Rejected with reason: ", rejectionReason);
-    // Implement rejection logic here
+  const handleReject = async (e) => {
+    e.preventDefault();
+    try {
+      await updatePurchaseRequest(prData, { status: "rejected" });
+      onClose();
+    } catch (error) {
+      console.error("Rejection failed:", error);
+    }
   };
 
-  const handleApproval = () => {
-    onUpdateStatus(formData.id, "Approved");
-    console.log("Approved");
-    // Implement approval logic here
+  const handleApprove = async (e) => {
+    e.preventDefault();
+    try {
+      await updatePurchaseRequest(prData, { status: "approved" });
+      setStatus("approved");
+      setIsReadOnly(true);
+    } catch (error) {
+      console.error("Approval failed:", error);
+    }
+  };
+
+  const handleConvertToRFQ = async () => {
+    try {
+      await client.post(
+        `/purchase/purchase-request/${prData.id}/convert_to_rfq/`
+      );
+      // Handle RFQ conversion logic
+    } catch (error) {
+      console.error("Conversion failed:", error);
+    }
   };
 
   const handleRejectionReasonChange = (event) => {
@@ -163,37 +192,27 @@ export default function Papr({ formData, onUpdateStatus }) {
             </div>
             <div style={{ marginBottom: "1rem", marginTop: "-1.5rem" }}>
               <p>Status</p>
-              <p style={{ fontSize: "14px" }}>
-                {formData ? formData.status : ""}
-              </p>
+              <p style={{ fontSize: "14px" }}>{prData ? prData.status : ""}</p>
             </div>
             <div className="papr3b">
               <div className="papr3ba">
                 <p>ID</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formData ? formData.id : ""}
+                  {prData ? prData.id : ""}
                 </p>
               </div>
               <div className="papr3bb">
                 <p>Date</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formData
-                    ? formatDate(formData.date) +
-                      " - " +
-                      formatTime(formData.date)
+                  {prData
+                    ? formatDate(prData.date) + " - " + formatTime(prData.date)
                     : ""}
                 </p>
               </div>
               <div className="papr3bb">
                 <p>Requester</p>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formData ? formData.requester : ""}
-                </p>
-              </div>
-              <div className="papr3ba">
-                <p>Department</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formData ? formData.department : ""}
+                  {prData ? prData.requester : ""}
                 </p>
               </div>
             </div>
@@ -201,13 +220,13 @@ export default function Papr({ formData, onUpdateStatus }) {
               <div className="papr3ca">
                 <label>Purpose</label>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formData ? formData.purpose : ""}
+                  {prData ? prData.purpose : ""}
                 </p>
               </div>
               <div className="papr3ca">
                 <label>Suggested Vendor</label>
                 <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formData ? formData.vendor : ""}
+                  {prData ? prData.vendor : ""}
                 </p>
               </div>
             </div>
@@ -284,8 +303,8 @@ export default function Papr({ formData, onUpdateStatus }) {
                 marginBottom: "1rem",
               }}
             >
-              <ApproveButton onClick={handleApproval}>Approve</ApproveButton>
-              <RejectButton onClick={handleRejection}>Reject</RejectButton>
+              <ApproveButton onClick={handleApprove}>Approve</ApproveButton>
+              <RejectButton onClick={handleReject}>Reject</RejectButton>
             </div>
             <div style={{ marginBottom: "1rem" }}>
               <TextArea
@@ -295,7 +314,14 @@ export default function Papr({ formData, onUpdateStatus }) {
                 onChange={handleRejectionReasonChange}
               />
             </div>
-            <div style={{ marginBottom: "1rem", width: "100%", display: 'flex', flexDirection: "column" }}>
+            <div
+              style={{
+                marginBottom: "1rem",
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <label htmlFor="stakeholderUsername">
                 Send to another stakeholder
               </label>
@@ -317,6 +343,19 @@ export default function Papr({ formData, onUpdateStatus }) {
           </form>
         </div>
       </div>
+      {status === "approved" && (
+        <div className="approval-section">
+          <button onClick={handleConvertToRFQ}>Convert to RFQ</button>
+          <button onClick={onClose}>Return to PR</button>
+        </div>
+      )}
+
+      {status === "pending" && (
+        <div className="action-buttons">
+          <ApproveButton onClick={handleApprove}>Approve</ApproveButton>
+          <RejectButton onClick={handleReject}>Reject</RejectButton>
+        </div>
+      )}
     </div>
   );
 }

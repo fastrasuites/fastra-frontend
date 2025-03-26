@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -15,11 +15,11 @@ import { usePurchase } from "../../../context/PurchaseContext";
 // Function to get status color
 const getStatusColor = (status) => {
   switch (status) {
-    case "Approved":
+    case "approved":
       return "#2ba24c";
-    case "Pending":
+    case "pending":
       return "#f0b501";
-    case "Rejected":
+    case "rejected":
       return "#e43e2b";
     case "draft":
       return "#3b7ded";
@@ -41,23 +41,23 @@ const ListView = ({ items, onItemClick }) => {
     fetchPurchaseRequests();
   }, []);
 
-  console.log(purchaseRequests);
+  // console.log(purchaseRequests);
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      const newSelected = items.map((item) => item.id);
+      const newSelected = items.map((item) => item.url);
       setSelected(newSelected);
       return;
     }
     setSelected([]);
   };
 
-  const handleSelect = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
+  const handleSelect = (event, url) => {
+    const selectedIndex = selected.indexOf(url);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
+      newSelected = newSelected.concat(selected, url);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -97,33 +97,31 @@ const ListView = ({ items, onItemClick }) => {
                 onChange={handleSelectAll}
               />
             </TableCell>
-            <TableCell>Request ID</TableCell>
-            <TableCell>Product Name</TableCell>
-            <TableCell>Qty</TableCell>
-            <TableCell>Amount</TableCell>
-            <TableCell>Requester</TableCell>
+            <TableCell>Date</TableCell>
+            <TableCell>PR ID</TableCell>
+            <TableCell>Created By</TableCell>
             <TableCell>Status</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {items.map((item, index) => (
             <TableRow
-              key={item.id}
+              key={item.url}
               sx={{
                 backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
                 "&:last-child td, &:last-child th": { border: 0 },
               }}
-              onClick={() => onItemClick(item)}
+              onClick={() => onItemClick(item.url)}
               style={{ cursor: "pointer" }}
             >
               <TableCell padding="checkbox">
                 <Checkbox
                   color="primary"
-                  checked={selected.indexOf(item.id) !== -1}
-                  onChange={(event) => handleSelect(event, item.id)}
+                  checked={selected.indexOf(item.url) !== -1}
+                  onChange={(event) => handleSelect(event, item.url)}
                 />
               </TableCell>
-              <TableCell>{item.id}</TableCell>
+              <TableCell>{item.date_created}</TableCell>
 
               {/* Displaying productName correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>

@@ -157,7 +157,12 @@ const ProductRow = React.memo(
   }
 );
 
-export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
+export default function Newpr({
+  onSaveAndSubmit,
+  onFormDataChange,
+  onClose,
+  existingRequest = null,
+}) {
   const { tenantData } = useTenant();
   const {
     products,
@@ -167,6 +172,9 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     currencies,
     fetchCurrencies,
     fetchVendors,
+    fetchPurchaseRequests,
+    updatePurchaseRequest,
+    submitPurchaseRequest,
   } = usePurchase();
 
   // Fetch related data when tenantData is available
@@ -178,17 +186,42 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     }
   }, [tenantData, fetchVendors, fetchCurrencies, fetchProducts]);
 
+  //--------------------------------------------
   // Initialize product rows with consistent data types
-  const [rows, setRows] = useState([
-    {
-      productName: "",
-      description: "",
-      qty: "",
-      unt: [],
-      unitPrice: "",
-      totalPrice: "",
-    },
-  ]);
+  // const [rows, setRows] = useState([
+  //   {
+  //     productName: "",
+  //     description: "",
+  //     qty: "",
+  //     unt: [],
+  //     unitPrice: "",
+  //     totalPrice: "",
+  //   },
+  // ]);
+  //----------------------------------------------
+
+  const [rows, setRows] = useState(() => {
+    if (existingRequest?.items) {
+      return existingRequest.items.map((item) => ({
+        productName: item.product?.url || "",
+        description: item.description || "",
+        qty: item.qty || "",
+        unt: item.unit_of_measure?.url || "",
+        unitPrice: item.estimated_unit_price || "",
+        totalPrice: item.total_price || "",
+      }));
+    }
+    return [
+      {
+        productName: "",
+        description: "",
+        qty: "",
+        unt: "",
+        unitPrice: "",
+        totalPrice: "",
+      },
+    ];
+  });
 
   // Generate a unique Purchase Request ID
   const generateNewID = useCallback(() => {
@@ -203,17 +236,33 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   }, []);
 
   // Form state initialization (controlled inputs)
-  const [formState, setFormState] = useState({
-    id: generateNewID(),
-    productName: "",
-    amount: "",
-    requester: "Firstname Lastname",
-    department: "Sales",
-    status: "Pending",
-    date: new Date(),
-    vendor: "",
-    currency: "",
-    purpose: "",
+  const [formState, setFormState] = useState(() => {
+    if (existingRequest) {
+      return {
+        url: existingRequest.url,
+        id:
+          existingRequest.id || existingRequest.url.split("/").slice(-2, -1)[0],
+        amount: existingRequest.total_price || "",
+        requester: "Firstname Lastname",
+        department: "Sales",
+        status: existingRequest.status || "draft",
+        date: new Date(existingRequest.date_created || Date.now()),
+        vendor: existingRequest.vendor?.url || "",
+        currency: existingRequest.currency?.url || "",
+        purpose: existingRequest.purpose || "",
+      };
+    }
+    return {
+      id: generateNewID(),
+      amount: "",
+      requester: "Firstname Lastname",
+      department: "Sales",
+      status: "draft",
+      date: new Date(),
+      vendor: "",
+      currency: "",
+      purpose: "",
+    };
   });
 
   // Pagination state
@@ -352,19 +401,21 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     return `${formattedHours}:${formattedMinutes}${ampm}`;
   }, []);
 
-  // Save draft handler
-  const handleSave = useCallback(() => {
+  // Update handleSave
+  const handleSave = useCallback(async () => {
     if (!formState.vendor) {
       alert("Please select a vendor");
       return;
     }
+
     const items = rows.map((row) => ({
       product: row.productName,
       description: row.description,
       qty: parseInt(row.qty) || 0,
-      unit_of_measure: Array.isArray(row.unt) && row.unt[0],
+      unit_of_measure: row.unt[0],
       estimated_unit_price: parseFloat(row.unitPrice) || 0,
     }));
+
     const payload = {
       status: "draft",
       currency: formState.currency,
@@ -373,10 +424,23 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       items,
       is_hidden: false,
     };
-    // console.log("Payload:", payload);
-    createPurchaseRequest(payload);
-    // alert("Data saved successfully!");
-  }, [formState, rows, createPurchaseRequest]);
+    console.log("checking payload", payload);
+    console.log("checking existingRequest", existingRequest);
+    try {
+      if (existingRequest) {
+        await updatePurchaseRequest(existingRequest.url, payload);
+      } else {
+        const response = await createPurchaseRequest({
+          ...payload,
+          status: "draft",
+        });
+        console.log("checking response", response.data);
+      }
+      onClose();
+    } catch (error) {
+      console.error("Save failed:", error);
+    }
+  }, [formState, rows, existingRequest]);
 
   // Validate product rows before submission
   // const validateSubmission = useCallback(() => {
@@ -396,25 +460,23 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
     });
   }, [rows]);
 
-  // Update the handleSubmit function's items mapping
+  // Update handleSubmit
   const handleSubmit = useCallback(
-    (e) => {
+    async (e) => {
       e.preventDefault();
-      if (!formState.vendor) {
-        alert("Please select a vendor");
-        return;
-      }
       if (!validateSubmission()) {
-        alert("Please fill all required fields in the product rows");
+        alert("Please fill all required fields");
         return;
       }
+
       const items = rows.map((row) => ({
         product: row.productName,
         description: row.description,
         qty: parseInt(row.qty) || 0,
-        unit_of_measure: Array.isArray(row.unt) ? row.unt[0] : row.unt,
+        unit_of_measure: row.unt[0],
         estimated_unit_price: parseFloat(row.unitPrice) || 0,
       }));
+
       const payload = {
         status: "pending",
         currency: formState.currency,
@@ -423,9 +485,27 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
         items,
         is_hidden: false,
       };
-      onSaveAndSubmit(payload);
+      // checking payload
+
+      // checking existing request
+      console.log("checking payload", payload);
+      console.log("checking existingRequest", existingRequest);
+      try {
+        const result = existingRequest
+          ? await updatePurchaseRequest(existingRequest.url, {
+              ...payload,
+              status: "pending",
+            })
+          : await createPurchaseRequest({ ...payload, status: "pending" });
+        // checking result
+
+        onSaveAndSubmit(result);
+        onClose();
+      } catch (error) {
+        console.error("Submission failed:", error);
+      }
     },
-    [formState, rows, validateSubmission, onSaveAndSubmit]
+    [formState, rows, existingRequest]
   );
 
   // Currency selection state
@@ -671,10 +751,14 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
               {/* Form Action Buttons */}
               <div className="npr3e">
                 <button type="button" className="npr3btn" onClick={handleSave}>
-                  Save
+                  {existingRequest ? "Update Draft" : "Save Draft"}
                 </button>
-                <button type="submit" className="npr3btn">
-                  Save &amp; Submit
+                <button
+                  type="submit"
+                  className="npr3btn"
+                  disabled={formState.status === "pending"}
+                >
+                  {existingRequest ? "Submit Draft" : "Save & Submit"}
                 </button>
               </div>
             </form>
