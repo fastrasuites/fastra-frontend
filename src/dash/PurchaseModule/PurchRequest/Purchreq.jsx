@@ -5,9 +5,6 @@ import SearchIcon from "../../../image/search.svg";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import ListView from "./Listview";
-import Newpr from "./Newpr";
-import Papr from "./Papr";
-import CRfq from "./CRfq";
 import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
 import { useLocation } from "react-router-dom";
 import draft from "../../../../src/image/icons/draft (1).png";
@@ -30,16 +27,11 @@ export default function Purchreq() {
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
-  const {
-    fetchSinglePurchaseRequest,
-    createPurchaseRequest,
-    fetchPurchaseRequests,
-  } = usePurchase();
+  const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
 
   useEffect(() => {
     const savedPR = localStorage.getItem("purchaseRequestData");
@@ -73,22 +65,6 @@ export default function Purchreq() {
   };
   // End ===================================
 
-  const handleSaveAndSubmit = async (data) => {
-    // console.log("inspecting new data within handleSaveAndSubmit: ", data);
-    const result = data;
-    console.log(
-      "inspecting result(response) within handleSaveAndSubmit: ",
-      result
-    );
-    setSelectedRequest(result); // Store the newly created PR
-    setIsFormVisible(false);
-    setSelectedItem(result); // Auto-open Papr component
-  };
-
-  const handleFormDataChange = (data) => {
-    setFormData(data);
-  };
-
   const toggleViewMode = (mode) => {
     setViewMode(mode);
   };
@@ -101,17 +77,6 @@ export default function Purchreq() {
   const handleFormClose = () => {
     setIsFormVisible(false);
     setIsSubmitted(false);
-    setSelectedItem(null);
-  };
-
-  const handleUpdateStatus = (url, status) => {
-    const updatedItems = purchaseRequests.map((item) =>
-      item.url === url ? { ...item, status } : item
-    );
-    // setItems(updatedItems);
-    // localStorage.setItem("purchaseRequests", JSON.stringify(updatedItems));
-    setIsSubmitted(false);
-    setIsFormVisible(false);
     setSelectedItem(null);
   };
 
@@ -185,7 +150,6 @@ export default function Purchreq() {
     console.log(selectedItem);
     if (item.status === "draft") {
       setEditMode(true);
-      setCurrentPR(result);
       setIsFormVisible(true);
     } else {
       setSelectedItem(item);
