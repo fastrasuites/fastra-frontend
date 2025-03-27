@@ -157,7 +157,7 @@ const PurchaseRequestModule = ({
             disableElevation
             onClick={onNewRfq}
           >
-            New RFQ
+            New Purchase Request
           </Button>
           <div className="rfqAutosave">
             <p>Autosave</p>
@@ -351,7 +351,7 @@ const PurchaseRequestModule = ({
                   textTransform: "capitalize",
                 }}
               >
-                Successfully Sent
+                Approved
               </p>
             </div>
             <Button
@@ -360,7 +360,7 @@ const PurchaseRequestModule = ({
               disableElevation
               onClick={onNewRfq}
             >
-              Convert to PO
+              Convert to RFQ
             </Button>
           </div>
         )}
@@ -377,7 +377,7 @@ const PurchaseRequestModule = ({
                 Drafted
               </p>
             </div>
-            <div className="rfqStatusDraftFooterBtns">
+            {/* <div className="rfqStatusDraftFooterBtns">
               <Button
                 variant="contained"
                 className="newRfqBtn"
@@ -397,7 +397,7 @@ const PurchaseRequestModule = ({
               >
                 Save
               </Button>
-            </div>
+            </div> */}
           </div>
         )}
 

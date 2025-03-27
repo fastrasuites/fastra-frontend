@@ -240,11 +240,12 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
             </div>
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
               <Button variant="outlined" type="submit">
-                {isEdit ? "Save Changes" : "Create RFQ Draft"}
+                {/* {isEdit ? "Save Changes" : "Create RFQ Draft"} */}
+                {isEdit ? "Save Changes" : "Save"}
               </Button>
               {!isEdit && (
                 <Button variant="contained" onClick={saveAndSubmit}>
-                  Save & Share
+                  Save & Send
                 </Button>
               )}
             </div>
