@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import PurchaseHeader from "../PurchaseHeader";
 import autosave from "../../../image/autosave.svg";
-import approved from "../../../../src/image/icons/approved-rfq.svg";
+import approvedIcon from "../../../../src/image/icons/approved-rfq.svg";
 import {
   Button,
   Paper,
@@ -12,20 +12,20 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import "./RfqStatusModal.css";
-import RfqForm from "./RfqForm/RfqForm";
+import "../Rfq/RfqStatusModal.css";
 import { extractRFQID } from "../../../helper/helper";
-import { useRFQ } from "../../../context/RequestForQuotation";
-import { useHistory } from "react-router-dom";
+import { usePurchase } from "../../../context/PurchaseContext";
+import PRForm from "./PRForm/PRForm";
+// import RfqForm from "./RfqForm/RfqForm"; // Uncomment if RfqForm is needed
 
-// Shared cell style helper function to avoid repetition
+// Helper for cell styles
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
   color: "#7a8a98",
   fontSize: "12px",
 });
 
-const RfqStatusModal = ({
+const PurchaseRequestModule = ({
   item = {},
   formatDate,
   statusColor,
@@ -34,16 +34,28 @@ const RfqStatusModal = ({
   onNewRfq,
 }) => {
   const [edit, setEdit] = useState(false);
-  const { items = [], status = "pending", currency, expiry_date } = item;
+  const {
+    items = [],
+    status = "pending",
+    purpose,
+    vendor,
+    date_created,
+    requester,
+    url,
+  } = item;
 
-  const { approveRFQ, rejectRFQ, pendingRFQ } = useRFQ();
+  const {
+    approvePurchaseRequest,
+    rejectPurchaseRequest,
+    pendingPurchaseRequest,
+  } = usePurchase();
 
+  // Reloads the page after a slight delay
   const handleReload = () => {
-    setTimeout(() => {
-    window.location.reload();
-    }, 1000);
+    setTimeout(() => window.location.reload(), 1000);
   };
 
+  // Handlers for edit mode
   const handleEdit = () => {
     setEdit(true);
     onEdit(item);
@@ -52,55 +64,49 @@ const RfqStatusModal = ({
   const handleEditClose = () => {
     setEdit(false);
     onEdit(null);
-    console.log("hello");
   };
 
-  const handleSubmit = (formData, status = "pending") => {
-    // e.preventDefault();
-    const url = formData.url;
-    console.log(url);
+  // Handles submission for various statuses in a unified way
+  const handleSubmit = (formData, newStatus = "pending") => {
+    const id = extractRFQID(formData.url);
     const cleanedFormData = {
-      expiry_date: formData.expiry_date || "",
       vendor: formData.vendor.url || formData.vendor,
-      vendor_category: formData.vendor_category || "",
-      purchase_request: formData.purchase_request || "",
       currency: formData?.currency?.url || formData?.currency,
-      status: status,
+      status: newStatus,
+      purpose: formData?.purpose,
       items: Array.isArray(formData.items)
-        ? formData.items.map((item) => ({
-            product: item.product.url,
-            description: item.description,
-            qty: Number(item.qty) || 0,
-            unit_of_measure:
-              item.unit_of_measure.url || item.unit_of_measure[0],
-            estimated_unit_price: item.estimated_unit_price,
+        ? formData.items.map((itm) => ({
+            product: itm.product.url,
+            description: itm.description,
+            qty: Number(itm.qty) || 0,
+            unit_of_measure: itm.unit_of_measure.url || itm.unit_of_measure[0],
+            estimated_unit_price: itm.estimated_unit_price,
           }))
         : [],
       is_hidden: formData?.is_hidden,
     };
-    if (status === "pending") {
-      const id = extractRFQID(url);
-      console.log("Updating RFQ:", cleanedFormData);
-      pendingRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
-      });
-    } else if (status === "approve") {
-      const id = extractRFQID(url);
-      console.log("Updating RFQ:", cleanedFormData);
-      approveRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
-      });
-    } else if (status === "reject") {
-      const id = extractRFQID(url);
-      console.log("Updating RFQ:", cleanedFormData);
-      rejectRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
-      });
+
+    console.log("Cleaned RFQ Data:", cleanedFormData);
+    console.log("Updating RFQ:", cleanedFormData);
+
+    switch (newStatus) {
+      case "pending":
+        pendingPurchaseRequest(cleanedFormData, id).then(console.log);
+        break;
+      case "approve":
+        approvePurchaseRequest(cleanedFormData, id).then(console.log);
+        break;
+      case "reject":
+        rejectPurchaseRequest(cleanedFormData, id).then(console.log);
+        break;
+      default:
+        break;
     }
   };
 
+  // Memoized rows for the RFQ items table
   const renderedRows = useMemo(() => {
-    if (Array.isArray(items) && items.length > 0) {
+    if (Array.isArray(items) && items.length) {
       return items.map((row, index) => (
         <TableRow
           key={row?.url || index}
@@ -123,7 +129,7 @@ const RfqStatusModal = ({
             {row?.estimated_unit_price || "N/A"}
           </TableCell>
           <TableCell sx={cellStyle(index)}>
-            {row?.get_total_price || "N/A"}
+            {row?.total_price || "N/A"}
           </TableCell>
         </TableRow>
       ));
@@ -143,7 +149,6 @@ const RfqStatusModal = ({
 
   return (
     <div className="rfqStatus">
-      <PurchaseHeader />
       <div className="rfqHeader">
         <div className="rfqHeaderLeft">
           <Button
@@ -152,7 +157,7 @@ const RfqStatusModal = ({
             disableElevation
             onClick={onNewRfq}
           >
-            New RFQ
+            New Purchase Request
           </Button>
           <div className="rfqAutosave">
             <p>Autosave</p>
@@ -162,24 +167,19 @@ const RfqStatusModal = ({
       </div>
 
       <div className="rfqStatusContent">
-        {/* Basic Information Section */}
+        {/* Basic Information */}
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            {status !== "pending" && status !== "approved" && (
-              <Button
-                className="edit"
-                onClick={handleEdit}
-                style={{
-                  display:
-                    status === "approved" || status === "cancelled"
-                      ? "none"
-                      : "block",
-                }}
-              >
+            {!(
+              status === "pending" ||
+              status === "approved" ||
+              status === "rejected"
+            ) && (
+              <Button className="edit" onClick={handleEdit}>
                 Edit
               </Button>
-             )}
+            )}
             <Button variant="outlined" className="cancel" onClick={onCancel}>
               Cancel
             </Button>
@@ -199,7 +199,7 @@ const RfqStatusModal = ({
           </p>
         </div>
 
-        {/* Request Information Section */}
+        {/* Request Information */}
         <div className="rfqRequestInfo">
           <TableContainer
             component={Paper}
@@ -226,10 +226,58 @@ const RfqStatusModal = ({
                 }}
               >
                 <TableRow>
-                  <TableCell sx={{ paddingButtom: 0 }}>ID</TableCell>
-                  <TableCell sx={{ paddingButtom: 0 }}>Date Opened</TableCell>
-                  <TableCell sx={{ paddingButtom: 0 }}>Currency Type</TableCell>
-                  <TableCell sx={{ paddingButtom: 0 }}>Expiry Date</TableCell>
+                  <TableCell sx={{ paddingBottom: 0 }}>ID</TableCell>
+                  <TableCell sx={{ paddingBottom: 0 }}>Date</TableCell>
+                  <TableCell sx={{ paddingBottom: 0 }}>Requester</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody sx={{ borderBottom: "1px solid #E2E6E9" }}>
+                <TableRow
+                  sx={{
+                    cursor: "pointer",
+                    "&:last-child td, &:last-child th": { border: 0 },
+                  }}
+                >
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {extractRFQID(url) || "N/A"}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {formatDate(date_created) || "N/A"}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: "12px",
+                    }}
+                  >
+                    {requester || "N/A"}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+              <TableHead
+                sx={{
+                  backgroundColor: "#f2f2f2",
+                  padding: 0,
+                  margin: 0,
+                  lineHeight: 0,
+                }}
+              >
+                <TableRow>
+                  <TableCell sx={{ paddingBottom: 0 }}>Purpose</TableCell>
+                  <TableCell sx={{ paddingBottom: 0 }}>Vendor</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -246,7 +294,7 @@ const RfqStatusModal = ({
                       fontSize: "12px",
                     }}
                   >
-                    {extractRFQID(item?.url) || "N/A"}
+                    {purpose || "N/A"}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -255,27 +303,7 @@ const RfqStatusModal = ({
                       fontSize: "12px",
                     }}
                   >
-                    {formatDate(Date.now()) || "N/A"}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      backgroundColor: "#fff",
-                      color: "#7a8a98",
-                      fontSize: "12px",
-                    }}
-                  >
-                    {`${currency.currency_name}${" - "}${
-                      currency.currency_symbol
-                    }` || "N/A"}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      backgroundColor: "#fff",
-                      color: "#7a8a98",
-                      fontSize: "12px",
-                    }}
-                  >
-                    {formatDate(expiry_date) || "N/A"}
+                    {vendor?.company_name || "N/A"}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -283,9 +311,9 @@ const RfqStatusModal = ({
           </TableContainer>
         </div>
 
-        <p className="rfqContent">RFQ Items</p>
+        <p className="rfqContent">Purchase Request Items</p>
 
-        {/* RFQ Items Table Section */}
+        {/* RFQ Items Table */}
         <div className="rfqStatusTable">
           <TableContainer
             component={Paper}
@@ -312,28 +340,27 @@ const RfqStatusModal = ({
           </TableContainer>
         </div>
 
-        {/* Footer Section */}
+        {/* Footer Section based on status */}
         {status === "approved" && (
           <div className="rfqStatusFooter">
             <div className="approvedIcon">
-              <img src={approved} alt="approved" />
+              <img src={approvedIcon} alt="approved" />
               <p
                 style={{
                   color: statusColor ? statusColor(status) : "#000",
                   textTransform: "capitalize",
                 }}
               >
-                Successfully Sent
+                Approved
               </p>
             </div>
-
             <Button
               variant="contained"
               className="newRfqBtn"
               disableElevation
               onClick={onNewRfq}
             >
-              Convert to PO
+              Convert to RFQ
             </Button>
           </div>
         )}
@@ -350,7 +377,7 @@ const RfqStatusModal = ({
                 Drafted
               </p>
             </div>
-            <div className="rfqStatusDraftFooterBtns">
+            {/* <div className="rfqStatusDraftFooterBtns">
               <Button
                 variant="contained"
                 className="newRfqBtn"
@@ -359,26 +386,23 @@ const RfqStatusModal = ({
               >
                 Share
               </Button>
-
               <Button
                 variant="contained"
                 className="newRfqBtn"
                 disableElevation
                 onClick={() => {
                   handleSubmit(item, "pending");
-                  onCancel();
+                  handleReload();
                 }}
               >
                 Save
               </Button>
-            </div>
+            </div> */}
           </div>
         )}
 
         {status === "pending" && (
           <div className="rfqStatusFooter">
-            <br />
-
             <div className="rfqStatusDraftFooterBtns">
               <Button
                 variant="contained"
@@ -392,7 +416,6 @@ const RfqStatusModal = ({
               >
                 Approve
               </Button>
-
               <Button
                 variant="contained"
                 color="error"
@@ -400,7 +423,7 @@ const RfqStatusModal = ({
                 disableElevation
                 onClick={() => {
                   handleSubmit(item, "reject");
-                 handleReload();
+                  handleReload();
                 }}
               >
                 Reject
@@ -423,14 +446,14 @@ const RfqStatusModal = ({
         )}
       </div>
 
+      {/* Overlay for editing; uncomment RfqForm import and component if needed */}
       {edit && (
         <div className="overlay">
-          <RfqForm
+          <PRForm
             open={edit}
             onCancel={handleEditClose}
             quotation={item}
-            formUse={"Edit RFQ"}
-            // onSave={handleEditSave}
+            formUse="Edit Purchase Request"
           />
         </div>
       )}
@@ -438,4 +461,4 @@ const RfqStatusModal = ({
   );
 };
 
-export default RfqStatusModal;
+export default PurchaseRequestModule;

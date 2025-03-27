@@ -6,7 +6,7 @@ const cellStyle = (index) => ({
   fontSize: "12px",
 });
 
-const RfqItemRow = ({ row, index, handleRowChange, products}) => {
+const PRItemRow = ({ row, index, handleRowChange, products}) => {
   // console.log(row)
   return (
     <TableRow
@@ -119,4 +119,4 @@ const RfqItemRow = ({ row, index, handleRowChange, products}) => {
   );
 };
 
-export default RfqItemRow;
+export default PRItemRow;

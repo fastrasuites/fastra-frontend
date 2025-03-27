@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,8 +8,12 @@ import {
   TableRow,
   Paper,
   Checkbox,
+  Button,
+  Box,
 } from "@mui/material";
 import PropTypes from "prop-types";
+import { extractRFQID } from "../../../helper/helper";
+import { Trash } from "lucide-react";
 
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
@@ -23,13 +27,17 @@ const statusCellStyle = (index, getStatusColor, status) => ({
   alignItems: "center",
   color: getStatusColor(status),
 });
-const RListView = ({ items, onCardClick, getStatusColor }) => {
-  // const quantity = items.reduce((total, item) => total + item.quantity, 0);
 
-  const [selected, setSelected] = React.useState([]);
+const RListView = ({
+  items,
+  onCardClick,
+  getStatusColor,
+  onDeleteSelected,
+}) => {
+  const [selected, setSelected] = useState([]);
 
-  // Handler to select or deselect all items
-  const handleSelectAll = React.useCallback(
+  // Handler to select/deselect all items.
+  const handleSelectAll = useCallback(
     (event) => {
       if (event.target.checked) {
         setSelected(items.map((item) => item.url));
@@ -42,17 +50,21 @@ const RListView = ({ items, onCardClick, getStatusColor }) => {
 
   // Toggle selection for an individual item.
   const handleSelect = useCallback((event, id) => {
-    // Prevent row click from firing.
     event.stopPropagation();
-
-    setSelected((prevSelected) => {
-      if (prevSelected.includes(id)) {
-        return prevSelected.filter((selectedId) => selectedId !== id);
-      } else {
-        return [...prevSelected, id];
-      }
-    });
+    setSelected((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((selectedId) => selectedId !== id)
+        : [...prevSelected, id]
+    );
   }, []);
+
+  // Delete logic: call the external onDeleteSelected callback and reset selection.
+  const handleDeleteSelected = useCallback(() => {
+    if (onDeleteSelected && selected.length > 0) {
+      onDeleteSelected(selected);
+      setSelected([]);
+    }
+  }, [onDeleteSelected, selected]);
 
   // Memoize the rendered rows for performance.
   const renderedRows = React.useMemo(() => {
@@ -74,19 +86,23 @@ const RListView = ({ items, onCardClick, getStatusColor }) => {
             onChange={(event) => handleSelect(event, item.url)}
           />
         </TableCell>
-        <TableCell sx={cellStyle(index)}>{item.purchase_request}</TableCell>
         <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item) => (
-            <p>{item.product}</p>
+          {extractRFQID(item.purchase_request)}
+        </TableCell>
+        <TableCell sx={cellStyle(index)}>
+          {item?.items.map((item, index) => (
+            <p key={index}>{item?.product?.product_name}</p>
           ))}
         </TableCell>
         <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item) => (
-            <p>{item.qty}</p>
+          {item?.items.map((item, index) => (
+            <p key={index}>{item?.qty}</p>
           ))}
         </TableCell>
-        <TableCell sx={cellStyle(index)}>{item.rfq_total_price}</TableCell>
-        <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
+        <TableCell sx={cellStyle(index)}>{item?.rfq_total_price}</TableCell>
+        <TableCell
+          sx={statusCellStyle(index, getStatusColor, item.status)}
+        >
           <div style={{ display: "flex", alignItems: "center" }}>
             <div
               style={{
@@ -102,48 +118,70 @@ const RListView = ({ items, onCardClick, getStatusColor }) => {
         </TableCell>
       </TableRow>
     ));
-  }, [items, selected, handleSelect, onCardClick]);
+  }, [items, selected, handleSelect, onCardClick, getStatusColor]);
 
   if (items.length === 0) {
     return <p>No items available. Please fill the form to add items.</p>;
   }
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
-      <Table
-        sx={{
-          "&.MuiTable-root": { border: "none" },
-          "& .MuiTableCell-root": { border: "none" },
-        }}
+    <Box sx={{ width: "100%", mt: 3 }}>
+      {selected.length > 0 && (
+        <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<Trash />}
+            onClick={handleDeleteSelected}
+          >
+            Delete Selected
+          </Button>
+        </Box>
+      )}
+      <TableContainer
+        component={Paper}
+        className="scroll-container"
+        sx={{ boxShadow: "none", maxHeight: "70vh" }}
       >
-        <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
-          <TableRow>
-            <TableCell padding="checkbox">
-              <Checkbox
-                color="primary"
-                indeterminate={
-                  selected.length > 0 && selected.length < items.length
-                }
-                checked={items.length > 0 && selected.length === items.length}
-                onChange={handleSelectAll}
-              />
-            </TableCell>
-            <TableCell>Request ID</TableCell>
-            <TableCell>Product Name</TableCell>
-            <TableCell>Qty</TableCell>
-            <TableCell>Amount</TableCell>
-            <TableCell>Status</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>{renderedRows}</TableBody>
-      </Table>
-    </TableContainer>
+        <Table
+          sx={{
+            "&.MuiTable-root": { border: "none" },
+            "& .MuiTableCell-root": { border: "none" },
+          }}
+        >
+          <TableHead
+            sx={{ backgroundColor: "#f2f2f2", position: "sticky", top: 0 }}
+          >
+            <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  color="primary"
+                  indeterminate={
+                    selected.length > 0 && selected.length < items.length
+                  }
+                  checked={items.length > 0 && selected.length === items.length}
+                  onChange={handleSelectAll}
+                />
+              </TableCell>
+              <TableCell>Request ID</TableCell>
+              <TableCell>Product Name</TableCell>
+              <TableCell>Qty</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>{renderedRows}</TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 
 RListView.propTypes = {
-  items: PropTypes.array,
+  items: PropTypes.array.isRequired,
   onCardClick: PropTypes.func,
+  getStatusColor: PropTypes.func.isRequired,
+  onDeleteSelected: PropTypes.func,
 };
 
 export default RListView;

@@ -1,6 +1,6 @@
 import { Autocomplete, TextField } from "@mui/material";
 import CustomAutocomplete from "../../../../components/ui/CustomAutocomplete";
-import { formatDate } from "../../../../helper/helper";
+import { extractRFQID, formatDate } from "../../../../helper/helper";
 
 const RfqBasicInfoFields = ({
   formData,
@@ -9,7 +9,9 @@ const RfqBasicInfoFields = ({
   currencies,
   vendors,
   purchaseIdList,
+  rfqID,
 }) => {
+  // console.log(rfqID)
   return (
     <div className="rfqBasicInfoField">
       <div className="rfqBasicInfoFields1">
@@ -17,7 +19,7 @@ const RfqBasicInfoFields = ({
           {formUse === "Edit RFQ" && (
             <div className="refID">
               <label>ID</label>
-              <p>{formData.purchase_request || formData.id}</p>
+              <p>{extractRFQID(rfqID)}</p>
             </div>
           )}
           <div className="refDate">
@@ -32,13 +34,16 @@ const RfqBasicInfoFields = ({
           <Autocomplete
             disablePortal
             options={purchaseIdList}
-            getOptionLabel={(option) => option.prID}
+            getOptionLabel={(option) => option.rfqID}
+            isOptionEqualToValue={(option, value) =>
+              option.rfqID === value.rfqID
+            }
             onChange={(event, value) =>
-              handleInputChange("purchase_request", value.url)
+              handleInputChange("purchase_request", value?.url)
             }
             sx={{ width: "100%" }}
             renderInput={(params) => (
-              <TextField {...params} label="Purchase Request" />
+              <TextField {...params} />
             )}
           />
         </div>
@@ -49,13 +54,15 @@ const RfqBasicInfoFields = ({
           <Autocomplete
             disablePortal
             options={currencies}
-            getOptionLabel={(option) => `${option.currency_name} - ${option.currency_symbol}`}
+            getOptionLabel={(option) =>
+              `${option.currency_name} - ${option.currency_symbol}`
+            }
             onChange={(event, value) =>
-              handleInputChange("currency", value.url)
+              handleInputChange("currency", value?.url)
             }
             sx={{ width: "100%" }}
             renderInput={(params) => (
-              <TextField {...params} label="Select Currency" />
+              <TextField {...params}  />
             )}
           />
         </div>
@@ -69,7 +76,11 @@ const RfqBasicInfoFields = ({
             type="date"
             name="expiry_date"
             className="rpr3cb"
-            value={formData.expiry_date}
+            value={
+              formData.expiry_date
+                ? new Date(formData.expiry_date).toISOString().slice(0, 10)
+                : ""
+            }
             onChange={(e) => handleInputChange("expiry_date", e.target.value)}
           />
         </div>
@@ -80,13 +91,12 @@ const RfqBasicInfoFields = ({
           <Autocomplete
             disablePortal
             options={vendors}
-            getOptionLabel={(option) => option.company_name}
-            onChange={(event, value) =>
-              handleInputChange("vendor", value.url)
-            }
+            getOptionLabel={(option) => option.company_name || ""}
+            isOptionEqualToValue={(option, value) => option.url === value.url}
+            onChange={(event, value) => handleInputChange("vendor", value.url)}
             sx={{ width: "100%" }}
             renderInput={(params) => (
-              <TextField {...params} label="Select Vendor" />
+              <TextField {...params}/>
             )}
           />
         </div>
