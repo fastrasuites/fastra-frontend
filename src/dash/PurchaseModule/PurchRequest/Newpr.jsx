@@ -362,7 +362,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       product: row.productName,
       description: row.description,
       qty: parseInt(row.qty) || 0,
-      unit_of_measure: Array.isArray(row.unt) ? row.unt[0] : row.unt,
+      unit_of_measure: Array.isArray(row.unt) && row.unt[0],
       estimated_unit_price: parseFloat(row.unitPrice) || 0,
     }));
     console.log(items);
@@ -374,19 +374,30 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
       items,
       is_hidden: false,
     };
-    console.log("Payload:", payload);
+    // console.log("Payload:", payload);
     createPurchaseRequest(payload);
-    alert("Data saved successfully!");
+    // alert("Data saved successfully!");
   }, [formState, rows, createPurchaseRequest]);
 
   // Validate product rows before submission
+  // const validateSubmission = useCallback(() => {
+  //   return rows.every(
+  //     (row) => row.productName && row.qty && row.unitPrice && row.unt
+  //   );
+  // }, [rows]);
+
+  // Update the validateSubmission function
   const validateSubmission = useCallback(() => {
-    return rows.every(
-      (row) => row.productName && row.qty && row.unitPrice && row.unt
-    );
+    return rows.every((row) => {
+      const hasProduct = !!row.productName;
+      const hasQty = !!row.qty;
+      const hasUnitPrice = !!row.unitPrice;
+      const hasUnt = Array.isArray(row.unt) ? row.unt.length > 0 : !!row.unt;
+      return hasProduct && hasQty && hasUnitPrice && hasUnt;
+    });
   }, [rows]);
 
-  // Final submit handler
+  // Update the handleSubmit function's items mapping
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
@@ -402,7 +413,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
         product: row.productName,
         description: row.description,
         qty: parseInt(row.qty) || 0,
-        unit_of_measure: row.unt,
+        unit_of_measure: Array.isArray(row.unt) ? row.unt[0] : row.unt,
         estimated_unit_price: parseFloat(row.unitPrice) || 0,
       }));
       const payload = {
@@ -419,6 +430,7 @@ export default function Newpr({ onSaveAndSubmit, onFormDataChange, onClose }) {
   );
 
   // Currency selection state
+  // eslint-disable-next-line no-unused-vars
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [savedCurrencies, setSavedCurrencies] = useState([]);
 

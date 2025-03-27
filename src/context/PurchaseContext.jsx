@@ -1,4 +1,3 @@
-// PurchaseContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getTenantClient } from "../services/apiService";
 import { useTenant } from "./TenantContext";
@@ -8,14 +7,15 @@ const PurchaseContext = createContext();
 export const PurchaseProvider = ({ children }) => {
   const { tenantData } = useTenant();
   const [currencies, setCurrencies] = useState([]);
-  const [productCategories, setProductCategories] = useState([]);
   const [purchaseRequests, setPurchaseRequests] = useState([]);
   const [products, setProducts] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
-  // console.log("from database in purchaseCaontext: ", vendors);
-  // console.log("from database in purchaseCaontext: ", products);
-  // console.log("from database in purchaseCaontext: ", purchaseRequests);
+
+  console.log(
+    "purchase requests from db in purchaseContext: ",
+    purchaseRequests
+  );
 
   // const access_token = localStorage.getItem("access_token");
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
@@ -104,7 +104,6 @@ export const PurchaseProvider = ({ children }) => {
       const productsWithRealUnits = await Promise.all(
         productsData.map(async (product) => {
           try {
-
             const originalUnit = product.unit_of_measure;
             // Convert the unit_of_measure URL to HTTPS if needed.
             const unitUrl = product.unit_of_measure.replace(
@@ -147,14 +146,72 @@ export const PurchaseProvider = ({ children }) => {
     }
   };
 
-  // Fetch all purchase requests
+  // Helper function to fetch a resource from a URL
+  async function fetchResource(url) {
+    try {
+      // Ensure the URL uses HTTPS
+      const secureUrl = url.replace(/^http:\/\//i, "https://");
+      const response = await client.get(secureUrl);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching resource from", url, err);
+      return null;
+    }
+  }
+
+  // Normalizes a purchase request by fetching sub-data for currency, vendor, and purchase_request,
+  // as well as for each item: product, unit_of_measure, and purchase_request.
+  async function normalizePurchaseRequest(pr) {
+    // Fetch top-level related resources
+    const currencyDetail = await fetchResource(pr.currency);
+    const vendorDetail = await fetchResource(pr.vendor);
+
+    // Normalize items by fetching related data for each item field.
+    const normalizedItems = await Promise.all(
+      pr.items.map(async (item) => {
+        const productDetail = item.product
+          ? await fetchResource(item.product)
+          : null;
+        const unitDetail = item.unit_of_measure
+          ? await fetchResource(item.unit_of_measure)
+          : null;
+        const itemPrDetail = item.purchase_request
+          ? await fetchResource(item.purchase_request)
+          : null;
+
+        return {
+          ...item,
+          product: productDetail,
+          unit_of_measure: unitDetail,
+          purchase_request: itemPrDetail,
+        };
+      })
+    );
+
+    return {
+      ...pr,
+      currency: currencyDetail,
+      vendor: vendorDetail,
+      items: normalizedItems,
+    };
+  }
+
   const fetchPurchaseRequests = async () => {
     try {
       const response = await client.get("/purchase/purchase-request/");
-      setPurchaseRequests(response.data);
+      const rawData = response.data;
+
+      // Normalize each purchase request
+      const normalizedData = await Promise.all(
+        rawData.map(async (pr) => await normalizePurchaseRequest(pr))
+      );
+
+      setPurchaseRequests(normalizedData);
+      return { success: true, data: normalizedData };
     } catch (err) {
       setError(err);
       console.error("Error fetching purchase requests:", err);
+      return { success: false, err };
     }
   };
 
@@ -169,6 +226,39 @@ export const PurchaseProvider = ({ children }) => {
     } catch (err) {
       setError(err);
       console.error("Error creating purchase request:", err);
+    }
+  };
+
+  // Update existing purchase request (PATCH)
+  const updatePurchaseRequest = async (url, updatedData) => {
+    try {
+      const response = await client.patch(url, updatedData);
+      setPurchaseRequests((prev) =>
+        prev.map((req) => (req.url === url ? response.data : req))
+      );
+      return response.data;
+    } catch (err) {
+      setError(err);
+      console.error("Error updating purchase request:", err);
+      throw err;
+    }
+  };
+
+  // Submit purchase request (PUT for full update)
+  const submitPurchaseRequest = async (url, submitData) => {
+    try {
+      const response = await client.put(url, {
+        ...submitData,
+        status: "pending",
+      });
+      setPurchaseRequests((prev) =>
+        prev.map((req) => (req.url === url ? response.data : req))
+      );
+      return response.data;
+    } catch (err) {
+      setError(err);
+      console.error("Error submitting purchase request:", err);
+      throw err;
     }
   };
 
@@ -190,11 +280,11 @@ export const PurchaseProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    if (tenantData) {
-      fetchPurchaseRequests();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (tenantData) {
+  //     fetchPurchaseRequests();
+  //   }
+  // }, []);
 
   return (
     <PurchaseContext.Provider
@@ -212,6 +302,8 @@ export const PurchaseProvider = ({ children }) => {
         purchaseRequests,
         fetchPurchaseRequests,
         createPurchaseRequest,
+        updatePurchaseRequest,
+        submitPurchaseRequest,
         error,
       }}
     >

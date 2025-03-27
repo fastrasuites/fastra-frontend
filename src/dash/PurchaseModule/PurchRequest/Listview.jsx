@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,6 +10,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 // Function to get status color
 const getStatusColor = (status) => {
@@ -20,7 +21,7 @@ const getStatusColor = (status) => {
       return "#f0b501";
     case "Rejected":
       return "#e43e2b";
-    case "Draft":
+    case "draft":
       return "#3b7ded";
     default:
       return "#7a8a98";
@@ -33,7 +34,14 @@ const ListView = ({ items, onItemClick }) => {
   const userName = queryParams.get("name");
   const userRole = queryParams.get("role");
 
-  const [selected, setSelected] = React.useState([]);
+  const [selected, setSelected] = useState([]);
+  const { fetchPurchaseRequests, purchaseRequests } = usePurchase();
+
+  useEffect(() => {
+    fetchPurchaseRequests();
+  }, []);
+
+  console.log(purchaseRequests);
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
@@ -44,14 +52,6 @@ const ListView = ({ items, onItemClick }) => {
     setSelected([]);
   };
 
-  React.useEffect(() => {
-    // console.log("Product items:", items);
-  }, [items]);
-  const [selectedUser, setSelectedUser] = useState({});
-
-  const handleUserSelect = (user) => {
-    setSelectedUser(user);
-  };
   const handleSelect = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -68,11 +68,10 @@ const ListView = ({ items, onItemClick }) => {
         selected.slice(selectedIndex + 1)
       );
     }
-
     setSelected(newSelected);
   };
 
-  if (items.length === 0) {
+  if (!items || items.length === 0) {
     return <p>No items available. Please fill the form to add items.</p>;
   }
 
@@ -128,14 +127,12 @@ const ListView = ({ items, onItemClick }) => {
 
               {/* Displaying productName correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-              {Array.isArray(item.name)
-                  ? item.productNames.join(", ")
-                  : ""}
+                {Array.isArray(item.name) ? item.productNames.join(", ") : ""}
               </TableCell>
 
               {/* Displaying qty correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-                {item.rows.map((product) => product.qty).join(", ")}
+                {/* {item.rows.map((product) => product.qty).join(", ")} */}
               </TableCell>
 
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
@@ -144,7 +141,7 @@ const ListView = ({ items, onItemClick }) => {
 
               {/* Displaying Requester Name correctly */}
               <TableCell sx={{ color: "#7a8a98", fontSize: "12px" }}>
-              {item.user?.name || "N/A"} 
+                {item.user?.name || "N/A"}
               </TableCell>
 
               <TableCell
