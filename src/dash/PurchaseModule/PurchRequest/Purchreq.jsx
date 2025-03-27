@@ -133,13 +133,6 @@ export default function Purchreq() {
     setSelectedItem(item);
   };
 
-  // const handleCardClick = (item) => {
-  //   console.log("within handleCardClick ", item);
-  //   setSelectedItem(item);
-  //   setSelectedRequest(item); // Update selected request
-  //   setIsFormVisible(false);
-  // };
-
   const handleCardClick = async (item) => {
     console.log(item);
     // store the return response in a variable

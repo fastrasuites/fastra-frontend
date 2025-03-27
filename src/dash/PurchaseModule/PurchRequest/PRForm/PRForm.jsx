@@ -70,6 +70,12 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleReload = () => {
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
+
   const handleRowChange = (index, field, value) => {
     const updatedItems = [...formData.items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
@@ -99,23 +105,6 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
     }));
   };
 
-  // Prepares a cleaned form data object matching the request body:
-  // {
-  //   "status": "draft",
-  //   "currency": "string",
-  //   "purpose": "string",
-  //   "vendor": "string",
-  //   "items": [
-  //     {
-  //       "product": "string",
-  //       "description": "string",
-  //       "qty": 2147483647,
-  //       "unit_of_measure": "string",
-  //       "estimated_unit_price": "27."
-  //     }
-  //   ],
-  //   "is_hidden": true
-  // }
   const getCleanedFormData = (overrideStatus) => {
     return {
       status: overrideStatus || formData.status, // use provided status or current
@@ -162,6 +151,8 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
             status: "draft",
             is_hidden: true,
           });
+
+          fetchPurchaseRequests();
         }
       });
     }
@@ -189,7 +180,7 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
 
   return (
     <div className="RfqForm">
-      <PurchaseHeader />
+      {isEdit && <PurchaseHeader />}
       <div className="rfqAutoSave">
         <p className="raprhed">
           {isEdit ? "Edit Purchase Request" : "Create Purchase Request"}
@@ -203,7 +194,7 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            <Button variant="text" onClick={onCancel}>
+            <Button variant="text" onClick={handleReload}>
               Cancel
             </Button>
           </div>
