@@ -5,13 +5,14 @@ import autosave from "../../../../image/autosave.svg";
 import React, { useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import { usePurchase } from "../../../../context/PurchaseContext";
-// import RfqBasicInfoFields from "./RfqBasicInfoFields";
+import RfqItemsTable from "./POItemsTable";
+import { useRFQ } from "../../../../context/RequestForQuotation";
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
-import PRBasicInfoFields from "./PRBasicInfoFields";
-import PRItemsTable from "./PRItemsTable";
-import { toast } from "react-toastify";
+import POBasicInfoFields from "./POBasicInfoFields";
+import { useTenant } from "../../../../context/TenantContext";
+import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 
-const PRForm = ({ onCancel, formUse, quotation }) => {
+const POForm = ({ onCancel, formUse, purchaseOrder }) => {
   const {
     products,
     fetchProducts,
@@ -23,38 +24,52 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
     purchaseRequests,
   } = usePurchase();
 
-  const { createPurchaseRequest, updatePurchaseRequest } = usePurchase();
-  const isEdit = formUse === "Edit Purchase Request";
+  const { createPurchaseOrder, updateRFQ } = usePurchaseOrder();
+  const isEdit = formUse === "Edit RFQ";
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
-  // For editing, we expect the quotation to include purpose instead of vendor_category
-  const { purpose, currency, vendor, items, status, is_hidden, url } =
-    quotation;
-
-  const filteredQuotation = {
-    purpose,
+  // Initialize form state with existing quotation (edit) or default values (create)
+  const {
+    purchase_request,
+    expiry_date,
     currency,
     vendor,
+    vendor_category,
+    items,
+    status,
+    is_hidden,
+    url,
+  } = purchaseOrder;
+
+  const filteredQuotation = {
+    purchase_request,
+    expiry_date,
+    currency,
+    vendor,
+    vendor_category,
     items,
     status,
     is_hidden,
   };
-
   const [formData, setFormData] = useState(
     isEdit
       ? filteredQuotation
       : {
-          purpose: "",
-          currency: "",
-          vendor: "",
-          items: [],
           status: "draft",
+          vendor: {},
+          currency: "",
+          payment_terms: "",
+          purchase_policy: "",
+          delivery_terms: "",
+          created_by: "",
+          items: [],
           is_hidden: true,
         }
   );
 
   const [prID, setPrID] = useState([]);
 
-  // Fetch related data on mount
+  // Fetch related data
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
@@ -64,18 +79,18 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
 
   useEffect(() => {
     setPrID(normalizedRFQ(purchaseRequests));
-  }, [purchaseRequests]);
+  }, []);
 
   const handleInputChange = (field, value) => {
-    console.log(field, value);
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleRowChange = (index, field, value) => {
+    console.log(value, "value");
     const updatedItems = [...formData.items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
 
-    // Auto-update description and unit_of_measure when a product is selected
+    // Auto-update description when a product is selected
     if (field === "product" && value && value.product_description) {
       updatedItems[index].description = value.product_description;
       updatedItems[index].unit_of_measure = value.unit_of_measure;
@@ -99,93 +114,84 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
       ],
     }));
   };
-
-  // Prepares a cleaned form data object matching the request body:
-  // {
-  //   "status": "draft",
-  //   "currency": "string",
-  //   "purpose": "string",
-  //   "vendor": "string",
-  //   "items": [
-  //     {
-  //       "product": "string",
-  //       "description": "string",
-  //       "qty": 2147483647,
-  //       "unit_of_measure": "string",
-  //       "estimated_unit_price": "27."
-  //     }
-  //   ],
-  //   "is_hidden": true
-  // }
-  const getCleanedFormData = (overrideStatus) => {
-    return {
-      status: overrideStatus || formData.status, // use provided status or current
-      currency: formData.currency?.url || formData.currency,
-      purpose: formData.purpose,
-      vendor: formData.vendor?.url || formData.vendor,
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const cleanedFormData = {
+      vendor: formData.vendor.url || formData.vendor,
+      payment_terms: formData?.payment_terms,
+      purchase_policy: formData?.purchase_policy,
+      delivery_terms: formData?.delivery_terms,
+      currency: formData?.currency?.url || formData?.currency,
+      created_by: tenant_schema_name,
+      status: "draft",
       items: Array.isArray(formData.items)
         ? formData.items.map((item) => ({
-            product: item.product?.url || item.product,
+            product: item.product.url,
             description: item.description,
             qty: Number(item.qty) || 0,
             unit_of_measure:
-              item.unit_of_measure?.url ||
-              (Array.isArray(item.unit_of_measure)
-                ? item.unit_of_measure[0]
-                : item.unit_of_measure),
+              item.unit_of_measure.url || item.unit_of_measure[0],
             estimated_unit_price: item.estimated_unit_price,
           }))
         : [],
-      is_hidden: formData.is_hidden,
+      is_hidden: false,
     };
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Save as draft (status: "draft")
-    const cleanedFormData = getCleanedFormData("draft");
     if (isEdit) {
       const id = extractRFQID(url);
-      updatePurchaseRequest(id, cleanedFormData)
-        .then((data) => {
-          console.log("Updated RFQ:", data);
-          if(data.success === true) {
-            alert("Purchase Request updated successfully");
-          }
-        })
-        .catch((err) => console.error("Error updating RFQ:", err));
+      console.log("Updating RFQ:", cleanedFormData);
+      updateRFQ(cleanedFormData, id).then((data) => {
+        console.log(data);
+      });
     } else {
-      createPurchaseRequest(cleanedFormData).then((data) => {
-        console.log("Created RFQ Draft:", data);
-        toast.success("Purchase Request created successfully");
+      console.log("Creating new RFQ:", cleanedFormData);
+      createPurchaseOrder(cleanedFormData).then((data) => {
         if (data.success === true) {
-          alert("Purchase Request created successfully");
           setFormData({
-            purpose: "",
+            purchase_request: "",
+            expiry_date: "",
             currency: "",
             vendor: "",
+            vendor_category: "",
             items: [],
             status: "draft",
             is_hidden: true,
           });
         }
       });
+
+      // API call or further logic for creating a new RFQ
     }
   };
 
   const saveAndSubmit = () => {
-    // For "Save & Share" we might want to update the status if required.
-    // Here we assume sharing sets the status to "pending".
-    const cleanedFormData = getCleanedFormData("pending");
-    console.log("Save & Share RFQ:", cleanedFormData);
-    createPurchaseRequest(cleanedFormData).then((data) => {
-      console.log("Created and Shared RFQ:", data);
+    const cleanedFormData = {
+      expiry_date: formData.expiry_date || "",
+      vendor: formData.vendor.url || formData.vendor,
+      vendor_category: formData.vendor_category || "",
+      purchase_request: formData.purchase_request || "",
+      currency: formData?.currency?.url || formData?.currency,
+      status: "pending",
+      items: Array.isArray(formData.items)
+        ? formData.items.map((item) => ({
+            product: item.product.url,
+            description: item.description,
+            qty: Number(item.qty) || 0,
+            unit_of_measure:
+              item.unit_of_measure.url || item.unit_of_measure[0],
+            estimated_unit_price: item.estimated_unit_price,
+          }))
+        : [],
+      is_hidden: false,
+    };
+
+    createRFQ(cleanedFormData).then((data) => {
       if (data.success === true) {
-        alert("Purchase Request created and shared successfully");
         setFormData({
-          purpose: "",
+          purchase_request: "",
+          expiry_date: "",
           currency: "",
           vendor: "",
+          vendor_category: "",
           items: [],
           status: "draft",
           is_hidden: true,
@@ -199,7 +205,7 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
       <PurchaseHeader />
       <div className="rfqAutoSave">
         <p className="raprhed">
-          {isEdit ? "Edit Purchase Request" : "Create Purchase Request"}
+          {isEdit ? "Edit Purchase Order" : "Create Purchase Order"}
         </p>
         <div className="rfqauto">
           <p>Autosaved</p>
@@ -217,7 +223,7 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="rfqformEditAndCreate">
-          <PRBasicInfoFields
+          <POBasicInfoFields
             formData={formData}
             handleInputChange={handleInputChange}
             formUse={formUse}
@@ -227,7 +233,7 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
             rfqID={url}
           />
 
-          <PRItemsTable
+          <RfqItemsTable
             items={formData.items}
             handleRowChange={handleRowChange}
             products={products}
@@ -245,12 +251,24 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
                 Add Item
               </Button>
             </div>
-            <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "20px",
+              }}
+            >
               <Button variant="outlined" type="submit">
                 {isEdit ? "Save Changes" : "Create RFQ Draft"}
               </Button>
               {!isEdit && (
-                <Button variant="contained" onClick={saveAndSubmit}>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    saveAndSubmit(formData);
+                  }}
+                >
                   Save & Share
                 </Button>
               )}
@@ -262,4 +280,4 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
   );
 };
 
-export default PRForm;
+export default POForm;
