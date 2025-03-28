@@ -15,7 +15,7 @@ import { useTenant } from "../../../context/TenantContext";
 export default function Newprod({
   onClose,
   onSaveAndSubmit,
-  fromPurchaseModuleWizard,
+  // fromPurchaseModuleWizard,
 }) {
   const history = useHistory();
   // const generateNewID = () => {
@@ -51,8 +51,8 @@ export default function Newprod({
   const { tenant_schema_name, access_token } = tenantData || {};
   const client = getTenantClient(tenant_schema_name, access_token);
 
-
   const handleChange = (e) => {
+    // PurchaseModuleWizard;
     const { name, value, productDesc, availableProductQty, totalQtyPurchased } =
       e.target;
 
@@ -99,7 +99,7 @@ export default function Newprod({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formState)
+    console.log(formState);
     const formData = new FormData();
     formData.append("product_name", formState.name);
     formData.append("unit_of_measure", formState.unt);
@@ -127,9 +127,9 @@ export default function Newprod({
     onClose();
 
     // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
-    if (fromPurchaseModuleWizard) {
-      history.push({ pathname: "/purchase", state: { step: 2 } });
-    }
+    // if (fromPurchaseModuleWizard) {
+    //   history.push({ pathname: "/purchase", state: { step: 2 } });
+    // }
   };
 
   // Load saved units from localStorage
@@ -146,24 +146,23 @@ export default function Newprod({
       } catch (err) {
         console.error("Error fetching unit-measure:", err);
       }
-  
+
       if (units?.length === 0) {
         console.warn("No units found in database.");
       }
       setSavedUnits(units);
     }
-  
+
     fetchData();
   }, [tenantData]); // Only run this effect once, on component mount
-  
 
   const handleUnitChange = (newUnit) => {
     // Simplified the event parameter
-    
+
     setSelectedUnit(newUnit);
     setFormState((prev) => ({
       ...prev,
-      unt: newUnit ? newUnit.url  : "", // Assuming you want to update the unit in form state
+      unt: newUnit ? newUnit.url : "", // Assuming you want to update the unit in form state
     }));
 
     // Log the selected unit
