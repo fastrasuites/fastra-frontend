@@ -90,15 +90,18 @@ const RListView = ({
           {extractRFQID(item.purchase_request)}
         </TableCell>
         <TableCell sx={cellStyle(index)}>
+          {item?.vendor?.company_name}
+        </TableCell>
+        {/* <TableCell sx={cellStyle(index)}>
           {item?.items.map((item, index) => (
             <p key={index}>{item?.product?.product_name}</p>
           ))}
-        </TableCell>
-        <TableCell sx={cellStyle(index)}>
+        </TableCell> */}
+        {/* <TableCell sx={cellStyle(index)}>
           {item?.items.map((item, index) => (
             <p key={index}>{item?.qty}</p>
           ))}
-        </TableCell>
+        </TableCell> */}
         <TableCell sx={cellStyle(index)}>{item?.rfq_total_price}</TableCell>
         <TableCell
           sx={statusCellStyle(index, getStatusColor, item.status)}
@@ -164,8 +167,8 @@ const RListView = ({
                 />
               </TableCell>
               <TableCell>Request ID</TableCell>
-              <TableCell>Product Name</TableCell>
-              <TableCell>Qty</TableCell>
+              <TableCell>Vendor</TableCell>
+              {/* <TableCell>Qty</TableCell> */}
               <TableCell>Amount</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>

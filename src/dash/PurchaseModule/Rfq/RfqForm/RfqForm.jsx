@@ -122,6 +122,11 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
       ],
     }));
   };
+
+   // Reloads the page after a slight delay
+   const handleReload = () => {
+    setTimeout(() => window.location.reload(), 1000);
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     const cleanedFormData = {
@@ -147,22 +152,25 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
       const id = extractRFQID(url);
       console.log("Updating RFQ:", cleanedFormData);
       updateRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
+        if(data) {
+          alert("RFQ updated successfully");
+        }
       });
     } else {
       console.log("Creating new RFQ:", cleanedFormData);
       createRFQ(cleanedFormData).then((data) => {
         if (data.success === true) {
-          setFormData({
-            purchase_request: "",
-            expiry_date: "",
-            currency: "",
-            vendor: "",
-            vendor_category: "",
-            items: [],
-            status: "draft",
-            is_hidden: true,
-          });
+          alert("RFQ created successfully");
+          // setFormData({
+          //   purchase_request: "",
+          //   expiry_date: "",
+          //   currency: "",
+          //   vendor: "",
+          //   vendor_category: "",
+          //   items: [],
+          //   status: "draft",
+          //   is_hidden: true,
+          // });
         }
       });
 
@@ -193,6 +201,7 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
 
     createRFQ(cleanedFormData).then((data) => {
       if (data.success === true) {
+        alert("RFQ created successfully");
         setFormData({
           purchase_request: "",
           expiry_date: "",
@@ -222,7 +231,7 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            <Button variant="text" onClick={onCancel}>
+            <Button variant="text" onClick={handleReload}>
               Cancel
             </Button>
           </div>

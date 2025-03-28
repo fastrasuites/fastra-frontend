@@ -167,6 +167,36 @@ export const RFQProvider = ({ children }) => {
     }
   }, [client]);
 
+  // Retrieve the RFQ list.
+  const approvedGetRFQList = useCallback(async () => {
+    if (!client) {
+      const errMsg =
+        "API client is not available. Please check tenant configuration.";
+      setError(errMsg);
+      return Promise.reject(new Error(errMsg));
+    }
+    try {
+      setIsLoading(true);
+      const response = await client.get("/purchase/request-for-quotation/approved_list/");
+      const rawData = response.data;
+
+      // Normalize each purchase request
+      const normalizedData = await Promise.all(
+        rawData.map(async (pr) => await normalizeRFQList(pr))
+      );
+
+      setError(null);
+      setRfqList(normalizedData);
+      return { success: true, data: normalizedData };
+    } catch (err) {
+      setError(err);
+      console.error("Error fetching RFQ list:", err);
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   // Retrieve the RFQ By Id.
   const getRFQById = useCallback(
     async (id) => {
@@ -384,6 +414,7 @@ export const RFQProvider = ({ children }) => {
       rejectRFQ,
       pendingRFQ,
       deleteRFQ,
+      approvedGetRFQList,
       singleRFQ,
       error,
       rfqList,
@@ -398,6 +429,7 @@ export const RFQProvider = ({ children }) => {
       rejectRFQ,
       pendingRFQ,
       deleteRFQ,
+      approvedGetRFQList,
       error,
       rfqList,
       singleRFQ,
