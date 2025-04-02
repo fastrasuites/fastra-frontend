@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 // import { useRFQ } from "../../../context/RequestForQuotation";
-import "./RfqStatus.css";
+import "../Rfq/RfqStatus.css";
 import SearchIcon from "../../../image/search.svg";
 import PurchaseHeader from "../PurchaseHeader";
-import RfqStatusModal from "./RfqStatusModal";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa6";
 import { IoGrid } from "react-icons/io5";
-import RfqGrid from "./RfqGrid";
-import RListView from "./RListView";
 import { Button } from "@mui/material";
 import { extractRFQID } from "../../../helper/helper";
 import { Search } from "lucide-react";
+import PurchaseRequestModule from "./PurchaseRequestModule";
+import PurchaseRequestGrid from "./PurchaseRequestGrid";
+import ListView from "./Listview";
 
-const RfqStatus = ({
+const PurchaseRequestStatus = ({
   selectedStatus,
   formatDate,
   statusColor,
@@ -20,6 +20,8 @@ const RfqStatus = ({
   // handleNewRfq,
   quotationsData,
 }) => {
+
+    console.log(selectedStatus)
   const [quotations, setQuotations] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [viewMode, setViewMode] = useState("list");
@@ -77,7 +79,6 @@ const RfqStatus = ({
 
   return (
     <div className="rfqStatus">
-      <PurchaseHeader />
       <div className="rfqStatusCancel">
         <Button variant="outlined" className="cancel" onClick={onCancel}>
           Cancel
@@ -123,7 +124,7 @@ const RfqStatus = ({
         </div>
       </div>
       {viewMode === "grid" ? (
-        <RfqGrid
+        <PurchaseRequestGrid
           quotations={filteredQuotations}
           handleClick={handleClick}
           formatDate={formatDate}
@@ -131,7 +132,7 @@ const RfqStatus = ({
         />
       ) : (
         <div className="rfqStatusList">
-          <RListView
+          <ListView
             items={filteredQuotations}
             onCardClick={handleClick}
             getStatusColor={statusColor}
@@ -141,7 +142,7 @@ const RfqStatus = ({
 
       {selectedItem && (
         <div className="rfqStatusModal overlay">
-          <RfqStatusModal
+          <PurchaseRequestModule
             item={selectedItem}
             formatDate={formatDate}
             statusColor={statusColor}
@@ -155,4 +156,4 @@ const RfqStatus = ({
   );
 };
 
-export default RfqStatus;
+export default PurchaseRequestStatus;

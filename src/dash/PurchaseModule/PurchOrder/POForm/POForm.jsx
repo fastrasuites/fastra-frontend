@@ -1,28 +1,18 @@
-import "./RfqForm.css";
+import "../../Rfq/RfqForm/RfqForm.css";
 import PurchaseHeader from "../../PurchaseHeader";
 import autosave from "../../../../image/autosave.svg";
 
 import React, { useEffect, useState } from "react";
-import {
-  Autocomplete,
-  Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-} from "@mui/material";
-import CustomAutocomplete from "../../../../components/ui/CustomAutocomplete";
+import { Button } from "@mui/material";
 import { usePurchase } from "../../../../context/PurchaseContext";
-import RfqBasicInfoFields from "./RfqBasicInfoFields";
-import RfqItemsTable from "./RfqItemsTable";
+import RfqItemsTable from "./POItemsTable";
 import { useRFQ } from "../../../../context/RequestForQuotation";
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
+import POBasicInfoFields from "./POBasicInfoFields";
+import { useTenant } from "../../../../context/TenantContext";
+import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 
-const RfqForm = ({ onCancel, formUse, quotation }) => {
+const POForm = ({ onCancel, formUse, purchaseOrder }) => {
   const {
     products,
     fetchProducts,
@@ -34,8 +24,9 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
     purchaseRequests,
   } = usePurchase();
 
-  const { createRFQ, updateRFQ } = useRFQ();
+  const { createPurchaseOrder, updateRFQ } = usePurchaseOrder();
   const isEdit = formUse === "Edit RFQ";
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
   // Initialize form state with existing quotation (edit) or default values (create)
   const {
@@ -48,7 +39,7 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
     status,
     is_hidden,
     url,
-  } = quotation;
+  } = purchaseOrder;
 
   const filteredQuotation = {
     purchase_request,
@@ -64,13 +55,14 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
     isEdit
       ? filteredQuotation
       : {
-          purchase_request: "",
-          expiry_date: "",
-          currency: "",
-          vendor: "",
-          vendor_category: "",
-          items: [],
           status: "draft",
+          vendor: {},
+          currency: "",
+          payment_terms: "",
+          purchase_policy: "",
+          delivery_terms: "",
+          created_by: "",
+          items: [],
           is_hidden: true,
         }
   );
@@ -122,19 +114,15 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
       ],
     }));
   };
-
-   // Reloads the page after a slight delay
-   const handleReload = () => {
-    setTimeout(() => window.location.reload(), 1000);
-  };
   const handleSubmit = (e) => {
     e.preventDefault();
     const cleanedFormData = {
-      expiry_date: formData.expiry_date || "",
       vendor: formData.vendor.url || formData.vendor,
-      vendor_category: formData.vendor_category || "",
-      purchase_request: formData.purchase_request || "",
+      payment_terms: formData?.payment_terms,
+      purchase_policy: formData?.purchase_policy,
+      delivery_terms: formData?.delivery_terms,
       currency: formData?.currency?.url || formData?.currency,
+      created_by: tenant_schema_name,
       status: "draft",
       items: Array.isArray(formData.items)
         ? formData.items.map((item) => ({
@@ -152,25 +140,22 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
       const id = extractRFQID(url);
       console.log("Updating RFQ:", cleanedFormData);
       updateRFQ(cleanedFormData, id).then((data) => {
-        if(data) {
-          alert("RFQ updated successfully");
-        }
+        console.log(data);
       });
     } else {
       console.log("Creating new RFQ:", cleanedFormData);
-      createRFQ(cleanedFormData).then((data) => {
+      createPurchaseOrder(cleanedFormData).then((data) => {
         if (data.success === true) {
-          alert("RFQ created successfully");
-          // setFormData({
-          //   purchase_request: "",
-          //   expiry_date: "",
-          //   currency: "",
-          //   vendor: "",
-          //   vendor_category: "",
-          //   items: [],
-          //   status: "draft",
-          //   is_hidden: true,
-          // });
+          setFormData({
+            purchase_request: "",
+            expiry_date: "",
+            currency: "",
+            vendor: "",
+            vendor_category: "",
+            items: [],
+            status: "draft",
+            is_hidden: true,
+          });
         }
       });
 
@@ -201,7 +186,6 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
 
     createRFQ(cleanedFormData).then((data) => {
       if (data.success === true) {
-        alert("RFQ created successfully");
         setFormData({
           purchase_request: "",
           expiry_date: "",
@@ -216,12 +200,13 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
     });
   };
 
-  // console.log(formData)
   return (
     <div className="RfqForm">
       <PurchaseHeader />
       <div className="rfqAutoSave">
-        <p className="raprhed">{isEdit ? "Edit RFQ" : "Create RFQ"}</p>
+        <p className="raprhed">
+          {isEdit ? "Edit Purchase Order" : "Create Purchase Order"}
+        </p>
         <div className="rfqauto">
           <p>Autosaved</p>
           <img src={autosave} alt="Autosaved" />
@@ -231,14 +216,14 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            <Button variant="text" onClick={handleReload}>
+            <Button variant="text" onClick={onCancel}>
               Cancel
             </Button>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="rfqformEditAndCreate">
-          <RfqBasicInfoFields
+          <POBasicInfoFields
             formData={formData}
             handleInputChange={handleInputChange}
             formUse={formUse}
@@ -295,4 +280,4 @@ const RfqForm = ({ onCancel, formUse, quotation }) => {
   );
 };
 
-export default RfqForm;
+export default POForm;

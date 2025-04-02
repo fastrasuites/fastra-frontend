@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { getTenantClient } from "../services/apiService";
 import { useTenant } from "./TenantContext";
 
@@ -12,23 +19,36 @@ export const PurchaseProvider = ({ children }) => {
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
 
-  console.log(
-    "purchase requests from db in purchaseContext: ",
-    purchaseRequests
-  );
-
-  // const access_token = localStorage.getItem("access_token");
+  // Destructure tenant information and create client only when tenantData changes.
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
-  // Create a client for tenant-specific API calls
-  const client = getTenantClient(
-    tenant_schema_name,
-    access_token,
-    refresh_token
+  const client = useMemo(
+    () =>
+      tenantData
+        ? getTenantClient(tenant_schema_name, access_token, refresh_token)
+        : null,
+    [tenantData, tenant_schema_name, access_token, refresh_token]
   );
 
-  // fetch currencies
-  const fetchCurrencies = async () => {
+  // Helper: Ensure URL uses HTTPS
+  const secureUrl = (url) => url.replace(/^http:\/\//i, "https://");
+
+  // Generalized resource fetcher with error handling.
+  const fetchResource = useCallback(
+    async (url) => {
+      try {
+        const response = await client.get(secureUrl(url));
+        return response.data;
+      } catch (err) {
+        console.error(`Error fetching resource from ${url}:`, err);
+        return null;
+      }
+    },
+    [client]
+  );
+
+  // ------------------ Currencies ------------------
+  const fetchCurrencies = useCallback(async () => {
     try {
       const response = await client.get("/purchase/currency/");
       setCurrencies(response.data);
@@ -36,40 +56,43 @@ export const PurchaseProvider = ({ children }) => {
       setError(err);
       console.error("Error fetching currencies:", err);
     }
-  };
-  // create currency
-  const createCurrency = async (newCurrency) => {
-    try {
-      const response = await client.post("/purchase/currency/", newCurrency);
-      setCurrencies([...currencies, response.data]);
-      return response.data;
-    } catch (err) {
-      setError(err);
-      console.error("Error creating currency:", err);
-    }
-  };
+  }, [client]);
 
-  // upload file
-  const uploadFile = async (file, endpoint) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const response = await client.post(endpoint, formData, {
-        // correct endpoint will be added
-        headers: {
-          "Content-type": "multipart/form-data",
-        },
-      });
-      console.log("File uploaded successfully:", response.data);
-      return response.data;
-    } catch (err) {
-      console.error("Error uploading file:", err);
-      throw err; // Rethrow the error to handle it in the component
-    }
-  };
+  const createCurrency = useCallback(
+    async (newCurrency) => {
+      try {
+        const response = await client.post("/purchase/currency/", newCurrency);
+        setCurrencies((prev) => [...prev, response.data]);
+        return response.data;
+      } catch (err) {
+        setError(err);
+        console.error("Error creating currency:", err);
+      }
+    },
+    [client]
+  );
 
-  // Fetch all vendors
-  const fetchVendors = async () => {
+  // ------------------ File Upload ------------------
+  const uploadFile = useCallback(
+    async (file, endpoint) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const response = await client.post(secureUrl(endpoint), formData, {
+          headers: { "Content-type": "multipart/form-data" },
+        });
+        console.log("File uploaded successfully:", response.data);
+        return response.data;
+      } catch (err) {
+        console.error("Error uploading file:", err);
+        throw err;
+      }
+    },
+    [client]
+  );
+
+  // ------------------ Vendors ------------------
+  const fetchVendors = useCallback(async () => {
     try {
       const response = await client.get("/purchase/vendors/");
       setVendors(response.data);
@@ -77,27 +100,26 @@ export const PurchaseProvider = ({ children }) => {
       setError(err);
       console.error("Error fetching vendors:", err);
     }
-  };
+  }, [client]);
 
-  // create new vendor
-  const createVendor = async (newVendor) => {
-    try {
-      const response = await client.post("/purchase/vendors/", newVendor, {
-        headers: {
-          "Content-type": "multipart/form-data",
-        },
-      });
-      setVendors([...vendors, response.data]);
-    } catch (err) {
-      setError(err);
-      console.error("Error creating vendor:", err);
-    }
-  };
+  const createVendor = useCallback(
+    async (newVendor) => {
+      try {
+        const response = await client.post("/purchase/vendors/", newVendor, {
+          headers: { "Content-type": "multipart/form-data" },
+        });
+        setVendors((prev) => [...prev, response.data]);
+      } catch (err) {
+        setError(err);
+        console.error("Error creating vendor:", err);
+      }
+    },
+    [client]
+  );
 
-  // Fetch all products
-  const fetchProducts = async () => {
+  // ------------------ Products ------------------
+  const fetchProducts = useCallback(async () => {
     try {
-      // Fetch the list of products from the tenant API.
       const productsResponse = await client.get("/purchase/products/");
       const productsData = productsResponse.data;
 
@@ -105,15 +127,9 @@ export const PurchaseProvider = ({ children }) => {
         productsData.map(async (product) => {
           try {
             const originalUnit = product.unit_of_measure;
-            // Convert the unit_of_measure URL to HTTPS if needed.
-            const unitUrl = product.unit_of_measure.replace(
-              /^http:\/\//i,
-              "https://"
-            );
-            const unitResponse = await client.get(unitUrl);
-            const unitData = unitResponse.data;
-
-            const realUnit = unitData.unit_category || "";
+            const unitUrl = secureUrl(product.unit_of_measure);
+            const unitData = await fetchResource(unitUrl);
+            const realUnit = unitData?.unit_category || "";
             return { ...product, unit_of_measure: [originalUnit, realUnit] };
           } catch (error) {
             console.error(
@@ -121,91 +137,75 @@ export const PurchaseProvider = ({ children }) => {
               product.url,
               error
             );
-            // Return the product unchanged if fetching fails.
             return product;
           }
         })
       );
-
       setProducts(productsWithRealUnits);
     } catch (err) {
       setError(err);
       console.error("Error fetching products:", err);
     }
-  };
+  }, [client, fetchResource]);
 
-  // create product
-  const createProduct = async (newProduct) => {
-    try {
-      const response = await client.post("/purchase/products/", newProduct);
-      console.log("response", response);
-      setProducts([...products, response.data]);
-    } catch (err) {
-      setError(err);
-      console.error("Error creating product:", err);
-    }
-  };
+  const createProduct = useCallback(
+    async (newProduct) => {
+      try {
+        const response = await client.post("/purchase/products/", newProduct);
+        console.log("Product created:", response.data);
+        setProducts((prev) => [...prev, response.data]);
+      } catch (err) {
+        setError(err);
+        console.error("Error creating product:", err);
+      }
+    },
+    [client]
+  );
 
-  // Helper function to fetch a resource from a URL
-  async function fetchResource(url) {
-    try {
-      // Ensure the URL uses HTTPS
-      const secureUrl = url.replace(/^http:\/\//i, "https://");
-      const response = await client.get(secureUrl);
-      return response.data;
-    } catch (err) {
-      console.error("Error fetching resource from", url, err);
-      return null;
-    }
-  }
+  // ------------------ Purchase Requests ------------------
+  // Normalize purchase request by fetching related resources.
+  const normalizePurchaseRequest = useCallback(
+    async (pr) => {
+      const currencyDetail = await fetchResource(pr.currency);
+      const vendorDetail = await fetchResource(pr.vendor);
 
-  // Normalizes a purchase request by fetching sub-data for currency, vendor, and purchase_request,
-  // as well as for each item: product, unit_of_measure, and purchase_request.
-  async function normalizePurchaseRequest(pr) {
-    // Fetch top-level related resources
-    const currencyDetail = await fetchResource(pr.currency);
-    const vendorDetail = await fetchResource(pr.vendor);
+      const normalizedItems = await Promise.all(
+        pr.items.map(async (item) => {
+          const productDetail = item.product
+            ? await fetchResource(item.product)
+            : null;
+          const unitDetail = item.unit_of_measure
+            ? await fetchResource(item.unit_of_measure)
+            : null;
+          const itemPrDetail = item.purchase_request
+            ? await fetchResource(item.purchase_request)
+            : null;
 
-    // Normalize items by fetching related data for each item field.
-    const normalizedItems = await Promise.all(
-      pr.items.map(async (item) => {
-        const productDetail = item.product
-          ? await fetchResource(item.product)
-          : null;
-        const unitDetail = item.unit_of_measure
-          ? await fetchResource(item.unit_of_measure)
-          : null;
-        const itemPrDetail = item.purchase_request
-          ? await fetchResource(item.purchase_request)
-          : null;
-
-        return {
-          ...item,
-          product: productDetail,
-          unit_of_measure: unitDetail,
-          purchase_request: itemPrDetail,
-        };
-      })
-    );
-
-    return {
-      ...pr,
-      currency: currencyDetail,
-      vendor: vendorDetail,
-      items: normalizedItems,
-    };
-  }
-
-  const fetchPurchaseRequests = async () => {
-    try {
-      const response = await client.get("/purchase/purchase-request/");
-      const rawData = response.data;
-
-      // Normalize each purchase request
-      const normalizedData = await Promise.all(
-        rawData.map(async (pr) => await normalizePurchaseRequest(pr))
+          return {
+            ...item,
+            product: productDetail,
+            unit_of_measure: unitDetail,
+            purchase_request: itemPrDetail,
+          };
+        })
       );
 
+      return {
+        ...pr,
+        currency: currencyDetail,
+        vendor: vendorDetail,
+        items: normalizedItems,
+      };
+    },
+    [fetchResource]
+  );
+
+  const fetchPurchaseRequests = useCallback(async () => {
+    try {
+      const response = await client.get("/purchase/purchase-request/");
+      const normalizedData = await Promise.all(
+        response.data.map(async (pr) => await normalizePurchaseRequest(pr))
+      );
       setPurchaseRequests(normalizedData);
       return { success: true, data: normalizedData };
     } catch (err) {
@@ -213,100 +213,259 @@ export const PurchaseProvider = ({ children }) => {
       console.error("Error fetching purchase requests:", err);
       return { success: false, err };
     }
-  };
+  }, [client, normalizePurchaseRequest]);
 
-  // Save/create a new purchase request (POST)
-  const createPurchaseRequest = async (newRequest) => {
+  const fetchApprovedPurchaseRequests = useCallback(async () => {
     try {
-      const response = await client.post(
-        "/purchase/purchase-request/",
-        newRequest
+      const response = await client.get(
+        "/purchase/purchase-request/approved_list/"
       );
-      setPurchaseRequests([...purchaseRequests, response.data]);
+      const normalizedData = await Promise.all(
+        response.data.map(async (pr) => await normalizePurchaseRequest(pr))
+      );
+      setPurchaseRequests(normalizedData);
+      return { success: true, data: normalizedData };
     } catch (err) {
       setError(err);
-      console.error("Error creating purchase request:", err);
+      console.error("Error fetching approved purchase requests:", err);
+      return { success: false, err };
     }
-  };
+  }, [client, normalizePurchaseRequest]);
 
-  // Update existing purchase request (PATCH)
-  const updatePurchaseRequest = async (url, updatedData) => {
-    try {
-      const response = await client.patch(url, updatedData);
-      setPurchaseRequests((prev) =>
-        prev.map((req) => (req.url === url ? response.data : req))
-      );
-      return response.data;
-    } catch (err) {
-      setError(err);
-      console.error("Error updating purchase request:", err);
-      throw err;
-    }
-  };
+  const createPurchaseRequest = useCallback(
+    async (newRequest) => {
+      try {
+        const response = await client.post(
+          "/purchase/purchase-request/",
+          newRequest
+        );
+        setPurchaseRequests((prev) => [...prev, response.data]);
+        return { success: true, data: response.data };
+      } catch (err) {
+        setError(err);
+        console.error("Error creating purchase request:", err);
+      }
+    },
+    [client]
+  );
 
-  // Submit purchase request (PUT for full update)
-  const submitPurchaseRequest = async (url, submitData) => {
-    try {
-      const response = await client.put(url, {
-        ...submitData,
-        status: "pending",
-      });
-      setPurchaseRequests((prev) =>
-        prev.map((req) => (req.url === url ? response.data : req))
-      );
-      return response.data;
-    } catch (err) {
-      setError(err);
-      console.error("Error submitting purchase request:", err);
-      throw err;
-    }
-  };
+  const updatePurchaseRequest = useCallback(
+    async (id, updatedData) => {
+      console.log("Updating purchase request:", id, updatedData);
+      try {
+        const response = await client.patch(
+          `/purchase/purchase-request/${id}/`,
+          updatedData
+        );
+        setPurchaseRequests((prev) =>
+          prev.map((req) => (req.url === id ? response.data : req))
+        );
+        return { success: true, data: response.data };
+      } catch (err) {
+        setError(err);
+        console.error("Error updating purchase request:", err);
+        throw err;
+      }
+    },
+    [client]
+  );
 
+  const submitPurchaseRequest = useCallback(
+    async (url, submitData) => {
+      try {
+        const response = await client.put(url, {
+          ...submitData,
+          status: "pending",
+        });
+        setPurchaseRequests((prev) =>
+          prev.map((req) => (req.url === url ? response.data : req))
+        );
+        return response.data;
+      } catch (err) {
+        setError(err);
+        console.error("Error submitting purchase request:", err);
+        throw err;
+      }
+    },
+    [client]
+  );
+
+  const convertToRFQ = useCallback(
+    async (prId) => {
+      try {
+        const endpoint = `/purchase/purchase-request/${prId}/convert_to_rfq/`;
+        const response = await client.post(endpoint);
+        return response.data;
+      } catch (err) {
+        setError(err);
+        console.error("RFQ conversion failed:", err);
+        throw err;
+      }
+    },
+    [client]
+  );
+
+  const fetchSinglePurchaseRequest = useCallback(
+    async (id) => {
+      // Remove trailing slash and extract ID if needed.
+      const cleanId = id.replace(/\/$/, "").split("/").pop();
+      try {
+        const endpoint = `/purchase/purchase-request/${cleanId}/`;
+        const response = await client.get(endpoint);
+        const normalizedData = await normalizePurchaseRequest(response.data);
+        return normalizedData;
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching single purchase request:", err);
+        throw err;
+      }
+    },
+    [client, normalizePurchaseRequest]
+  );
+
+  const approvePurchaseRequest = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+      try {
+        const endpoint = `/purchase/purchase-request/${id}/approve/`;
+        const response = await client.put(endpoint, info);
+        setError(null);
+        setPurchaseRequests((prevPR) =>
+          prevPR.map((pr) => (pr.id === id ? { ...pr, ...response.data } : pr))
+        );
+        return response.data;
+      } catch (err) {
+        console.error("Error approving purchase request:", err);
+        setError(err);
+        return Promise.reject(err);
+      }
+    },
+    [client]
+  );
+
+  const pendingPurchaseRequest = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+      try {
+        const endpoint = `/purchase/purchase-request/${id}/submit/`;
+        const response = await client.put(endpoint, info);
+        setError(null);
+        setPurchaseRequests((prevPR) =>
+          prevPR.map((pr) => (pr.id === id ? { ...pr, ...response.data } : pr))
+        );
+        return response.data;
+      } catch (err) {
+        console.error("Error updating pending purchase request:", err);
+        setError(err);
+        return Promise.reject(err);
+      }
+    },
+    [client]
+  );
+
+  const rejectPurchaseRequest = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+      try {
+        const endpoint = `/purchase/purchase-request/${id}/reject/`;
+        const response = await client.put(endpoint, info);
+        setError(null);
+        setPurchaseRequests((prevPR) =>
+          prevPR.map((pr) =>
+            pr.id === id ? { ...pr, ...response.data } : pr
+          )
+        );
+        return response.data;
+      } catch (err) {
+        console.error("Error rejecting purchase request:", err);
+        setError(err);
+        return Promise.reject(err);
+      }
+    },
+    [client]
+  );
+
+
+  // ------------------ Effects ------------------
   useEffect(() => {
     if (tenantData) {
       fetchCurrencies();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (tenantData) {
       fetchVendors();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (tenantData) {
       fetchProducts();
+      // Uncomment the next line if you wish to auto-fetch purchase requests:
+      // fetchPurchaseRequests();
     }
-  }, []);
+  }, [tenantData, fetchCurrencies, fetchVendors, fetchProducts]);
 
-  // useEffect(() => {
-  //   if (tenantData) {
-  //     fetchPurchaseRequests();
-  //   }
-  // }, []);
+  // Memoize provider value to prevent unnecessary renders.
+  const providerValue = useMemo(
+    () => ({
+      currencies,
+      purchaseRequests,
+      products,
+      vendors,
+      error,
+      fetchCurrencies,
+      createCurrency,
+      uploadFile,
+      fetchVendors,
+      createVendor,
+      fetchProducts,
+      createProduct,
+      fetchPurchaseRequests,
+      fetchApprovedPurchaseRequests,
+      createPurchaseRequest,
+      updatePurchaseRequest,
+      submitPurchaseRequest,
+      convertToRFQ,
+      fetchSinglePurchaseRequest,
+      approvePurchaseRequest,
+      pendingPurchaseRequest,
+      rejectPurchaseRequest,
+    }),
+    [
+      currencies,
+      purchaseRequests,
+      products,
+      vendors,
+      error,
+      fetchCurrencies,
+      createCurrency,
+      uploadFile,
+      fetchVendors,
+      createVendor,
+      fetchProducts,
+      createProduct,
+      fetchPurchaseRequests,
+      fetchApprovedPurchaseRequests,
+      createPurchaseRequest,
+      updatePurchaseRequest,
+      submitPurchaseRequest,
+      convertToRFQ,
+      fetchSinglePurchaseRequest,
+      approvePurchaseRequest,
+      pendingPurchaseRequest,
+      rejectPurchaseRequest,
+    ]
+  );
 
   return (
-    <PurchaseContext.Provider
-      value={{
-        fetchVendors,
-        fetchProducts,
-        currencies,
-        fetchCurrencies,
-        createCurrency,
-        uploadFile,
-        vendors,
-        createVendor,
-        products,
-        createProduct,
-        purchaseRequests,
-        fetchPurchaseRequests,
-        createPurchaseRequest,
-        updatePurchaseRequest,
-        submitPurchaseRequest,
-        error,
-      }}
-    >
+    <PurchaseContext.Provider value={providerValue}>
       {children}
     </PurchaseContext.Provider>
   );

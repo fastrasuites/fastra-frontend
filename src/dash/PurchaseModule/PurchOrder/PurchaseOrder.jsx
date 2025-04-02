@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import SearchIcon from "../../../image/search.svg";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
@@ -14,25 +14,46 @@ import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import "./PurchaseOrder.css";
 import PurchaseHeader from "../PurchaseHeader";
+import POForm from "./POForm/POForm";
+import { usePurchaseOrder } from "../../../context/PurchaseOrderContext.";
+import { extractRFQID } from "../../../helper/helper";
 
 export default function PurchaseOrder() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-  const [items, setItems] = useState(() => {
-    const savedItems = localStorage.getItem("purchaseOrders");
-    return savedItems ? JSON.parse(savedItems) : [];
-  });
+  const [items, setItems] = useState([]); // Removed localStorage initialization
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(items);
+  const [purchaseOrderData, setPurchaseOrderData] = useState([]);
   const [initialFormData, setInitialFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
 
   const location = useLocation();
   const locationFormData = location.state?.formData;
 
+  const { getPurchaseOrderList, purchaseOrderList } = usePurchaseOrder();
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedPurchaseOrder = localStorage.getItem("purchaseOrderData");
+    if (savedPurchaseOrder) {
+      setPurchaseOrderData(JSON.parse(savedPurchaseOrder));
+    }
+  }, []);
+
+  // Fetch RFQ list and update state and localStorage
+  useEffect(() => {
+    getPurchaseOrderList().then((data) => {
+      if (data.success) {
+        setPurchaseOrderData(data.data);
+        localStorage.setItem("PurchaseOrderData", JSON.stringify(data.data));
+      }
+    });
+  }, [getPurchaseOrderList]);
+
   useEffect(() => {
     setFilteredItems(items);
-    localStorage.setItem("purchaseOrders", JSON.stringify(items));
+    // Removed localStorage setItem call
   }, [items]);
 
   useEffect(() => {
@@ -88,87 +109,104 @@ export default function PurchaseOrder() {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString(); // Formats date nicely
+    return date.toLocaleString();
   };
 
   const getStatusCount = (status) => {
     return items.filter((item) => item.status === status).length;
   };
 
+  // Filter quotations on the fly based on the search query
+  const filteredPurchaseOrder = purchaseOrderData.filter((item) => {
+    if (!searchQuery) return true;
+    const lowercasedQuery = searchQuery.toLowerCase();
+
+    const expiryDate = formatDate(item.expiry_date).toLowerCase();
+    const status = item?.status?.toLowerCase() || "";
+    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
+    const purchaseOrderID = extractRFQID(item?.url).toLowerCase() || "";
+    const vendor =
+      typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
+    return (
+      expiryDate.includes(lowercasedQuery) ||
+      status.includes(lowercasedQuery) ||
+      currencyName.includes(lowercasedQuery) ||
+      purchaseOrderID.includes(lowercasedQuery) ||
+      vendor.includes(lowercasedQuery)
+    );
+  });
+
+
   const getStatusColor = (status) => {
-    switch (status) {
+    switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
       case "Approved":
         return "#2ba24c";
       case "Pending":
         return "#f0b501";
       case "Rejected":
-      case "Cancelled":
         return "#e43e2b";
-      case "Draft":
-        return "#3b7ded";
       default:
-        return "#7a8a98";
+        return "#3B7CED";
     }
   };
 
+  const statuses = [
+    { key: "draft", label: "Draft", img: draft },
+    { key: "approved", label: "Approved", img: approved },
+    { key: "pending", label: "Pending", img: pending },
+    { key: "rejected", label: "Rejected", img: rejected },
+  ];
+
+  // status-field rfq-rejected
+  const groupedByStatus = purchaseOrderData.reduce((acc, quotation) => {
+    const { status, url } = quotation;
+    if (!acc[status]) {
+      acc[status] = [];
+    }
+    acc[status].push(url);
+    return acc;
+  }, {});
+
+  console.log(groupedByStatus);
+
+  const handleRfqStatusClick = (urlList, status) => {
+    setSelectedStatus([urlList, status]);
+  };
+
   return (
-    
     <div className="purchase-order" id="purchase">
       {/* Header */}
       <PurchaseHeader />
       <div className="purchase-order-heading">
         <div className="purchase-order-content">
           <p style={{ fontSize: "17px" }}>Purchase Order</p>
-          <div className="purchase-order-status">
-            {/* Status fields for draft, approved, pending, rejected */}
-            <div className="status-field purchase-draft">
-              <img src={draft} alt="draft" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Draft") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Draft")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Draft</p>
-            </div>
-            <div className="status-field purchase-approved">
-              <img src={approved} alt="approved" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Approved") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Approved")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Approved</p>
-            </div>
-            <div className="status-field purchase-pending">
-              <img src={pending} alt="pending" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Pending") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Pending")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Pending</p>
-            </div>
-            <div className="status-field purchase-rejected">
-              <img src={rejected} alt="rejected" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Rejected") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Rejected")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Rejected</p>
-            </div>
+          <div className="rfq-status">
+            {statuses.map(({ key, label, img }) => {
+              const count = groupedByStatus[key]?.length || 0;
+              return (
+                <div
+                  className={`status-field rfq-${key}`}
+                  key={key}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    handleRfqStatusClick(groupedByStatus[key], key)
+                  }
+                >
+                  <img
+                    src={img}
+                    alt={label.toLowerCase()}
+                    className="status-img"
+                  />
+                  <p className={`plnum ${count === 0 ? "zero" : ""}`}>
+                    {count}
+                  </p>
+                  <p style={{ lineHeight: "1rem" }} className="status-desc">
+                    Request for Quote
+                  </p>
+                  <p style={{ fontSize: "20px" }}>{label}</p>
+                </div>
+              );
+            })}
           </div>
 
           <div className="purchaseOrder">
@@ -229,10 +267,11 @@ export default function PurchaseOrder() {
                 </div>
                 {isFormVisible ? (
                   <div className="overlay">
-                    <POrderform
-                      onSaveAndSubmit={handleSaveAndSubmit}
-                      onClose={handleFormClose}
-                      initialData={initialFormData}
+                    <POForm
+                      open={isFormVisible}
+                      onCancel={handleFormClose}
+                      purchaseOrder={{}}
+                      formUse={"New RFQ"}
                     />
                   </div>
                 ) : selectedItem ? (
@@ -251,27 +290,6 @@ export default function PurchaseOrder() {
                         onClick={() => handleCardClick(item)}
                       >
                         <p className="cardid">{item.id}</p>
-                        {/* <div className="vendname">
-                          {item.status === "Pending" ? (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "blue",
-                              }}
-                            >
-                              <span style={{ color: "blue" }}>
-                                Select Vendor
-                              </span>
-                              <IconButton style={{ color: "blue" }}>
-                                <ArrowDropDownIcon />
-                              </IconButton>
-                            </div>
-                          ) : (
-                            <p>{item.vendor}</p>
-                          )}
-                        </div> */}
                         <p className="vendname">{item.vendor}</p>
                         <p>{formatDate(item.date)}</p>
                         <p
@@ -285,8 +303,10 @@ export default function PurchaseOrder() {
                   </div>
                 ) : (
                   <Orderlistview
-                    items={filteredItems}
-                    onItemClick={handleCardClick}
+                  items={filteredPurchaseOrder}
+                  onCardClick={handleCardClick}
+                  getStatusColor={getStatusColor}
+                  // onDeleteSelected={handleDeleteSelected}
                   />
                 )}
               </div>

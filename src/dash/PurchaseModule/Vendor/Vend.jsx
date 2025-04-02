@@ -544,7 +544,7 @@ export default function Vend() {
             <Newvendor
               onClose={handleFormClose}
               onSaveAndSubmit={handleSaveAndSubmit}
-              fromPurchaseModuleWizard={location.state?.openForm}
+              // fromPurchaseModuleWizard={location.state?.openForm}
             />
           </div>
         )}

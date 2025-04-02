@@ -92,4 +92,4 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
   );
 };
 
-export default PurchaseModuleWizard;
+// export default PurchaseModuleWizard;
