@@ -307,8 +307,7 @@ export const PurchaseProvider = ({ children }) => {
 
   const fetchSinglePurchaseRequest = useCallback(
     async (id) => {
-      // Remove trailing slash and extract ID if needed.
-      const cleanId = id.replace(/\/$/, "").split("/").pop();
+      const cleanId = id.endsWith("/") ? id.slice(0, -1) : id;
       try {
         const endpoint = `/purchase/purchase-request/${cleanId}/`;
         const response = await client.get(endpoint);
@@ -386,9 +385,7 @@ export const PurchaseProvider = ({ children }) => {
         const response = await client.put(endpoint, info);
         setError(null);
         setPurchaseRequests((prevPR) =>
-          prevPR.map((pr) =>
-            pr.id === id ? { ...pr, ...response.data } : pr
-          )
+          prevPR.map((pr) => (pr.id === id ? { ...pr, ...response.data } : pr))
         );
         return response.data;
       } catch (err) {
@@ -399,7 +396,6 @@ export const PurchaseProvider = ({ children }) => {
     },
     [client]
   );
-
 
   // ------------------ Effects ------------------
   useEffect(() => {

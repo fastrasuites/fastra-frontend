@@ -50,20 +50,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 40px;
+    gap: 30px;
   }
   
   .navItem {
     position: relative;
+    color: #868d93;
+    font-weight: 500;
   }
   
-  .navLink {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .navLink, .navLinkWithArrow {
     text-decoration: none;
     color: #868d93;
     font-weight: 500;
+  }
+  .navLinkWithArrow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
   .navLink:hover {
     color: #3b7ced;
