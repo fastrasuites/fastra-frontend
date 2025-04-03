@@ -1,18 +1,19 @@
+// src/dash/PurchaseModule/PurchOrder/POForm/POForm.js
+import React, { useEffect, useState } from "react";
+import { Box, Button } from "@mui/material";
+import { useHistory } from "react-router-dom";
+import autosave from "../../../../image/autosave.svg";
+import RfqItemsTable from "./POItemsTable"; // Ensure this path is correct
+import POBasicInfoFields from "./POBasicInfoFields"; // Ensure this path is correct
+import { useTenant } from "../../../../context/TenantContext";
+import { usePurchase } from "../../../../context/PurchaseContext";
+import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
+import { Bounce, toast } from "react-toastify";
+import { extractRFQID } from "../../../../helper/helper";
 import "../../Rfq/RfqForm/RfqForm.css";
 import PurchaseHeader from "../../PurchaseHeader";
-import autosave from "../../../../image/autosave.svg";
 
-import React, { useEffect, useState } from "react";
-import { Button } from "@mui/material";
-import { usePurchase } from "../../../../context/PurchaseContext";
-import RfqItemsTable from "./POItemsTable";
-import { useRFQ } from "../../../../context/RequestForQuotation";
-import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
-import POBasicInfoFields from "./POBasicInfoFields";
-import { useTenant } from "../../../../context/TenantContext";
-import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
-
-const POForm = ({ onCancel, formUse, purchaseOrder }) => {
+const POForm = ({ onCancel, formUse, purchaseOrder, refresh, conversionRFQ }) => {
   const {
     products,
     fetchProducts,
@@ -23,78 +24,85 @@ const POForm = ({ onCancel, formUse, purchaseOrder }) => {
     fetchPurchaseRequests,
     purchaseRequests,
   } = usePurchase();
-
-  const { createPurchaseOrder, updateRFQ } = usePurchaseOrder();
+  const { createPurchaseOrder, updatePurchaseOrder } = usePurchaseOrder();
   const isEdit = formUse === "Edit RFQ";
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+  const history = useHistory();
 
-  // Initialize form state with existing quotation (edit) or default values (create)
-  const {
-    purchase_request,
-    expiry_date,
-    currency,
-    vendor,
-    vendor_category,
-    items,
-    status,
-    is_hidden,
-    url,
-  } = purchaseOrder;
+  // Default form data depends on whether we're converting from an RFQ
+  const defaultFormData = conversionRFQ
+    ? {
+        status: "draft",
+        vendor: conversionRFQ.vendor || null,
+        currency: conversionRFQ.currency || null,
+        payment_terms: conversionRFQ.payment_terms || "",
+        purchase_policy: conversionRFQ.purchase_policy || "",
+        delivery_terms: conversionRFQ.delivery_terms || "",
+        items: conversionRFQ.items || [],
+        is_hidden: true,
+      }
+    : {
+        status: "draft",
+        vendor: null,
+        currency: null,
+        payment_terms: "",
+        purchase_policy: "",
+        delivery_terms: "",
+        items: [],
+        is_hidden: true,
+      };
 
-  const filteredQuotation = {
-    purchase_request,
-    expiry_date,
-    currency,
-    vendor,
-    vendor_category,
-    items,
-    status,
-    is_hidden,
-  };
-  const [formData, setFormData] = useState(
-    isEdit
-      ? filteredQuotation
-      : {
-          status: "draft",
-          vendor: {},
-          currency: "",
-          payment_terms: "",
-          purchase_policy: "",
-          delivery_terms: "",
-          created_by: "",
-          items: [],
-          is_hidden: true,
-        }
-  );
+  const [formData, setFormData] = useState(defaultFormData);
+  const [, setPrID] = useState([]);
 
-  const [prID, setPrID] = useState([]);
-
-  // Fetch related data
+  // Fetch necessary data when the component mounts
   useEffect(() => {
-    fetchVendors();
-    fetchCurrencies();
-    fetchProducts();
-    fetchPurchaseRequests();
+    const initializeFormData = async () => {
+      await Promise.all([
+        fetchVendors(),
+        fetchCurrencies(),
+        fetchProducts(),
+        fetchPurchaseRequests(),
+      ]);
+
+      if (isEdit && purchaseOrder) {
+        setFormData({
+          ...purchaseOrder,
+          vendor: vendors.find((v) => v.url === purchaseOrder.vendor.url),
+          currency: currencies.find((c) => c.url === purchaseOrder.currency.url),
+          items: purchaseOrder.items.map((item) => ({
+            ...item,
+            product: products.find((p) => p.url === item.product.url),
+            unit_of_measure: item.unit_of_measure,
+          })),
+        });
+      }
+    };
+
+    initializeFormData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    setPrID(normalizedRFQ(purchaseRequests));
-  }, []);
+    setPrID(purchaseRequests.map((pr) => extractRFQID(pr.url)));
+  }, [purchaseRequests]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleRowChange = (index, field, value) => {
-    console.log(value, "value");
     const updatedItems = [...formData.items];
-    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    updatedItems[index] = {
+      ...updatedItems[index],
+      [field]: value,
+    };
 
-    // Auto-update description when a product is selected
-    if (field === "product" && value && value.product_description) {
+    if (field === "product" && value?.product_description) {
       updatedItems[index].description = value.product_description;
       updatedItems[index].unit_of_measure = value.unit_of_measure;
     }
+
     setFormData((prev) => ({ ...prev, items: updatedItems }));
   };
 
@@ -114,90 +122,94 @@ const POForm = ({ onCancel, formUse, purchaseOrder }) => {
       ],
     }));
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const cleanedFormData = {
-      vendor: formData.vendor.url || formData.vendor,
-      payment_terms: formData?.payment_terms,
-      purchase_policy: formData?.purchase_policy,
-      delivery_terms: formData?.delivery_terms,
-      currency: formData?.currency?.url || formData?.currency,
-      created_by: tenant_schema_name,
-      status: "draft",
-      items: Array.isArray(formData.items)
-        ? formData.items.map((item) => ({
-            product: item.product.url,
-            description: item.description,
-            qty: Number(item.qty) || 0,
-            unit_of_measure:
-              item.unit_of_measure.url || item.unit_of_measure[0],
-            estimated_unit_price: item.estimated_unit_price,
-          }))
-        : [],
-      is_hidden: false,
-    };
-    if (isEdit) {
-      const id = extractRFQID(url);
-      console.log("Updating RFQ:", cleanedFormData);
-      updateRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
-      });
-    } else {
-      console.log("Creating new RFQ:", cleanedFormData);
-      createPurchaseOrder(cleanedFormData).then((data) => {
-        if (data.success === true) {
-          setFormData({
-            purchase_request: "",
-            expiry_date: "",
-            currency: "",
-            vendor: "",
-            vendor_category: "",
-            items: [],
-            status: "draft",
-            is_hidden: true,
-          });
-        }
-      });
 
-      // API call or further logic for creating a new RFQ
+  const cleanFormData = (status = null) => ({
+    vendor: formData.vendor?.url || formData.vendor,
+    payment_terms: formData.payment_terms,
+    purchase_policy: formData.purchase_policy,
+    delivery_terms: formData.delivery_terms,
+    currency: formData.currency?.url || formData.currency,
+    status: status ? status : formData.status,
+    created_by: tenant_schema_name,
+    items: formData.items.map((item) => ({
+      product: item.product?.url || item.product,
+      description: item.description,
+      qty: Number(item.qty) || 0,
+      unit_of_measure: Array.isArray(item.unit_of_measure)
+        ? item.unit_of_measure[0]
+        : item.unit_of_measure.url,
+      estimated_unit_price: item.estimated_unit_price,
+    })),
+    is_hidden: false,
+  });
+
+  // Custom cancel handler:
+  const handleCancel = () => {
+    if (conversionRFQ) {
+      // Navigate back to the conversion page (or a specific route if needed)
+      history.goBack();
+    } else {
+      onCancel();
     }
   };
 
-  const saveAndSubmit = () => {
-    const cleanedFormData = {
-      expiry_date: formData.expiry_date || "",
-      vendor: formData.vendor.url || formData.vendor,
-      vendor_category: formData.vendor_category || "",
-      purchase_request: formData.purchase_request || "",
-      currency: formData?.currency?.url || formData?.currency,
-      status: "pending",
-      items: Array.isArray(formData.items)
-        ? formData.items.map((item) => ({
-            product: item.product.url,
-            description: item.description,
-            qty: Number(item.qty) || 0,
-            unit_of_measure:
-              item.unit_of_measure.url || item.unit_of_measure[0],
-            estimated_unit_price: item.estimated_unit_price,
-          }))
-        : [],
-      is_hidden: false,
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const cleanedData = cleanFormData();
 
-    createRFQ(cleanedFormData).then((data) => {
-      if (data.success === true) {
-        setFormData({
-          purchase_request: "",
-          expiry_date: "",
-          currency: "",
-          vendor: "",
-          vendor_category: "",
-          items: [],
-          status: "draft",
-          is_hidden: true,
-        });
+    try {
+      if (isEdit) {
+        const id = extractRFQID(purchaseOrder.url);
+        const updatedPO = await updatePurchaseOrder(cleanedData, id);
+        if (updatedPO) {
+          toast.success("Purchase Order updated successfully", {
+            position: "top-right",
+            transition: Bounce,
+          });
+        }
+      } else {
+        const createdPO = await createPurchaseOrder(cleanedData);
+        if (createdPO) {
+          toast.success("Purchase Order created successfully", {
+            position: "top-right",
+            transition: Bounce,
+          });
+          // In conversion mode, redirect to the PO dashboard after successful submission
+          if (conversionRFQ) {
+            history.push(`/${tenant_schema_name}/purchase-order`);
+          }
+        }
+        setFormData(defaultFormData);
       }
-    });
+      // If not converting, use the provided onCancel function
+      if (!conversionRFQ) {
+        onCancel();
+      }
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      refresh();
+    }
+  };
+
+  const saveAndSubmit = async () => {
+    try {
+      const cleanedData = cleanFormData("awaiting");
+      await createPurchaseOrder(cleanedData);
+      toast.success("Purchase Order created successfully", {
+        position: "top-right",
+        transition: Bounce,
+      });
+      // Redirect to PO dashboard if in conversion mode
+      if (conversionRFQ) {
+        history.push(`/${tenant_schema_name}/purchase-order`);
+      } else {
+        onCancel();
+      }
+      refresh();
+    } catch (error) {
+      toast.error(`Error saving and submitting PO: ${error.message}`);
+    }
   };
 
   return (
@@ -216,7 +228,7 @@ const POForm = ({ onCancel, formUse, purchaseOrder }) => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            <Button variant="text" onClick={onCancel}>
+            <Button variant="text" onClick={handleCancel}>
               Cancel
             </Button>
           </div>
@@ -229,8 +241,8 @@ const POForm = ({ onCancel, formUse, purchaseOrder }) => {
             formUse={formUse}
             currencies={currencies}
             vendors={vendors}
-            purchaseIdList={prID}
-            rfqID={url}
+            purchaseOrder={purchaseOrder}
+            rfqID={purchaseOrder?.url}
           />
 
           <RfqItemsTable
@@ -239,41 +251,21 @@ const POForm = ({ onCancel, formUse, purchaseOrder }) => {
             products={products}
           />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ marginTop: "1rem" }}>
-              <Button variant="outlined" onClick={handleAddRow}>
-                Add Item
-              </Button>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "20px",
-              }}
-            >
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Button variant="outlined" onClick={handleAddRow}>
+              Add Item
+            </Button>
+            <Box sx={{ display: "flex", gap: "10px" }}>
               <Button variant="outlined" type="submit">
-                {isEdit ? "Save Changes" : "Create RFQ Draft"}
+                {isEdit ? "Save Changes" : "Save Draft"}
               </Button>
               {!isEdit && (
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    saveAndSubmit(formData);
-                  }}
-                >
-                  Save & Share
+                <Button variant="contained" onClick={saveAndSubmit}>
+                  Save &amp; Share
                 </Button>
               )}
-            </div>
-          </div>
+            </Box>
+          </Box>
         </form>
       </div>
     </div>
