@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import "./Rfq.css";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
@@ -12,141 +12,136 @@ import pending from "../../../../src/image/icons/pending.png";
 import RfqStatus from "./RfqStatus";
 import { extractRFQID, formatDate } from "../../../helper/helper";
 import RfqForm from "./RfqForm/RfqForm";
-import { Box, Button, TextField } from "@mui/material";
-import { Search, SearchCheck } from "lucide-react";
+import { Button } from "@mui/material";
+import { Search } from "lucide-react";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { useRFQ } from "../../../context/RequestForQuotation";
 import RfqStatusModal from "./RfqStatusModal";
+import { toast } from "react-toastify";
 
 export default function Rfq() {
   const [searchQuery, setSearchQuery] = useState("");
   const [quotationsData, setQuotationsData] = useState([]);
+  const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
-  // const []
+  const [refresh, setRefresh] = useState(false);
+
+  const itemsPerPage = 10;
 
   const { fetchApprovedPurchaseRequests, purchaseRequests } = usePurchase();
   const { getRFQList, deleteRFQ } = useRFQ();
+  const location = useLocation();
+  const locationFormData = location.state?.formData;
 
   // Load data from localStorage on mount
   useEffect(() => {
     const savedQuotations = localStorage.getItem("quotationsData");
-    if (savedQuotations) {
-      setQuotationsData(JSON.parse(savedQuotations));
+    if (savedQuotations && savedQuotations !== "undefined") {
+      try {
+        setQuotationsData(JSON.parse(savedQuotations));
+      } catch (error) {
+        console.error("Error parsing quotationsData from localStorage", error);
+      }
     }
   }, []);
 
-  useEffect(() => {
-    fetchApprovedPurchaseRequests();
-  }, []);
-
-  // Fetch RFQ list and update state and localStorage
-  useEffect(() => {
-    getRFQList().then((data) => {
-      if (data.success) {
-        setQuotationsData(data.data);
-        localStorage.setItem("quotationsData", JSON.stringify(data.data));
+  // Fetch RFQs and update state/localStorage
+  const fetchRequestForQuotations = useCallback(async () => {
+    try {
+      const { success, data } = await getRFQList();
+      if (success) {
+        setQuotationsData(data);
+        localStorage.setItem("quotationsData", JSON.stringify(data));
       }
-    });
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      toast.error("Failed to load purchase orders.");
+    }
   }, [getRFQList]);
 
-  const normalizedPRs = purchaseRequests.map((item) => {
-    const segments = item.url.split("/").filter(Boolean);
-    const prID = segments[segments.length - 1];
-    return { url: item.url, prID };
-  });
+  // Initial data fetch
+  useEffect(() => {
+    fetchApprovedPurchaseRequests();
+    const toastId = "rfqPromise";
+    // Only trigger the toast if it's not already active.
+    if (!toast.isActive(toastId)) {
+      toast.promise(fetchRequestForQuotations(), {
+        pending: "Loading request for quotations...",
+        success: "Request for quotations loaded successfully",
+        error: "Failed to load request for quotations.",
+      }, { toastId });
+    }
+  }, [getRFQList, refresh]);
 
-  const location = useLocation();
-  const locationFormData = location.state?.formData;
+  // Reset page when search query changes
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
 
+  // Normalize purchase request data
+  const normalizedPRs = useMemo(
+    () =>
+      purchaseRequests.map((item) => {
+        const segments = item.url.split("/").filter(Boolean);
+        const prID = segments[segments.length - 1];
+        return { url: item.url, prID };
+      }),
+    [purchaseRequests]
+  );
+
+  // Open form if location contains formData
   useEffect(() => {
     if (locationFormData) {
       setIsFormVisible(true);
     }
   }, [locationFormData]);
 
-  // console.log(quotationsData);
+  // Filter quotations based on search query
+  const filteredQuotations = useMemo(() => {
+    return quotationsData.filter((item) => {
+      if (!searchQuery) return true;
+      const lowercasedQuery = searchQuery.toLowerCase();
+      const price = item?.rfq_total_price?.toString().toLowerCase() || "";
+      const expiryDate = formatDate(item.expiry_date).toLowerCase();
+      const status = item?.status?.toLowerCase() || "";
+      const currencyName = item?.currency?.company_name?.toLowerCase() || "";
+      const purchaseID = extractRFQID(item.purchase_request)?.toLowerCase() || "";
+      const vendor =
+        typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
+      const vendorCategory = item.vendor_category?.toLowerCase() || "";
+      return (
+        price.includes(lowercasedQuery) ||
+        expiryDate.includes(lowercasedQuery) ||
+        status.includes(lowercasedQuery) ||
+        currencyName.includes(lowercasedQuery) ||
+        purchaseID.includes(lowercasedQuery) ||
+        vendor.includes(lowercasedQuery) ||
+        vendorCategory.includes(lowercasedQuery)
+      );
+    });
+  }, [quotationsData, searchQuery]);
 
-  // Filter quotations on the fly based on the search query
-  const filteredQuotations = quotationsData.filter((item) => {
-    if (!searchQuery) return true;
-    const lowercasedQuery = searchQuery.toLowerCase();
-
-    const price = item?.rfq_total_price?.toString().toLowerCase() || "";
-    const expiryDate = formatDate(item.expiry_date).toLowerCase();
-    const status = item?.status?.toLowerCase() || "";
-    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
-    const purchaseID = extractRFQID(item.purchase_request)?.toLowerCase() || "";
-    const vendor =
-      typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
-    const vendorCategory = item.vendor_category?.toLowerCase() || "";
-    return (
-      price.includes(lowercasedQuery) ||
-      expiryDate.includes(lowercasedQuery) ||
-      status.includes(lowercasedQuery) ||
-      currencyName.includes(lowercasedQuery) ||
-      purchaseID.includes(lowercasedQuery) ||
-      vendor.includes(lowercasedQuery) ||
-      vendorCategory.includes(lowercasedQuery)
+  const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage);
+  const paginatedRequestsForQuotations = useMemo(() => {
+    return filteredQuotations.slice(
+      (page - 1) * itemsPerPage,
+      page * itemsPerPage
     );
-  });
+  }, [page, itemsPerPage, filteredQuotations]);
 
-  // onDeleteSelected: iterates over selected IDs and deletes them.
-  const handleDeleteSelected = useCallback(
-    async (selectedIds) => {
-      try {
-        // Delete each selected RFQ in parallel.
-        await Promise.all(
-          selectedIds.map((id) => deleteRFQ(extractRFQID(id)))
-        ).then((data) => {
-          console.log("Deleted RFQs:", data);
-          // Update the list of RFQs after deletion.
-          getRFQList().then((data) => {
-            if (data.success) {
-              setQuotationsData(data.data);
-              localStorage.setItem("quotationsData", JSON.stringify(data.data));
-            }
-          });
-        });
-      } catch (err) {
-        console.error("Error deleting selected RFQs:", err);
-      }
-    },
-    [deleteRFQ, getRFQList]
-  );
+  // Group RFQs by status for status panel
+  const groupedByStatus = useMemo(() => {
+    return quotationsData.reduce((acc, quotation) => {
+      const { status, url } = quotation;
+      acc[status] = acc[status] ? [...acc[status], url] : [url];
+      return acc;
+    }, {});
+  }, [quotationsData]);
 
-  const getStatusColor = (status) => {
-    switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
-      case "Approved":
-        return "#2ba24c";
-      case "Pending":
-        return "#f0b501";
-      case "Rejected":
-        return "#e43e2b";
-      default:
-        return "#3B7CED";
-    }
-  };
-
-  const statuses = [
-    { key: "draft", label: "Draft", img: draft },
-    { key: "approved", label: "Approved", img: approved },
-    { key: "pending", label: "Pending", img: pending },
-    { key: "rejected", label: "Rejected", img: rejected },
-  ];
-
-  // status-field rfq-rejected
-  const groupedByStatus = quotationsData.reduce((acc, quotation) => {
-    const { status, url } = quotation;
-    if (!acc[status]) {
-      acc[status] = [];
-    }
-    acc[status].push(url);
-    return acc;
-  }, {});
-
+  // Handlers
   const handleRfqStatusClick = (urlList, status) => {
     setSelectedStatus([urlList, status]);
   };
@@ -178,6 +173,60 @@ export default function Rfq() {
   const handleStatusCancel = () => {
     setSelectedStatus(null);
   };
+
+  const handlePageChange = useCallback(
+    (newPage) => {
+      if (newPage > 0 && newPage <= totalPages) {
+        setPage(newPage);
+      }
+    },
+    [totalPages]
+  );
+
+  const handleDeleteSelected = useCallback(
+    async (selectedIds) => {
+      try {
+        await Promise.all(selectedIds.map((id) => deleteRFQ(extractRFQID(id))));
+        const refreshedData = await getRFQList();
+        if (refreshedData.success) {
+          setQuotationsData(refreshedData.data);
+          localStorage.setItem(
+            "quotationsData",
+            JSON.stringify(refreshedData.data)
+          );
+        }
+      } catch (err) {
+        console.error("Error deleting selected RFQs:", err);
+      }
+    },
+    [deleteRFQ, getRFQList]
+  );
+
+  const getStatusColor = (status) => {
+    const formattedStatus = `${status[0].toUpperCase()}${status.slice(1)}`;
+    switch (formattedStatus) {
+      case "Approved":
+        return "#2ba24c";
+      case "Pending":
+        return "#f0b501";
+      case "Rejected":
+        return "#e43e2b";
+      default:
+        return "#3B7CED";
+    }
+  };
+
+  const statuses = [
+    { key: "draft", label: "Draft", img: draft },
+    { key: "approved", label: "Approved", img: approved },
+    { key: "pending", label: "Pending", img: pending },
+    { key: "rejected", label: "Rejected", img: rejected },
+  ];
+
+  const triggerRefresh = useCallback(() => {
+    setRefresh((prev) => !prev);
+  }, []);
+
   return (
     <div className="rfq" id="rfq">
       <PurchaseHeader />
@@ -196,14 +245,8 @@ export default function Rfq() {
                     handleRfqStatusClick(groupedByStatus[key], key)
                   }
                 >
-                  <img
-                    src={img}
-                    alt={label.toLowerCase()}
-                    className="status-img"
-                  />
-                  <p className={`plnum ${count === 0 ? "zero" : ""}`}>
-                    {count}
-                  </p>
+                  <img src={img} alt={label.toLowerCase()} className="status-img" />
+                  <p className={`plnum ${count === 0 ? "zero" : ""}`}>{count}</p>
                   <p style={{ lineHeight: "1rem" }} className="status-desc">
                     Request for Quote
                   </p>
@@ -238,11 +281,19 @@ export default function Rfq() {
               </div>
             </div>
             <div className="r3b">
-              <p className="r3bpage">1-2 of 2</p>
+              <p className="r3bpage" style={{ whiteSpace: "nowrap" }}>
+                {page} of {totalPages}
+              </p>
               <div className="r3bnav">
-                <FaCaretLeft className="lr" />
+                <FaCaretLeft
+                  className="lr"
+                  onClick={() => handlePageChange(page - 1)}
+                />
                 <div className="stroke"></div>
-                <FaCaretRight className="lr" />
+                <FaCaretRight
+                  className="lr"
+                  onClick={() => handlePageChange(page + 1)}
+                />
               </div>
               <div className="r3bview">
                 <IoGrid
@@ -257,6 +308,7 @@ export default function Rfq() {
               </div>
             </div>
           </div>
+
           {isFormVisible ? (
             <div className="overlay">
               <RfqForm
@@ -265,6 +317,7 @@ export default function Rfq() {
                 quotation={{}}
                 formUse={"New RFQ"}
                 prID={normalizedPRs}
+                triggerRefresh={triggerRefresh}
               />
             </div>
           ) : selectedItem ? (
@@ -275,6 +328,8 @@ export default function Rfq() {
                 statusColor={getStatusColor}
                 onEdit={handleEdit}
                 onCancel={handleCancel}
+                triggerRefresh={triggerRefresh}
+
               />
             </div>
           ) : selectedStatus ? (
@@ -286,11 +341,12 @@ export default function Rfq() {
                 formatDate={formatDate}
                 onCancel={handleStatusCancel}
                 quotationsData={quotationsData}
+                triggerRefresh={triggerRefresh}
               />
             </div>
           ) : viewMode === "grid" ? (
             <div className="rfqStatusCards" style={{ marginTop: "20px" }}>
-              {filteredQuotations.map((item) => (
+              {paginatedRequestsForQuotations.map((item) => (
                 <div
                   className="rfqStatusCard"
                   key={item.id}
@@ -301,9 +357,7 @@ export default function Rfq() {
                   <p className="vendname">{item?.vendor?.company_name}</p>
                   <p
                     className="status"
-                    style={{
-                      color: getStatusColor(item.status),
-                    }}
+                    style={{ color: getStatusColor(item.status) }}
                   >
                     {item.status}
                   </p>
@@ -313,7 +367,7 @@ export default function Rfq() {
           ) : (
             <div className="rfq5">
               <RListView
-                items={filteredQuotations}
+                items={paginatedRequestsForQuotations}
                 onCardClick={handleCardClick}
                 getStatusColor={getStatusColor}
                 onDeleteSelected={handleDeleteSelected}

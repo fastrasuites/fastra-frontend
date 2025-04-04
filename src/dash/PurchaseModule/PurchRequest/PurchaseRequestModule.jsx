@@ -1,5 +1,5 @@
+// src/dash/PurchaseModule/PurchaseRequestModule.js
 import React, { useMemo, useState } from "react";
-import PurchaseHeader from "../PurchaseHeader";
 import autosave from "../../../image/autosave.svg";
 import approvedIcon from "../../../../src/image/icons/approved-rfq.svg";
 import {
@@ -16,7 +16,8 @@ import "../Rfq/RfqStatusModal.css";
 import { extractRFQID } from "../../../helper/helper";
 import { usePurchase } from "../../../context/PurchaseContext";
 import PRForm from "./PRForm/PRForm";
-// import RfqForm from "./RfqForm/RfqForm"; // Uncomment if RfqForm is needed
+import { useHistory } from "react-router-dom";
+import { useTenant } from "../../../context/TenantContext";
 
 // Helper for cell styles
 const cellStyle = (index) => ({
@@ -34,6 +35,25 @@ const PurchaseRequestModule = ({
   onNewRfq,
 }) => {
   const [edit, setEdit] = useState(false);
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+  const history = useHistory();
+
+  // Reloads the page after a slight delay (if needed)
+  const handleReload = () => {
+    setTimeout(() => window.location.reload(), 1000);
+  };
+
+  // Conversion handler: navigates to the RFQ conversion route, passing the current PR as state
+  const handleConvertToRFQ = () => {
+    history.push({
+      pathname: `/${tenant_schema_name}/rfq/convert`,
+      state: {
+        pr: item,
+      },
+    });
+    handleReload();
+  };
+
   const {
     items = [],
     status = "pending",
@@ -48,12 +68,8 @@ const PurchaseRequestModule = ({
     approvePurchaseRequest,
     rejectPurchaseRequest,
     pendingPurchaseRequest,
+    updatePurchaseRequest,
   } = usePurchase();
-
-  // Reloads the page after a slight delay
-  const handleReload = () => {
-    setTimeout(() => window.location.reload(), 1000);
-  };
 
   // Handlers for edit mode
   const handleEdit = () => {
@@ -66,7 +82,7 @@ const PurchaseRequestModule = ({
     onEdit(null);
   };
 
-  // Handles submission for various statuses in a unified way
+  // Handles submission for various statuses
   const handleSubmit = (formData, newStatus = "pending") => {
     const id = extractRFQID(formData.url);
     const cleanedFormData = {
@@ -86,9 +102,6 @@ const PurchaseRequestModule = ({
       is_hidden: formData?.is_hidden,
     };
 
-    console.log("Cleaned RFQ Data:", cleanedFormData);
-    console.log("Updating RFQ:", cleanedFormData);
-
     switch (newStatus) {
       case "pending":
         pendingPurchaseRequest(cleanedFormData, id).then(console.log);
@@ -99,12 +112,15 @@ const PurchaseRequestModule = ({
       case "reject":
         rejectPurchaseRequest(cleanedFormData, id).then(console.log);
         break;
+      case "draft":
+        updatePurchaseRequest(id, cleanedFormData).then(console.log);
+        break;
       default:
         break;
     }
   };
 
-  // Memoized rows for the RFQ items table
+  // Memoized rows for the PR items table
   const renderedRows = useMemo(() => {
     if (Array.isArray(items) && items.length) {
       return items.map((row, index) => (
@@ -204,7 +220,6 @@ const PurchaseRequestModule = ({
           <TableContainer
             component={Paper}
             sx={{
-              maxWidth: "1000px",
               boxShadow: "none",
               borderTop: "none",
               borderLeft: "none",
@@ -313,7 +328,7 @@ const PurchaseRequestModule = ({
 
         <p className="rfqContent">Purchase Request Items</p>
 
-        {/* RFQ Items Table */}
+        {/* PR Items Table */}
         <div className="rfqStatusTable">
           <TableContainer
             component={Paper}
@@ -358,7 +373,7 @@ const PurchaseRequestModule = ({
               variant="contained"
               className="newRfqBtn"
               disableElevation
-              onClick={onNewRfq}
+              onClick={handleConvertToRFQ}
             >
               Convert to RFQ
             </Button>
@@ -432,7 +447,7 @@ const PurchaseRequestModule = ({
           </div>
         )}
 
-        {status === "cancelled" && (
+        {status === "rejected" && (
           <div className="rfqStatusFooter">
             <p
               style={{
@@ -442,11 +457,22 @@ const PurchaseRequestModule = ({
             >
               Rejected
             </p>
+            <Button
+              variant="contained"
+              className="newRfqBtn"
+              disableElevation
+              onClick={() => {
+                handleSubmit(item, "draft");
+                handleReload();
+              }}
+            >
+              Set Back to Draft
+            </Button>
           </div>
         )}
       </div>
 
-      {/* Overlay for editing; uncomment RfqForm import and component if needed */}
+      {/* Overlay for editing; uncomment PRForm import and component if needed */}
       {edit && (
         <div className="overlay">
           <PRForm

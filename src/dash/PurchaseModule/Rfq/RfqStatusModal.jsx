@@ -1,7 +1,6 @@
+// src/dash/PurchaseModule/Rfq/RFQStatusModal.js
 import React, { useMemo, useState } from "react";
-import PurchaseHeader from "../PurchaseHeader";
-import autosave from "../../../image/autosave.svg";
-import approved from "../../../../src/image/icons/approved-rfq.svg";
+import PropTypes from "prop-types";
 import {
   Button,
   Paper,
@@ -12,103 +11,106 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import "./RfqStatusModal.css";
-import RfqForm from "./RfqForm/RfqForm";
-import { extractRFQID } from "../../../helper/helper";
+import PurchaseHeader from "../PurchaseHeader";
+import autosave from "../../../image/autosave.svg";
+import approved from "../../../../src/image/icons/approved-rfq.svg";
+import { extractRFQID, formatDate } from "../../../helper/helper";
 import { useRFQ } from "../../../context/RequestForQuotation";
+import { Bounce, toast } from "react-toastify";
+import "./RfqStatusModal.css";
 import { useHistory } from "react-router-dom";
+import { useTenant } from "../../../context/TenantContext";
+import RfqForm from "./RfqForm/RfqForm";
 
-// Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
   color: "#7a8a98",
   fontSize: "12px",
 });
 
-const RfqStatusModal = ({
+const RFQStatusModal = ({
   item = {},
-  formatDate,
   statusColor,
   onEdit,
   onCancel,
   onNewRfq,
+  triggerRefresh,
 }) => {
   const [edit, setEdit] = useState(false);
   const { items = [], status = "pending", currency, expiry_date } = item;
-
   const { approveRFQ, rejectRFQ, pendingRFQ } = useRFQ();
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+  const history = useHistory();
 
-  const handleReload = () => {
-    setTimeout(() => {
-    window.location.reload();
-    }, 1000);
+  const handleConvertToPO = () => {
+    // Navigate to the conversion route with RFQ data in location.state
+    history.push({
+      pathname: `/${tenant_schema_name}/purchase-order/convert`,
+      state: {
+        rfq: item,
+      },
+    });
   };
 
-  const handleEdit = () => {
-    setEdit(true);
-    onEdit(item);
-  };
+  const handleStatusUpdate = async (statusAction) => {
+    try {
+      const cleanFormData = () => ({
+        expiry_date: item.expiry_date || "",
+        vendor: item.vendor.url || item.vendor,
+        vendor_category: item.vendor_category || "",
+        purchase_request: item.purchase_request || "",
+        currency: item?.currency?.url || item?.currency,
+        status: status,
+        items: Array.isArray(item.items)
+          ? item.items.map((itm) => ({
+              product: itm.product.url,
+              description: itm.description,
+              qty: Number(itm.qty) || 0,
+              unit_of_measure: Array.isArray(itm.unit_of_measure)
+                ? itm.unit_of_measure[0]
+                : itm.unit_of_measure.url,
+              estimated_unit_price: itm.estimated_unit_price,
+            }))
+          : [],
+        is_hidden: item?.is_hidden,
+      });
+      const cleanedData = cleanFormData();
+      const id = extractRFQID(item?.url);
+      const actions = {
+        approve: approveRFQ,
+        reject: rejectRFQ,
+        pending: pendingRFQ,
+      };
 
-  const handleEditClose = () => {
-    setEdit(false);
-    onEdit(null);
-    console.log("hello");
-  };
-
-  const handleSubmit = (formData, status = "pending") => {
-    // e.preventDefault();
-    const url = formData.url;
-    console.log(url);
-    const cleanedFormData = {
-      expiry_date: formData.expiry_date || "",
-      vendor: formData.vendor.url || formData.vendor,
-      vendor_category: formData.vendor_category || "",
-      purchase_request: formData.purchase_request || "",
-      currency: formData?.currency?.url || formData?.currency,
-      status: status,
-      items: Array.isArray(formData.items)
-        ? formData.items.map((item) => ({
-            product: item.product.url,
-            description: item.description,
-            qty: Number(item.qty) || 0,
-            unit_of_measure:
-              item.unit_of_measure.url || item.unit_of_measure[0],
-            estimated_unit_price: item.estimated_unit_price,
-          }))
-        : [],
-      is_hidden: formData?.is_hidden,
-    };
-    if (status === "pending") {
-      const id = extractRFQID(url);
-      console.log("Updating RFQ:", cleanedFormData);
-      pendingRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
-      });
-    } else if (status === "approve") {
-      const id = extractRFQID(url);
-      console.log("Updating RFQ:", cleanedFormData);
-      approveRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
-      });
-    } else if (status === "reject") {
-      const id = extractRFQID(url);
-      console.log("Updating RFQ:", cleanedFormData);
-      rejectRFQ(cleanedFormData, id).then((data) => {
-        console.log(data);
-      });
+      if (actions[statusAction]) {
+        const result = await actions[statusAction](cleanedData, id);
+        if (result && result.success) {
+          toast.success(`Status ${statusAction} successfully`, {
+            position: "top-right",
+            autoClose: 5000,
+            transition: Bounce,
+          });
+        } else {
+          toast.error(`Failed to update status to ${statusAction}`, {
+            position: "top-right",
+            autoClose: 5000,
+            transition: Bounce,
+          });
+        }
+        onCancel();
+      }
+    } catch (error) {
+      console.error("Status update failed:", error);
+      toast.error(`Status update failed: ${error.message}`);
+    } finally {
+      if (triggerRefresh) triggerRefresh();
     }
   };
 
   const renderedRows = useMemo(() => {
     if (Array.isArray(items) && items.length > 0) {
       return items.map((row, index) => (
-        <TableRow
-          key={row?.url || index}
-          sx={{
-            cursor: "pointer",
-            "&:last-child td, &:last-child th": { border: 0 },
-          }}
-        >
+        <TableRow key={row?.url || index} sx={{ cursor: "pointer" }}>
           <TableCell sx={cellStyle(index)}>
             {row?.product?.product_name || "N/A"}
           </TableCell>
@@ -130,16 +132,124 @@ const RfqStatusModal = ({
     }
     return (
       <TableRow>
-        <TableCell
-          colSpan={6}
-          align="center"
-          sx={{ color: "#7a8a98", fontSize: "12px" }}
-        >
+        <TableCell colSpan={6} align="center" sx={{ color: "#7a8a98", fontSize: "12px" }}>
           No items available
         </TableCell>
       </TableRow>
     );
   }, [items]);
+
+  const renderStatusFooter = () => {
+    switch (status) {
+      case "approved":
+        return (
+          <div className="rfqStatusFooter">
+            <div className="approvedIcon">
+              <img src={approved} alt="approved" />
+              <p
+                style={{
+                  color: statusColor ? statusColor(status) : "#000",
+                  textTransform: "capitalize",
+                }}
+              >
+                Successfully Sent
+              </p>
+            </div>
+            <Button
+              variant="contained"
+              className="newRfqBtn"
+              disableElevation
+              onClick={handleConvertToPO}
+            >
+              Convert to PO
+            </Button>
+          </div>
+        );
+      case "draft":
+        return (
+          <div className="rfqStatusFooter">
+            <div className="approvedIcon">
+              <p
+                style={{
+                  color: statusColor ? statusColor(status) : "#000",
+                  textTransform: "capitalize",
+                }}
+              >
+                Drafted
+              </p>
+            </div>
+            <div className="rfqStatusDraftFooterBtns">
+              <Button
+                variant="contained"
+                className="newRfqBtn"
+                disableElevation
+                onClick={onNewRfq}
+              >
+                Share
+              </Button>
+              <Button
+                variant="contained"
+                className="newRfqBtn"
+                disableElevation
+                onClick={() => handleStatusUpdate("pending")}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        );
+      case "pending":
+        return (
+          <div className="rfqStatusFooter">
+            <div className="rfqStatusDraftFooterBtns">
+              <Button
+                variant="contained"
+                color="success"
+                className="newRfqBtn"
+                disableElevation
+                onClick={() => handleStatusUpdate("approve")}
+              >
+                Approve
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                className="newRfqBtn"
+                disableElevation
+                onClick={() => handleStatusUpdate("reject")}
+              >
+                Reject
+              </Button>
+            </div>
+          </div>
+        );
+      case "cancelled":
+        return (
+          <div className="rfqStatusFooter">
+            <p
+              style={{
+                color: statusColor ? statusColor(status) : "#000",
+                textTransform: "capitalize",
+              }}
+            >
+              Rejected
+            </p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleEdit = () => {
+    setEdit(true);
+    onEdit(item);
+  };
+
+  const handleEditClose = () => {
+    setEdit(false);
+    onEdit(null);
+  };
 
   return (
     <div className="rfqStatus">
@@ -160,9 +270,7 @@ const RfqStatusModal = ({
           </div>
         </div>
       </div>
-
       <div className="rfqStatusContent">
-        {/* Basic Information Section */}
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
@@ -172,21 +280,17 @@ const RfqStatusModal = ({
                 onClick={handleEdit}
                 style={{
                   display:
-                    status === "approved" || status === "cancelled"
-                      ? "none"
-                      : "block",
+                    status === "approved" || status === "cancelled" ? "none" : "block",
                 }}
               >
                 Edit
               </Button>
-             )}
+            )}
             <Button variant="outlined" className="cancel" onClick={onCancel}>
               Cancel
             </Button>
           </div>
         </div>
-
-        {/* Status Section */}
         <div className="rfqStatusInfo">
           <p>Status</p>
           <p
@@ -198,8 +302,6 @@ const RfqStatusModal = ({
             {status}
           </p>
         </div>
-
-        {/* Request Information Section */}
         <div className="rfqRequestInfo">
           <TableContainer
             component={Paper}
@@ -217,28 +319,16 @@ const RfqStatusModal = ({
                 "& .MuiTableCell-root": { border: "none" },
               }}
             >
-              <TableHead
-                sx={{
-                  backgroundColor: "#f2f2f2",
-                  padding: 0,
-                  margin: 0,
-                  lineHeight: 0,
-                }}
-              >
+              <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
                 <TableRow>
-                  <TableCell sx={{ paddingButtom: 0 }}>ID</TableCell>
-                  <TableCell sx={{ paddingButtom: 0 }}>Date Opened</TableCell>
-                  <TableCell sx={{ paddingButtom: 0 }}>Currency Type</TableCell>
-                  <TableCell sx={{ paddingButtom: 0 }}>Expiry Date</TableCell>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Date Opened</TableCell>
+                  <TableCell>Currency Type</TableCell>
+                  <TableCell>Expiry Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow
-                  sx={{
-                    cursor: "pointer",
-                    "&:last-child td, &:last-child th": { border: 0 },
-                  }}
-                >
+                <TableRow>
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
@@ -255,7 +345,7 @@ const RfqStatusModal = ({
                       fontSize: "12px",
                     }}
                   >
-                    {formatDate(Date.now()) || "N/A"}
+                    {formatDate(item?.expiry_date) || "N/A"}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -264,9 +354,9 @@ const RfqStatusModal = ({
                       fontSize: "12px",
                     }}
                   >
-                    {`${currency.currency_name}${" - "}${
-                      currency.currency_symbol
-                    }` || "N/A"}
+                    {currency
+                      ? `${currency.currency_name} - ${currency.currency_symbol}`
+                      : "N/A"}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -282,10 +372,7 @@ const RfqStatusModal = ({
             </Table>
           </TableContainer>
         </div>
-
         <p className="rfqContent">RFQ Items</p>
-
-        {/* RFQ Items Table Section */}
         <div className="rfqStatusTable">
           <TableContainer
             component={Paper}
@@ -311,126 +398,16 @@ const RfqStatusModal = ({
             </Table>
           </TableContainer>
         </div>
-
-        {/* Footer Section */}
-        {status === "approved" && (
-          <div className="rfqStatusFooter">
-            <div className="approvedIcon">
-              <img src={approved} alt="approved" />
-              <p
-                style={{
-                  color: statusColor ? statusColor(status) : "#000",
-                  textTransform: "capitalize",
-                }}
-              >
-                Successfully Sent
-              </p>
-            </div>
-
-            <Button
-              variant="contained"
-              className="newRfqBtn"
-              disableElevation
-              onClick={onNewRfq}
-            >
-              Convert to PO
-            </Button>
-          </div>
-        )}
-
-        {status === "draft" && (
-          <div className="rfqStatusFooter">
-            <div className="approvedIcon">
-              <p
-                style={{
-                  color: statusColor ? statusColor(status) : "#000",
-                  textTransform: "capitalize",
-                }}
-              >
-                Drafted
-              </p>
-            </div>
-            <div className="rfqStatusDraftFooterBtns">
-              <Button
-                variant="contained"
-                className="newRfqBtn"
-                disableElevation
-                onClick={onNewRfq}
-              >
-                Share
-              </Button>
-
-              <Button
-                variant="contained"
-                className="newRfqBtn"
-                disableElevation
-                onClick={() => {
-                  handleSubmit(item, "pending");
-                  onCancel();
-                }}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {status === "pending" && (
-          <div className="rfqStatusFooter">
-            <br />
-
-            <div className="rfqStatusDraftFooterBtns">
-              <Button
-                variant="contained"
-                color="success"
-                className="newRfqBtn"
-                disableElevation
-                onClick={() => {
-                  handleSubmit(item, "approve");
-                  handleReload();
-                }}
-              >
-                Approve
-              </Button>
-
-              <Button
-                variant="contained"
-                color="error"
-                className="newRfqBtn"
-                disableElevation
-                onClick={() => {
-                  handleSubmit(item, "reject");
-                 handleReload();
-                }}
-              >
-                Reject
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {status === "cancelled" && (
-          <div className="rfqStatusFooter">
-            <p
-              style={{
-                color: statusColor ? statusColor(status) : "#000",
-                textTransform: "capitalize",
-              }}
-            >
-              Rejected
-            </p>
-          </div>
-        )}
+        {renderStatusFooter()}
       </div>
-
       {edit && (
         <div className="overlay">
+          {/* Assuming RfqForm is used for editing */}
           <RfqForm
             open={edit}
             onCancel={handleEditClose}
             quotation={item}
             formUse={"Edit RFQ"}
-            // onSave={handleEditSave}
           />
         </div>
       )}
@@ -438,4 +415,13 @@ const RfqStatusModal = ({
   );
 };
 
-export default RfqStatusModal;
+RFQStatusModal.propTypes = {
+  item: PropTypes.object,
+  statusColor: PropTypes.func,
+  onEdit: PropTypes.func,
+  onCancel: PropTypes.func.isRequired,
+  onNewRfq: PropTypes.func,
+  triggerRefresh: PropTypes.func,
+};
+
+export default RFQStatusModal;

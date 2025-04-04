@@ -20,13 +20,11 @@ import PRForm from "./PRForm/PRForm";
 
 export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
-  const [editMode, setEditMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
   const [selectedStatus, setSelectedStatus] = useState(null);
 
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -63,7 +61,6 @@ export default function Purchreq() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-  // End ===================================
 
   const toggleViewMode = (mode) => {
     setViewMode(mode);
@@ -136,13 +133,12 @@ export default function Purchreq() {
   const handleCardClick = async (item) => {
     console.log(item);
     // store the return response in a variable
-    const result = await fetchSinglePurchaseRequest(item);
+    const result = await fetchSinglePurchaseRequest(item.id);
     setSelectedItem({ result });
     // check the status of the response
     console.log(result.status);
     console.log(selectedItem);
     if (item.status === "draft") {
-      setEditMode(true);
       setIsFormVisible(true);
     } else {
       setSelectedItem(item);
