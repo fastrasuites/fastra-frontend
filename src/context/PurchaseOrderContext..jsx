@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { getTenantClient } from "../services/apiService";
 import { useTenant } from "./TenantContext";
 
@@ -11,7 +17,7 @@ export const PurchaseOrderProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Safely destructure tenant information.
+  // Destructure tenant configuration safely.
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
   // Create a memoized API client when tenant data is available.
@@ -22,7 +28,7 @@ export const PurchaseOrderProvider = ({ children }) => {
     return null;
   }, [tenant_schema_name, access_token, refresh_token]);
 
-  // Validate required fields for Purchase Order creation or update.
+  // Validation function for purchase order fields.
   const validatePurchaseOrderFields = (info) => {
     const {
       status,
@@ -36,24 +42,23 @@ export const PurchaseOrderProvider = ({ children }) => {
       is_hidden,
     } = info;
 
-    if (
-      !payment_terms ||
-      !vendor ||
-      !purchase_policy ||
-      !delivery_terms ||
-      !currency ||
-      !status ||
-      !created_by ||
-      !items ||
-      typeof is_hidden !== "boolean"
-    ) {
-      return false;
-    }
-    return true;
+    // Basic validations; feel free to extend or refine these rules.
+    return (
+      !!payment_terms &&
+      !!vendor &&
+      !!purchase_policy &&
+      !!delivery_terms &&
+      !!currency &&
+      !!status &&
+      !!created_by &&
+      !!items &&
+      typeof is_hidden === "boolean"
+    );
   };
 
-  // Helper function to fetch a resource from a URL and ensure HTTPS.
+  // Helper function to fetch a resource ensuring HTTPS.
   const fetchResource = async (url) => {
+    if (!url) return null;
     try {
       const secureUrl = url.replace(/^http:\/\//i, "https://");
       const response = await client.get(secureUrl);
@@ -64,15 +69,19 @@ export const PurchaseOrderProvider = ({ children }) => {
     }
   };
 
-  // Normalize a purchase order by fetching detailed info for related resources.
+  // Normalize a purchase order by fetching details for related resources.
   const normalizePurchaseOrder = async (order) => {
     const currencyDetail = await fetchResource(order.currency);
     const vendorDetail = await fetchResource(order.vendor);
 
     const normalizedItems = await Promise.all(
       order.items.map(async (item) => {
-        const productDetail = item.product ? await fetchResource(item.product) : null;
-        const unitDetail = item.unit_of_measure ? await fetchResource(item.unit_of_measure) : null;
+        const productDetail = item.product
+          ? await fetchResource(item.product)
+          : null;
+        const unitDetail = item.unit_of_measure
+          ? await fetchResource(item.unit_of_measure)
+          : null;
         return {
           ...item,
           product: productDetail,
@@ -92,20 +101,20 @@ export const PurchaseOrderProvider = ({ children }) => {
   // Create a Purchase Order.
   const createPurchaseOrder = useCallback(
     async (info) => {
+      const validationError = "All fields are required and must be valid.";
       if (!validatePurchaseOrderFields(info)) {
-        const errMsg = "All fields are required and must be valid.";
         console.error("Validation error:", info);
-        setError(errMsg);
-        return Promise.reject(new Error(errMsg));
+        setError(validationError);
+        return Promise.reject(new Error(validationError));
       }
       if (!client) {
-        const errMsg = "API client is not available. Please check tenant configuration.";
-        setError(errMsg);
-        return Promise.reject(new Error(errMsg));
+        const clientError =
+          "API client is not available. Please check tenant configuration.";
+        setError(clientError);
+        return Promise.reject(new Error(clientError));
       }
       try {
         setIsLoading(true);
-        // Assuming endpoint for purchase order creation is '/purchase/purchase-order/'
         const response = await client.post("/purchase/purchase-order/", info);
         setError(null);
         setPurchaseOrderList((prevOrders) => [...prevOrders, response.data]);
@@ -121,23 +130,156 @@ export const PurchaseOrderProvider = ({ children }) => {
     [client]
   );
 
+  // Update a Purchase Order.
+  const updatePurchaseOrder = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const clientError =
+          "API client is not available. Please check tenant configuration.";
+        setError(clientError);
+        return Promise.reject(new Error(clientError));
+      }
+      try {
+        setIsLoading(true);
+        // Update using a POST endpoint; adjust method if necessary.
+        const response = await client.put(
+          `/purchase/purchase-order/${id}/`,
+          info
+        );
+        setError(null);
+        setPurchaseOrderList((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === id ? { ...order, ...response.data } : order
+          )
+        );
+        return { success: true, data: response.data };
+      } catch (err) {
+        console.error("Error updating purchase order:", err);
+        setError(err);
+        return { success: false, message: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  // Update a Purchase Order Status to pending.
+  const updatePurchasePending = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const clientError =
+          "API client is not available. Please check tenant configuration.";
+        setError(clientError);
+        return Promise.reject(new Error(clientError));
+      }
+      try {
+        setIsLoading(true);
+        // Update using a POST endpoint; adjust method if necessary.
+        const response = await client.put(
+          `/purchase/purchase-order/${id}/submit/`,
+          info
+        );
+        setError(null);
+        setPurchaseOrderList((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === id ? { ...order, ...response.data } : order
+          )
+        );
+        return { success: true, data: response.data };
+      } catch (err) {
+        console.error("Error updating purchase order to pending:", err);
+        setError(err);
+        return { success: false, message: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  // Update a Purchase Order Status to pending.
+  const updatePurchaseReject = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const clientError =
+          "API client is not available. Please check tenant configuration.";
+        setError(clientError);
+        return Promise.reject(new Error(clientError));
+      }
+      try {
+        setIsLoading(true);
+        // Update using a POST endpoint; adjust method if necessary.
+        const response = await client.put(
+          `/purchase/purchase-order/${id}/cancel/`,
+          info
+        );
+        setError(null);
+        setPurchaseOrderList((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === id ? { ...order, ...response.data } : order
+          )
+        );
+        return { success: true, data: response.data };
+      } catch (err) {
+        console.error("Error updating purchase order to reject:", err);
+        setError(err);
+        return { success: false, message: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  const updatePurchaseApproved = useCallback(
+    async (info, id) => {
+      if (!client) {
+        const clientError =
+          "API client is not available. Please check tenant configuration.";
+        setError(clientError);
+        return Promise.reject(new Error(clientError));
+      }
+      try {
+        setIsLoading(true);
+        // Update using a POST endpoint; adjust method if necessary.
+        const response = await client.put(
+          `/purchase/purchase-order/${id}/complete/`,
+          info
+        );
+        setError(null);
+        setPurchaseOrderList((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === id ? { ...order, ...response.data } : order
+          )
+        );
+        return { success: true, data: response.data };
+      } catch (err) {
+        console.error("Error updating purchase order to Approved:", err);
+        setError(err);
+        return { success: false, message: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
   // Retrieve the Purchase Order list.
   const getPurchaseOrderList = useCallback(async () => {
     if (!client) {
-      const errMsg = "API client is not available. Please check tenant configuration.";
-      setError(errMsg);
-      return Promise.reject(new Error(errMsg));
+      const clientError =
+        "API client is not available. Please check tenant configuration.";
+      setError(clientError);
+      return Promise.reject(new Error(clientError));
     }
     try {
       setIsLoading(true);
       const response = await client.get("/purchase/purchase-order/");
       const rawData = response.data;
-
-      // Normalize each purchase order.
       const normalizedData = await Promise.all(
-        rawData.map(async (order) => await normalizePurchaseOrder(order))
+        rawData.map(normalizePurchaseOrder)
       );
-
       setError(null);
       setPurchaseOrderList(normalizedData);
       return { success: true, data: normalizedData };
@@ -150,13 +292,17 @@ export const PurchaseOrderProvider = ({ children }) => {
     }
   }, [client]);
 
-  // Memoize the context value to avoid unnecessary re-renders.
+  // Memoize the context value.
   const contextValue = useMemo(
     () => ({
       error,
       purchaseOrderList,
       isLoading,
       createPurchaseOrder,
+      updatePurchaseOrder,
+      updatePurchasePending,
+      updatePurchaseReject,
+      updatePurchaseApproved,
       getPurchaseOrderList,
       singlePurchaseOrder,
       setSinglePurchaseOrder,
@@ -167,6 +313,10 @@ export const PurchaseOrderProvider = ({ children }) => {
       purchaseOrderList,
       isLoading,
       createPurchaseOrder,
+      updatePurchaseOrder,
+      updatePurchasePending,
+      updatePurchaseReject,
+      updatePurchaseApproved,
       getPurchaseOrderList,
       singlePurchaseOrder,
     ]

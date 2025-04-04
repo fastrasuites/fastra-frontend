@@ -47,6 +47,7 @@
   flex-direction: column;
   gap: 32px;
   margin: 10px 50px;
+  
 }
 
 .rfqBasicInfo {
@@ -60,6 +61,10 @@
   color: #3b7ced;
   font-weight: 500;
   font-size: 20px;
+}
+.rfqRequestInfo {
+  border-bottom: 1.2px solid #E2E6E9;
+  padding-bottom: 24px;
 }
 
 .rfqBasicInfo > .editCancel {
