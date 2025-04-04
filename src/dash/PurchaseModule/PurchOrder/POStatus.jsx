@@ -1,32 +1,31 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-// import { useRFQ } from "../../../context/RequestForQuotation";
-import "./RfqStatus.css";
-import SearchIcon from "../../../image/search.svg";
+import "../Rfq/RfqStatus.css";
 import PurchaseHeader from "../PurchaseHeader";
-import RfqStatusModal from "./RfqStatusModal";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa6";
 import { IoGrid } from "react-icons/io5";
-import RfqGrid from "./RfqGrid";
-import RListView from "./RListView";
 import { Button } from "@mui/material";
-import { extractRFQID } from "../../../helper/helper";
 import { Search } from "lucide-react";
+import POStatusModal from "./POStatusModal";
+import POGrid from "./POGrid";
+import Orderlistview from "./Orderlistview";
 
-const RfqStatus = ({
+const POStatus = ({
   selectedStatus,
   formatDate,
   statusColor,
   onCancel,
   triggerRefresh,
-  quotationsData,
+  purchaseOrderData,
 }) => {
-  const [quotations, setQuotations] = useState([]);
+  const [purchaseOrder, setPurchaseOrder] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
   const [searchQuery, setSearchQuery] = useState("");
 
   const itemsPerPage = 10;
+
+  // const { error, isLoading, singerRFQ, getRFQById } = useRFQ();
 
   const handleClick = (item) => {
     setSelectedItem(item);
@@ -42,43 +41,63 @@ const RfqStatus = ({
 
   useEffect(() => {
     if (selectedStatus[0] && selectedStatus[0].length) {
-      setQuotations(() =>
-        quotationsData.filter((item) => item.status === selectedStatus[1])
+      setPurchaseOrder(() =>{
+
+        const statusMap = {
+            rejected: 'cancelled',
+            pending: 'awaiting',
+            approved: 'completed',
+            draft: 'draft'
+          };
+        const status = statusMap[selectedStatus[1].toLowerCase()];
+        console.log(status);
+        return purchaseOrderData.filter((item) => item.status === status)
+      }
+        
       );
     }
   }, [selectedStatus]);
 
-  const filteredQuotations = quotations.filter((item) => {
-    if (!searchQuery) return true;
-    const lowercasedQuery = searchQuery.toLowerCase();
 
-    const price = item?.rfq_total_price?.toString().toLowerCase() || "";
-    const expiryDate = formatDate(item.expiry_date).toLowerCase();
-    const status = item?.status?.toLowerCase() || "";
-    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
-    const purchaseID = extractRFQID(item.purchase_request)?.toLowerCase() || "";
-    const vendor =
-      typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
-    const vendorCategory = item.vendor_category?.toLowerCase() || "";
-    return (
-      price.includes(lowercasedQuery) ||
-      expiryDate.includes(lowercasedQuery) ||
-      status.includes(lowercasedQuery) ||
-      currencyName.includes(lowercasedQuery) ||
-      purchaseID.includes(lowercasedQuery) ||
-      vendor.includes(lowercasedQuery) ||
-      vendorCategory.includes(lowercasedQuery)
-    );
-  });
+  // Filter purchase orders based on search query
+  const filteredPurchaseOrders = useMemo(() => {
+    return purchaseOrder.filter((item) => {
+      if (!searchQuery) return true;
+      const lowercasedQuery = searchQuery.toLowerCase();
 
-  const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage);
+      const dateCreated = new Date(item.date_created)
+        .toLocaleString()
+        .toLowerCase();
+      const status = item.status ? item.status.toLowerCase() : "";
+      const currencyName = item.currency_name
+        ? item.currency_name.toLowerCase()
+        : "";
+      const purchaseOrderID =
+        typeof item.id === "string" ? item.id.toLowerCase() : "";
+      const vendorName =
+        item.vendor && item.vendor.company_name
+          ? item.vendor.company_name.toLowerCase()
+          : "";
 
-  const paginatedRequestsForQuotations = useMemo(() => {
-    return filteredQuotations.slice(
+      return (
+        dateCreated.includes(lowercasedQuery) ||
+        status.includes(lowercasedQuery) ||
+        currencyName.includes(lowercasedQuery) ||
+        purchaseOrderID.includes(lowercasedQuery) ||
+        vendorName.includes(lowercasedQuery)
+      );
+    });
+  }, [searchQuery, purchaseOrder]);
+
+  const totalPages = Math.ceil(filteredPurchaseOrders.length / itemsPerPage);
+
+
+  const paginatedPurchaseOrders = useMemo(() => {
+    return filteredPurchaseOrders.slice(
       (page - 1) * itemsPerPage,
       page * itemsPerPage
     );
-  }, [page, itemsPerPage, filteredQuotations]);
+  }, [page, itemsPerPage, filteredPurchaseOrders]);
 
   const handlePageChange = useCallback(
     (newPage) => {
@@ -88,6 +107,7 @@ const RfqStatus = ({
     },
     [totalPages]
   );
+
 
   const toggleViewMode = (mode) => {
     setViewMode(mode);
@@ -118,9 +138,9 @@ const RfqStatus = ({
         </div>
 
         <div className="r3b">
-          <p className="r3bpage" style={{ whiteSpace: "nowrap" }}>
-            {page} of {totalPages}
-          </p>
+        <p className="r3bpage" style={{ whiteSpace: "nowrap" }}>
+                {page} of {totalPages}
+              </p>
           <div className="r3bnav">
             <FaCaretLeft
               className="lr"
@@ -146,16 +166,16 @@ const RfqStatus = ({
         </div>
       </div>
       {viewMode === "grid" ? (
-        <RfqGrid
-          quotations={paginatedRequestsForQuotations}
+        <POGrid
+          purchaseOrders={paginatedPurchaseOrders}
           handleClick={handleClick}
           formatDate={formatDate}
           statusColor={statusColor}
         />
       ) : (
         <div className="rfqStatusList">
-          <RListView
-            items={paginatedRequestsForQuotations}
+          <Orderlistview
+            items={paginatedPurchaseOrders}
             onCardClick={handleClick}
             getStatusColor={statusColor}
           />
@@ -164,12 +184,13 @@ const RfqStatus = ({
 
       {selectedItem && (
         <div className="rfqStatusModal overlay">
-          <RfqStatusModal
+          <POStatusModal
             item={selectedItem}
             formatDate={formatDate}
             statusColor={statusColor}
             onCancel={handleCancel}
             triggerRefresh={triggerRefresh}
+            // handleNewRfq={handleNewRfq}
             onEdit={handleEdit}
           />
         </div>
@@ -178,4 +199,4 @@ const RfqStatus = ({
   );
 };
 
-export default RfqStatus;
+export default POStatus;

@@ -1,4 +1,4 @@
-import React, { useCallback,  useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,6 +14,7 @@ import {
 import PropTypes from "prop-types";
 import { extractRFQID, formatDate } from "../../../helper/helper";
 import { Trash } from "lucide-react";
+import { Tab } from "react-bootstrap";
 
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
@@ -66,8 +67,6 @@ const Orderlistview = ({
     }
   }, [onDeleteSelected, selected]);
 
-  console.log("items", items);
-
   // Memoize the rendered rows for performance.
   const renderedRows = React.useMemo(() => {
     return items.map((item, index) => (
@@ -88,9 +87,7 @@ const Orderlistview = ({
             onChange={(event) => handleSelect(event, item.url)}
           />
         </TableCell>
-        <TableCell sx={cellStyle(index)}>
-          {extractRFQID(item?.url)}
-        </TableCell>
+        <TableCell sx={cellStyle(index)}>{extractRFQID(item?.url)}</TableCell>
         <TableCell sx={cellStyle(index)}>
           {item?.items.map((item, index) => (
             <p key={index}>{item?.product?.product_name}</p>
@@ -101,11 +98,13 @@ const Orderlistview = ({
             <p key={index}>{item?.qty}</p>
           ))}
         </TableCell>
-        <TableCell sx={cellStyle(index)}>{formatDate(item?.date_created)}</TableCell>
-        <TableCell sx={cellStyle(index)}>{item?.vendor?.company_name}</TableCell>
-        <TableCell
-          sx={statusCellStyle(index, getStatusColor, item.status)}
-        >
+        <TableCell sx={cellStyle(index)}>
+          {formatDate(item?.date_created)}
+        </TableCell>
+        <TableCell sx={cellStyle(index)}>
+          {item?.vendor?.company_name}
+        </TableCell>
+        <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <div
               style={{
@@ -116,7 +115,13 @@ const Orderlistview = ({
                 marginRight: "8px",
               }}
             />
-            {item.status}
+            {item.status === "cancelled"
+              ? "Rejected"
+              : item.status === "awaiting"
+              ? "Pending"
+              : item.status === "completed"
+              ? "Approved"
+              : "Draft"}
           </div>
         </TableCell>
       </TableRow>
@@ -174,7 +179,9 @@ const Orderlistview = ({
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>{renderedRows}</TableBody>
+          <TableBody>
+            {renderedRows}
+          </TableBody>
         </Table>
       </TableContainer>
     </Box>

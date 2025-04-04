@@ -104,6 +104,7 @@ export const RFQProvider = ({ children }) => {
   // Create an RFQ.
   const createRFQ = useCallback(
     async (info) => {
+      console.log(info)
       if (!validateRFQFields(info)) {
         const errMsg = "All fields are required and must be valid.";
         console.log(info);
@@ -287,7 +288,7 @@ export const RFQProvider = ({ children }) => {
             rfq.id === id ? { ...rfq, ...response.data } : rfq
           )
         );
-        return response.data;
+        return {success: true, data: response.data};
       } catch (err) {
         console.error("Error updating RFQ Approved Status:", err);
         if (err.response && err.response.data) {
@@ -325,7 +326,7 @@ export const RFQProvider = ({ children }) => {
             rfq.id === id ? { ...rfq, ...response.data } : rfq
           )
         );
-        return response.data;
+        return {success: true, data: response.data};
       } catch (err) {
         console.error("Error updating RFQ Pending Status:", err);
         if (err.response && err.response.data) {
@@ -363,7 +364,7 @@ export const RFQProvider = ({ children }) => {
             rfq.id === id ? { ...rfq, ...response.data } : rfq
           )
         );
-        return response.data;
+        return {success: true, data: response.data};
       } catch (err) {
         console.error("Error updating RFQ Reject Status:", err);
         console.error("Request config:", err.config.data);

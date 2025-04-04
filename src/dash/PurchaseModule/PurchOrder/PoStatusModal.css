@@ -1,0 +1,22 @@
+.poStatusInfo {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    
+}
+
+.poStatusInfo > div {
+    border: 2px s
+}
+.rfqStatusName, .rfqStatusDate, .rfqStatusId {
+    color: #7A8A98;
+    text-transform: capitalize;
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.poStatusVendor {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
