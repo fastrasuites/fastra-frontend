@@ -20,8 +20,7 @@ const PurchaseRequestStatus = ({
   // handleNewRfq,
   quotationsData,
 }) => {
-
-    console.log(selectedStatus)
+  console.log(selectedStatus);
   const [quotations, setQuotations] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [viewMode, setViewMode] = useState("list");
@@ -40,7 +39,6 @@ const PurchaseRequestStatus = ({
   const handleEdit = (item) => {
     setSelectedItem(item);
   };
-  
 
   useEffect(() => {
     if (selectedStatus[0] && selectedStatus[0].length) {
@@ -50,7 +48,7 @@ const PurchaseRequestStatus = ({
     }
   }, [selectedStatus]);
 
- const filteredQuotations = quotations.filter((item) => {
+  const filteredQuotations = quotations.filter((item) => {
     if (!searchQuery) return true;
     const lowercasedQuery = searchQuery.toLowerCase();
 
@@ -88,19 +86,16 @@ const PurchaseRequestStatus = ({
         <div className="rfqHeaderContent">
           <h2 className="rfqHeaderTitle">{selectedStatus[1]}</h2>
           <div className="rfqsash">
-                <Search
-                  style={{ color: "#C6CCD2" }}
-                  className="rfqsearch-icon"
-                />
-                <input
-                  id="searchInput"
-                  type="search"
-                  placeholder="Search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="searchInput"
-                />
-              </div>
+            <Search style={{ color: "#C6CCD2" }} className="rfqsearch-icon" />
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="searchInput"
+            />
+          </div>
         </div>
 
         <div className="r3b">
@@ -126,7 +121,7 @@ const PurchaseRequestStatus = ({
       {viewMode === "grid" ? (
         <PurchaseRequestGrid
           quotations={filteredQuotations}
-          handleClick={handleClick}
+          onClick={handleClick}
           formatDate={formatDate}
           statusColor={statusColor}
         />

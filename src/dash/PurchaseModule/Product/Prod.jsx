@@ -476,7 +476,7 @@ export default function Prod() {
           <Newprod
             onClose={handleCloseNewProd}
             onSaveAndSubmit={handleSaveAndSubmit}
-            fromPurchaseModuleWizard={location.state?.openForm}
+            // fromPurchaseModuleWizard={location.state?.openForm}
           />
         </div>
       )}

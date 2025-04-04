@@ -16,12 +16,12 @@ const DashboardHeader = ({ title, menuItems }) => {
   };
 
   const toggleSidebar = () => {
-    console.log("i was opened")
-    setIsSidebarOpen(prevState => !prevState);
+    console.log("i was opened");
+    setIsSidebarOpen((prevState) => !prevState);
   };
 
   const closeSidebar = () => {
-    setIsSidebarOpen(prevState => !prevState);
+    setIsSidebarOpen((prevState) => !prevState);
   };
 
   const toggleProfileMenu = () => {
@@ -52,7 +52,9 @@ const DashboardHeader = ({ title, menuItems }) => {
                       handleDropdownToggle(index);
                     }
                   }}
-                  className="navLink"
+                  className={`${
+                    item.subItems ? "navLinkWithArrow navLink" : "navLink"
+                  }`}
                 >
                   {item.label}
                   {item.subItems && (
@@ -60,7 +62,10 @@ const DashboardHeader = ({ title, menuItems }) => {
                       style={{
                         marginLeft: "5px",
                         fontSize: "1.5rem",
-                        transform: activeDropdown === index ? "rotate(180deg)" : "rotate(0deg)",
+                        transform:
+                          activeDropdown === index
+                            ? "rotate(180deg)"
+                            : "rotate(0deg)",
                         transition: "transform 0.2s ease",
                       }}
                     />
@@ -86,11 +91,16 @@ const DashboardHeader = ({ title, menuItems }) => {
         <div className="rightSection">
           <div className="notification-icon">
             <span className="strokeRight" />
-            <button className="notification"><FaBell /></button>
+            <button className="notification">
+              <FaBell />
+            </button>
             <span className="strokeRight" />
           </div>
           {/* administrator profile */}
-          <ProfileMenuDropdown isOpen={isProfileMenuOpen} onClose={closeProfileMenu} />
+          <ProfileMenuDropdown
+            isOpen={isProfileMenuOpen}
+            onClose={closeProfileMenu}
+          />
         </div>
       </header>
 

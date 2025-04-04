@@ -136,7 +136,7 @@ export default function Purchreq() {
   const handleCardClick = async (item) => {
     console.log(item);
     // store the return response in a variable
-    const result = await fetchSinglePurchaseRequest(item);
+    const result = await fetchSinglePurchaseRequest(item.id);
     setSelectedItem({ result });
     // check the status of the response
     console.log(result.status);

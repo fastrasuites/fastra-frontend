@@ -138,7 +138,7 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
       updatePurchaseRequest(id, cleanedFormData)
         .then((data) => {
           console.log("Updated RFQ:", data);
-          if(data.success === true) {
+          if (data.success === true) {
             alert("Purchase Request updated successfully");
           }
         })
@@ -241,11 +241,10 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
                 {/* {isEdit ? "Save Changes" : "Create RFQ Draft"} */}
                 {isEdit ? "Save Changes" : "Save"}
               </Button>
-              {!isEdit && (
-                <Button variant="contained" onClick={saveAndSubmit}>
-                  Save & Send
-                </Button>
-              )}
+
+              <Button variant="contained" onClick={saveAndSubmit}>
+                Save & Send
+              </Button>
             </div>
           </div>
         </form>

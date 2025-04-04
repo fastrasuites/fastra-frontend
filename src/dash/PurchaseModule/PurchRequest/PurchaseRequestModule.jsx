@@ -16,6 +16,7 @@ import "../Rfq/RfqStatusModal.css";
 import { extractRFQID } from "../../../helper/helper";
 import { usePurchase } from "../../../context/PurchaseContext";
 import PRForm from "./PRForm/PRForm";
+import { width } from "@mui/system";
 // import RfqForm from "./RfqForm/RfqForm"; // Uncomment if RfqForm is needed
 
 // Helper for cell styles
@@ -48,6 +49,7 @@ const PurchaseRequestModule = ({
     approvePurchaseRequest,
     rejectPurchaseRequest,
     pendingPurchaseRequest,
+    updatePurchaseRequest,
   } = usePurchase();
 
   // Reloads the page after a slight delay
@@ -65,6 +67,21 @@ const PurchaseRequestModule = ({
     setEdit(false);
     onEdit(null);
   };
+
+  // const handleConvertToDraft = (e) => {
+  //     e.preventDefault();
+  //     // Save as draft (status: "draft")
+  //     const cleanedFormData = getCleanedFormData("draft");
+  //     console.log("Cleaned RFQ Data:", cleanedFormData);
+  //       const id = extractRFQID(url);
+  //       updatePurchaseRequest(id, cleanedFormData)
+  //         .then((data) => {
+  //           console.log("Updated RFQ:", data);
+  //           if(data.success === true) {
+  //             alert("Purchase Request updated successfully");
+  //           }
+  //         })
+  //         .catch((err) => console.error("Error updating RFQ:", err));
 
   // Handles submission for various statuses in a unified way
   const handleSubmit = (formData, newStatus = "pending") => {
@@ -98,6 +115,9 @@ const PurchaseRequestModule = ({
         break;
       case "reject":
         rejectPurchaseRequest(cleanedFormData, id).then(console.log);
+        break;
+      case "draft":
+        updatePurchaseRequest(id, cleanedFormData).then(console.log);
         break;
       default:
         break;
@@ -204,7 +224,6 @@ const PurchaseRequestModule = ({
           <TableContainer
             component={Paper}
             sx={{
-              maxWidth: "1000px",
               boxShadow: "none",
               borderTop: "none",
               borderLeft: "none",
@@ -432,7 +451,7 @@ const PurchaseRequestModule = ({
           </div>
         )}
 
-        {status === "cancelled" && (
+        {status === "rejected" && (
           <div className="rfqStatusFooter">
             <p
               style={{
@@ -442,6 +461,17 @@ const PurchaseRequestModule = ({
             >
               Rejected
             </p>
+            <Button
+              variant="contained"
+              className="newRfqBtn"
+              disableElevation
+              onClick={() => {
+                handleSubmit(item, "draft");
+                handleReload();
+              }}
+            >
+              Convert to Draft
+            </Button>
           </div>
         )}
       </div>
