@@ -183,11 +183,11 @@ function App() {
             component={ConfigurationSettings}
           />
           <ProtectedRoute
-            path={`/${tenant_schema_name}/inventory`}
+            path={`/${tenant_schema_name}/inventory/operations`}
             component={Inventory}
           />
           <ProtectedRoute
-            path={`/${tenant_schema_name}/location`}
+            path={`/${tenant_schema_name}/inventory/location`}
             component={Location}
           />
           <ProtectedRoute

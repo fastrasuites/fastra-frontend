@@ -153,7 +153,7 @@ const DashCard = () => {
       name: "Inventory",
       description:
         "Monitor stock levels, track inventory movements, and optimize warehouse operations to ensure optimal inventory management and minimize stockouts.",
-      link: `/${tenant_schema_name}/inventory`,
+      link: `/${tenant_schema_name}/inventory/operations`,
     },
     {
       name: "HR",

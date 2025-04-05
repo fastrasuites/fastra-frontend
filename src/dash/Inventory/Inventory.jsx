@@ -17,12 +17,12 @@ export default function Inventory() {
           {/* Define routes for the inventory pages */}
           <Route
             exact
-            path={`/${tenant_schema_name}/inventory`}
+            path={`/${tenant_schema_name}/inventory/operations`}  
             component={Operations}
           />{" "}
           {/*hi, lukman change this line component to your first s */}
           <Route
-            path={`/${tenant_schema_name}/location`}
+            path={`/${tenant_schema_name}/inventory/location`}
             component={Location}
           />
           {/* Add additional inventory routes as needed */}

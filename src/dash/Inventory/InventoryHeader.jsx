@@ -22,8 +22,8 @@ const InventoryHeader = () => {
         { label: "Scrap", link: "/scrap" },
       ],
     },
-    { label: "Location", link: "/location" },
-    { label: "Configuration", link: "/location-configuration" },
+    { label: "Location", link: "inventory/location" },
+    { label: "Configuration", link: "inventory/location-configuration" },
   ];
 
   return (
