@@ -1,15 +1,17 @@
 import React from "react";
+import { useTenant } from "../context/TenantContext";
 import { Modal, Box, Typography, Button } from "@mui/material";
 import { useHistory } from "react-router-dom";
 import "./stepModal.css";
 
-const StepModal = ({ open, onClose, step, onNextStep }) => {
+const StepModal = ({ open, onClose, step }) => {
   const history = useHistory();
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
   const handleSetUpCompany = () => {
     onClose();
     if (step === 1) {
-      history.push("/company", { openForm: true });
+      history.push(`/${tenant_schema_name}/company`, { openForm: true });
     } else if (step === 2) {
       history.push("/user", { openForm: true });
     } else {

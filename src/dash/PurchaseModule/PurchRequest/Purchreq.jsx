@@ -5,7 +5,7 @@ import SearchIcon from "../../../image/search.svg";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import ListView from "./Listview";
-// import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
+import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
 import { useLocation } from "react-router-dom";
 import draft from "../../../../src/image/icons/draft (1).png";
 import approved from "../../../../src/image/icons/approved.png";
@@ -259,16 +259,6 @@ export default function Purchreq() {
 
           {isFormVisible ? (
             <div className="overlay1">
-              {/* <Newpr
-                onSaveAndSubmit={handleSaveAndSubmit}
-                onClose={() => {
-                  setIsFormVisible(false);
-                  setEditMode(false);
-                  setCurrentPR(null);
-                }}
-                existingRequest={editMode ? currentPR : null}
-              /> */}
-
               <PRForm
                 onCancel={handleFormClose}
                 quotation={{}}
@@ -334,11 +324,11 @@ export default function Purchreq() {
       </div>
 
       {/* controls the 'Purchase Module Wizard' following user clicking the Purchase card from the Home page */}
-      {/* <PurchaseModuleWizard
+      <PurchaseModuleWizard
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-      /> */}
+      />
     </div>
   );
 }

@@ -1,17 +1,19 @@
 import React from "react";
+import { useTenant } from "../context/TenantContext";
 import { Modal, Box } from "@mui/material";
 import { useHistory } from "react-router-dom";
 import "./PurchaseModuleWizard.css";
 
 const PurchaseModuleWizard = ({ open, onClose, step }) => {
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
 
   const handleAddProductandVendor = () => {
     onClose();
     if (step === 1) {
-      history.push("/product", { openForm: true });
+      history.push(`/${tenant_schema_name}/product`, { openForm: true });
     } else if (step === 2) {
-      history.push("/vendor", { openForm: true });
+      history.push(`/${tenant_schema_name}/vendor`, { openForm: true });
     } else {
       alert(" Humm! The last stage is not ready. Please use the skip button.");
     }
@@ -84,12 +86,31 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 ? ""
                 : ""}
             </p>
+            {/* End step 2 ----------------------------------------- */}
+
+            {/* Step 3 start here ---------------------------------- */}
+
+            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
+            <p className="heading-text">
+              {step === 1
+                ? "Step 2: Add Vendors"
+                : step === 2
+                ? "Registration Successful"
+                : ""}
+            </p>
+            <p className="para-description">
+              {step === 1
+                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
+                : step === 2
+                ? ""
+                : ""}
+            </p>
           </div>
-          {/* End step 2 ------------------------------ */}
+          {/* End step 3 ------------------------------ */}
         </Box>
       </Box>
     </Modal>
   );
 };
 
-// export default PurchaseModuleWizard;
+export default PurchaseModuleWizard;
