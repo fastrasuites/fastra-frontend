@@ -31,18 +31,8 @@ export default function Dashboard() {
     }
   }, [location.state]);
 
-  // const handleNextStep = () => {
-  //   if (currentStep === 1) {
-  //     setCurrentStep(2);
-  //   } else if (currentStep === 2) {
-  //     setCurrentStep(3);
-  //   } else if (currentStep === 3) {
-  //     setCurrentStep("");
-  //   }
-  // };
-
   const handleCloseModal = () => {
-    setIsModalOpen(prevState => !prevState);
+    setIsModalOpen((prevState) => !prevState);
   };
 
   //End ---------------------------------------------------------------------------
@@ -53,13 +43,12 @@ export default function Dashboard() {
   };
 
   const toggleMenu = () => {
-    setShowMenu(prevState => !prevState)
+    setShowMenu((prevState) => !prevState);
   };
 
   const closeSidebar = () => {
-    setShowMenu(prevState => !prevState);
+    setShowMenu((prevState) => !prevState);
   };
-
 
   return (
     <div id="dashboard" className="dash">
@@ -110,7 +99,9 @@ export default function Dashboard() {
           </li> */}
         </ul>
       </div>
-      {showMenu && <Sidebar sidebarOpen={showMenu} handleCloseSidebar={closeSidebar} />}
+      {showMenu && (
+        <Sidebar sidebarOpen={showMenu} handleCloseSidebar={closeSidebar} />
+      )}
       {/*  */}
 
       <div className="dashbody">
@@ -120,12 +111,12 @@ export default function Dashboard() {
       </div>
 
       {/* controls the Step modal following user logged in to set up company account */}
-      <StepModal
+      {/* <StepModal
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-        // onNextStep={handleNextStep}
-      />
+        onNextStep={handleNextStep}
+      /> */}
     </div>
   );
 }

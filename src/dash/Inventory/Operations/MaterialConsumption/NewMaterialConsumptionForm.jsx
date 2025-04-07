@@ -1,7 +1,7 @@
 import { Typography, Box, useTheme } from "@mui/material";
 import React from "react";
-import autosave from "../../../image/autosave-text.svg";
-import inventoryShareStyle from "../inventorySharedStyles";
+import autosave from "../../../../image/autosave-text.svg";
+import inventoryShareStyle from "../../inventorySharedStyles";
 
 const NewMaterialConsumptionForm = () => {
   const theme = useTheme();

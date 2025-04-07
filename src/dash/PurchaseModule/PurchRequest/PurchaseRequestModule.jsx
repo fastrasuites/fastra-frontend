@@ -38,11 +38,11 @@ const PurchaseRequestModule = ({
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
 
-    // Reloads the page after a slight delay (if needed)
-    const handleReload = () => {
-      setTimeout(() => window.location.reload(), 1000);
-    };
-  
+  // Reloads the page after a slight delay (if needed)
+  const handleReload = () => {
+    setTimeout(() => window.location.reload(), 1000);
+  };
+
   // Conversion handler: navigates to the RFQ conversion route, passing the current PR as state
   const handleConvertToRFQ = () => {
     history.push({
@@ -68,8 +68,8 @@ const PurchaseRequestModule = ({
     approvePurchaseRequest,
     rejectPurchaseRequest,
     pendingPurchaseRequest,
+    updatePurchaseRequest,
   } = usePurchase();
-
 
   // Handlers for edit mode
   const handleEdit = () => {
@@ -102,7 +102,6 @@ const PurchaseRequestModule = ({
       is_hidden: formData?.is_hidden,
     };
 
-
     switch (newStatus) {
       case "pending":
         pendingPurchaseRequest(cleanedFormData, id).then(console.log);
@@ -112,6 +111,9 @@ const PurchaseRequestModule = ({
         break;
       case "reject":
         rejectPurchaseRequest(cleanedFormData, id).then(console.log);
+        break;
+      case "draft":
+        updatePurchaseRequest(id, cleanedFormData).then(console.log);
         break;
       default:
         break;
@@ -171,7 +173,7 @@ const PurchaseRequestModule = ({
             disableElevation
             onClick={onNewRfq}
           >
-            New RFQ
+            New Purchase Request
           </Button>
           <div className="rfqAutosave">
             <p>Autosave</p>
@@ -218,7 +220,6 @@ const PurchaseRequestModule = ({
           <TableContainer
             component={Paper}
             sx={{
-              maxWidth: "1000px",
               boxShadow: "none",
               borderTop: "none",
               borderLeft: "none",
@@ -365,7 +366,7 @@ const PurchaseRequestModule = ({
                   textTransform: "capitalize",
                 }}
               >
-                Successfully Sent
+                Approved
               </p>
             </div>
             <Button
@@ -391,7 +392,7 @@ const PurchaseRequestModule = ({
                 Drafted
               </p>
             </div>
-            <div className="rfqStatusDraftFooterBtns">
+            {/* <div className="rfqStatusDraftFooterBtns">
               <Button
                 variant="contained"
                 className="newRfqBtn"
@@ -411,7 +412,7 @@ const PurchaseRequestModule = ({
               >
                 Save
               </Button>
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -446,7 +447,7 @@ const PurchaseRequestModule = ({
           </div>
         )}
 
-        {status === "cancelled" && (
+        {status === "rejected" && (
           <div className="rfqStatusFooter">
             <p
               style={{
@@ -456,6 +457,17 @@ const PurchaseRequestModule = ({
             >
               Rejected
             </p>
+            <Button
+              variant="contained"
+              className="newRfqBtn"
+              disableElevation
+              onClick={() => {
+                handleSubmit(item, "draft");
+                handleReload();
+              }}
+            >
+              Set Back to Draft
+            </Button>
           </div>
         )}
       </div>

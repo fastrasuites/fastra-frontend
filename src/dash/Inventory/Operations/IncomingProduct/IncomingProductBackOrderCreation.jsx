@@ -20,9 +20,9 @@ import {
   MenuItem,
 } from "@mui/material";
 import autosave from "../../../image/autosave-text.svg";
-import inventoryShareStyles from "../inventorySharedStyles.js";
+import inventoryShareStyles from "../../inventorySharedStyles.js";
 
-const IncomingProductNoBackOrder = () => {
+const IncomingProductBackOrderCreation = () => {
   const theme = useTheme();
   const [receivedQty, setReceivedQty] = useState(2);
   const isSmallScreen = useMediaQuery("(max-width:600px)");
@@ -191,94 +191,121 @@ const IncomingProductNoBackOrder = () => {
 
           <Divider />
 
-          <TableContainer
-            component={Paper}
-            style={{ margin: "0 auto", maxWidth: "100%" }}
-          >
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Product Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Expected Qty</TableCell>
-                  <TableCell>Qty Received</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow sx={{ backgroundColor: "#F2F2F2" }}>
-                  {/* Product Name */}
-                  <TableCell>
-                    <TextField
-                      value="Cement"
-                      placeholder="Enter a product name"
-                      variant="standard"
-                      InputProps={{
-                        disableUnderline: true,
-                        readOnly: true,
-                        style: { fontSize: "14px", color: "#A9B3BC" },
-                      }}
-                    />
-                  </TableCell>
-
-                  {/* Product Description */}
-                  <TableCell>
-                    <TextField
-                      value="Eluku Cement"
-                      placeholder="Enter a product description"
-                      variant="standard"
-                      InputProps={{
-                        disableUnderline: true,
-                        readOnly: true,
-                        style: { fontSize: "14px", color: "#A9B3BC" },
-                      }}
-                    />
-                  </TableCell>
-
-                  {/* Expected Quantity */}
-                  <TableCell>
-                    <TextField
-                      value="2"
-                      variant="standard"
-                      type="number"
-                      InputProps={{
-                        readOnly: true,
-                        disableUnderline: true,
-                        style: { fontSize: "14px", color: "#A9B3BC" },
-                      }}
-                    />
-                  </TableCell>
-
-                  {/* Received Quantity */}
-                  <TableCell>
-                    <TextField
-                      value={receivedQty}
-                      onChange={(e) => setReceivedQty(e.target.value)}
-                      variant="standard"
-                      type="number"
-                      InputProps={{
-                        readOnly: true,
-                        disableUnderline: true,
-                        style: { fontSize: "14px", color: "#A9B3BC" },
-                      }}
-                    />
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-            {isSmallScreen && (
-              <Typography
-                variant="caption"
-                align="center"
-                style={{
-                  display: "block",
-                  marginTop: "10px",
-                  fontStyle: "italic",
+          <Box>
+            <Box
+              sx={{
+                ...inventoryShareStyles.WidthFullFlexSpaceBetween(theme),
+                justifyContent: "flex-start",
+                marginBottom: "10px",
+              }}
+            >
+              <Button sx={inventoryShareStyles.buttonStyles(theme)}>
+                Tab 1
+              </Button>
+              <Button
+                sx={{
+                  ...inventoryShareStyles.buttonStyles(theme),
+                  color: "#3B7CED",
+                  backgroundColor: "#FFFFFF",
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    outline: "solid 1px #3B7CED",
+                  },
                 }}
               >
-                Swipe horizontally for a better view.
-              </Typography>
-            )}
-          </TableContainer>
+                Tab 2
+              </Button>
+            </Box>
+
+            <TableContainer
+              component={Paper}
+              style={{ margin: "0 auto", maxWidth: "100%" }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Product Name</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Expected Qty</TableCell>
+                    <TableCell>Qty Received</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow sx={{ backgroundColor: "#F2F2F2" }}>
+                    {/* Product Name */}
+                    <TableCell>
+                      <TextField
+                        value="Cement"
+                        placeholder="Enter a product name"
+                        variant="standard"
+                        InputProps={{
+                          disableUnderline: true,
+                          readOnly: true,
+                          style: { fontSize: "14px", color: "#A9B3BC" },
+                        }}
+                      />
+                    </TableCell>
+
+                    {/* Product Description */}
+                    <TableCell>
+                      <TextField
+                        value="Eluku Cement"
+                        placeholder="Enter a product description"
+                        variant="standard"
+                        InputProps={{
+                          disableUnderline: true,
+                          readOnly: true,
+                          style: { fontSize: "14px", color: "#A9B3BC" },
+                        }}
+                      />
+                    </TableCell>
+
+                    {/* Expected Quantity */}
+                    <TableCell>
+                      <TextField
+                        value="2"
+                        variant="standard"
+                        type="number"
+                        InputProps={{
+                          readOnly: true,
+                          disableUnderline: true,
+                          style: { fontSize: "14px", color: "#A9B3BC" },
+                        }}
+                      />
+                    </TableCell>
+
+                    {/* Received Quantity */}
+                    <TableCell>
+                      <TextField
+                        value={receivedQty}
+                        onChange={(e) => setReceivedQty(e.target.value)}
+                        variant="standard"
+                        type="number"
+                        InputProps={{
+                          readOnly: true,
+                          disableUnderline: true,
+                          style: { fontSize: "14px", color: "#A9B3BC" },
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+              {isSmallScreen && (
+                <Typography
+                  variant="caption"
+                  align="center"
+                  style={{
+                    display: "block",
+                    marginTop: "10px",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Swipe horizontally for a better view.
+                </Typography>
+              )}
+            </TableContainer>
+          </Box>
 
           <Box
             sx={{
@@ -294,4 +321,4 @@ const IncomingProductNoBackOrder = () => {
   );
 };
 
-export default IncomingProductNoBackOrder;
+export default IncomingProductBackOrderCreation;

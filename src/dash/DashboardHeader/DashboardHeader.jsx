@@ -52,7 +52,9 @@ const DashboardHeader = ({ title, menuItems }) => {
                       handleDropdownToggle(index);
                     }
                   }}
-                  className="navLink"
+                  className={`${
+                    item.subItems ? "navLinkWithArrow navLink" : "navLink"
+                  }`}
                 >
                   {item.label}
                   {item.subItems && (

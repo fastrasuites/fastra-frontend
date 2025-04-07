@@ -8,7 +8,7 @@ import Vend from "./Vendor/Vend";
 import Prod from "./Product/Prod";
 import PurchaseOrder from "./PurchOrder/PurchaseOrder";
 import ConfigurationSettings from "../Configurations/ConfigurationSettings";
-import Bg from "../../../src/image/bg.svg";
+// import Bg from "../../../src/image/bg.svg";
 
 export default function Purchase() {
   const { tenantData } = useTenant();
@@ -31,6 +31,7 @@ export default function Purchase() {
             component={PurchaseOrder}
           />
           <Route
+            exact
             path={`/${tenant_schema_name}/configurations`}
             component={ConfigurationSettings}
           />
@@ -44,7 +45,6 @@ export default function Purchase() {
 const Purcont = styled.div`
   min-height: 100vh;
   width: 100%;
-  background-image: url(${Bg});
   background-size: contain;
   margin: 0;
   padding: 0;

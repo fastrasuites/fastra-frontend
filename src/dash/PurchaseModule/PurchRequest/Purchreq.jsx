@@ -5,7 +5,7 @@ import SearchIcon from "../../../image/search.svg";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import ListView from "./Listview";
-import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
+// import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
 import { useLocation } from "react-router-dom";
 import draft from "../../../../src/image/icons/draft (1).png";
 import approved from "../../../../src/image/icons/approved.png";
@@ -29,10 +29,7 @@ export default function Purchreq() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
-  const {
-    fetchSinglePurchaseRequest,
-    fetchPurchaseRequests,
-  } = usePurchase();
+  const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
 
   useEffect(() => {
     const savedPR = localStorage.getItem("purchaseRequestData");
@@ -65,7 +62,6 @@ export default function Purchreq() {
     setIsModalOpen(false);
   };
 
-
   const toggleViewMode = (mode) => {
     setViewMode(mode);
   };
@@ -77,10 +73,9 @@ export default function Purchreq() {
 
   const handleFormClose = () => {
     setIsFormVisible(false);
+    setIsSubmitted(false);
     setSelectedItem(null);
   };
-
-
 
   // Filter quotations on the fly based on the search query
   const filteredPurchaseRequest = purchaseRequestData.filter((item) => {
@@ -135,17 +130,10 @@ export default function Purchreq() {
     setSelectedItem(item);
   };
 
-  // const handleCardClick = (item) => {
-  //   console.log("within handleCardClick ", item);
-  //   setSelectedItem(item);
-  //   setSelectedRequest(item); // Update selected request
-  //   setIsFormVisible(false);
-  // };
-
   const handleCardClick = async (item) => {
     console.log(item);
     // store the return response in a variable
-    const result = await fetchSinglePurchaseRequest(item);
+    const result = await fetchSinglePurchaseRequest(item.id);
     setSelectedItem({ result });
     // check the status of the response
     console.log(result.status);
@@ -346,11 +334,11 @@ export default function Purchreq() {
       </div>
 
       {/* controls the 'Purchase Module Wizard' following user clicking the Purchase card from the Home page */}
-      <PurchaseModuleWizard
+      {/* <PurchaseModuleWizard
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-      />
+      /> */}
     </div>
   );
 }

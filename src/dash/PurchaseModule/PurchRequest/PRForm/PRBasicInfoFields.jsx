@@ -21,7 +21,7 @@ const PRBasicInfoFields = ({
             </div>
           )}
           <div className="refDate">
-            <label>Date Opened</label>
+            <label>Date</label>
             <p>{formatDate(Date.now())}</p>
           </div>
           <div className="refDate">
@@ -56,25 +56,21 @@ const PRBasicInfoFields = ({
           <TextField
             type="text"
             value={formData.purpose}
-            onChange={(e) =>
-              handleInputChange("purpose", e.target.value)
-            }
+            onChange={(e) => handleInputChange("purpose", e.target.value)}
             sx={{ width: "100%" }}
             placeholder="Enter a purpose"
           />
         </div>
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
-            Vendor
+            Select Vendor
           </label>
           <Autocomplete
             disablePortal
             options={vendors}
             getOptionLabel={(option) => option.company_name || ""}
             isOptionEqualToValue={(option, value) => option.url === value.url}
-            onChange={(event, value) =>
-              handleInputChange("vendor", value?.url)
-            }
+            onChange={(event, value) => handleInputChange("vendor", value?.url)}
             sx={{ width: "100%" }}
             renderInput={(params) => <TextField {...params} />}
           />

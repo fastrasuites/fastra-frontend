@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import './Scrap.css';
-import InventoryHeader from '../InventoryHeader';
 
 const scraps = [
   { id: 'LAG001', adjType: 'Stock Level Update', locationName: 'Abc Store', adjDate: "15 Nov, 2024 - 12:08 PM", status: 'Draft' },
@@ -19,7 +18,6 @@ function Scrap() {
 
   return (
     <div className='scrap-contain'>
-      <InventoryHeader />
       <div style={{ padding: '20px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
