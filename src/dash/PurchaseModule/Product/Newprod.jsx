@@ -15,22 +15,9 @@ import { useTenant } from "../../../context/TenantContext";
 export default function Newprod({
   onClose,
   onSaveAndSubmit,
-  // fromPurchaseModuleWizard,
+  fromPurchaseModuleWizard,
 }) {
   const history = useHistory();
-  // const generateNewID = () => {
-  //   const lastID = localStorage.getItem("lastGeneratedID");
-  //   let newID = "PR00001";
-
-  //   if (lastID) {
-  //     const idNumber = parseInt(lastID.slice(2), 10) + 1;
-  //     newID = "PR" + idNumber.toString().padStart(5, "0");
-  //   }
-
-  //   localStorage.setItem("lastGeneratedID", newID);
-  //   return newID;
-  // };
-
   const [formState, setFormState] = useState({
     // id: generateNewID(),
     name: "",
@@ -52,7 +39,6 @@ export default function Newprod({
   const client = getTenantClient(tenant_schema_name, access_token);
 
   const handleChange = (e) => {
-    // PurchaseModuleWizard;
     const { name, value, productDesc, availableProductQty, totalQtyPurchased } =
       e.target;
 
@@ -83,10 +69,6 @@ export default function Newprod({
 
   const handleSaveAndSubmit = (formData) => {
     try {
-      // const existingProducts =
-      //   JSON.parse(localStorage.getItem("products")) || [];
-      // existingProducts.push(formData);
-      // localStorage.setItem("products", JSON.stringify(existingProducts));
       onSaveAndSubmit(formData);
     } catch (e) {
       if (e.name === "QuotaExceededError") {
@@ -113,23 +95,16 @@ export default function Newprod({
       formState.availableProductQty
     );
     formData.append("total_quantity_Purchased", formState.totalQtyPurchased);
-    // if (formState.image) {
-    //   formData.append("image", formState.image);
-    // }
-
-    // const formDataWithFormattedPrices = {
-    //   ...formState,
-    //   sp: formatCurrency(formState.sp),
-    //   cp: formatCurrency(formState.cp),
-    //   date: formState.date ? formState.date.toString() : new Date().toString(),
-    // };
     handleSaveAndSubmit(formData);
     onClose();
 
     // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
-    // if (fromPurchaseModuleWizard) {
-    //   history.push({ pathname: "/purchase", state: { step: 2 } });
-    // }
+    if (fromPurchaseModuleWizard) {
+      history.push({
+        pathname: `/${tenant_schema_name}/purchase`,
+        state: { step: 2 },
+      });
+    }
   };
 
   // Load saved units from localStorage
@@ -205,7 +180,7 @@ export default function Newprod({
 
   return (
     <div className="newp-contain ">
-      <PurchaseHeader />
+      {/* <PurchaseHeader /> */}
       <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
         <div className="newp1">
           <div className="newp2">
@@ -216,13 +191,6 @@ export default function Newprod({
                 <img src={autosave} alt="Autosaved" />
               </div>
             </div>
-            {/* <div className="newp2b">
-            <div className="newpbnav">
-              <FaCaretLeft className="nr" />
-              <div className="sep"></div>
-              <FaCaretRight className="nr" />
-            </div>
-          </div> */}
           </div>
           {/* form for create/add new products starts here */}
           <div className="newp3">
@@ -365,21 +333,6 @@ export default function Newprod({
                       />
                     )}
                   />
-                  {/* <Select
-                  placeholder="Select your Unit of Measure"
-                  options={unitOptions}
-                  name="unt"
-                  styles={customStyles}
-                  value={unitOptions.find(
-                    (option) => option.value === formState.unt
-                  )}
-                  onChange={(selectedOption) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      unt: selectedOption ? selectedOption.value : "",
-                    }))
-                  }
-                /> */}
                 </Grid>
               </Grid>
               <hr
@@ -387,58 +340,9 @@ export default function Newprod({
               />
 
               {/* Tobe deleted later */}
-              {/* <div className="newp3ba">
-                <label>Type</label>
-                <input
-                  type="text"
-                  name="type"
-                  placeholder="Goods"
-                  className="newp3cb"
-                  value={formState.type}
-                  onChange={handleChange}
-                />
-              </div> */}
-              {/* </div> */}
-              {/* <div className="newp3c"> */}
 
-              {/* To be deactivated: form bottom for cost and selling price  */}
-              {/* <div className="newp3a2">
-              <p style={{ fontSize: "20px" }}>Pricing</p>
-            </div>
-            <div className="newp3d">
-              <div className="newp3da">
-                <label>Cost Price</label>
-                <input
-                  type="text"
-                  name="cp"
-                  placeholder="₦0000"
-                  className="newp3cb no-spin"
-                  value={formState.cp}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="newp3da">
-                <label>Selling Price</label>
-                <input
-                  type="text"
-                  name="sp"
-                  placeholder="₦0000"
-                  className="newp3cb no-spin"
-                  value={formState.sp}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>*/}
               <Button type="submit">Create Product</Button>
-              {/* <div className="newp3e">
-              <button
-                type="submit"
-                className="newp3btn"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                Create Product
-              </button>
-            </div> */}
+
               {error && <p className="error-message">{error}</p>}
             </form>
           </div>

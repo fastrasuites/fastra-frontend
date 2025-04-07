@@ -6,8 +6,10 @@ import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 import "./sethead.css";
 import { MdSettingsApplications } from "react-icons/md";
 import { RiArrowDropDownLine } from "react-icons/ri";
+import { useTenant } from "../../context/TenantContext";
 
 export default function SetHead() {
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState(0);
   const [showMenu, setShowMenu] = useState(0);
@@ -27,14 +29,14 @@ export default function SetHead() {
   };
 
   // responsiveness menu toggle
-    const [isMenuVisible, setIsMenuVisible] = useState(false);
-  
-    const handleMenuToggle = () => {
-      setIsMenuVisible(!isMenuVisible); // Toggle the visibility
-    };
-    const handleMenuItemClick = () => {
-      setIsMenuVisible(false); // Collapse the menu when an item is clicked
-    };
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+
+  const handleMenuToggle = () => {
+    setIsMenuVisible(!isMenuVisible); // Toggle the visibility
+  };
+  const handleMenuItemClick = () => {
+    setIsMenuVisible(false); // Collapse the menu when an item is clicked
+  };
 
   return (
     <div className="settings-header">
@@ -45,50 +47,57 @@ export default function SetHead() {
             onClick={handleOpenSidebar}
             style={{ cursor: "pointer" }}
           />
-          <p className="settings-header__title" onClick={handleMenuToggle}> 
-            <MdSettingsApplications  className="menu" /> 
-            Settings 
-            <RiArrowDropDownLine className="menu" style={{fontSize: "27px"}} /> </p>
+          <p className="settings-header__title" onClick={handleMenuToggle}>
+            <MdSettingsApplications className="menu" />
+            Settings
+            <RiArrowDropDownLine
+              className="menu"
+              style={{ fontSize: "27px" }}
+            />{" "}
+          </p>
         </li>
-        <li className={`settings-header__navigation ${isMenuVisible ? "show" : ""}`}>
+        <li
+          className={`settings-header__navigation ${
+            isMenuVisible ? "show" : ""
+          }`}
+        >
           <div className="settings-header__nav-links">
             <NavLink
               exact
-              to="/apk"
+              to={`/${tenant_schema_name}/apk`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
-              onClick={handleMenuItemClick }
+              onClick={handleMenuItemClick}
             >
               Applications
             </NavLink>
             <NavLink
               exact
-              to="/company"
+              to={`/${tenant_schema_name}/company`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
-              onClick={handleMenuItemClick }
+              onClick={handleMenuItemClick}
             >
               Company
             </NavLink>
             <NavLink
               exact
-              to="/user"
+              to={`/${tenant_schema_name}/user`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
-              onClick={handleMenuItemClick }
+              onClick={handleMenuItemClick}
             >
               Users
             </NavLink>
             <NavLink
               exact
-              to="/accessgroups"
+              to={`/${tenant_schema_name}/accessgroups`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
-              onClick={handleMenuItemClick }
+              onClick={handleMenuItemClick}
             >
               Access Groups
             </NavLink>
-            
           </div>
         </li>
         <li className="settings-header__notifications">
@@ -100,7 +109,7 @@ export default function SetHead() {
               </span>
             )}
           </div>
-        </li> 
+        </li>
         <ProfileMenuDropdown />
       </ul>
       <Sidebar

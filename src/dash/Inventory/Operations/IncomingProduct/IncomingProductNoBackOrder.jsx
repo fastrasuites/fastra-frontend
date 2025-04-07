@@ -20,11 +20,11 @@ import {
   MenuItem,
 } from "@mui/material";
 import autosave from "../../../image/autosave-text.svg";
-import inventoryShareStyles from "../inventorySharedStyles.js";
+import inventoryShareStyles from "../../inventorySharedStyles.js";
 
-const IncomingProductLessOrMore = () => {
+const IncomingProductNoBackOrder = () => {
   const theme = useTheme();
-  const [receivedQty, setReceivedQty] = useState(0);
+  const [receivedQty, setReceivedQty] = useState(2);
   const isSmallScreen = useMediaQuery("(max-width:600px)");
   return (
     <>
@@ -56,19 +56,29 @@ const IncomingProductLessOrMore = () => {
             <Typography sx={inventoryShareStyles.formHeaderTitle(theme)}>
               Product Information
             </Typography>
-            <Button
+            <Box
               sx={{
-                ...inventoryShareStyles.buttonStyles(theme),
-                color: "#3B7CED",
-                backgroundColor: "#FFFFFF",
-                "&:hover": {
-                  backgroundColor: "transparent",
-                  outline: "solid 1px #3B7CED",
-                },
+                ...inventoryShareStyles.WidthFullFlexSpaceBetween(theme),
+                width: "auto",
               }}
             >
-              Cancel
-            </Button>
+              <Button
+                sx={{
+                  ...inventoryShareStyles.buttonStyles(theme),
+                  color: "#3B7CED",
+                  backgroundColor: "#FFFFFF",
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    outline: "solid 1px #3B7CED",
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+              <Button sx={inventoryShareStyles.buttonStyles(theme)}>
+                Edit
+              </Button>
+            </Box>
           </Box>
           {/* form detail - first section  */}
 
@@ -101,12 +111,6 @@ const IncomingProductLessOrMore = () => {
                   }}
                   sx={{
                     ...inventoryShareStyles.textFieldStyles(),
-                    "& .MuiInputBase-input": {
-                      color: "#E43D2B",
-                      textDecoration: "underline",
-                      textUnderlineOffset: "3px",
-                      fontStyle: "italic",
-                    },
                   }}
                 />
               </FormControl>
@@ -114,7 +118,7 @@ const IncomingProductLessOrMore = () => {
             <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
                 <TextField
-                  label="Receipt Date"
+                  label="Date Created"
                   value="4 Apr 2024 - 4.48PM"
                   variant="standard"
                   InputProps={{
@@ -160,8 +164,31 @@ const IncomingProductLessOrMore = () => {
               </FormControl>
             </Grid>
           </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
+              <FormControl fullWidth>
+                <TextField
+                  label="Back Order of:"
+                  value="LAGIN0001"
+                  variant="standard"
+                  InputProps={{
+                    readOnly: true,
+                    disableUnderline: true,
+                  }}
+                  sx={{
+                    ...inventoryShareStyles.textFieldStyles(),
+                    "& .MuiInputBase-input": {
+                      color: "#E43D2B",
+                      textDecoration: "underline",
+                      textUnderlineOffset: "3px",
+                      fontStyle: "italic",
+                    },
+                  }}
+                />
+              </FormControl>
+            </Grid>
+          </Grid>
 
-          <Divider />
           <Divider />
 
           <TableContainer
@@ -172,14 +199,14 @@ const IncomingProductLessOrMore = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Product Name</TableCell>
+                  <TableCell>Description</TableCell>
                   <TableCell>Expected Qty</TableCell>
-                  <TableCell>Unit of Measure</TableCell>
-                  <TableCell>Received Qty</TableCell>
+                  <TableCell>Qty Received</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 <TableRow sx={{ backgroundColor: "#F2F2F2" }}>
-                  {/* Editable Product Name */}
+                  {/* Product Name */}
                   <TableCell>
                     <TextField
                       value="Cement"
@@ -193,10 +220,24 @@ const IncomingProductLessOrMore = () => {
                     />
                   </TableCell>
 
-                  {/* Editable Expected Quantity */}
+                  {/* Product Description */}
                   <TableCell>
                     <TextField
-                      value="4"
+                      value="Eluku Cement"
+                      placeholder="Enter a product description"
+                      variant="standard"
+                      InputProps={{
+                        disableUnderline: true,
+                        readOnly: true,
+                        style: { fontSize: "14px", color: "#A9B3BC" },
+                      }}
+                    />
+                  </TableCell>
+
+                  {/* Expected Quantity */}
+                  <TableCell>
+                    <TextField
+                      value="2"
                       variant="standard"
                       type="number"
                       InputProps={{
@@ -207,23 +248,7 @@ const IncomingProductLessOrMore = () => {
                     />
                   </TableCell>
 
-                  {/* Non-editable Unit of Measure (Dropdown) */}
-                  <TableCell>
-                    <Select
-                      label="kg"
-                      value="Kg"
-                      variant="standard"
-                      disableUnderline
-                      disabled
-                      InputProps={{
-                        style: { fontSize: "14px", color: "#A9B3BC" },
-                      }}
-                    >
-                      <MenuItem value="Kg">Kg</MenuItem>
-                    </Select>
-                  </TableCell>
-
-                  {/* Editable Received Quantity */}
+                  {/* Received Quantity */}
                   <TableCell>
                     <TextField
                       value={receivedQty}
@@ -231,6 +256,8 @@ const IncomingProductLessOrMore = () => {
                       variant="standard"
                       type="number"
                       InputProps={{
+                        readOnly: true,
+                        disableUnderline: true,
                         style: { fontSize: "14px", color: "#A9B3BC" },
                       }}
                     />
@@ -259,19 +286,6 @@ const IncomingProductLessOrMore = () => {
               justifyContent: "flex-end",
             }}
           >
-            <Button
-              sx={{
-                ...inventoryShareStyles.buttonStyles(theme),
-                color: "#3B7CED",
-                backgroundColor: "#FFFFFF",
-                "&:hover": {
-                  backgroundColor: "transparent",
-                  outline: "solid 1px #3B7CED",
-                },
-              }}
-            >
-              Return
-            </Button>
             <Button sx={inventoryShareStyles.buttonStyles(theme)}>Done</Button>
           </Box>
         </Box>
@@ -280,4 +294,4 @@ const IncomingProductLessOrMore = () => {
   );
 };
 
-export default IncomingProductLessOrMore;
+export default IncomingProductNoBackOrder;

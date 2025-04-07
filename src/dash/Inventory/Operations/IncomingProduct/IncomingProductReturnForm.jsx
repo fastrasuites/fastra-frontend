@@ -15,16 +15,16 @@ import {
   TableRow,
   Paper,
   TableCell,
-  Select,
   useMediaQuery,
-  MenuItem,
 } from "@mui/material";
 import autosave from "../../../image/autosave-text.svg";
-import inventoryShareStyles from "../inventorySharedStyles.js";
+import inventoryShareStyles from "../../inventorySharedStyles.js";
 
-const IncomingProduct = () => {
+const IncomingProductReturnForm = () => {
   const theme = useTheme();
   const [receivedQty, setReceivedQty] = useState(0);
+  const [productName, setProductName] = useState("");
+  const [reasonForReturn, setReasonForReturn] = useState("");
   const isSmallScreen = useMediaQuery("(max-width:600px)");
   return (
     <>
@@ -37,10 +37,9 @@ const IncomingProduct = () => {
           gap: "72px",
         }}
       >
-        <Button sx={inventoryShareStyles.buttonStyles(theme)}>
-          {" "}
-          New Incoming Product{" "}
-        </Button>
+        <Typography sx={inventoryShareStyles.pageBoldTitle(theme)}>
+          Return
+        </Typography>
 
         <img src={autosave} alt="autosave" />
       </Box>
@@ -56,29 +55,20 @@ const IncomingProduct = () => {
             <Typography sx={inventoryShareStyles.formHeaderTitle(theme)}>
               Product Information
             </Typography>
-            <Box
+
+            <Button
               sx={{
-                ...inventoryShareStyles.WidthFullFlexSpaceBetween(theme),
-                width: "auto",
+                ...inventoryShareStyles.buttonStyles(theme),
+                color: "#3B7CED",
+                backgroundColor: "#FFFFFF",
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  outline: "solid 1px #3B7CED",
+                },
               }}
             >
-              <Button
-                sx={{
-                  ...inventoryShareStyles.buttonStyles(theme),
-                  color: "#3B7CED",
-                  backgroundColor: "#FFFFFF",
-                  "&:hover": {
-                    backgroundColor: "transparent",
-                    outline: "solid 1px #3B7CED",
-                  },
-                }}
-              >
-                Cancel
-              </Button>
-              <Button sx={inventoryShareStyles.buttonStyles(theme)}>
-                Edit
-              </Button>
-            </Box>
+              Cancel
+            </Button>
           </Box>
           {/* form detail - first section  */}
 
@@ -86,8 +76,8 @@ const IncomingProduct = () => {
             <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
                 <TextField
-                  label="Receipt Type"
-                  value="Good Receipt"
+                  label="Order Unique ID"
+                  value="LAGOUT0002"
                   variant="standard"
                   InputProps={{
                     readOnly: true,
@@ -102,8 +92,8 @@ const IncomingProduct = () => {
             <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
                 <TextField
-                  label="ID"
-                  value="LAGIN0001"
+                  label="Source Document"
+                  value="LAGOUT0001"
                   variant="standard"
                   InputProps={{
                     readOnly: true,
@@ -121,10 +111,11 @@ const IncomingProduct = () => {
                 />
               </FormControl>
             </Grid>
+
             <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
                 <TextField
-                  label="Receipt Date"
+                  label="Date Created"
                   value="4 Apr 2024 - 4.48PM"
                   variant="standard"
                   InputProps={{
@@ -137,32 +128,23 @@ const IncomingProduct = () => {
                 />
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
-              <FormControl fullWidth>
-                <TextField
-                  label="Location"
-                  value="Xdx Stores"
-                  variant="standard"
-                  InputProps={{
-                    readOnly: true,
-                    disableUnderline: true,
-                  }}
-                  sx={{
-                    ...inventoryShareStyles.textFieldStyles(),
-                  }}
-                />
-              </FormControl>
-            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3} lg={3} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
+                <Typography>Reason for return</Typography>
                 <TextField
-                  label="Name of Supplier"
-                  value="Abc Stores"
-                  variant="standard"
-                  InputProps={{
-                    readOnly: true,
-                    disableUnderline: true,
-                  }}
+                  // label="Reason for return"
+                  value={reasonForReturn}
+                  onChange={(e) => setReasonForReturn(e.target.value)}
+                  placeholder="Type in reasons for return"
+                  variant="outlined"
+                  InputProps={
+                    {
+                      // readOnly: true,
+                      // disableUnderline: true,
+                    }
+                  }
                   sx={{
                     ...inventoryShareStyles.textFieldStyles(),
                   }}
@@ -171,7 +153,6 @@ const IncomingProduct = () => {
             </Grid>
           </Grid>
 
-          <Divider />
           <Divider />
 
           <TableContainer
@@ -182,9 +163,9 @@ const IncomingProduct = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Product Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Expected Qty</TableCell>
-                  <TableCell>Qty Received</TableCell>
+                  <TableCell>Initial Quantity</TableCell>
+                  <TableCell>Unit of Measure</TableCell>
+                  <TableCell>Returned Quantity</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -192,12 +173,13 @@ const IncomingProduct = () => {
                   {/* Product Name */}
                   <TableCell>
                     <TextField
-                      value="Cement"
+                      value={productName}
+                      onChange={(e) => setProductName(e.target.value)}
                       placeholder="Enter a product name"
                       variant="standard"
                       InputProps={{
-                        disableUnderline: true,
-                        readOnly: true,
+                        // disableUnderline: true,
+                        // readOnly: true,
                         style: { fontSize: "14px", color: "#A9B3BC" },
                       }}
                     />
@@ -206,8 +188,8 @@ const IncomingProduct = () => {
                   {/* Product Description */}
                   <TableCell>
                     <TextField
-                      value="Eluku Cement"
-                      placeholder="Enter a product description"
+                      value="4"
+                      placeholder=""
                       variant="standard"
                       InputProps={{
                         disableUnderline: true,
@@ -220,9 +202,8 @@ const IncomingProduct = () => {
                   {/* Expected Quantity */}
                   <TableCell>
                     <TextField
-                      value="4"
+                      value="Kg"
                       variant="standard"
-                      type="number"
                       InputProps={{
                         readOnly: true,
                         disableUnderline: true,
@@ -239,8 +220,8 @@ const IncomingProduct = () => {
                       variant="standard"
                       type="number"
                       InputProps={{
-                        readOnly: true,
-                        disableUnderline: true,
+                        // readOnly: true,
+                        // disableUnderline: true,
                         style: { fontSize: "14px", color: "#A9B3BC" },
                       }}
                     />
@@ -269,7 +250,7 @@ const IncomingProduct = () => {
               justifyContent: "flex-end",
             }}
           >
-            <Button sx={inventoryShareStyles.buttonStyles(theme)}>Done</Button>
+            <Button sx={inventoryShareStyles.buttonStyles(theme)}>Send</Button>
           </Box>
         </Box>
       </form>
@@ -277,4 +258,4 @@ const IncomingProduct = () => {
   );
 };
 
-export default IncomingProduct;
+export default IncomingProductReturnForm;

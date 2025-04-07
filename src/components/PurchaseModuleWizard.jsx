@@ -1,17 +1,19 @@
 import React from "react";
+import { useTenant } from "../context/TenantContext";
 import { Modal, Box } from "@mui/material";
 import { useHistory } from "react-router-dom";
 import "./PurchaseModuleWizard.css";
 
 const PurchaseModuleWizard = ({ open, onClose, step }) => {
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
 
   const handleAddProductandVendor = () => {
     onClose();
     if (step === 1) {
-      history.push("/product", { openForm: true });
+      history.push(`/${tenant_schema_name}/product`, { openForm: true });
     } else if (step === 2) {
-      history.push("/vendor", { openForm: true });
+      history.push(`/${tenant_schema_name}/vendor`, { openForm: true });
     } else {
       alert(" Humm! The last stage is not ready. Please use the skip button.");
     }
@@ -32,8 +34,11 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
 
           <div className="numbered-circle numbered-circle-one">{step}</div>
 
-          <div className="numbered-circle numbered-circle-two">
-            {step + 1 <= 2 ? step + 1 : ""}
+          <div className="numbered-circle numbered-circle-2">
+            {step === 1 ? step + 1 : step === 2 ? step + 1 : ""}
+          </div>
+          <div className="numbered-circle numbered-circle-three">
+            {step === 1 ? step + 2 : ""}
           </div>
           {/* Step 1  -------------------------------- */}
           <div className="modal-main-content">
@@ -43,15 +48,20 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 ? "Step 1: Add Products"
                 : step === 2
                 ? "Step 2: Add Vendors"
-                : ""}
+                : step === 3
+                ? "Step 3: Start PR Creation!"
+                : "Successful!"}
             </p>
             <p className="para-description">
               {step === 1
                 ? "Add product will ease your journey using this platform."
                 : step === 2
                 ? "Awesome! just few step to start having an Amazing purchase Module Experience"
-                : ""}
+                : step === 3
+                ? "Now at the last step, Enjoy seamless Experience Here."
+                : "You have successfully completed the wizard!"}
             </p>
+
             <button
               onClick={handleAddProductandVendor}
               className="btn-goto-steps"
@@ -61,35 +71,49 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 : step === 2
                 ? "Add Vendors"
                 : step === 3
-                ? "Start Project Creation!"
+                ? "Start PR Creation!"
                 : "You are done"}
             </button>
 
             {/* End Step 1 ------------------------------ */}
 
-            {/* Step 2 ---------------------------------- */}
-
-            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
+            {/* 2nd section ---------------------------------- */}
+            <p className="para-headline">3 SIMPLE STEPS</p>
             <p className="heading-text">
               {step === 1
                 ? "Step 2: Add Vendors"
                 : step === 2
-                ? "Registration Successful"
+                ? "Step 3: Start PR Creation"
                 : ""}
             </p>
             <p className="para-description">
               {step === 1
                 ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
                 : step === 2
+                ? "The next step, Enjoy seamless Experience Here"
+                : ""}
+            </p>
+            {/* End step 2 ----------------------------------------- */}
+
+            {/* Step 3 start here ---------------------------------- */}
+
+            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
+            <p className="heading-text">
+              {step === 1 ? "Step 3: Start PR Creation!" : step === 2 ? "" : ""}
+            </p>
+            <p className="para-description">
+              {step === 1
+                ? "Now at the last step, Enjoy seamless Experience Here"
+                : step === 2
                 ? ""
                 : ""}
             </p>
           </div>
-          {/* End step 2 ------------------------------ */}
+          {/* End step 3 ------------------------------ */}
         </Box>
       </Box>
     </Modal>
   );
 };
 
-// export default PurchaseModuleWizard;
+export default PurchaseModuleWizard;

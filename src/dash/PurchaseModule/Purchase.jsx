@@ -31,6 +31,7 @@ export default function Purchase() {
             component={PurchaseOrder}
           />
           <Route
+            exact
             path={`/${tenant_schema_name}/configurations`}
             component={ConfigurationSettings}
           />

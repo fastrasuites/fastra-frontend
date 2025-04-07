@@ -40,8 +40,11 @@
 .numbered-circle-one {
   top: 90px;
 }
-.numbered-circle-two {
-  bottom: 10px;
+.numbered-circle-2 {
+  bottom: 110px;
+}
+.numbered-circle-three {
+  bottom: 5px;
 }
 .btn-skip {
   position: absolute;
@@ -116,8 +119,11 @@
 }
 
 @media screen and (max-width: 53em) {
-  .numbered-circle-two {
-    bottom: 5px;
+  .numbered-circle-2 {
+    bottom: 87px;
+  }
+  .numbered-circle-three {
+    bottom: -10px;
   }
   .modal-main-content {
     margin-left: 20%;
@@ -163,8 +169,11 @@
   .numbered-circle-one {
     top: 70px;
   }
-  .numbered-circle-two {
-    bottom: 20px;
+  .numbered-circle-2 {
+    bottom: 85px;
+  }
+  .numbered-circle-three {
+    bottom: 5px;
   }
   .btn-skip {
     top: 8px;

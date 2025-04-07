@@ -1,17 +1,20 @@
 import React from "react";
+import { useTenant } from "../context/TenantContext";
 import { Modal, Box, Typography, Button } from "@mui/material";
 import { useHistory } from "react-router-dom";
-import "./stepModal.css";
+// import "./stepModal.css";
+import "./PurchaseModuleWizard.css";
 
-const StepModal = ({ open, onClose, step, onNextStep }) => {
+const StepModal = ({ open, onClose, step }) => {
   const history = useHistory();
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
   const handleSetUpCompany = () => {
     onClose();
     if (step === 1) {
-      history.push("/company", { openForm: true });
+      history.push(`/${tenant_schema_name}/company`, { openForm: true });
     } else if (step === 2) {
-      history.push("/user", { openForm: true });
+      history.push(`/${tenant_schema_name}/user`, { openForm: true });
     } else {
       alert(" Humm! The last stage is not ready. Please use the skip button.");
     }
@@ -28,8 +31,11 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
 
           <div className="numbered-circle numbered-circle-one">{step}</div>
 
-          <div className="numbered-circle numbered-circle-two">
-            {step + 1 <= 3 ? step + 1 : ""}
+          <div className="numbered-circle numbered-circle-2">
+            {step === 1 ? step + 1 : step === 2 ? step + 1 : ""}
+          </div>
+          <div className="numbered-circle numbered-circle-three">
+            {step === 1 ? step + 2 : ""}
           </div>
           {/* Step 1  -------------------------------- */}
           <div className="modal-main-content">
@@ -50,7 +56,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
                 : step === 3
                 ? "Now at the last step, Enjoy seamless Experience Here."
-                : ""}
+                : "You have successfully completed the wizard!"}
             </p>
             <button onClick={handleSetUpCompany} className="btn-goto-steps">
               {step === 1
@@ -78,7 +84,25 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               {step === 1
                 ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
                 : step === 2
-                ? "Now at the last step, Enjoy seamless Experience Here."
+                ? "The next step, Enjoy seamless Experience Here."
+                : ""}
+            </p>
+
+            {/* Step 3 start here ---------------------------------- */}
+
+            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
+            <p className="heading-text">
+              {step === 1
+                ? "Step 3: Start Project Creation!"
+                : step === 2
+                ? ""
+                : ""}
+            </p>
+            <p className="para-description">
+              {step === 1
+                ? "Now at the last step, Enjoy seamless Experience Here"
+                : step === 2
+                ? ""
                 : ""}
             </p>
           </div>

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import InventoryHeader from "../InventoryHeader";
 import { Box, Button, useTheme } from "@mui/material";
-import inventoryShareStyle from "../inventorySharedStyles";
+import inventoryShareStyle from "../../inventorySharedStyles";
 import MaterialConsumptionListview from "./MaterialConsumptionListview";
 import NewMaterialConsumptionForm from "./NewMaterialConsumptionForm";
 
@@ -18,7 +17,6 @@ const MaterialConsumption = () => {
   };
   return (
     <div>
-      <InventoryHeader />
       <Box sx={inventoryShareStyle.operationWrapper(theme)}>
         {showNewMaterialConsumptionForm ? (
           <NewMaterialConsumptionForm

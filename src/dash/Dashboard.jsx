@@ -111,12 +111,11 @@ export default function Dashboard() {
       </div>
 
       {/* controls the Step modal following user logged in to set up company account */}
-      {/* <StepModal
+      <StepModal
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-        onNextStep={handleNextStep}
-      /> */}
+      />
     </div>
   );
 }

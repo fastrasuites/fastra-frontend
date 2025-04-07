@@ -1,3 +1,4 @@
+// InventoryHeader.js
 import React from "react";
 import DashboardHeader from "../DashboardHeader/DashboardHeader";
 import { useTenant } from "../../context/TenantContext";
@@ -10,7 +11,10 @@ const InventoryHeader = () => {
       label: "Operations",
       link: `/${tenant_schema_name}/inventory/operations`,
       subItems: [
-        { label: "Incoming Product", link: `/${tenant_schema_name}/inventory` },
+        {
+          label: "Incoming Product",
+          link: `/${tenant_schema_name}/inventory/operations`,
+        },
         {
           label: "Delivery Order",
           link: `/${tenant_schema_name}/delivery-order`,
@@ -21,7 +25,7 @@ const InventoryHeader = () => {
         },
         {
           label: "Material Consumption",
-          link: `/${tenant_schema_name}/material-consumption`,
+          link: `/${tenant_schema_name}/inventory/operations/material-consumption`,
         },
       ],
     },
@@ -31,16 +35,25 @@ const InventoryHeader = () => {
       subItems: [
         {
           label: "Stock Adjustment",
-          link: `/${tenant_schema_name}/stock-adjustment`,
+          link: `/${tenant_schema_name}/inventory/stock/stock-adjustment`,
         },
-        { label: "Stock Moves", link: `/${tenant_schema_name}/stock-moves` },
-        { label: "Scrap", link: `/${tenant_schema_name}/scrap` },
+        {
+          label: "Stock Moves",
+          link: `/${tenant_schema_name}/inventory/stock/stock-moves`,
+        },
+        {
+          label: "Scrap",
+          link: `/${tenant_schema_name}/inventory/stock/scrap`,
+        },
       ],
     },
-    { label: "Location", link: `/${tenant_schema_name}/location` },
+    {
+      label: "Location",
+      link: `/${tenant_schema_name}/inventory/location`,
+    },
     {
       label: "Configuration",
-      link: `/${tenant_schema_name}/location-configuration`,
+      link: `/${tenant_schema_name}/inventory/location-configuration`,
     },
   ];
 
@@ -48,7 +61,7 @@ const InventoryHeader = () => {
     <div>
       {/* Inventory Header Component */}
       <DashboardHeader title="Inventory" menuItems={menuItems} />
-      {/* Other Inventory Page Content */}
+      {/* Additional header content can be added here */}
     </div>
   );
 };
