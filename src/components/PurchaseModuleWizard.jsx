@@ -34,8 +34,11 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
 
           <div className="numbered-circle numbered-circle-one">{step}</div>
 
-          <div className="numbered-circle numbered-circle-two">
-            {step + 1 <= 2 ? step + 1 : ""}
+          <div className="numbered-circle numbered-circle-2">
+            {step === 1 ? step + 1 : step === 2 ? step + 1 : ""}
+          </div>
+          <div className="numbered-circle numbered-circle-three">
+            {step === 1 ? step + 2 : ""}
           </div>
           {/* Step 1  -------------------------------- */}
           <div className="modal-main-content">
@@ -45,15 +48,20 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 ? "Step 1: Add Products"
                 : step === 2
                 ? "Step 2: Add Vendors"
-                : ""}
+                : step === 3
+                ? "Step 3: Start Project Creation!"
+                : "Successful!"}
             </p>
             <p className="para-description">
               {step === 1
                 ? "Add product will ease your journey using this platform."
                 : step === 2
                 ? "Awesome! just few step to start having an Amazing purchase Module Experience"
-                : ""}
+                : step === 3
+                ? "Proceed to last step - create project"
+                : "You have successfully completed the wizard!"}
             </p>
+
             <button
               onClick={handleAddProductandVendor}
               className="btn-goto-steps"
@@ -64,26 +72,24 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 ? "Add Vendors"
                 : step === 3
                 ? "Start Project Creation!"
-                : "You are done"}
+                : ""}
             </button>
 
             {/* End Step 1 ------------------------------ */}
 
-            {/* Step 2 ---------------------------------- */}
-
-            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
+            {/* 2nd section ---------------------------------- */}
             <p className="heading-text">
               {step === 1
                 ? "Step 2: Add Vendors"
                 : step === 2
-                ? "Registration Successful"
+                ? "Step 3: Start Project Creation!"
                 : ""}
             </p>
             <p className="para-description">
               {step === 1
                 ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
                 : step === 2
-                ? ""
+                ? "Project creation stage"
                 : ""}
             </p>
             {/* End step 2 ----------------------------------------- */}
@@ -93,17 +99,13 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
             {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
             <p className="heading-text">
               {step === 1
-                ? "Step 2: Add Vendors"
-                : step === 2
-                ? "Registration Successful"
-                : ""}
-            </p>
-            <p className="para-description">
-              {step === 1
-                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
+                ? "Step 3: Start Project Creation!"
                 : step === 2
                 ? ""
                 : ""}
+            </p>
+            <p className="para-description">
+              {step === 1 ? "The final step" : step === 2 ? "" : ""}
             </p>
           </div>
           {/* End step 3 ------------------------------ */}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import autosave from "../../../image/autosave.svg";
 import "./Newvendor.css";
@@ -6,8 +7,15 @@ import vendorLogo from "../../../image/vendor-logo.svg";
 import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
 import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
+import { useTenant } from "../../../context/TenantContext";
 
-export default function Newvendor({ onClose, onSaveAndSubmit }) {
+export default function Newvendor({
+  onClose,
+  fromPurchaseModuleWizard,
+  onSaveAndSubmit,
+}) {
+  const history = useHistory();
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const { createVendor } = usePurchase();
   const [showForm] = useState(true);
   const [formState, setFormState] = useState({
@@ -46,6 +54,14 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
 
     createVendor(formData);
     onClose();
+
+    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
+    if (fromPurchaseModuleWizard) {
+      history.push({
+        pathname: `/${tenant_schema_name}/purchase`,
+        state: { step: 3 },
+      });
+    }
   };
 
   return (
