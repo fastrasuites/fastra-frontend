@@ -180,7 +180,7 @@ export default function Newprod({
 
   return (
     <div className="newp-contain ">
-      <PurchaseHeader />
+      {/* <PurchaseHeader /> */}
       <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
         <div className="newp1">
           <div className="newp2">

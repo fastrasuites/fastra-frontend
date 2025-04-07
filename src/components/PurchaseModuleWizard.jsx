@@ -49,7 +49,7 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 : step === 2
                 ? "Step 2: Add Vendors"
                 : step === 3
-                ? "Step 3: Start Project Creation!"
+                ? "Step 3: Start PR Creation!"
                 : "Successful!"}
             </p>
             <p className="para-description">
@@ -58,7 +58,7 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 : step === 2
                 ? "Awesome! just few step to start having an Amazing purchase Module Experience"
                 : step === 3
-                ? "Proceed to last step - create project"
+                ? "Now at the last step, Enjoy seamless Experience Here."
                 : "You have successfully completed the wizard!"}
             </p>
 
@@ -71,25 +71,26 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                 : step === 2
                 ? "Add Vendors"
                 : step === 3
-                ? "Start Project Creation!"
-                : ""}
+                ? "Start PR Creation!"
+                : "You are done"}
             </button>
 
             {/* End Step 1 ------------------------------ */}
 
             {/* 2nd section ---------------------------------- */}
+            <p className="para-headline">3 SIMPLE STEPS</p>
             <p className="heading-text">
               {step === 1
                 ? "Step 2: Add Vendors"
                 : step === 2
-                ? "Step 3: Start Project Creation!"
+                ? "Step 3: Start PR Creation"
                 : ""}
             </p>
             <p className="para-description">
               {step === 1
                 ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
                 : step === 2
-                ? "Project creation stage"
+                ? "The next step, Enjoy seamless Experience Here"
                 : ""}
             </p>
             {/* End step 2 ----------------------------------------- */}
@@ -98,14 +99,14 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
 
             {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
             <p className="heading-text">
+              {step === 1 ? "Step 3: Start PR Creation!" : step === 2 ? "" : ""}
+            </p>
+            <p className="para-description">
               {step === 1
-                ? "Step 3: Start Project Creation!"
+                ? "Now at the last step, Enjoy seamless Experience Here"
                 : step === 2
                 ? ""
                 : ""}
-            </p>
-            <p className="para-description">
-              {step === 1 ? "The final step" : step === 2 ? "" : ""}
             </p>
           </div>
           {/* End step 3 ------------------------------ */}
