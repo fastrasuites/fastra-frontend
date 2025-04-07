@@ -76,7 +76,6 @@ const StepModal = ({ open, onClose, step }) => {
 
             {/* Step 2 ---------------------------------- */}
 
-            <p className="para-headline">3 SIMPLE STEPS</p>
             <p className="heading-text">
               {step === 1
                 ? "Step 2: User Creation"

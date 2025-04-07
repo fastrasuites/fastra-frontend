@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
-import productLogo from "../../../image/product-logo.svg";
 import "./Newprod.css";
 import { useHistory } from "react-router-dom";
 import { Grid, TextField } from "@mui/material";
@@ -10,7 +8,6 @@ import styled from "styled-components";
 import PurchaseHeader from "../PurchaseHeader";
 import { getTenantClient } from "../../../services/apiService";
 import { useTenant } from "../../../context/TenantContext";
-// import Select from "react-select";
 
 export default function Newprod({
   onClose,
@@ -49,22 +46,6 @@ export default function Newprod({
       [availableProductQty]: value,
       [totalQtyPurchased]: value,
     }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setFormState((prev) => ({
-        ...prev,
-        image: imageUrl,
-      }));
-    }
-  };
-
-  const formatCurrency = (value) => {
-    if (!value) return "";
-    return `₦${value}`;
   };
 
   const handleSaveAndSubmit = (formData) => {
@@ -180,7 +161,7 @@ export default function Newprod({
 
   return (
     <div className="newp-contain ">
-      {/* <PurchaseHeader /> */}
+      <PurchaseHeader />
       <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
         <div className="newp1">
           <div className="newp2">
@@ -205,35 +186,6 @@ export default function Newprod({
                 >
                   Cancel
                 </button>
-              </div>
-
-              {/* Upload product logo */}
-              <div className="newuser3ba" style={{ marginBlock: "24px" }}>
-                <div
-                  className="image-upload"
-                  onClick={() => document.getElementById("imageInput").click()}
-                >
-                  <input
-                    type="file"
-                    accept=".png, .jpg, .jpeg"
-                    onChange={handleImageChange}
-                    id="imageInput"
-                    name="image"
-                    style={{ display: "none" }}
-                  />
-                  {formState.image ? (
-                    <img
-                      src={formState.image}
-                      alt="Preview"
-                      className="image-preview"
-                    />
-                  ) : (
-                    <div className="image-upload-text">
-                      <img src={productLogo} alt="Upload" />
-                      {/* <span style={{ fontSize: "10px" }}>Click to upload</span> */}
-                    </div>
-                  )}
-                </div>
               </div>
 
               <Grid container spacing={3}>

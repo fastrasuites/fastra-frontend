@@ -78,7 +78,6 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
             {/* End Step 1 ------------------------------ */}
 
             {/* 2nd section ---------------------------------- */}
-            <p className="para-headline">3 SIMPLE STEPS</p>
             <p className="heading-text">
               {step === 1
                 ? "Step 2: Add Vendors"
