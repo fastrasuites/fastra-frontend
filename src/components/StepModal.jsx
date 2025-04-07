@@ -1,23 +1,27 @@
 import React from "react";
-import { useTenant } from "../context/TenantContext";
+// import { useTenant } from "../context/TenantContext";
 import { Modal, Box, Typography, Button } from "@mui/material";
-import { useHistory } from "react-router-dom";
+// import { useHistory } from "react-router-dom";
 // import "./stepModal.css";
 import "./PurchaseModuleWizard.css";
 
 const StepModal = ({ open, onClose, step }) => {
-  const history = useHistory();
-  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+  // const history = useHistory();
+  // const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
   const handleSetUpCompany = () => {
-    onClose();
-    if (step === 1) {
-      history.push(`/${tenant_schema_name}/company`, { openForm: true });
-    } else if (step === 2) {
-      history.push(`/${tenant_schema_name}/user`, { openForm: true });
-    } else {
-      alert(" Humm! The last stage is not ready. Please use the skip button.");
-    }
+    alert(
+      "SETTINGS MODULE is not ready, use the SKIP button and proceed to PURCHASE MODULE"
+    );
+    return;
+    // onClose();
+    // if (step === 1) {
+    //   history.push(`/${tenant_schema_name}/company`, { openForm: true });
+    // } else if (step === 2) {
+    //   history.push(`/${tenant_schema_name}/user`, { openForm: true });
+    // } else {
+    //   alert(" Humm! The last stage is not ready. Please use the skip button.");
+    // }
   };
 
   return (

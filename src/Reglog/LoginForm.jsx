@@ -138,9 +138,9 @@ export default function LoginForm() {
             <Link to="/" className="register-link">
               Don't have an account?
             </Link>
-            <Link to="/forget-password" className="forgot-password-link">
+            {/* <Link to="/forget-password" className="forgot-password-link">
               Forget Password
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>
