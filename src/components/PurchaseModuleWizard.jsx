@@ -32,81 +32,93 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
         <Box sx={{ position: "relative", height: "100%" }}>
           <div className="vertical-line"></div>
 
-          <div className="numbered-circle numbered-circle-one">{step}</div>
-
-          <div className="numbered-circle numbered-circle-2">
-            {step === 1 ? step + 1 : step === 2 ? step + 1 : ""}
-          </div>
-          <div className="numbered-circle numbered-circle-three">
-            {step === 1 ? step + 2 : ""}
-          </div>
           {/* Step 1  -------------------------------- */}
           <div className="modal-main-content">
             <p className="para-headline">3 SIMPLE STEPS</p>
-            <p className="heading-text">
-              {step === 1
-                ? "Step 1: Add Products"
-                : step === 2
-                ? "Step 2: Add Vendors"
-                : step === 3
-                ? "Step 3: Start PR Creation!"
-                : "Successful!"}
-            </p>
-            <p className="para-description">
-              {step === 1
-                ? "Add product will ease your journey using this platform."
-                : step === 2
-                ? "Awesome! just few step to start having an Amazing purchase Module Experience"
-                : step === 3
-                ? "Now at the last step, Enjoy seamless Experience Here."
-                : "You have successfully completed the wizard!"}
-            </p>
-
-            <button
-              onClick={handleAddProductandVendor}
-              className="btn-goto-steps"
-            >
-              {step === 1
-                ? "Add Products"
-                : step === 2
-                ? "Add Vendors"
-                : step === 3
-                ? "Start PR Creation!"
-                : "You are done"}
-            </button>
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <div className="numbered-circle numbered-circle-one">{step}</div>
+              <div>
+                <p className="heading-text">
+                  {step === 1
+                    ? "Step 1: Add Products"
+                    : step === 2
+                    ? "Step 2: Add Vendors"
+                    : step === 3
+                    ? "Step 3: Start PR Creation!"
+                    : "Successful!"}
+                </p>
+                <p className="para-description">
+                  {step === 1
+                    ? "Add product will ease your journey using this platform."
+                    : step === 2
+                    ? "Awesome! just few step to start having an Amazing purchase Module Experience"
+                    : step === 3
+                    ? "Now at the last step, Enjoy seamless Experience Here."
+                    : "You have successfully completed the wizard!"}
+                </p>
+                <button
+                  onClick={handleAddProductandVendor}
+                  className="btn-goto-steps"
+                >
+                  {step === 1
+                    ? "Add Products"
+                    : step === 2
+                    ? "Add Vendors"
+                    : step === 3
+                    ? "Start PR Creation!"
+                    : "You are done"}
+                </button>
+              </div>
+            </Box>
 
             {/* End Step 1 ------------------------------ */}
 
             {/* 2nd section ---------------------------------- */}
-            <p className="heading-text">
-              {step === 1
-                ? "Step 2: Add Vendors"
-                : step === 2
-                ? "Step 3: Start PR Creation"
-                : ""}
-            </p>
-            <p className="para-description">
-              {step === 1
-                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
-                : step === 2
-                ? "The next step, Enjoy seamless Experience Here"
-                : ""}
-            </p>
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <div className="numbered-circle numbered-circle-2">
+                {step === 1 ? step + 1 : step === 2 ? step + 1 : ""}
+              </div>
+              <div>
+                <p className="heading-text">
+                  {step === 1
+                    ? "Step 2: Add Vendors"
+                    : step === 2
+                    ? "Step 3: Start PR Creation"
+                    : ""}
+                </p>
+                <p className="para-description">
+                  {step === 1
+                    ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
+                    : step === 2
+                    ? "The next step, Enjoy seamless Experience Here"
+                    : ""}
+                </p>
+              </div>
+            </Box>
             {/* End step 2 ----------------------------------------- */}
 
             {/* Step 3 start here ---------------------------------- */}
-
-            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
-            <p className="heading-text">
-              {step === 1 ? "Step 3: Start PR Creation!" : step === 2 ? "" : ""}
-            </p>
-            <p className="para-description">
-              {step === 1
-                ? "Now at the last step, Enjoy seamless Experience Here"
-                : step === 2
-                ? ""
-                : ""}
-            </p>
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <div className="numbered-circle numbered-circle-three">
+                {step === 1 ? step + 2 : ""}
+              </div>
+              <div>
+                <p className="heading-text">
+                  {step === 1
+                    ? "Step 3: Start PR Creation!"
+                    : step === 2
+                    ? ""
+                    : ""}
+                </p>
+                <p className="para-description">
+                  {step === 1
+                    ? "Now at the last step, Enjoy seamless Experience Here"
+                    : step === 2
+                    ? ""
+                    : ""}
+                </p>
+              </div>
+            </Box>
           </div>
           {/* End step 3 ------------------------------ */}
         </Box>
