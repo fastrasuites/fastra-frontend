@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import './StockMoves.css';
-import InventoryHeader from '../InventoryHeader';
 
 const scraps = [
   { name: 'Cement', qty: '3', unit: 'L', srcId: "ABJ001", date: "17 Nov, 2024 - 12:08 PM", srcLocName: "Abisco Store", desLoc: 'Azeemah Store' },
@@ -18,7 +17,6 @@ function StockMoves() {
 
   return (
     <div className='scrap-contain'>
-      <InventoryHeader />
       <div style={{ padding: '20px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>

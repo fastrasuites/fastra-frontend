@@ -3,7 +3,6 @@ import autosave from "../../../image/autosave.svg";
 import { useHistory } from "react-router-dom";
 import "../Location/LocationForm.css";
 import { Grid, TextField, Box, Divider, Select, Typography, MenuItem } from "@mui/material";
-import InventoryHeader from "../InventoryHeader";
 import ProductScrapLine from "./ProductScrapLine";
 
 const NewScrap = () => {
@@ -72,7 +71,6 @@ const NewScrap = () => {
 
     return (
         <div className="inven-header">
-            <InventoryHeader />
             <div className="location-form-wrapper fade-in">
                 <div className="location-form-container">
                     <div className="location-form-header">

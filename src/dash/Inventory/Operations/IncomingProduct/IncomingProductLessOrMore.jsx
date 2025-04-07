@@ -15,16 +15,16 @@ import {
   TableRow,
   Paper,
   TableCell,
+  Select,
   useMediaQuery,
+  MenuItem,
 } from "@mui/material";
-import autosave from "../../../image/autosave-text.svg";
-import inventoryShareStyles from "../inventorySharedStyles.js";
+import autosave from "../../../../image/autosave-text.svg";
+import inventoryShareStyles from "../../inventorySharedStyles.js";
 
-const IncomingProductReturnForm = () => {
+const IncomingProductLessOrMore = () => {
   const theme = useTheme();
   const [receivedQty, setReceivedQty] = useState(0);
-  const [productName, setProductName] = useState("");
-  const [reasonForReturn, setReasonForReturn] = useState("");
   const isSmallScreen = useMediaQuery("(max-width:600px)");
   return (
     <>
@@ -37,9 +37,10 @@ const IncomingProductReturnForm = () => {
           gap: "72px",
         }}
       >
-        <Typography sx={inventoryShareStyles.pageBoldTitle(theme)}>
-          Return
-        </Typography>
+        <Button sx={inventoryShareStyles.buttonStyles(theme)}>
+          {" "}
+          New Incoming Product{" "}
+        </Button>
 
         <img src={autosave} alt="autosave" />
       </Box>
@@ -55,7 +56,6 @@ const IncomingProductReturnForm = () => {
             <Typography sx={inventoryShareStyles.formHeaderTitle(theme)}>
               Product Information
             </Typography>
-
             <Button
               sx={{
                 ...inventoryShareStyles.buttonStyles(theme),
@@ -76,8 +76,8 @@ const IncomingProductReturnForm = () => {
             <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
                 <TextField
-                  label="Order Unique ID"
-                  value="LAGOUT0002"
+                  label="Receipt Type"
+                  value="Good Receipt"
                   variant="standard"
                   InputProps={{
                     readOnly: true,
@@ -92,8 +92,8 @@ const IncomingProductReturnForm = () => {
             <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
                 <TextField
-                  label="Source Document"
-                  value="LAGOUT0001"
+                  label="ID"
+                  value="LAGIN0001"
                   variant="standard"
                   InputProps={{
                     readOnly: true,
@@ -111,11 +111,10 @@ const IncomingProductReturnForm = () => {
                 />
               </FormControl>
             </Grid>
-
             <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
                 <TextField
-                  label="Date Created"
+                  label="Receipt Date"
                   value="4 Apr 2024 - 4.48PM"
                   variant="standard"
                   InputProps={{
@@ -128,23 +127,32 @@ const IncomingProductReturnForm = () => {
                 />
               </FormControl>
             </Grid>
-          </Grid>
-          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3} lg={2} xl={2} sx={{ flexGrow: 1 }}>
+              <FormControl fullWidth>
+                <TextField
+                  label="Location"
+                  value="Xdx Stores"
+                  variant="standard"
+                  InputProps={{
+                    readOnly: true,
+                    disableUnderline: true,
+                  }}
+                  sx={{
+                    ...inventoryShareStyles.textFieldStyles(),
+                  }}
+                />
+              </FormControl>
+            </Grid>
             <Grid item xs={12} sm={6} md={3} lg={3} xl={2} sx={{ flexGrow: 1 }}>
               <FormControl fullWidth>
-                <Typography>Reason for return</Typography>
                 <TextField
-                  // label="Reason for return"
-                  value={reasonForReturn}
-                  onChange={(e) => setReasonForReturn(e.target.value)}
-                  placeholder="Type in reasons for return"
-                  variant="outlined"
-                  InputProps={
-                    {
-                      // readOnly: true,
-                      // disableUnderline: true,
-                    }
-                  }
+                  label="Name of Supplier"
+                  value="Abc Stores"
+                  variant="standard"
+                  InputProps={{
+                    readOnly: true,
+                    disableUnderline: true,
+                  }}
                   sx={{
                     ...inventoryShareStyles.textFieldStyles(),
                   }}
@@ -153,6 +161,7 @@ const IncomingProductReturnForm = () => {
             </Grid>
           </Grid>
 
+          <Divider />
           <Divider />
 
           <TableContainer
@@ -163,56 +172,58 @@ const IncomingProductReturnForm = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Product Name</TableCell>
-                  <TableCell>Initial Quantity</TableCell>
+                  <TableCell>Expected Qty</TableCell>
                   <TableCell>Unit of Measure</TableCell>
-                  <TableCell>Returned Quantity</TableCell>
+                  <TableCell>Received Qty</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 <TableRow sx={{ backgroundColor: "#F2F2F2" }}>
-                  {/* Product Name */}
+                  {/* Editable Product Name */}
                   <TableCell>
                     <TextField
-                      value={productName}
-                      onChange={(e) => setProductName(e.target.value)}
+                      value="Cement"
                       placeholder="Enter a product name"
                       variant="standard"
                       InputProps={{
-                        // disableUnderline: true,
-                        // readOnly: true,
+                        disableUnderline: true,
+                        readOnly: true,
                         style: { fontSize: "14px", color: "#A9B3BC" },
                       }}
                     />
                   </TableCell>
 
-                  {/* Product Description */}
+                  {/* Editable Expected Quantity */}
                   <TableCell>
                     <TextField
                       value="4"
-                      placeholder=""
                       variant="standard"
+                      type="number"
                       InputProps={{
-                        disableUnderline: true,
                         readOnly: true,
+                        disableUnderline: true,
                         style: { fontSize: "14px", color: "#A9B3BC" },
                       }}
                     />
                   </TableCell>
 
-                  {/* Expected Quantity */}
+                  {/* Non-editable Unit of Measure (Dropdown) */}
                   <TableCell>
-                    <TextField
+                    <Select
+                      label="kg"
                       value="Kg"
                       variant="standard"
+                      disableUnderline
+                      disabled
                       InputProps={{
-                        readOnly: true,
-                        disableUnderline: true,
                         style: { fontSize: "14px", color: "#A9B3BC" },
                       }}
-                    />
+                    >
+                      <MenuItem value="Kg">Kg</MenuItem>
+                    </Select>
                   </TableCell>
 
-                  {/* Received Quantity */}
+                  {/* Editable Received Quantity */}
                   <TableCell>
                     <TextField
                       value={receivedQty}
@@ -220,8 +231,6 @@ const IncomingProductReturnForm = () => {
                       variant="standard"
                       type="number"
                       InputProps={{
-                        // readOnly: true,
-                        // disableUnderline: true,
                         style: { fontSize: "14px", color: "#A9B3BC" },
                       }}
                     />
@@ -250,7 +259,20 @@ const IncomingProductReturnForm = () => {
               justifyContent: "flex-end",
             }}
           >
-            <Button sx={inventoryShareStyles.buttonStyles(theme)}>Send</Button>
+            <Button
+              sx={{
+                ...inventoryShareStyles.buttonStyles(theme),
+                color: "#3B7CED",
+                backgroundColor: "#FFFFFF",
+                "&:hover": {
+                  backgroundColor: "transparent",
+                  outline: "solid 1px #3B7CED",
+                },
+              }}
+            >
+              Return
+            </Button>
+            <Button sx={inventoryShareStyles.buttonStyles(theme)}>Done</Button>
           </Box>
         </Box>
       </form>
@@ -258,4 +280,4 @@ const IncomingProductReturnForm = () => {
   );
 };
 
-export default IncomingProductReturnForm;
+export default IncomingProductLessOrMore;

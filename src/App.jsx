@@ -1,4 +1,4 @@
-// src/App.js
+// App.js
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { useTenant } from "./context/TenantContext";
@@ -38,9 +38,6 @@ import NewCompany from "./dash/Settings/company/NewCompanyForm";
 import ResendEmailVerification from "./Reglog/ResendEmailVerification";
 import NoHeaderLayout from "./notFound/NoHeaderLayout";
 import NotFound from "./notFound/NotFound";
-import Inventory from "./dash/Inventory/Inventory";
-import Location from "./dash/Inventory/Location/Location";
-import LocationForm from "./dash/Inventory/Location/LocationForm";
 import LocationConfiguration from "./dash/Inventory/LocationConfiguration/LocationConfig";
 import StockAdjustment from "./dash/Inventory/stock/StockAdjustment";
 import NewStockAdjustment from "./dash/Inventory/stock/NewStockAdjustment";
@@ -49,9 +46,11 @@ import NewScrap from "./dash/Inventory/scrap/NewScrap";
 import StockMoves from "./dash/Inventory/StockMoves/StockMoves";
 import POFormWrapper from "./dash/PurchaseModule/PurchOrder/POForm/POFormWrapper";
 import RFQFormWrapper from "./dash/PurchaseModule/Rfq/RfqForm/RFQFormWrapper";
+import InventoryLayout from "./dash/Inventory/Inventory";
 
 function App() {
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+
   return (
     <div className="App" style={{ width: "100vw", minHeight: "100vh" }}>
       <Router>
@@ -79,10 +78,9 @@ function App() {
             path={`/${tenant_schema_name}/settings`}
             component={Settings}
           />
-          <ProtectedRoute path={`/${tenant_schema_name}/apk`} component={Apk} />
           <ProtectedRoute
-            path={`/${tenant_schema_name}/company`}
-            component={NewCompany}
+            path={`/${tenant_schema_name}/apk`}
+            component={Apk}
           />
           <ProtectedRoute
             path={`/${tenant_schema_name}/user`}
@@ -112,7 +110,10 @@ function App() {
             path={`/${tenant_schema_name}/rfq/convert`}
             component={RFQFormWrapper}
           />
-          <ProtectedRoute path={`/${tenant_schema_name}/rfq`} component={Rfq} />
+          <ProtectedRoute
+            path={`/${tenant_schema_name}/rfq`}
+            component={Rfq}
+          />
           <ProtectedRoute
             path={`/${tenant_schema_name}/newrfq`}
             component={Rform}
@@ -129,7 +130,6 @@ function App() {
             path={`/${tenant_schema_name}/purchase-order`}
             component={PurchaseOrder}
           />
-
           <ProtectedRoute
             path={`/${tenant_schema_name}/newPurchaseOrder`}
             component={POrderform}
@@ -149,6 +149,10 @@ function App() {
           <ProtectedRoute
             path={`/${tenant_schema_name}/Newvendor`}
             component={Newvendor}
+          />
+          <ProtectedRoute
+            path={`/${tenant_schema_name}/purchase-configuration-settings`}
+            component={ConfigurationSettings}
           />
           <ProtectedRoute
             path={`/${tenant_schema_name}/varcat`}
@@ -178,46 +182,15 @@ function App() {
             path={`/${tenant_schema_name}/pedit`}
             component={Pedit}
           />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/purchase-configuration-settings`}
-            component={ConfigurationSettings}
-          />
+          
+
+          {/* Inventory Routes: All inventory URLs now use InventoryLayout */}
           <ProtectedRoute
             path={`/${tenant_schema_name}/inventory`}
-            component={Inventory}
+            component={() => <InventoryLayout />}
           />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/location`}
-            component={Location}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/create-inventory-location`}
-            component={LocationForm}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/location-configuration`}
-            component={LocationConfiguration}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/stock-adjustment`}
-            component={StockAdjustment}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/create-new-stock`}
-            component={NewStockAdjustment}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/scrap`}
-            component={Scrap}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/new-scrap`}
-            component={NewScrap}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/stock-moves`}
-            component={StockMoves}
-          />
+
+          {/* Additional tenant routes can be defined here */}
 
           {/* Fallback for 404 */}
           <Route

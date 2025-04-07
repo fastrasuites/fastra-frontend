@@ -22,7 +22,6 @@ const LocationConfiguration = () => {
 
   return (
     <div className='congiure-contain'>
-      <InventoryHeader />
     <div className="configurations">
       <div className="configuration-header">
         <h1>Configuration</h1>

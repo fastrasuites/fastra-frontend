@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import './StockAdjustment.css';
-import InventoryHeader from '../InventoryHeader';
 
 const stocks = [
   { name: 'Laptop', proQty: '4', adjQty: '4', status: 'Done' },
@@ -18,7 +16,6 @@ function StockAdjustment() {
 
   return (
     <div className='stock-contain'>
-      <InventoryHeader />
       <div style={{ padding: '20px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>

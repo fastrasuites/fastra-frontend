@@ -20,7 +20,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import autosave from "../../../image/autosave-text.svg";
-import inventoryShareStyles from "../inventorySharedStyles.js";
+import inventoryShareStyles from "../../inventorySharedStyles.js";
 
 const IncomingProductStatus = () => {
   const theme = useTheme();
