@@ -113,7 +113,7 @@ const IncomingProductManualListview = () => {
             <TableRow
               key={row.requestId}
               style={{
-                backgroundColor: index % 2 === 0 ? "#f5f5f5" : "inherit",
+                backgroundColor: index % 2 === 0 ? "#f5f5f5" : "#F2F2F2",
               }}
             >
               <TableCell padding="checkbox">
