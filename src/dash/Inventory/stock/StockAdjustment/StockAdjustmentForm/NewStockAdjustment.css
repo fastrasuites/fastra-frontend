@@ -1,0 +1,6 @@
+.stockbasicInformationInputs {
+  display: grid;
+  grid-template-columns: repeat(4, max-content) minmax(200px, 400px);
+  gap: 77px;
+  justify-content: start;
+}

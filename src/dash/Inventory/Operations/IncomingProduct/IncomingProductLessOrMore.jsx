@@ -28,6 +28,7 @@ const IncomingProductLessOrMore = () => {
   const isSmallScreen = useMediaQuery("(max-width:600px)");
   return (
     <>
+    <div></div>
       <Box
         sx={{
           ...inventoryShareStyles.WidthFullFlexSpaceBetween(theme),
