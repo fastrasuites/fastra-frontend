@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox } from '@mui/material';
 import './StockMoves.css';
+import { useTenant } from '../../../../context/TenantContext';
 
 const scraps = [
   { name: 'Cement', qty: '3', unit: 'L', srcId: "ABJ001", date: "17 Nov, 2024 - 12:08 PM", srcLocName: "Abisco Store", desLoc: 'Azeemah Store' },
@@ -9,20 +9,28 @@ const scraps = [
 ];
 
 function StockMoves() {
-  const history = useHistory();
-
-  const handleCreatescrapClick = () => {
-    history.push('/new-stock-moves'); // Navigate to the scrapForm page
-  };
+  const { tenantData } = useTenant();
+    const tenant_schema_name = tenantData?.tenant_schema_name;
 
   return (
     <div className='scrap-contain'>
       <div style={{ padding: '20px' }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <h2 className='create-stock'>Stock Move</h2>
-          <TextField variant="outlined" placeholder="Search" size="small" style={{ width: '200px' }} />
-        </div>
+       <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                 <Link
+                   to={`/${tenant_schema_name}/inventory/stock/create-stock-moves`}
+                 >
+                   <button className="create-stock">Stock Moves</button>
+                 </Link>
+       
+                 <TextField
+                   variant="outlined"
+                   placeholder="Search"
+                   size="small"
+                   style={{ width: "200px" }}
+                 />
+               </div>
+       
 
         {/* scraps Table */}
         <TableContainer component={Paper} style={{ marginTop: '20px' }}>
