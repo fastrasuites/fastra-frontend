@@ -4,16 +4,16 @@ import { Switch, Route, useRouteMatch } from "react-router-dom";
 import InventoryHeader from "./InventoryHeader";
 import Operations from "./Operations/Operations";
 import Location from "./Location/Location";
-import LocationForm from "./Location/LocationForm";
 import MaterialConsumption from "./Operations/MaterialConsumption/MaterialConsumption";
 import LocationConfiguration from "./LocationConfiguration/LocationConfig";
 import StockAdjustment from "./stock/StockAdjustment/StockAdjustment";
 import NewStockAdjustment from "./stock/StockAdjustment/StockAdjustmentForm/NewStockAdjustment";
 import Scrap from "./stock/scrap/Scrap";
-import NewScrap from "./stock/scrap/NewScrap";
 import CreateIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/CreateIncomingProduct";
 import StockMoves from "./stock/StockMoves/StockMoves";
-import StockMovesForm from "./stock/scrap/StockMovesForm/StockMovesForm";
+import LocationForm from "./Location/CreateLocation/LocationForm";
+import StockMovesForm from "./stock/StockMoves/StockMovesForm/StockMovesForm";
+import ScrapForm from "./stock/scrap/ScrapForm/ScrapForm";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -60,7 +60,7 @@ const InventoryLayout = () => {
           {/* Inventory Scrap Routes */}
 
           <Route path={`${path}/stock/scrap`} component={Scrap} />
-          <Route path={`${path}/stock/create-new-scrap`} component={NewScrap} />
+          <Route path={`${path}/stock/create-scrap`} component={ScrapForm} />
 
           {/* Additional inventory routes can be added here */}
         </Switch>

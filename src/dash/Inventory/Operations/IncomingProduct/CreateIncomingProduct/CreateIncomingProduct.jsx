@@ -242,7 +242,7 @@ const IncomingProductBasicInputs = ({ formData, handleInputChange }) => {
             onChange={handleReceiptChange}
             sx={{ width: "100%", mb: 2 }}
             renderInput={(params) => (
-              <TextField {...params} label="Receipt Type" />
+              <TextField {...params} placeholder="Receipt Type" />
             )}
           />
         </div>
@@ -283,7 +283,7 @@ const IncomingProductBasicInputs = ({ formData, handleInputChange }) => {
             onChange={handleLocationChange}
             sx={{ width: "100%", mb: 2 }}
             renderInput={(params) => (
-              <TextField {...params} label="Select your location" />
+              <TextField {...params} placeholder="Select your location" />
             )}
           />
         </div>
