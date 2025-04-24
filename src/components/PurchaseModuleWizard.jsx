@@ -15,7 +15,7 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
     } else if (step === 2) {
       history.push(`/${tenant_schema_name}/vendor`, { openForm: true });
     } else {
-      alert(" Humm! The last stage is not ready. Please use the skip button.");
+      onClose();
     }
   };
 
@@ -44,7 +44,7 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                     : step === 2
                     ? "Step 2: Add Vendors"
                     : step === 3
-                    ? "Step 3: Start PR Creation!"
+                    ? "Step 3: Create Purchase Request!"
                     : "Successful!"}
                 </p>
                 <p className="para-description">
@@ -65,8 +65,8 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
                     : step === 2
                     ? "Add Vendors"
                     : step === 3
-                    ? "Start PR Creation!"
-                    : "You are done"}
+                    ? "You are done"
+                    : ""}
                 </button>
               </div>
             </Box>
@@ -105,7 +105,7 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
               <div>
                 <p className="heading-text">
                   {step === 1
-                    ? "Step 3: Start PR Creation!"
+                    ? "Step 3: Create Purchase Request!"
                     : step === 2
                     ? ""
                     : ""}
