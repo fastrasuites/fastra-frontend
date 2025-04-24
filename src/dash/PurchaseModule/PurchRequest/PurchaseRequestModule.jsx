@@ -197,7 +197,7 @@ const PurchaseRequestModule = ({
               </Button>
             )}
             <Button variant="outlined" className="cancel" onClick={onCancel}>
-              Cancel
+              Close
             </Button>
           </div>
         </div>

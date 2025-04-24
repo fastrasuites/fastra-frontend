@@ -13,7 +13,13 @@ import { extractRFQID } from "../../../../helper/helper";
 import "../../Rfq/RfqForm/RfqForm.css";
 import PurchaseHeader from "../../PurchaseHeader";
 
-const POForm = ({ onCancel, formUse, purchaseOrder, refresh, conversionRFQ }) => {
+const POForm = ({
+  onCancel,
+  formUse,
+  purchaseOrder,
+  refresh,
+  conversionRFQ,
+}) => {
   const {
     products,
     fetchProducts,
@@ -69,7 +75,9 @@ const POForm = ({ onCancel, formUse, purchaseOrder, refresh, conversionRFQ }) =>
         setFormData({
           ...purchaseOrder,
           vendor: vendors.find((v) => v.url === purchaseOrder.vendor.url),
-          currency: currencies.find((c) => c.url === purchaseOrder.currency.url),
+          currency: currencies.find(
+            (c) => c.url === purchaseOrder.currency.url
+          ),
           items: purchaseOrder.items.map((item) => ({
             ...item,
             product: products.find((p) => p.url === item.product.url),
@@ -229,7 +237,7 @@ const POForm = ({ onCancel, formUse, purchaseOrder, refresh, conversionRFQ }) =>
           <h2>Basic Information</h2>
           <div className="editCancel">
             <Button variant="text" onClick={handleCancel}>
-              Cancel
+              Close
             </Button>
           </div>
         </div>
