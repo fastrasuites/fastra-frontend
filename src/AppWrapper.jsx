@@ -6,21 +6,30 @@ import { PurchaseProvider } from "./context/PurchaseContext";
 import { RFQProvider } from "./context/RequestForQuotation";
 import { PurchaseOrderProvider } from "./context/PurchaseOrderContext.";
 import { FormProvider } from "./context/FormContext";
+import { TenantUsersProvider } from "./context/Tanants/TanantUsers";
+import { LocationProvider } from "./context/Inventory/LocationContext";
+import { LocationConfigProvider } from "./context/Inventory/LocationConfigContext";
 
 function AppWrapper() {
   return (
     <TenantProvider>
-      <FormProvider>
-        <PurchaseProvider>
-          <RFQProvider>
-            <PurchaseOrderProvider>
-              <Router>
-                <App />
-              </Router>
-            </PurchaseOrderProvider>
-          </RFQProvider>
-        </PurchaseProvider>
-      </FormProvider>
+      <TenantUsersProvider>
+        <FormProvider>
+          <PurchaseProvider>
+            <LocationConfigProvider>
+            <RFQProvider>
+              <PurchaseOrderProvider>
+                <LocationProvider>
+                  <Router>
+                    <App />
+                  </Router>
+                </LocationProvider>
+              </PurchaseOrderProvider>
+            </RFQProvider>
+            </LocationConfigProvider>
+          </PurchaseProvider>
+        </FormProvider>
+      </TenantUsersProvider>
     </TenantProvider>
   );
 }

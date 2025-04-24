@@ -28,3 +28,10 @@ export const extractRFQID = (url) => {
   const segments = url.split("/").filter(Boolean);
   return segments[segments.length - 1];
 };
+
+
+export  const extractId = (url) => {
+  if (!url) return "";
+  const segments = url.split("/").filter(Boolean);
+  return segments[segments.length - 1];
+};

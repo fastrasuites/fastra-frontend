@@ -3,16 +3,17 @@ import React from "react";
 import { Switch, Route, useRouteMatch } from "react-router-dom";
 import InventoryHeader from "./InventoryHeader";
 import Operations from "./Operations/Operations";
-import IncomingProductLessOrMore from "./Operations/IncomingProduct/IncomingProductLessOrMore";
 import Location from "./Location/Location";
-import LocationForm from "./Location/LocationForm";
 import MaterialConsumption from "./Operations/MaterialConsumption/MaterialConsumption";
 import LocationConfiguration from "./LocationConfiguration/LocationConfig";
-import StockAdjustment from "./stock/StockAdjustment";
-import NewStockAdjustment from "./stock/NewStockAdjustment";
-import StockMoves from "./StockMoves/StockMoves";
-import Scrap from "./scrap/Scrap";
-import NewScrap from "./scrap/NewScrap";
+import StockAdjustment from "./stock/StockAdjustment/StockAdjustment";
+import NewStockAdjustment from "./stock/StockAdjustment/StockAdjustmentForm/NewStockAdjustment";
+import Scrap from "./stock/scrap/Scrap";
+import CreateIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/CreateIncomingProduct";
+import StockMoves from "./stock/StockMoves/StockMoves";
+import LocationForm from "./Location/CreateLocation/LocationForm";
+import StockMovesForm from "./stock/StockMoves/StockMovesForm/StockMovesForm";
+import ScrapForm from "./stock/scrap/ScrapForm/ScrapForm";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -26,7 +27,7 @@ const InventoryLayout = () => {
           <Route exact path={`${path}/operations`} component={Operations} />
           <Route
             path={`${path}/operations/creat-incoming-product`}
-            component={IncomingProductLessOrMore}
+            component={CreateIncomingProduct}
           />
           <Route
             path={`${path}/operations/material-consumption`}
@@ -50,12 +51,16 @@ const InventoryLayout = () => {
             component={StockAdjustment}
           />
           <Route
-            path={`${path}/stock/create-new-stock`}
+            path={`${path}/stock/create-stock-adjustment`}
             component={NewStockAdjustment}
           />
           <Route path={`${path}/stock/stock-moves`} component={StockMoves} />
+          <Route path={`${path}/stock/create-stock-moves`} component={StockMovesForm} />
+
+          {/* Inventory Scrap Routes */}
+
           <Route path={`${path}/stock/scrap`} component={Scrap} />
-          <Route path={`${path}/stock/create-new-scrap`} component={NewScrap} />
+          <Route path={`${path}/stock/create-scrap`} component={ScrapForm} />
 
           {/* Additional inventory routes can be added here */}
         </Switch>

@@ -1,0 +1,25 @@
+.receiptTypeAndID {
+  display: grid;
+  grid-template-columns: 1fr 150px 150px 150px;
+  gap: 160px;
+}
+
+.supplierNameAndLocation {
+    display: grid;
+    grid-template-columns: 1fr 1fr 130px;
+    gap: 110px
+}
+
+.formLabelAndValue {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+.formLabelAndValue > p, .formLabelAndValue > p {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 100%;
+  color: #7A8A98;
+  white-space: nowrap;
+}

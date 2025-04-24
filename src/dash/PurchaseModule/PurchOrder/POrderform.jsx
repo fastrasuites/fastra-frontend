@@ -16,7 +16,6 @@ import "./POrderform.css";
 import PurchaseHeader from "../PurchaseHeader";
 // import { TextField } from "@mui/material";
 
-
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.white,
@@ -169,13 +168,13 @@ export default function POrderform({
     const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
     setProducts(savedProducts);
   }, []);
-  
+
   const calculateTotalPrice = (product) => {
     const pricePerUnit = parseFloat(product.sp.replace("₦", "")) || 0;
     const totalQuantity = parseInt(product.availableProductQty) || 0;
     return `₦${(pricePerUnit * totalQuantity).toFixed(2)}`;
   };
- 
+
   const formatDate = (date) => {
     const options = { day: "numeric", month: "short", year: "numeric" };
     return date.toLocaleDateString("en-US", options);
@@ -268,344 +267,359 @@ export default function POrderform({
       vendorCategory: newValue,
     }));
   };
-// Load saved currencies from localStorage
-const [selectedCurrency, setSelectedCurrency] = useState(null);
-const [savedCurrencies, setSavedCurrencies] = useState([]);
+  // Load saved currencies from localStorage
+  const [selectedCurrency, setSelectedCurrency] = useState(null);
+  const [savedCurrencies, setSavedCurrencies] = useState([]);
 
-useEffect(() => {
-  // Fetch currencies from localStorage
-  const currencies = JSON.parse(localStorage.getItem("savedCurrencies")) || [];
-  if (currencies.length === 0) {
-    console.warn('No currencies found in localStorage.');
-  }
-  setSavedCurrencies(currencies);
-}, []);  // Only run this effect once, on component mount
+  useEffect(() => {
+    // Fetch currencies from localStorage
+    const currencies =
+      JSON.parse(localStorage.getItem("savedCurrencies")) || [];
+    if (currencies.length === 0) {
+      console.warn("No currencies found in localStorage.");
+    }
+    setSavedCurrencies(currencies);
+  }, []); // Only run this effect once, on component mount
 
-const handleCurrencyChange = (event, newValue) => {
-  setSelectedCurrency(newValue);
-  // Assuming you have a form state to update
-  setFormState((prev) => ({
-    ...prev,
-    currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
-  }));
+  const handleCurrencyChange = (event, newValue) => {
+    setSelectedCurrency(newValue);
+    // Assuming you have a form state to update
+    setFormState((prev) => ({
+      ...prev,
+      currency: newValue ? `${newValue.name} - ${newValue.symbol}` : "",
+    }));
 
-  // Log the selected currency
-  if (newValue) {
-    console.log("Selected Currency:", newValue);
-  }
-};
+    // Log the selected currency
+    if (newValue) {
+      console.log("Selected Currency:", newValue);
+    }
+  };
 
   return (
     <div className="newpod-contain">
       <PurchaseHeader />
-    <div
-      id="newPurchaseOrder"
-      className={`newpod ${showForm ? "fade-in" : "fade-out"}`}
-    >
-      <div className="newpod1">
-        <div className="newpod2">
-          <div className="newpod2a">
-            <p className="rprhed">New Purchase Order</p>
-            <div className="rprauto">
-              <p>Autosaved</p>
-              <img src={autosave} alt="Autosaved" />
+      <div
+        id="newPurchaseOrder"
+        className={`newpod ${showForm ? "fade-in" : "fade-out"}`}
+      >
+        <div className="newpod1">
+          <div className="newpod2">
+            <div className="newpod2a">
+              <p className="rprhed">New Purchase Order</p>
+              <div className="rprauto">
+                <p>Autosaved</p>
+                <img src={autosave} alt="Autosaved" />
+              </div>
+            </div>
+            <div className="newpod2b">
+              <p className="rprbpg">
+                {page + 1}-{pageCount} of {pageCount}
+              </p>
+              <div className="rprbnav">
+                <FaCaretLeft className="nr" onClick={handlePreviousPage} />
+                <div className="sep"></div>
+                <FaCaretRight className="nr" onClick={handleNextPage} />
+              </div>
             </div>
           </div>
-          <div className="newpod2b">
-            <p className="rprbpg">
-              {page + 1}-{pageCount} of {pageCount}
-            </p>
-            <div className="rprbnav">
-              <FaCaretLeft className="nr" onClick={handlePreviousPage} />
-              <div className="sep"></div>
-              <FaCaretRight className="nr" onClick={handleNextPage} />
-            </div>
-          </div>
-        </div>
-        <div className="newpod3">
-          <form className="newform" onSubmit={handleSubmit}>
-            <div className="newpod3a">
-              <p style={{ fontSize: "20px" }}>Basic Information</p>
-              <div className="newpod3e">
-                <button type="button" className="new3but" onClick={onClose}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-            <div className="newpod3b">
-              <div className="newpod3ba">
-                <p>ID</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {formState.id}
-                </p>
-              </div>
-              <div className="newpod3bb">
-                <p>Date</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {`${formatDate(formState.date)} - ${formatTime(
-                    formState.date
-                  )}`}
-                </p>
-              </div>
-              <div className="newpod3bb">
-                <p>Created By</p>
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {vendor.vendorName}
-                </p>
-              </div>
-            </div>
-            <div className="newpod3c">
-              <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
-                <p>Vendor</p>
-                <Autocomplete
-                  value={selectedVendor}
-                  onChange={handleVendorSelect}
-                  inputValue={vendorInputValue}
-                  onInputChange={(event, newInputValue) => {
-                    setVendorInputValue(newInputValue);
-                  }}
-                  options={savedVendors}
-                  getOptionLabel={(option) => option.vendorName}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Select vendor"
-                      className="newpod3cb"
-                    />
-                  )}
-                />
-              </div>
-
-              <button
-                type="button"
-                className="new3but"
-                onClick={addRow}
-                style={{
-                  marginTop: "1rem",
-                  color: "#000",
-                  fontSize: "15px",
-                  opacity: "0.5",
-                  padding: "2px",
-                  borderRadius: "50px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "20px",
-                    opacity: "0.5",
-                    padding: "1px",
-                    borderRadius: "50%",
-                  }}
-                >
-                  +
-                </span>{" "}
-                Add New Vendor
-              </button>
-            </div>
-            <div className="newpod3b">
-              <div className="newpod3bb">
-                <p>Vendor Address</p>
-                {/* this should pick vendor address */}
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {vendor.address}
-                </p>
-              </div>
-              <div className="newpod3bb">
-                <p>Vendor Email</p>
-                {/* this should pick vendor email */}
-                <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                  {vendor.email}
-                </p>
-              </div>
-            </div>{" "}
-            <br />
-            <div className="newpod3c">
-            <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
-                <p>Select Currency</p>
-                <Autocomplete
-                  value={selectedCurrency}
-                  onChange={handleCurrencyChange}
-                  options={savedCurrencies}  // Populate options from localStorage
-                  getOptionLabel={(option) => `${option.name} - ${option.symbol}`}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Select Currency" className="newpod3cb" />
-                  )}
-                />
+          <div className="newpod3">
+            <form className="newform" onSubmit={handleSubmit}>
+              <div className="newpod3a">
+                <p style={{ fontSize: "20px" }}>Basic Information</p>
+                <div className="newpod3e">
+                  <button type="button" className="new3but" onClick={onClose}>
+                    Close
+                  </button>
                 </div>
-              <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
-                <p>Payment Term</p>
-                <TextField
-                  name="paymentTerm"
-                  value={purchaseState.paymentTerm}
-                  onChange={handlePurchaseChange}
-                  label="Type your payment terms here"
-                  placeholder="Type your payment terms here."
-                  variant="outlined" // You can change the variant to 'filled' or 'standard' based on your design
-                  className="newpod3cb"
-                  fullWidth // Makes the input take the full width of its container
-                  margin="normal" // Adds some space around the input
-                />
               </div>
-              <div className="newpod3ca">
-                <p>Purchase Policy</p>
-                <TextField
-                  name="purchasePolicy"
-                  value={purchaseState.purchasePolicy}
-                  onChange={handlePurchaseChange}
-                  label="Type your purchase policy here"
-                  placeholder="Type your purchase policy here."
-                  variant="outlined"
-                  className="newpod3cb"
-                  fullWidth
-                  margin="normal"
-                />
+              <div className="newpod3b">
+                <div className="newpod3ba">
+                  <p>ID</p>
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {formState.id}
+                  </p>
+                </div>
+                <div className="newpod3bb">
+                  <p>Date</p>
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {`${formatDate(formState.date)} - ${formatTime(
+                      formState.date
+                    )}`}
+                  </p>
+                </div>
+                <div className="newpod3bb">
+                  <p>Created By</p>
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {vendor.vendorName}
+                  </p>
+                </div>
               </div>
-              <div className="newpod3ca">
-                <p>Delivery Terms</p>
-                <TextField
-                  name="deliveryTerm"
-                  value={purchaseState.deliveryTerm}
-                  onChange={handlePurchaseChange}
-                  label="Type your delivery terms here"
-                  placeholder="Type your delivery terms here."
-                  variant="outlined"
-                  className="newpod3cb"
-                  fullWidth
-                  margin="normal"
-                />
-              </div>
-            </div>
-            <p
-              style={{ fontSize: "20px", color: "#3b7ced", marginTop: "1rem" }}
-            >
-              Purchase Order Content
-            </p>
-            <div className="newpod3d">
-               <TableContainer
-                component={Paper}
-                sx={{
-                  boxShadow: "none",
-                  border: "1px solid #e2e6e9",
-                  marginTop: "1rem",
-                }}
-              >
-                <Table
-                  sx={{
-                    minWidth: 700,
-                    "&.MuiTable-root": {
-                      border: "none",
-                    },
-                    "& .MuiTableCell-root": {
-                      border: "none",
-                    },
-                    "& .MuiTableCell-head": {
-                      border: "none",
-                    },
-                    "& .MuiTableCell-body": {
-                      border: "none",
-                    },
-                  }}
-                  aria-label="customized table"
-                >
-                  <TableHead>
-                    <TableRow>
-                      <StyledTableCell>Product Name</StyledTableCell>
-                      <StyledTableCell>Description</StyledTableCell>
-                      <StyledTableCell align="right">Qty</StyledTableCell>
-                      <StyledTableCell align="right">Unit Measurement</StyledTableCell>
-                      <StyledTableCell align="right">
-                        Estimated Unit Price
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        Total Price
-                      </StyledTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {products.map((product, index) => (
-                      <StyledTableRow key={index + page * rowsPerPage}>
-                        <StyledTableCell component="th" scope="row">
-                        {product.name}
-                        </StyledTableCell>
-                        <StyledTableCell>
-                        {product.productDesc}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            name="qty"
-                            className="no-arrows"
-                            style={{ textAlign: "right" }}
-                            value={product.qty}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "qty",
-                                e.target.value
-                              )
-                            }
-                          />
-                            
-                        </StyledTableCell>
-                        <StyledTableCell align="right">{product.unt}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          <input
-                            type="number"
-                            placeholder="0.00"
-                            name="unitPrice"
-                            className="no-arrows"
-                            style={{ textAlign: "right" }}
-                            value={product.unitPrice}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index + page * rowsPerPage,
-                                "unitPrice",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                        {calculateTotalAmount()}
+              <div className="newpod3c">
+                <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
+                  <p>Vendor</p>
+                  <Autocomplete
+                    value={selectedVendor}
+                    onChange={handleVendorSelect}
+                    inputValue={vendorInputValue}
+                    onInputChange={(event, newInputValue) => {
+                      setVendorInputValue(newInputValue);
+                    }}
+                    options={savedVendors}
+                    getOptionLabel={(option) => option.vendorName}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Select vendor"
+                        className="newpod3cb"
+                      />
+                    )}
+                  />
+                </div>
 
-                        </StyledTableCell>
-                      </StyledTableRow>
-                    ))}
-                    <StyledTableRow>
-                      <StyledTableCell colSpan={5} align="right">
-                       <b> Total Amount</b>
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {calculateTotalAmount()}
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </div>
-            <br /> <br />
-            <br /> <br />
-            <div className="newpod3a" style={{ justifyContent: "flex-end" }}>
-              <div className="newpod3e">
                 <button
                   type="button"
                   className="new3but"
-                  onClick={handleSave}
-                  style={{ border: "1px solid #3b7ced", padding: "12px 20px" }}
+                  onClick={addRow}
+                  style={{
+                    marginTop: "1rem",
+                    color: "#000",
+                    fontSize: "15px",
+                    opacity: "0.5",
+                    padding: "2px",
+                    borderRadius: "50px",
+                  }}
                 >
-                  Save
-                </button>
-                <button type="submit" className="new3btn">
-                  Save &amp; Share
+                  <span
+                    style={{
+                      fontSize: "20px",
+                      opacity: "0.5",
+                      padding: "1px",
+                      borderRadius: "50%",
+                    }}
+                  >
+                    +
+                  </span>{" "}
+                  Add New Vendor
                 </button>
               </div>
-            </div>
-          </form>
+              <div className="newpod3b">
+                <div className="newpod3bb">
+                  <p>Vendor Address</p>
+                  {/* this should pick vendor address */}
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {vendor.address}
+                  </p>
+                </div>
+                <div className="newpod3bb">
+                  <p>Vendor Email</p>
+                  {/* this should pick vendor email */}
+                  <p style={{ fontSize: "14px", color: "#7a8a98" }}>
+                    {vendor.email}
+                  </p>
+                </div>
+              </div>{" "}
+              <br />
+              <div className="newpod3c">
+                <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
+                  <p>Select Currency</p>
+                  <Autocomplete
+                    value={selectedCurrency}
+                    onChange={handleCurrencyChange}
+                    options={savedCurrencies} // Populate options from localStorage
+                    getOptionLabel={(option) =>
+                      `${option.name} - ${option.symbol}`
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Select Currency"
+                        className="newpod3cb"
+                      />
+                    )}
+                  />
+                </div>
+                <div className="newpod3ca" style={{ marginTop: "-0.5rem" }}>
+                  <p>Payment Term</p>
+                  <TextField
+                    name="paymentTerm"
+                    value={purchaseState.paymentTerm}
+                    onChange={handlePurchaseChange}
+                    label="Type your payment terms here"
+                    placeholder="Type your payment terms here."
+                    variant="outlined" // You can change the variant to 'filled' or 'standard' based on your design
+                    className="newpod3cb"
+                    fullWidth // Makes the input take the full width of its container
+                    margin="normal" // Adds some space around the input
+                  />
+                </div>
+                <div className="newpod3ca">
+                  <p>Purchase Policy</p>
+                  <TextField
+                    name="purchasePolicy"
+                    value={purchaseState.purchasePolicy}
+                    onChange={handlePurchaseChange}
+                    label="Type your purchase policy here"
+                    placeholder="Type your purchase policy here."
+                    variant="outlined"
+                    className="newpod3cb"
+                    fullWidth
+                    margin="normal"
+                  />
+                </div>
+                <div className="newpod3ca">
+                  <p>Delivery Terms</p>
+                  <TextField
+                    name="deliveryTerm"
+                    value={purchaseState.deliveryTerm}
+                    onChange={handlePurchaseChange}
+                    label="Type your delivery terms here"
+                    placeholder="Type your delivery terms here."
+                    variant="outlined"
+                    className="newpod3cb"
+                    fullWidth
+                    margin="normal"
+                  />
+                </div>
+              </div>
+              <p
+                style={{
+                  fontSize: "20px",
+                  color: "#3b7ced",
+                  marginTop: "1rem",
+                }}
+              >
+                Purchase Order Content
+              </p>
+              <div className="newpod3d">
+                <TableContainer
+                  component={Paper}
+                  sx={{
+                    boxShadow: "none",
+                    border: "1px solid #e2e6e9",
+                    marginTop: "1rem",
+                  }}
+                >
+                  <Table
+                    sx={{
+                      minWidth: 700,
+                      "&.MuiTable-root": {
+                        border: "none",
+                      },
+                      "& .MuiTableCell-root": {
+                        border: "none",
+                      },
+                      "& .MuiTableCell-head": {
+                        border: "none",
+                      },
+                      "& .MuiTableCell-body": {
+                        border: "none",
+                      },
+                    }}
+                    aria-label="customized table"
+                  >
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell>Product Name</StyledTableCell>
+                        <StyledTableCell>Description</StyledTableCell>
+                        <StyledTableCell align="right">Qty</StyledTableCell>
+                        <StyledTableCell align="right">
+                          Unit Measurement
+                        </StyledTableCell>
+                        <StyledTableCell align="right">
+                          Estimated Unit Price
+                        </StyledTableCell>
+                        <StyledTableCell align="right">
+                          Total Price
+                        </StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {products.map((product, index) => (
+                        <StyledTableRow key={index + page * rowsPerPage}>
+                          <StyledTableCell component="th" scope="row">
+                            {product.name}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {product.productDesc}
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            <input
+                              type="number"
+                              placeholder="0.00"
+                              name="qty"
+                              className="no-arrows"
+                              style={{ textAlign: "right" }}
+                              value={product.qty}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index + page * rowsPerPage,
+                                  "qty",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            {product.unt}
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            <input
+                              type="number"
+                              placeholder="0.00"
+                              name="unitPrice"
+                              className="no-arrows"
+                              style={{ textAlign: "right" }}
+                              value={product.unitPrice}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index + page * rowsPerPage,
+                                  "unitPrice",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell align="right">
+                            {calculateTotalAmount()}
+                          </StyledTableCell>
+                        </StyledTableRow>
+                      ))}
+                      <StyledTableRow>
+                        <StyledTableCell colSpan={5} align="right">
+                          <b> Total Amount</b>
+                        </StyledTableCell>
+                        <StyledTableCell align="right">
+                          {calculateTotalAmount()}
+                        </StyledTableCell>
+                      </StyledTableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
+              <br /> <br />
+              <br /> <br />
+              <div className="newpod3a" style={{ justifyContent: "flex-end" }}>
+                <div className="newpod3e">
+                  <button
+                    type="button"
+                    className="new3but"
+                    onClick={handleSave}
+                    style={{
+                      border: "1px solid #3b7ced",
+                      padding: "12px 20px",
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button type="submit" className="new3btn">
+                    Save &amp; Share
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

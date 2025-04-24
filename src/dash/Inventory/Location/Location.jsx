@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   TextField,
   Table,
@@ -13,10 +13,9 @@ import {
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import "./Location.css";
-import { useLocation } from "react-router-dom";
 import LocationStep from "./LocationStep";
 import { useTenant } from "../../../context/TenantContext";
-
+import { useCustomLocation } from "../../../context/Inventory/LocationContext";
 const locationType = [
   {
     type: "Suppliers Location",
@@ -41,38 +40,51 @@ function Location() {
   // Location wizard ===========================
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const location = useLocation();
+  const {
+    locationList,
+    singleLocation,
+    getLocationList,
+    createLocation,
+    isLoading,
+    error,
+  } = useCustomLocation();
+
 
   useEffect(() => {
-    if (location.state?.step) {
-      setCurrentStep(location.state.step);
-      setIsModalOpen(true);
-    } else {
-      const timer = setTimeout(() => {
-        setIsModalOpen(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state]);
+    getLocationList();
+  }, []);
+
+  console.log(locationList, "locationList");
+
+  // useEffect(() => {
+  //   if (location.state?.step) {
+  //     setCurrentStep(location.state.step);
+  //     setIsModalOpen(true);
+  //   } else {
+  //     const timer = setTimeout(() => {
+  //       setIsModalOpen(true);
+  //     }, 500);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [location.state]);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-  // End ---------------------------------------------------------------------------
+
+
 
   return (
     <div className="location-contain">
       <div style={{ padding: "20px" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link to={`/${tenant_schema_name}/inventory/location/create-inventory-location`}>
-          <button
-            className="create-location"
+          <Link
+            to={`/${tenant_schema_name}/inventory/location/create-inventory-location`}
           >
-            Create Location
-          </button>
+            <button className="create-location">Create Location</button>
           </Link>
-          
+
           <TextField
             variant="outlined"
             placeholder="Search"

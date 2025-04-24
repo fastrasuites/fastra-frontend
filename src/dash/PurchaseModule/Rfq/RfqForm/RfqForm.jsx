@@ -141,7 +141,8 @@ const RfqForm = ({
     expiry_date: formData.expiry_date || "",
     vendor: formData.vendor?.url || formData.vendor,
     vendor_category: formData.vendor_category || "",
-    purchase_request: formData.purchase_request?.url || formData.purchase_request || "",
+    purchase_request:
+      formData.purchase_request?.url || formData.purchase_request || "",
     currency: formData.currency?.url || formData.currency,
     status,
     items: Array.isArray(formData.items)
@@ -184,7 +185,7 @@ const RfqForm = ({
           toastId: "rfq-update",
         });
       } else {
-      console.log("Cleaned RFQ Data:", cleanedData);
+        console.log("Cleaned RFQ Data:", cleanedData);
 
         const result = await createRFQ(cleanedData);
         if (result.success) {
@@ -259,7 +260,7 @@ const RfqForm = ({
           <h2>Basic Information</h2>
           <div className="editCancel">
             <Button variant="text" onClick={handleCancel}>
-              Cancel
+              Close
             </Button>
           </div>
         </div>

@@ -1,0 +1,28 @@
+.scrapBasicInformationInputs {
+    display: grid;
+    grid-template-columns: repeat(3, max-content) minmax(200px, 400px);
+    gap: 77px;
+    justify-content: start;
+  }
+
+  .scrapNotes {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    gap: 8px;
+    justify-content: start;
+  }
+  
+  .scrapFormLabelAndValue {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+  
+  .scrapFormLabelAndValue > p, .scrapFormLabelAndValue > p {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 100%;
+    color: #7A8A98;
+    white-space: nowrap;
+  }

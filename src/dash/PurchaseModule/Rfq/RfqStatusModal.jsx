@@ -132,7 +132,11 @@ const RFQStatusModal = ({
     }
     return (
       <TableRow>
-        <TableCell colSpan={6} align="center" sx={{ color: "#7a8a98", fontSize: "12px" }}>
+        <TableCell
+          colSpan={6}
+          align="center"
+          sx={{ color: "#7a8a98", fontSize: "12px" }}
+        >
           No items available
         </TableCell>
       </TableRow>
@@ -280,14 +284,16 @@ const RFQStatusModal = ({
                 onClick={handleEdit}
                 style={{
                   display:
-                    status === "approved" || status === "cancelled" ? "none" : "block",
+                    status === "approved" || status === "cancelled"
+                      ? "none"
+                      : "block",
                 }}
               >
                 Edit
               </Button>
             )}
             <Button variant="outlined" className="cancel" onClick={onCancel}>
-              Cancel
+              Close
             </Button>
           </div>
         </div>

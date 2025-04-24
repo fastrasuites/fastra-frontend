@@ -73,7 +73,7 @@ const IncomingProductBackOrderCreation = () => {
                   },
                 }}
               >
-                Cancel
+                Close
               </Button>
               <Button sx={inventoryShareStyles.buttonStyles(theme)}>
                 Edit
