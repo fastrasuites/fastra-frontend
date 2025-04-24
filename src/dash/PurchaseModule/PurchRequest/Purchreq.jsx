@@ -1,7 +1,6 @@
 // Purchreq.jsx
 import React, { useState, useEffect } from "react";
 import "./Purchreq.css";
-import SearchIcon from "../../../image/search.svg";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import ListView from "./Listview";
@@ -17,6 +16,10 @@ import { extractRFQID, formatDate } from "../../../helper/helper";
 import PurchaseRequestModule from "./PurchaseRequestModule";
 import PurchaseRequestStatus from "./PurchaseRequestStatus";
 import PRForm from "./PRForm/PRForm";
+// import SecondaryBar.css
+import "../../Inventory/secondaryBar/SecondaryBar.css";
+import { Button } from "@mui/material";
+import { Search } from "lucide-react";
 
 export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
@@ -199,61 +202,110 @@ export default function Purchreq() {
                 })}
               </div>
 
-              <div className="purchase-nav">
-                <div className="purchase-content">
-                  <button
-                    className="purchase-contentbtn"
+              <nav className="secondary-bar" aria-label="Secondary navigation">
+                {/* Left side */}
+                <div className="secondary-bar__left">
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    className="secondary-bar__button"
+                    aria-label="Create new purchase request"
                     onClick={handleNewPurchaseRequest}
-                    style={{ fontSize: "17px" }}
                   >
                     New Purchase Request
-                  </button>
-                  <div className="prqsash">
-                    <label
-                      htmlFor="searchInput"
-                      className="search-box"
-                      // onClick={handleSearch}
-                    >
-                      <img
-                        src={SearchIcon}
-                        alt="Search"
-                        className="search-icon"
-                      />
-                      <input
-                        id="searchInput"
-                        type="text"
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="search-input"
-                      />
+                  </Button>
+                  <div className="secondary-bar__search">
+                    <label htmlFor="searchInput" className="visually-hidden">
+                      Search Purchase requests
                     </label>
+                    <div className="search-icon-wrapper" aria-hidden="true">
+                      <Search />
+                    </div>
+                    <input
+                      id="searchInput"
+                      type="text"
+                      placeholder="Search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="secondary-bar__search-input"
+                      aria-describedby="searchInstructions"
+                    />
+                    <span id="searchInstructions" className="visually-hidden">
+                      Search through purchase request listings
+                    </span>
                   </div>
                 </div>
-                <div className="pagination">
-                  <p className="purchase-pagination">1-2 of 2</p>
-                  <div className="purchase-pagination-nav">
-                    <FaCaretLeft className="lr" />
-                    <div className="stroke"></div>
-                    <FaCaretRight className="lr" />
+
+                {/* Right side */}
+                <div className="secondary-bar__right">
+                  <div
+                    className="secondary-bar__pagination"
+                    role="navigation"
+                    aria-label="Pagination"
+                  >
+                    <p className="secondary-bar__pagination-text">
+                      <span className="visually-hidden">Current page:</span>
+                      1-2 of 2
+                    </p>
+                    <div className="secondary-bar__pagination-controls">
+                      <button
+                        type="button"
+                        className="secondary-bar__icon-button"
+                        aria-label="Previous page"
+                        // disabled={currentPage === 1}
+                        // onClick={() => onPageChange(currentPage - 1)}
+                      >
+                        <FaCaretLeft aria-hidden="true" />
+                      </button>
+                      <div
+                        className="secondary-bar__divider"
+                        aria-hidden="true"
+                      ></div>
+                      <button
+                        type="button"
+                        className="secondary-bar__icon-button"
+                        aria-label="Next page"
+                        // disabled={currentPage === totalPages}
+                        // onClick={() => onPageChange(currentPage + 1)}
+                      >
+                        <FaCaretRight aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="p3bview">
-                    <IoGrid
-                      className={`toggle ${
-                        viewMode === "grid" ? "active" : ""
+
+                  <div
+                    className="secondary-bar__view-toggle"
+                    role="group"
+                    aria-label="View options"
+                  >
+                    <button
+                      type="button"
+                      className={`secondary-bar__icon-button ${
+                        viewMode === "grid" ? "active-view" : ""
                       }`}
+                      aria-label="Grid view"
                       onClick={() => toggleViewMode("grid")}
+                    >
+                      <IoGrid aria-hidden="true" />
+                    </button>
+                    <div
+                      className="secondary-bar__divider"
+                      aria-hidden="true"
                     />
-                    <div className="stroke"></div>&nbsp; &nbsp;
-                    <FaBars
-                      className={`toggle ${
-                        viewMode === "list" ? "active" : ""
+
+                    <button
+                      type="button"
+                      className={`secondary-bar__icon-button ${
+                        viewMode === "list" ? "active-view" : ""
                       }`}
+                      aria-label="Grid view"
                       onClick={() => toggleViewMode("list")}
-                    />
+                    >
+                      <FaBars aria-hidden="true" />
+                    </button>
                   </div>
                 </div>
-              </div>
+              </nav>
             </div>
           )}
 
