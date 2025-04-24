@@ -21,6 +21,7 @@ import "./PoStatusModal.css";
 import "../Rfq/RfqStatusModal.css";
 import { usePurchaseOrder } from "../../../context/PurchaseOrderContext.";
 import { Bounce, toast } from "react-toastify";
+import { useHistory } from "react-router-dom";
 
 // Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
@@ -33,7 +34,6 @@ const POStatusModal = ({
   item = {},
   statusColor,
   onCancel,
-  onNewRfq,
   triggerRefresh,
 }) => {
   const [edit, setEdit] = useState(false);
@@ -44,6 +44,23 @@ const POStatusModal = ({
     updatePurchaseApproved,
   } = usePurchaseOrder();
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+  const history = useHistory()
+
+
+  
+  const handleReload = () => {
+    setTimeout(() => window.location.reload(), 1000);
+  };
+
+  const handleConvertToInventory = () => {
+    history.push({
+      pathname: `/${tenant_schema_name}/inventory/location`,
+      state: {
+        pr: item,
+      },
+    });
+    handleReload();
+  };
 
   // Function to clean the form data for submission.
   const cleanFormData = () => ({
@@ -136,9 +153,9 @@ const POStatusModal = ({
               variant="contained"
               className="newRfqBtn"
               disableElevation
-              onClick={onNewRfq}
+              onClick={handleConvertToInventory}
             >
-              Send to Vendor
+              Send to Inventory
             </Button>
           </div>
         );
