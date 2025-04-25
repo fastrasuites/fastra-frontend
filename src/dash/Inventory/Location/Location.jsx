@@ -58,7 +58,7 @@ function Location() {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [location.state]);
+  }, []);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
