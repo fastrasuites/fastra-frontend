@@ -30,7 +30,6 @@ const locationType = [
 function Location() {
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
-
   // Location wizard ===========================
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -43,30 +42,27 @@ function Location() {
     error,
   } = useCustomLocation();
 
-
   useEffect(() => {
     getLocationList();
   }, []);
 
   console.log(locationList, "locationList");
 
-  // useEffect(() => {
-  //   if (location.state?.step) {
-  //     setCurrentStep(location.state.step);
-  //     setIsModalOpen(true);
-  //   } else {
-  //     const timer = setTimeout(() => {
-  //       setIsModalOpen(true);
-  //     }, 500);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [location.state]);
+  useEffect(() => {
+    if (location.state?.step) {
+      setCurrentStep(location.state.step);
+      setIsModalOpen(true);
+    } else {
+      const timer = setTimeout(() => {
+        setIsModalOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
-
 
   return (
     <div className="location-contain">

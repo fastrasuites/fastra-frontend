@@ -15,6 +15,7 @@ import autosaveIcon from "../../../../image/autosave.svg";
 import "./LocationForm.css";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import { useLocationConfig } from "../../../../context/Inventory/LocationConfigContext";
+import { useTenant } from "../../../../context/TenantContext";
 
 const STORAGE_KEY = "draftLocationForm";
 
@@ -36,6 +37,7 @@ const initialFormState = {
 };
 
 const LocationForm = () => {
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
   const {
     locationList,
@@ -59,10 +61,14 @@ const LocationForm = () => {
 
   // 2. Auto-generate locationCode once locations are loaded
   useEffect(() => {
-    if (!loadingLocations && Array.isArray(locationList) && !formData.locationCode) {
+    if (
+      !loadingLocations &&
+      Array.isArray(locationList) &&
+      !formData.locationCode
+    ) {
       const nextIndex = locationList.length + 1;
       const suffix = String(nextIndex).padStart(4, "0");
-      setFormData(prev => ({ ...prev, locationCode: suffix }));
+      setFormData((prev) => ({ ...prev, locationCode: suffix }));
     }
   }, [loadingLocations, locationList, formData.locationCode]);
 
@@ -84,8 +90,8 @@ const LocationForm = () => {
   }, [formData]);
 
   const handleChange = useCallback(
-    field => e =>
-      setFormData(prev => ({
+    (field) => (e) =>
+      setFormData((prev) => ({
         ...prev,
         [field]: e.target.value,
       })),
@@ -96,7 +102,7 @@ const LocationForm = () => {
   const handleCodeBlur = () => {
     if (formData.locationCode && !/\d+$/.test(formData.locationCode)) {
       const suffix = String((locationList?.length || 0) + 1).padStart(4, "0");
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         locationCode: prev.locationCode.toUpperCase() + suffix,
       }));
@@ -119,7 +125,8 @@ const LocationForm = () => {
         showCancelButton: true,
         confirmButtonText: "Enable Now",
       });
-      if (isConfirmed) history.push("/location-configuration");
+      if (isConfirmed)
+        history.push(`/${tenant_schema_name}/inventory/location-configuration`);
       return;
     }
 
@@ -168,7 +175,6 @@ const LocationForm = () => {
   };
 
   const handleCancel = () => history.goBack();
-
 
   console.log("Form Data", formData);
   return (
@@ -300,7 +306,11 @@ const LocationForm = () => {
                   disabled={loadingLocations || loadingConfig}
                   sx={{ fontSize: 16, px: 3, py: 1.5 }}
                 >
-                  {loadingLocations ? <CircularProgress size={20} /> : "Add Location"}
+                  {loadingLocations ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    "Add Location"
+                  )}
                 </Button>
               </Box>
             </form>

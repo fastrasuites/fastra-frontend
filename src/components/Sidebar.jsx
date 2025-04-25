@@ -61,7 +61,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         </Link>
 
         <Link
-          to={`/${tenant_schema_name}/inventory`}
+          to={`/${tenant_schema_name}/inventory/operations`}
           className="sidebar-item"
           onClick={handleCloseSidebar}
         >
