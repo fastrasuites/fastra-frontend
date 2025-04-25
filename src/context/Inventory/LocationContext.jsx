@@ -107,10 +107,10 @@ export const LocationProvider = ({ children }) => {
         const requestBody = {
           location_code: locationData.locationCode,
           location_name: locationData.locationName,
-          location_type: locationData.locationType || "Internal",
+          location_type: locationData.locationType || "internal",
           address: locationData.address,
-          location_manager: locationData.locationManager || null, // Ensure optional fields default to null
-          store_keeper: locationData.storeKeeper || null,
+          location_manager: null, // Ensure optional fields default to null
+          store_keeper: null,
           contact_information: locationData.contactInfo,
           is_hidden: locationData.isHidden ?? true,
         };

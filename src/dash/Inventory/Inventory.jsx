@@ -14,6 +14,9 @@ import StockMoves from "./stock/StockMoves/StockMoves";
 import LocationForm from "./Location/CreateLocation/LocationForm";
 import StockMovesForm from "./stock/StockMoves/StockMovesForm/StockMovesForm";
 import ScrapForm from "./stock/scrap/ScrapForm/ScrapForm";
+import MaterialConsumptionForm from "./Operations/MaterialConsumption/MaterialConsumptionForm/MaterialConsumptionForm";
+import InternalTransfer from "./Operations/InternalTransfer/InternalTransfer";
+import InternalTransferForm from "./Operations/InternalTransfer/InternalTransferForm/InternalTransferForm";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -32,6 +35,18 @@ const InventoryLayout = () => {
           <Route
             path={`${path}/operations/material-consumption`}
             component={MaterialConsumption}
+          />
+          <Route
+            path={`${path}/operations/create-material-consumption`}
+            component={MaterialConsumptionForm}
+          />
+
+           <Route
+            path={`${path}/operations/internal-transfer`} 
+            component={InternalTransfer} />
+          <Route
+            path={`${path}/operations/create-internal-transfer`}
+            component={InternalTransferForm}
           />
 
           {/* Inventory Location Routes */}
@@ -55,7 +70,10 @@ const InventoryLayout = () => {
             component={NewStockAdjustment}
           />
           <Route path={`${path}/stock/stock-moves`} component={StockMoves} />
-          <Route path={`${path}/stock/create-stock-moves`} component={StockMovesForm} />
+          <Route
+            path={`${path}/stock/create-stock-moves`}
+            component={StockMovesForm}
+          />
 
           {/* Inventory Scrap Routes */}
 

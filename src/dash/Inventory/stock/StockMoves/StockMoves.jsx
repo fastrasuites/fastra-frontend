@@ -9,6 +9,7 @@ import {
   TableRow,
   Paper,
   Checkbox,
+  Typography,
 } from "@mui/material";
 import "./StockMoves.css";
 import { useTenant } from "../../../../context/TenantContext";
@@ -43,11 +44,8 @@ function StockMoves() {
       <div style={{ padding: "20px" }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link
-            to={`/${tenant_schema_name}/inventory/stock/create-stock-moves`}
-          >
-            <button className="create-stock">Stock Moves</button>
-          </Link>
+         
+            <Typography sx={{fontSize: "20px", fontWeight: "500"}}>Stock Moves</Typography>
 
           <TextField
             variant="outlined"

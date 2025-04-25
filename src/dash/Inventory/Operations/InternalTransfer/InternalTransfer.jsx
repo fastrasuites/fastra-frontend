@@ -16,40 +16,52 @@ import {
 import { useTenant } from "../../../../context/TenantContext";
 
 // Sample data
-const materialConsumptionData = [
+const internalTransferData = [
   {
-    id: "MC001",
-    location: "Location 1",
-    dateCreated: "4 Apr 2024 - 4:48 PM",
-    dateClosed: "4 Apr 2024 - 4:48 PM",
+    id: "IT001",
+    sourceLocation: "xsx Stores",
+    productName: "Laptop Keyboard",
+    quantity: 4,
+    unitOfMeasure: "kg",
     status: "Done",
   },
   {
-    id: "MC002",
-    location: "Location 2",
-    dateCreated: "4 Apr 2024 - 4:48 PM",
-    dateClosed: "4 Apr 2024 - 4:48 PM",
+    id: "IT002",
+    sourceLocation: "xsx Stores",
+    productName: "Laptop",
+    quantity: 4,
+    unitOfMeasure: "kg",
     status: "Done",
   },
   {
-    id: "MC003",
-    location: "Location 3",
-    dateCreated: "4 Apr 2024 - 4:48 PM",
-    dateClosed: "4 Apr 2024 - 4:48 PM",
+    id: "IT003",
+    sourceLocation: "xsx Stores",
+    productName: "Keyboard & Mouse",
+    quantity: 4,
+    unitOfMeasure: "kg",
+    status: "Done",
+  },
+  {
+    id: "IT004",
+    sourceLocation: "xsx Stores",
+    productName: "Laptop Keyboard",
+    quantity: 4,
+    unitOfMeasure: "kg",
     status: "Draft",
   },
 ];
 
-export default function MaterialConsumption() {
+export default function InternalTransfer() {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name || "";
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter data based on search term
-  const filteredData = materialConsumptionData.filter(
-    ({ id, location }) =>
+  // Filter data based on search input (ID, source location, or product name)
+  const filteredData = internalTransferData.filter(
+    ({ id, sourceLocation, productName }) =>
       id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      location.toLowerCase().includes(searchTerm.toLowerCase())
+      sourceLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -57,32 +69,32 @@ export default function MaterialConsumption() {
       <Stack direction="row" spacing={2} alignItems="center" mb={2}>
         <Button
           component={Link}
-          to={`/${tenant_schema_name}/inventory/operations/create-material-consumption`}
+          to={`/${tenant_schema_name}/inventory/operations/create-internal-transfer`}
           variant="contained"
         >
-          Material Consumption
+          New Transfer Order
         </Button>
         <TextField
           variant="outlined"
-          placeholder="Search by ID or Location"
+          placeholder="Search by ID, Location or Product"
           size="small"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ width: 240 }}
+          sx={{ width: 300 }}
         />
       </Stack>
 
       <TableContainer component={Paper}>
-        <Table aria-label="material consumption table">
+        <Table aria-label="internal transfer table">
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox color="primary" />
               </TableCell>
-              <TableCell>ID</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Date Created</TableCell>
-              <TableCell>Date Closed</TableCell>
+              <TableCell>Source Location</TableCell>
+              <TableCell>Product Name</TableCell>
+              <TableCell>Quantity</TableCell>
+              <TableCell>Unit of Measure</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
@@ -90,17 +102,15 @@ export default function MaterialConsumption() {
             {filteredData.map((item, index) => (
               <TableRow
                 key={item.id}
-                sx={{
-                  '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
-                }}
+                sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}
               >
                 <TableCell padding="checkbox">
                   <Checkbox color="primary" />
                 </TableCell>
-                <TableCell>{item.id}</TableCell>
-                <TableCell>{item.location}</TableCell>
-                <TableCell>{item.dateCreated}</TableCell>
-                <TableCell>{item.dateClosed}</TableCell>
+                <TableCell>{item.sourceLocation}</TableCell>
+                <TableCell>{item.productName}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.unitOfMeasure}</TableCell>
                 <TableCell
                   sx={{
                     color:

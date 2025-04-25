@@ -28,14 +28,8 @@ const locationType = [
 ];
 
 function Location() {
-  const [locations, setLocations] = useState([]);
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
-  useEffect(() => {
-    // Fetch data from localStorage when the component mounts
-    const storedLocations = JSON.parse(localStorage.getItem("locations")) || [];
-    setLocations(storedLocations);
-  }, []);
 
   // Location wizard ===========================
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -139,7 +133,7 @@ function Location() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {locations.map((location, index) => (
+              {locationList.map((location, index) => (
                 <TableRow
                   key={location.id}
                   style={{
@@ -157,11 +151,11 @@ function Location() {
                     }}
                   >
                     <LocationOnIcon className="LocationOnIcon" />
-                    {location.locationCode}
+                    {location?.id}
                   </TableCell>
-                  <TableCell>{location.locationName}</TableCell>
-                  <TableCell>{location.address}</TableCell>
-                  <TableCell>{location.contactInfo}</TableCell>
+                  <TableCell>{location?.location_name}</TableCell>
+                  <TableCell>{location?.address}</TableCell>
+                  <TableCell>{location?.contact_information}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

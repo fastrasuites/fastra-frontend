@@ -21,7 +21,7 @@ const InventoryHeader = () => {
         },
         {
           label: "Internal Transfer",
-          link: `/${tenant_schema_name}/internal-transfer`,
+          link: `/${tenant_schema_name}/inventory/operations/internal-transfer`,
         },
         {
           label: "Material Consumption",

@@ -9,6 +9,7 @@ import { FormProvider } from "./context/FormContext";
 import { TenantUsersProvider } from "./context/Tanants/TanantUsers";
 import { LocationProvider } from "./context/Inventory/LocationContext";
 import { LocationConfigProvider } from "./context/Inventory/LocationConfigContext";
+import { StockAdjustmentProvider } from "./context/Inventory/StockAdjustment";
 
 function AppWrapper() {
   return (
@@ -20,9 +21,11 @@ function AppWrapper() {
             <RFQProvider>
               <PurchaseOrderProvider>
                 <LocationProvider>
+                  <StockAdjustmentProvider>
                   <Router>
                     <App />
                   </Router>
+                  </StockAdjustmentProvider>
                 </LocationProvider>
               </PurchaseOrderProvider>
             </RFQProvider>
