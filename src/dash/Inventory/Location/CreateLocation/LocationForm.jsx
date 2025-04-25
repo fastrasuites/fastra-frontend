@@ -16,8 +16,24 @@ import "./LocationForm.css";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import { useLocationConfig } from "../../../../context/Inventory/LocationConfigContext";
 
-const LOCATION_TYPE = "Internal";
 const STORAGE_KEY = "draftLocationForm";
+
+// Define available types here for easy extension
+const LOCATION_TYPES = [
+  { value: "internal", label: "Internal" },
+  { value: "partner", label: "Partner" },
+];
+
+const initialFormState = {
+  locationCode: "",
+  locationName: "",
+  locationType: "internal",
+  address: "",
+  locationManager: "",
+  storeKeeper: "",
+  contactInfo: "",
+  isHidden: false,
+};
 
 const LocationForm = () => {
   const history = useHistory();
@@ -26,66 +42,61 @@ const LocationForm = () => {
     getLocationList,
     createLocation,
     isLoading: loadingLocations,
-    error: locationsError,
   } = useCustomLocation();
   const {
     multiLocationList,
     getMultiLocation,
     isLoading: loadingConfig,
-    error: configError,
   } = useLocationConfig();
 
-  const [isMultiLocationEnabled, setIsMultiLocationEnabled] = useState(false);
-  const [formData, setFormData] = useState({
-    locationCode: "",
-    locationName: "",
-    address: "",
-    locationManager: "",
-    storeKeeper: "",
-    contactInfo: "",
-    isHidden: false,
-  });
+  const [formData, setFormData] = useState(initialFormState);
 
-  // 1. Fetch both lists on mount
+  // 1. Fetch data on mount
   useEffect(() => {
     getLocationList();
     getMultiLocation();
   }, [getLocationList, getMultiLocation]);
 
-  // 2. Sync multi-location toggle
+  // 2. Auto-generate locationCode once locations are loaded
   useEffect(() => {
-    if (multiLocationList.length > 0) {
-      setIsMultiLocationEnabled(multiLocationList[0].is_activated);
+    if (!loadingLocations && Array.isArray(locationList) && !formData.locationCode) {
+      const nextIndex = locationList.length + 1;
+      const suffix = String(nextIndex).padStart(4, "0");
+      setFormData(prev => ({ ...prev, locationCode: suffix }));
     }
-  }, [multiLocationList]);
+  }, [loadingLocations, locationList, formData.locationCode]);
 
-  // 3. Restore draft from localStorage
+  // 3. Restore draft
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         setFormData(JSON.parse(saved));
-      } catch { /* ignore parse errors */ }
+      } catch {
+        // ignore
+      }
     }
   }, []);
 
-  // 4. Autosave on change
+  // 4. Autosave draft
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
 
   const handleChange = useCallback(
-    (field) => (e) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-    },
+    field => e =>
+      setFormData(prev => ({
+        ...prev,
+        [field]: e.target.value,
+      })),
     []
   );
 
+  // Append numeric suffix if user types a non-numeric code
   const handleCodeBlur = () => {
-    // Append a numeric suffix only if user hasn't already included digits
     if (formData.locationCode && !/\d+$/.test(formData.locationCode)) {
       const suffix = String((locationList?.length || 0) + 1).padStart(4, "0");
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         locationCode: prev.locationCode.toUpperCase() + suffix,
       }));
@@ -93,25 +104,14 @@ const LocationForm = () => {
   };
 
   const resetForm = () => {
-    const blank = {
-      locationCode: "",
-      locationName: "",
-      address: "",
-      locationManager: "",
-      storeKeeper: "",
-      contactInfo: "",
-      isHidden: false,
-    };
-    setFormData(blank);
+    setFormData(initialFormState);
     localStorage.removeItem(STORAGE_KEY);
   };
 
   const handleAddLocation = async () => {
-    // Prevent if loading
     if (loadingLocations || loadingConfig) return;
 
-    // If you already have one location and multi is disabled, prompt
-    if (locationList.length > 0 && !isMultiLocationEnabled) {
+    if (locationList.length > 0 && !multiLocationList?.is_activated) {
       const { isConfirmed } = await Swal.fire({
         title: "Multi-Location Disabled",
         text: "To create multiple locations, please enable it in Configuration.",
@@ -123,7 +123,7 @@ const LocationForm = () => {
       return;
     }
 
-    // Simple required-fields check
+    // Validate required fields
     for (const [key, val] of Object.entries(formData)) {
       if (key !== "isHidden" && !val) {
         return Swal.fire({
@@ -134,17 +134,9 @@ const LocationForm = () => {
       }
     }
 
-    // Construct payload
     const newLocation = {
       id: Date.now(),
-      locationCode: formData.locationCode,
-      locationName: formData.locationName,
-      locationType: LOCATION_TYPE,
-      address: formData.address,
-      locationManager: formData.locationManager,
-      storeKeeper: formData.storeKeeper,
-      contactInfo: formData.contactInfo,
-      isHidden: formData.isHidden,
+      ...formData,
     };
 
     try {
@@ -158,30 +150,27 @@ const LocationForm = () => {
         resetForm();
         getLocationList();
       }
-    } 
-    catch (err) {
-      // Show validation errors if present
-      if (err && typeof err === "object") {
-        const msgs = Object.values(err).filter(Boolean);
-        if (msgs.length) {
-          return Swal.fire({
-            icon: "error",
-            title: "Validation Error",
-            text: "Error submitting the form.",
-          });
-        }
+    } catch (err) {
+      const messages = Object.values(err || {}).filter(Boolean);
+      if (messages.length) {
+        return Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          text: messages.join(", "),
+        });
       }
       Swal.fire({
         icon: "error",
         title: "Submission Error",
-        text: "Failed to submit the location data.",
+        text: err?.message || "An error occurred while submitting the form.",
       });
     }
   };
 
   const handleCancel = () => history.goBack();
 
-  // 5. Render
+
+  console.log("Form Data", formData);
   return (
     <div className="inven-header">
       <div className="location-form-wrapper fade-in">
@@ -207,6 +196,7 @@ const LocationForm = () => {
 
               <Box mt={3}>
                 <Grid container spacing={3}>
+                  {/* Location Code */}
                   <Grid item xs={12} sm={6} md={4}>
                     <Typography gutterBottom>Location Code</Typography>
                     <TextField
@@ -218,6 +208,7 @@ const LocationForm = () => {
                     />
                   </Grid>
 
+                  {/* Location Name */}
                   <Grid item xs={12} sm={6} md={4}>
                     <Typography gutterBottom>Location Name</Typography>
                     <TextField
@@ -228,15 +219,28 @@ const LocationForm = () => {
                     />
                   </Grid>
 
+                  {/* Location Type */}
                   <Grid item xs={12} sm={6} md={4}>
                     <Typography gutterBottom>Location Type</Typography>
-                    <Typography sx={{ pt: 1 }}>{LOCATION_TYPE}</Typography>
+                    <TextField
+                      fullWidth
+                      select
+                      value={formData.locationType}
+                      onChange={handleChange("locationType")}
+                    >
+                      {LOCATION_TYPES.map(({ value, label }) => (
+                        <MenuItem key={value} value={value}>
+                          {label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Grid>
                 </Grid>
 
                 <Divider sx={{ my: 4 }} />
               </Box>
 
+              {/* Address / Manager / Store Keeper */}
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6} md={4}>
                   <Typography gutterBottom>Address</Typography>
@@ -275,6 +279,7 @@ const LocationForm = () => {
                 </Grid>
               </Grid>
 
+              {/* Contact Info */}
               <Grid container spacing={3} mt={1}>
                 <Grid item xs={12} sm={6} md={4}>
                   <Typography gutterBottom>Contact Information</Typography>
@@ -287,6 +292,7 @@ const LocationForm = () => {
                 </Grid>
               </Grid>
 
+              {/* Submit */}
               <Box mt={4}>
                 <Button
                   variant="contained"

@@ -151,8 +151,9 @@ export const PurchaseProvider = ({ children }) => {
   const createProduct = useCallback(
     async (newProduct) => {
       try {
+        console.log("newProduct:", newProduct);
         const response = await client.post("/purchase/products/", newProduct);
-        console.log("Product created:", response.data);
+        // console.log("Product created:", response.data);
         setProducts((prev) => [...prev, response.data]);
       } catch (err) {
         setError(err);

@@ -20,8 +20,8 @@ const LocationConfiguration = () => {
   }, [getMultiLocation]);
 
   useEffect(() => {
-    if (multiLocationList.length > 0) {
-      setIsMultiLocationEnabled(multiLocationList[0].is_activated);
+    if (multiLocationList) {
+      setIsMultiLocationEnabled(multiLocationList?.is_activated);
     }
   }, [multiLocationList]);
 
@@ -33,10 +33,10 @@ const LocationConfiguration = () => {
     if (isLoading || multiLocationList.length === 0) return;
 
     const is_activated = !isMultiLocationEnabled;
-    const id = extractId(multiLocationList[0].url);
+    // const id = extractId(multiLocationList[0].url);
 
     try {
-      await patchToggleMultiLocation({id, is_activated});
+      await patchToggleMultiLocation({is_activated});
 
       setIsMultiLocationEnabled(is_activated);
     } catch (err) {
@@ -44,6 +44,7 @@ const LocationConfiguration = () => {
     }
   };
 
+  console.log(isMultiLocationEnabled, "isMultiLocationEnabled");
   return (
     <div className="congiure-contain">
       <div className="configurations">

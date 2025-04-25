@@ -36,6 +36,7 @@ const CommonForm = ({
         // Auto-update related fields when product changes
         if (field === "product" && value?.product_description) {
           autofillRow.forEach((row) => {
+            // console.log(row);
             updatedItems[index][row] = value[row];
           });
           updatedItems[index].description = value.product_description;
