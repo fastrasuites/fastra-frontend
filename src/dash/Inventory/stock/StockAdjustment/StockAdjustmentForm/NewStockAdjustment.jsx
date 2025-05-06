@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
-import { extractRFQID, formatDate } from "../../../../../helper/helper";
+import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import "./NewStockAdjustment.css";
 import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjustment";
 import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
+import Swal from "sweetalert2";
 
 // Default form data
 const defaultFormData = {
   adjustmentType: "Stock Level Update",
-  id: extractRFQID("LAGIN0001"),
+  // id: Date.now(),
   date: formatDate(Date.now()),
-  location: "xdx Stores",
+  location: "",
   items: [],
   status: "draft",
   is_hidden: true,
@@ -25,9 +26,6 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   const {
     locationList,
     getLocationList,
-    createLocation,
-    isLoading: locLoading,
-    error: locError,
   } = useCustomLocation();
 
   useEffect(() => {
@@ -39,14 +37,14 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
     handleInputChange("location", newValue);
   };
 
-  console.log("Location List", locationList);
+  // console.log("Location List", locationList);
 
   return (
     <div className="stockbasicInformationInputs">
-      <div className="formLabelAndValue">
+      {/* <div className="formLabelAndValue">
         <label>ID</label>
         <p>{formData.id}</p>
-      </div>
+      </div> */}
       <div className="formLabelAndValue">
         <label>Adjustment Type</label>
         <p>{formData.adjustmentType}</p>
@@ -170,9 +168,31 @@ const NewStockAdjustment = () => {
       notes: filledData.notes,
       status: filledData.status,
       is_hidden: false,
+      items: filledData.items.map((item) => ({
+        product: item.product.url,
+        // unit_of_measure: item.unit_of_measure.url,
+        // available_product_quantity: item.available_product_quantity,
+        adjusted_quantity: item.qty_received,
+      })),
     };
-    console.log("Final Form Data", cleanData);
-    createStockAdjustment(cleanData);
+    // console.log("Final Form Data", cleanData);
+    createStockAdjustment(cleanData).then((data) => {
+      console.log(data);
+      if (data.success) {
+        setFormData(defaultFormData);
+        return Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Stock adjustment created successfully",
+        });
+      } else if (stockError) {
+        return Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to create stock adjustment, please try again",
+        });
+      }
+    });
   };
 
   return (

@@ -12,7 +12,6 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import IncomingProductManualListview from "./IncomingProduct/IncomingProductManualListview";
 import inventoryShareStyle from "../inventorySharedStyles";
-import { useTenant } from "../../../context/TenantContext";
 import draftIcon from "../../../image/icons/draft.png";
 
 // Data for pending boxes
@@ -118,8 +117,6 @@ const PendingBox = ({
 
 const Operations = () => {
   const theme = useTheme();
-  const { tenantData } = useTenant();
-  const tenantSchemaName = tenantData?.tenant_schema_name;
 
   const [selectedLocation, setSelectedLocation] = useState("");
   const options = ["Suppliers location", "Customers location"];
@@ -185,15 +182,9 @@ const Operations = () => {
         ))}
       </PendingBoxesContainer>
 
-      <Link
-        to={`/${tenantSchemaName}/inventory/operations/creat-incoming-product`}
-      >
-        <Button variant="contained" sx={{marginTop: "50px", marginBottom: "10px"}} disableElevation>
-          New Incoming Product
-        </Button>
-      </Link>
-
-      <IncomingProductManualListview />
+      <Box paddingTop={"32px"}>
+        <IncomingProductManualListview />
+      </Box>
     </Box>
   );
 };

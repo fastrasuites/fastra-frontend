@@ -120,6 +120,7 @@ const LocationForm = () => {
         confirmButtonText: "Enable Now",
       });
       if (isConfirmed) history.push("/location-configuration");
+      
       return;
     }
 

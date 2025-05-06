@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useMemo, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { useTenant } from "../TenantContext";
 import { getTenantClient } from "../../services/apiService";
 
@@ -8,18 +14,22 @@ const StockAdjustmentContext = createContext(null);
 // Validation utilities
 const validateStockAdjustmentData = (data) => {
   const errors = {};
-  if (!data.location) errors.location = "Warehouse location is required";
-  if (!data.adjustmentType) errors.adjustmentType = "Adjustment type is required";
-  if (!data.date) errors.date = "Date is required";
+  if (!data.warehouse_location)
+    errors.warehouse_location = "Warehouse location is required";
+  // if (!data.adjustmentType) errors.adjustmentType = "Adjustment type is required";
+  // if (!data.date) errors.date = "Date is required";
   if (!data.notes) errors.notes = "Notes are required";
   return errors;
 };
 
 const validateItemData = (data) => {
+  console.log(data);
   const errors = {};
   if (!data.product) errors.product = "Product is required";
-  if (data.adjusted_quantity == null) errors.adjusted_quantity = "Adjusted quantity is required";
-  if (!data.stock_adjustment) errors.stock_adjustment = "Stock adjustment ID is required";
+  if (data.adjusted_quantity == null)
+    errors.adjusted_quantity = "Adjusted quantity is required";
+  if (!data.stock_adjustment)
+    errors.stock_adjustment = "Stock adjustment ID is required";
   return errors;
 };
 
@@ -38,26 +48,60 @@ export const StockAdjustmentProvider = ({ children }) => {
     return getTenantClient(tenant_schema_name, access_token, refresh_token);
   }, [tenant_schema_name, access_token, refresh_token]);
 
+  const fetchResource = useCallback(
+    async (url) => {
+      if (!client || !url) return null;
+      try {
+        const secureUrl = url.replace(/^http:\/\//i, "https://");
+        const response = await client.get(secureUrl);
+        return response.data;
+      } catch (err) {
+        console.error("Error fetching resource:", url, err);
+        return null;
+      }
+    },
+    [client]
+  );
+
+  const normalizeStockAdjustment = useCallback(
+    async (stock_adjustment) => {
+      // console.log(stock_adjustment);
+      if (!stock_adjustment) return null;
+      const warehouse = await fetchResource(
+        stock_adjustment.warehouse_location
+      );
+      return {
+        ...stock_adjustment,
+        warehouse_location: warehouse,
+      };
+    },
+    [fetchResource]
+  );
+
   // Stock adjustment endpoints
   const getStockAdjustmentList = useCallback(async () => {
     if (!client) {
-      const msg = "API client not initialized.";
-      setError(msg);
-      return Promise.reject(new Error(msg));
+      setError("API client not initialized.");
+      return;
     }
     setIsLoading(true);
     try {
-      const { data } = await client.get("/inventory/stock-adjustment/");
-      setAdjustmentList(data);
+      const { data: rawData } = await client.get(
+        "/inventory/stock-adjustment/"
+      );
+
+      const normalized = await Promise.all(
+        rawData.map((pr) => normalizeStockAdjustment(pr))
+      );
+      setAdjustmentList(normalized.filter(Boolean));
       setError(null);
-      return { success: true, data };
     } catch (err) {
+      console.error(err);
       setError(err.message || "Failed to load stock adjustments");
-      return Promise.reject(err);
     } finally {
       setIsLoading(false);
     }
-  }, [client]);
+  }, [client, normalizeStockAdjustment]);
 
   const getSingleStockAdjustment = useCallback(
     async (id) => {
@@ -68,11 +112,15 @@ export const StockAdjustmentProvider = ({ children }) => {
       }
       setIsLoading(true);
       try {
+        console.log(client.defaults.baseURL);
+
+        // Use template literal to insert the real id:
         const { data } = await client.get(`/inventory/stock-adjustment/${id}/`);
         setSingleAdjustment(data);
         setError(null);
         return { success: true, data };
       } catch (err) {
+        console.error(err);
         setError(err.message || "Failed to load stock adjustment");
         return Promise.reject(err);
       } finally {
@@ -84,6 +132,7 @@ export const StockAdjustmentProvider = ({ children }) => {
 
   const createStockAdjustment = useCallback(
     async (adjustmentData) => {
+      console.log("Adjustment Data", adjustmentData);
       const errors = validateStockAdjustmentData(adjustmentData);
       if (Object.keys(errors).length) return Promise.reject(errors);
       if (!client) {
@@ -92,16 +141,21 @@ export const StockAdjustmentProvider = ({ children }) => {
         return Promise.reject(new Error(msg));
       }
       setIsLoading(true);
+      // console.log("Axios base URL", client.defaults.baseURL);
+      // console.log("Full request URL", client.defaults.baseURL + "/inventory/stock-adjustment/");
       try {
         const payload = {
-          id: adjustmentData.id,
-          warehouse_location: adjustmentData.location,
-          adjustment_type: adjustmentData.adjustmentType,
-          date: adjustmentData.date,
+          // id: adjustmentData.id,
+          warehouse_location: adjustmentData.warehouse_location,
+          // adjustment_type: adjustmentData.adjustmentType,
+          // date: Date.now(),
+          stock_adjustment_items: adjustmentData.items,
           notes: adjustmentData.notes,
           status: adjustmentData.status || "draft",
-          is_hidden: adjustmentData.isHidden ?? true,
+          is_hidden: false,
         };
+        console.log("Payload", payload);
+        // Send the request to create a new stock adjustment
         const { data } = await client.post(
           "/inventory/stock-adjustment/",
           payload
@@ -110,8 +164,9 @@ export const StockAdjustmentProvider = ({ children }) => {
         setError(null);
         return { success: true, data };
       } catch (err) {
+        console.log(err.message);
         setError(err.message || "Failed to create stock adjustment");
-        return Promise.reject(err);
+        return { success: false, error: err.message };
       } finally {
         setIsLoading(false);
       }
@@ -127,6 +182,7 @@ export const StockAdjustmentProvider = ({ children }) => {
       return Promise.reject(new Error(msg));
     }
     setIsLoading(true);
+
     try {
       const { data } = await client.get(
         "/inventory/stock-adjustment/stock-adjustment-item/"
@@ -210,9 +266,7 @@ export const StockAdjustmentProvider = ({ children }) => {
           `/inventory/stock-adjustment/stock-adjustment-item/${id}/`,
           itemData
         );
-        setItemList((prev) =>
-          prev.map((itm) => (itm.id === id ? data : itm))
-        );
+        setItemList((prev) => prev.map((itm) => (itm.id === id ? data : itm)));
         setError(null);
         return { success: true, data };
       } catch (err) {
@@ -240,9 +294,7 @@ export const StockAdjustmentProvider = ({ children }) => {
           `/inventory/stock-adjustment/stock-adjustment-item/${id}/`,
           itemData
         );
-        setItemList((prev) =>
-          prev.map((itm) => (itm.id === id ? data : itm))
-        );
+        setItemList((prev) => prev.map((itm) => (itm.id === id ? data : itm)));
         setError(null);
         return { success: true, data };
       } catch (err) {
@@ -327,7 +379,9 @@ export const StockAdjustmentProvider = ({ children }) => {
 export const useStockAdjustment = () => {
   const context = useContext(StockAdjustmentContext);
   if (!context) {
-    throw new Error("useStockAdjustment must be used within a StockAdjustmentProvider");
+    throw new Error(
+      "useStockAdjustment must be used within a StockAdjustmentProvider"
+    );
   }
   return context;
 };
