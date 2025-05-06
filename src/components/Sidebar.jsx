@@ -17,6 +17,7 @@ import settings from "../image/sidebar/settings.svg";
 const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
+
   return (
     <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
       <div className="sidebar-menu">

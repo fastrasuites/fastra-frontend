@@ -1,18 +1,23 @@
 import React from "react";
-import { Route, Redirect } from "react-router-dom";
+import { Route, Redirect, useParams } from "react-router-dom";
 import { useTenant } from "./context/TenantContext";
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
   const { tenantData } = useTenant();
-  const tenant_schema_name = tenantData?.tenant_schema_name;
+  const { tenant } = useParams();
 
   return (
     <Route
       {...rest}
-      // path={`/${tenant_schema_name}${rest.path}`}
-      render={(props) =>
-        tenant_schema_name ? <Component {...props} /> : <Redirect to="/login" />
-      }
+      render={(props) => {
+        if (!tenantData) return <Redirect to="/login" />;
+        if (tenant !== tenantData.tenant_schema_name) {
+          return (
+            <Redirect to={`/${tenantData.tenant_schema_name}/dashboard`} />
+          );
+        }
+        return <Component {...props} />;
+      }}
     />
   );
 };

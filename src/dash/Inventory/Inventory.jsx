@@ -1,6 +1,6 @@
 // InventoryLayout.js
 import React from "react";
-import { Switch, Route, useRouteMatch } from "react-router-dom";
+import { Switch, Route, useRouteMatch, Redirect } from "react-router-dom";
 import InventoryHeader from "./InventoryHeader";
 import Operations from "./Operations/Operations";
 import Location from "./Location/Location";
@@ -26,6 +26,9 @@ const InventoryLayout = () => {
       <InventoryHeader />
       <div id="inventory">
         <Switch>
+          {/* Redirect from /inventory to /inventory/operations */}
+          <Redirect exact from={path} to={`${path}/operations`} />
+
           {/* Inventory Operation Routes */}
           <Route exact path={`${path}/operations`} component={Operations} />
           <Route
@@ -41,9 +44,10 @@ const InventoryLayout = () => {
             component={MaterialConsumptionForm}
           />
 
-           <Route
-            path={`${path}/operations/internal-transfer`} 
-            component={InternalTransfer} />
+          <Route
+            path={`${path}/operations/internal-transfer`}
+            component={InternalTransfer}
+          />
           <Route
             path={`${path}/operations/create-internal-transfer`}
             component={InternalTransferForm}
