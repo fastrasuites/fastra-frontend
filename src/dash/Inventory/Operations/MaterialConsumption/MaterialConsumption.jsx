@@ -1,124 +1,152 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Checkbox,
-  Button,
-  Stack,
-} from "@mui/material";
+import React, { useState, useMemo, useCallback } from "react";
+import { Box, Typography } from "@mui/material";
 import { useTenant } from "../../../../context/TenantContext";
+import CommonTable from "../../../../components/CommonTable/CommonTable";
 
-// Sample data
+// Determine status color
+const getStatusColor = (status) => {
+  const key = status.toLowerCase();
+  if (key === "done") return "#2ba24c";
+  if (key === "draft") return "#158fec";
+  if (key === "cancelled" || key === "cancel") return "#e43e2b";
+  return "#9e9e9e";
+};
+
+// Table columns definition
+const columns = [
+  { id: "id", label: "ID" },
+  { id: "location", label: "Location" },
+  { id: "date_created", label: "Date Created" },
+  { id: "date_closed", label: "Date Closed" },
+  {
+    id: "status",
+    label: "Status",
+    render: ({ status }) => (
+      <Box display="flex" alignItems="center">
+        <Box
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            backgroundColor: getStatusColor(status),
+            mr: 1,
+          }}
+        />
+        <Typography variant="caption" fontSize={12} color={getStatusColor(status)}>
+          {status}
+        </Typography>
+      </Box>
+    ),
+  },
+];
+
+// Sample data (move to context or props in real use)
 const materialConsumptionData = [
-  {
-    id: "MC001",
-    location: "Location 1",
-    dateCreated: "4 Apr 2024 - 4:48 PM",
-    dateClosed: "4 Apr 2024 - 4:48 PM",
-    status: "Done",
-  },
-  {
-    id: "MC002",
-    location: "Location 2",
-    dateCreated: "4 Apr 2024 - 4:48 PM",
-    dateClosed: "4 Apr 2024 - 4:48 PM",
-    status: "Done",
-  },
-  {
-    id: "MC003",
-    location: "Location 3",
-    dateCreated: "4 Apr 2024 - 4:48 PM",
-    dateClosed: "4 Apr 2024 - 4:48 PM",
-    status: "Draft",
-  },
+  { id: "MC001", location: "Location 1", date_created: "4 Apr 2024 - 4:48 PM", date_closed: "4 Apr 2024 - 4:48 PM", status: "Done" },
+  { id: "MC002", location: "Location 2", date_created: "4 Apr 2024 - 4:48 PM", date_closed: "4 Apr 2024 - 4:48 PM", status: "Done" },
+  { id: "MC003", location: "Location 3", date_created: "4 Apr 2024 - 4:48 PM", date_closed: "4 Apr 2024 - 4:48 PM", status: "Draft" },
 ];
 
 export default function MaterialConsumption() {
   const { tenantData } = useTenant();
-  const tenant_schema_name = tenantData?.tenant_schema_name || "";
-  const [searchTerm, setSearchTerm] = useState("");
+  const tenantSchema = tenantData?.tenant_schema_name || "";
 
-  // Filter data based on search term
-  const filteredData = materialConsumptionData.filter(
-    ({ id, location }) =>
-      id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState("list");
+
+  // Memoize filtered rows
+  const filteredRows = useMemo(() => {
+    if (!searchQuery) return materialConsumptionData;
+    const q = searchQuery.toLowerCase();
+    return materialConsumptionData.filter((row) =>
+      Object.values(row).some((val) =>
+        String(val).toLowerCase().includes(q)
+      )
+    );
+  }, [searchQuery]);
+
+  const handleRowSelect = useCallback((id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedRows((prev) =>
+      prev.length === filteredRows.length
+        ? []
+        : filteredRows.map((r) => r.id)
+    );
+  }, [filteredRows]);
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-        <Button
-          component={Link}
-          to={`/${tenant_schema_name}/inventory/operations/create-material-consumption`}
-          variant="contained"
-        >
-          Material Consumption
-        </Button>
-        <TextField
-          variant="outlined"
-          placeholder="Search by ID or Location"
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ width: 240 }}
-        />
-      </Stack>
+    <Box p={3} mr={2}>
+      <Typography variant="h6" fontSize={24} fontWeight={500} mb={2}>
+        Material Consumption
+      </Typography>
 
-      <TableContainer component={Paper}>
-        <Table aria-label="material consumption table">
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox color="primary" />
-              </TableCell>
-              <TableCell>ID</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Date Created</TableCell>
-              <TableCell>Date Closed</TableCell>
-              <TableCell>Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredData.map((item, index) => (
-              <TableRow
-                key={item.id}
+      <CommonTable
+        columns={columns}
+        rows={filteredRows}
+        rowKey="id"
+        searchable
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        paginated
+        page={page}
+        totalPages={Math.ceil(filteredRows.length / 5)}
+        onPageChange={setPage}
+        viewModes={["list", "grid"]}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        selectable
+        selectedRows={selectedRows}
+        onRowSelect={handleRowSelect}
+        onSelectAll={handleSelectAll}
+        actionButton={{
+          text: "Create Consumption",
+          link: `/${tenantSchema}/inventory/operations/material-consumption/create-material-consumption`,
+        }}
+        gridRenderItem={(item) => (
+          <Box
+            key={item.id}
+            p={3}
+            mb={2}
+            border={1}
+            borderColor="#E2E6E9"
+            borderRadius={2}
+            bgcolor="#fffffd"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            gap={2}
+          >
+            <Typography variant="subtitle2">{item.id}</Typography>
+            <Typography variant="body2" fontSize={12} color="textSecondary">
+              {item.location}
+            </Typography>
+            <Typography variant="body2" fontSize={12} color="textSecondary">
+              {item.date_created}
+            </Typography>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Box
                 sx={{
-                  '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: getStatusColor(item.status),
                 }}
-              >
-                <TableCell padding="checkbox">
-                  <Checkbox color="primary" />
-                </TableCell>
-                <TableCell>{item.id}</TableCell>
-                <TableCell>{item.location}</TableCell>
-                <TableCell>{item.dateCreated}</TableCell>
-                <TableCell>{item.dateClosed}</TableCell>
-                <TableCell
-                  sx={{
-                    color:
-                      item.status === "Done"
-                        ? 'success.main'
-                        : item.status === "Draft"
-                        ? 'info.main'
-                        : 'text.primary',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {item.status}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+              />
+              <Typography variant="caption" fontSize={12} color={getStatusColor(item.status)}>
+                {item.status}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+        path={`/${tenantSchema}/inventory/stock/scrap`}
+      />
+    </Box>
   );
 }

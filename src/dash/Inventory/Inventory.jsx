@@ -12,11 +12,15 @@ import Scrap from "./stock/scrap/Scrap";
 import CreateIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/CreateIncomingProduct";
 import StockMoves from "./stock/StockMoves/StockMoves";
 import LocationForm from "./Location/CreateLocation/LocationForm";
-import StockMovesForm from "./stock/StockMoves/StockMovesForm/StockMovesForm";
 import ScrapForm from "./stock/scrap/ScrapForm/ScrapForm";
 import MaterialConsumptionForm from "./Operations/MaterialConsumption/MaterialConsumptionForm/MaterialConsumptionForm";
 import InternalTransfer from "./Operations/InternalTransfer/InternalTransfer";
 import InternalTransferForm from "./Operations/InternalTransfer/InternalTransferForm/InternalTransferForm";
+import IncomingProductInfo from "./Operations/IncomingProduct/IncomingProductInfo/IncomingProductInfo";
+import LocationInfo from "./Location/LocationInfo/LocationInfo";
+import ScrapInfo from "./stock/scrap/ScrapInfo/ScrapInfo";
+import StockAdjustmentInfo from "./stock/StockAdjustment/StockAdjustmentInfo/StockAdjustmentInfo";
+import InternalTransferInfo from "./Operations/InternalTransfer/InternalTransferInfo/InternalTransferInfo";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -32,25 +36,40 @@ const InventoryLayout = () => {
           {/* Inventory Operation Routes */}
           <Route exact path={`${path}/operations`} component={Operations} />
           <Route
+            path={`${path}/operations/incoming-product/:id`}
+            component={IncomingProductInfo}
+          />
+          <Route
             path={`${path}/operations/creat-incoming-product`}
             component={CreateIncomingProduct}
           />
+
           <Route
+            exact
             path={`${path}/operations/material-consumption`}
             component={MaterialConsumption}
           />
           <Route
-            path={`${path}/operations/create-material-consumption`}
+            exact
+            path={`${path}/operations/material-consumption/create-material-consumption`}
             component={MaterialConsumptionForm}
           />
 
           <Route
+            exact
             path={`${path}/operations/internal-transfer`}
             component={InternalTransfer}
           />
           <Route
-            path={`${path}/operations/create-internal-transfer`}
+            exact
+            path={`${path}/operations/internal-transfer/create-internal-transfer`}
             component={InternalTransferForm}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/internal-transfer/:id`}
+            component={InternalTransferInfo}
           />
 
           {/* Inventory Location Routes */}
@@ -59,6 +78,7 @@ const InventoryLayout = () => {
             path={`${path}/location/create-inventory-location`}
             component={LocationForm}
           />
+          <Route path={`${path}/location/:id`} component={LocationInfo} />
           <Route
             path={`${path}/location-configuration`}
             component={LocationConfiguration}
@@ -66,23 +86,30 @@ const InventoryLayout = () => {
 
           {/* Inventory Stock Routes */}
           <Route
+            exact
             path={`${path}/stock/stock-adjustment`}
             component={StockAdjustment}
           />
           <Route
-            path={`${path}/stock/create-stock-adjustment`}
+            exact
+            path={`${path}/stock/stock-adjustment/create-stock-adjustment`}
             component={NewStockAdjustment}
           />
-          <Route path={`${path}/stock/stock-moves`} component={StockMoves} />
           <Route
-            path={`${path}/stock/create-stock-moves`}
-            component={StockMovesForm}
+            path={`${path}/stock/stock-adjustment/:id`}
+            component={StockAdjustmentInfo}
           />
+          <Route path={`${path}/stock/stock-moves`} component={StockMoves} />
 
           {/* Inventory Scrap Routes */}
 
-          <Route path={`${path}/stock/scrap`} component={Scrap} />
-          <Route path={`${path}/stock/create-scrap`} component={ScrapForm} />
+          <Route exact path={`${path}/stock/scrap`} component={Scrap} />
+          <Route
+            exact
+            path={`${path}/stock/scrap/create-scrap`}
+            component={ScrapForm}
+          />
+          <Route path={`${path}/stock/scrap/:id`} component={ScrapInfo} />
 
           {/* Additional inventory routes can be added here */}
         </Switch>

@@ -125,6 +125,7 @@ const InternalTransferFormBasicInputs = ({
   const [selectedReceipt, setSelectedReceipt] = React.useState(null);
     const [selectedLoaction, setSelectedLocation] = useState(null);
   
+    
 
     const {
       locationList,

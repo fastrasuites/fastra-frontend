@@ -16,6 +16,7 @@ export const PurchaseProvider = ({ children }) => {
   const [currencies, setCurrencies] = useState([]);
   const [purchaseRequests, setPurchaseRequests] = useState([]);
   const [products, setProducts] = useState([]);
+  const [singleProducts, setSingleProducts] = useState(null);
   const [vendors, setVendors] = useState([]);
   const [error, setError] = useState(null);
 
@@ -147,6 +148,48 @@ export const PurchaseProvider = ({ children }) => {
       console.error("Error fetching products:", err);
     }
   }, [client, fetchResource]);
+
+  const fetchSingleProduct = useCallback(
+    async (id) => {
+      if (!client) {
+        console.error("API client not initialized");  // API client must be ready
+        return;
+      }
+      try {
+        // 1. Fetch the single product object
+        const { data: product } = await client.get(`/purchase/products/${id}/`);
+  
+        // 2. Fetch and augment its unit info
+        let augmentedProduct = product;
+        try {
+          const originalUnit = product.unit_of_measure;
+          const secureUnitUrl = originalUnit.replace(/^http:\/\//i, "https://");
+          const unitData = await fetchResource(secureUnitUrl);
+          const realUnit = unitData?.unit_category || "";
+          augmentedProduct = {
+            ...product,
+            unit_of_measure: [originalUnit, realUnit],
+          };
+        } catch (unitErr) {
+          console.error(
+            "Error fetching unit measure for product:",
+            product.url,
+            unitErr
+          );
+        }
+  
+        // 3. Update state with the single augmented product
+        setSingleProducts(augmentedProduct);
+        setError(null);
+        return {success: true, data: augmentedProduct};
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        setError(err);
+      } 
+    },
+    [client, fetchResource]
+  );
+  
 
   const createProduct = useCallback(
     async (newProduct) => {
@@ -415,6 +458,7 @@ export const PurchaseProvider = ({ children }) => {
       currencies,
       purchaseRequests,
       products,
+      singleProducts,
       vendors,
       error,
       fetchCurrencies,
@@ -423,6 +467,7 @@ export const PurchaseProvider = ({ children }) => {
       fetchVendors,
       createVendor,
       fetchProducts,
+      fetchSingleProduct,
       createProduct,
       fetchPurchaseRequests,
       fetchApprovedPurchaseRequests,
@@ -439,6 +484,7 @@ export const PurchaseProvider = ({ children }) => {
       currencies,
       purchaseRequests,
       products,
+      singleProducts,
       vendors,
       error,
       fetchCurrencies,
@@ -446,6 +492,7 @@ export const PurchaseProvider = ({ children }) => {
       uploadFile,
       fetchVendors,
       createVendor,
+      fetchSingleProduct,
       fetchProducts,
       createProduct,
       fetchPurchaseRequests,

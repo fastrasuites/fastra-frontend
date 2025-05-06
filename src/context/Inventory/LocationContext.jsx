@@ -145,6 +145,8 @@ export const LocationProvider = ({ children }) => {
     }
 
     setIsLoading(true);
+    console.log("Axios base URL", client.defaults.baseURL);
+
     try {
       const response = await client.get("/inventory/location/");
       const data = response.data;
@@ -160,12 +162,39 @@ export const LocationProvider = ({ children }) => {
     }
   }, [client]);
 
+
+  const getSingleLocation = useCallback(async (id) => {
+    if (!client) {
+      const errMsg =
+        "API client not available. Please check tenant configuration.";
+      console.error(errMsg);
+      setError(errMsg);
+      return Promise.reject(new Error(errMsg));
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await client.get(`/inventory/location/${id}/`);
+      const data = response.data;
+      setSingleLocation(data);
+      setError(null);
+      return { success: true, data };
+    } catch (err) {
+      console.error("Error fetching single location:", err);
+      setError(err.message || "Failed to fetch single location");
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   const contextValue = useMemo(
     () => ({
       locationList,
       singleLocation,
       setSingleLocation,
       getLocationList,
+      getSingleLocation,
       createLocation,
       isLoading,
       error,
@@ -174,6 +203,7 @@ export const LocationProvider = ({ children }) => {
       locationList,
       singleLocation,
       getLocationList,
+      getSingleLocation,
       createLocation,
       isLoading,
       error,

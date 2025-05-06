@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  TextField,
+  Box,
+  Button,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Paper,
-  Checkbox,
+  Typography,
+  useTheme,
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import "./Location.css";
-import LocationStep from "./LocationStep";
 import { useTenant } from "../../../context/TenantContext";
 import { useCustomLocation } from "../../../context/Inventory/LocationContext";
-const locationType = [
+import CommonTable from "../../../components/CommonTable/CommonTable";
+import LocationStep from "./LocationStep";
+
+const locationTypes = [
   {
     type: "Suppliers Location",
     desc: "Products coming in from suppliers (PO).",
@@ -27,144 +29,143 @@ const locationType = [
   },
 ];
 
-function Location() {
-  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+const LocationGridItem = ({ item }) => {
+  const theme = useTheme();
 
-  // Location wizard ===========================
+  return (
+    <Paper
+      sx={{
+        p: 3,
+        cursor: "pointer",
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 2,
+        mb: 2,
+        "&:hover": { boxShadow: theme.shadows[2] },
+      }}
+    >
+      <Typography variant="subtitle2" gutterBottom>
+        {item.id}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" paragraph>
+        {item.location_name}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" paragraph>
+        {item.address}
+      </Typography>
+      <Typography variant="caption" color="text.secondary">
+        {item.contact_information}
+      </Typography>
+    </Paper>
+  );
+};
+
+function Location() {
+  const theme = useTheme();
+  const { tenantData } = useTenant();
+  const tenantSchemaName = tenantData?.tenant_schema_name;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const {
-    locationList,
-    singleLocation,
-    getLocationList,
-    createLocation,
-    isLoading,
-    error,
-  } = useCustomLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState("list");
+
+  const { locationList, getLocationList, isLoading, error } =
+    useCustomLocation();
+
+  const columns = [
+    { id: "id", label: "Location ID" },
+    { id: "location_name", label: "Location Name" },
+    { id: "address", label: "Address" },
+    { id: "contact_information", label: "Phone Number" },
+  ];
 
   useEffect(() => {
     getLocationList();
-  }, []);
+  }, [getLocationList]);
 
-  console.log(locationList, "locationList");
-
-  useEffect(() => {
-    if (location.state?.step) {
-      setCurrentStep(location.state.step);
-      setIsModalOpen(true);
-    } else {
-      const timer = setTimeout(() => {
-        setIsModalOpen(true);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleRowSelect = (id) => {
+    setSelectedRows((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
   };
 
+  const handleSelectAll = () => {
+    setSelectedRows((prev) =>
+      prev.length === locationList.length ? [] : locationList.map((r) => r.id)
+    );
+  };
+  console.log(locationList);
   return (
-    <div className="location-contain">
-      <div style={{ padding: "20px" }}>
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <Link
-            to={`/${tenant_schema_name}/inventory/location/create-inventory-location`}
-          >
-            <button className="create-location">Create Location</button>
-          </Link>
-
-          <TextField
-            variant="outlined"
-            placeholder="Search"
-            size="small"
-            style={{ width: "200px" }}
-          />
-        </div>
-
-        {/* Location Type Table */}
-        <TableContainer
-          component={Paper}
-          style={{ marginTop: "20px", width: "50%" }}
+    <Box sx={{ p: 3 }}>
+      {/* Header Section */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+        <Button
+          component={Link}
+          to={`/${tenantData?.tenant_schema_name}/inventory/location/create-inventory-location`}
+          variant="contained"
+          startIcon={<LocationOnIcon />}
         >
-          <Table>
-            <TableBody>
-              {locationType.map((location, index) => (
-                <TableRow
-                  key={location.type}
-                  style={{
-                    backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
-                  }}
-                >
-                  <TableCell
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                    }}
-                  >
-                    <LocationOnIcon className="LocationOnIcon" />
-                    {location.type}
-                  </TableCell>
-                  <TableCell>{location.desc}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+          Create Location
+        </Button>
+      </Box>
 
-        {/* Locations Table */}
-        <TableContainer component={Paper} style={{ marginTop: "20px" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox color="primary" />
+      {/* Location Types Table */}
+      <TableContainer component={Paper} sx={{ mb: 4, maxWidth: "900px" }}>
+        <Table>
+          <TableBody>
+            {locationTypes.map((location, index) => (
+              <TableRow
+                key={location.type}
+                sx={{
+                  backgroundColor:
+                    theme.palette.background[index % 2 ? "default" : "paper"],
+                }}
+              >
+                <TableCell
+                  sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                >
+                  <LocationOnIcon color="primary" />
+                  <Typography variant="body1">{location.type}</Typography>
                 </TableCell>
-                <TableCell>Location ID</TableCell>
-                <TableCell>Location Name</TableCell>
-                <TableCell>Address</TableCell>
-                <TableCell>Phone Number</TableCell>
+                <TableCell>
+                  <Typography variant="body2" color="text.secondary">
+                    {location.desc}
+                  </Typography>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {locationList.map((location, index) => (
-                <TableRow
-                  key={location.id}
-                  style={{
-                    backgroundColor: index % 2 === 0 ? "#f2f2f2" : "white",
-                  }}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox color="primary" />
-                  </TableCell>
-                  <TableCell
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                    }}
-                  >
-                    <LocationOnIcon className="LocationOnIcon" />
-                    {location?.id}
-                  </TableCell>
-                  <TableCell>{location?.location_name}</TableCell>
-                  <TableCell>{location?.address}</TableCell>
-                  <TableCell>{location?.contact_information}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      <LocationStep
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        step={currentStep}
+      {/* Locations Table */}
+      <CommonTable
+        columns={columns}
+        rows={locationList}
+        rowKey="id"
+        searchable
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        paginated
+        page={page}
+        totalPages={Math.ceil(locationList.length / 5)}
+        onPageChange={setPage}
+        viewModes={["list", "grid"]}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        selectable
+        selectedRows={selectedRows}
+        onRowSelect={handleRowSelect}
+        onSelectAll={handleSelectAll}
+        gridRenderItem={(item) => <LocationGridItem item={item} />}
+        loading={isLoading}
+        error={error}
+        sx={{ boxShadow: "none" }}
+        path={`/${tenantSchemaName}/inventory/location`}
       />
-    </div>
+
+      <LocationStep open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </Box>
   );
 }
 

@@ -1,167 +1,157 @@
 import React, { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Checkbox,
-  Paper,
-  Box,
-} from "@mui/material";
-
-// Mock data
-const mockData = [
-  {
-    requestId: "LAGIN001",
-    partner: "Supplier",
-    sourceLocation: "Source Location",
-    destinationLocation: "Destination Location",
-    dateCreated: "4 Apr 2024 - 4:48PM",
-    status: "Validate",
-  },
-  {
-    requestId: "LAGIN002",
-    partner: "Customer",
-    sourceLocation: "Source Location",
-    destinationLocation: "Destination Location",
-    dateCreated: "4 Apr 2024 - 4:48PM",
-    status: "Draft",
-  },
-  {
-    requestId: "LAGIN003",
-    partner: "Supplier",
-    sourceLocation: "Source Location",
-    destinationLocation: "Destination Location",
-    dateCreated: "4 Apr 2024 - 4:48PM",
-    status: "Cancelled",
-  },
-];
-const getStatusColor = (status) => {
-  switch (status) {
-    case "Validate":
-    case "Validated":
-      return "#2ba24c"; // Green
-    case "Drafted":
-      return "#158fec"; //blue
-    case "Cancelled":
-    case "Cancel":
-      return "#e43e2b"; // Red
-    default:
-      return "#158fec"; // Draft Blue
-  }
-};
+import { Link } from "react-router-dom";
+import { Box, Button, Paper, Typography } from "@mui/material";
+import CommonTable from "../../../../components/CommonTable/CommonTable";
+import { useTenant } from "../../../../context/TenantContext";
+import { mockData } from "../../data/incomingProductData";
+// import { getStatusColor } from '../../utils';
 
 const IncomingProductManualListview = () => {
+  const { tenantData } = useTenant();
+  const tenantSchemaName = tenantData?.tenant_schema_name;
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
+  const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState("list");
 
-  // Handle individual row selection
-  const handleRowSelect = (requestId) => {
-    setSelectedRows((prev) =>
-      prev.includes(requestId)
-        ? prev.filter((id) => id !== requestId)
-        : [...prev, requestId]
-    );
-  };
-
-  // Handle select all rows
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedRows([]);
-    } else {
-      setSelectedRows(mockData.map((row) => row.requestId));
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Validate":
+      case "Validated":
+        return "#2ba24c";
+      case "Draft":
+      case "Drafted":
+        return "#158fec";
+      case "Cancelled":
+      case "Cancel":
+        return "#e43e2b";
+      default:
+        return "#9e9e9e";
     }
-    setSelectAll(!selectAll);
   };
+
+  const columns = [
+    { id: "requestId", label: "Request ID" },
+    { id: "partner", label: "Partner" },
+    { id: "dateCreated", label: "Date Created" },
+    { id: "sourceLocation", label: "Source Location" },
+    { id: "destinationLocation", label: "Destination Location" },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => (
+        <Box display="flex" alignItems="center">
+          <Box
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              backgroundColor: getStatusColor(row.status),
+              mr: 1,
+            }}
+          />
+          <Typography
+            variant="caption"
+            color={getStatusColor(row.status)}
+            fontSize={12}
+          >
+            {row.status}
+          </Typography>
+        </Box>
+      ),
+    },
+  ];
+
+  // Grid item renderer
+  const renderGridItem = (item) => (
+    <Box
+      key={item.requestId}
+      sx={{
+        padding: "24px",
+        cursor: "pointer",
+        border: "1.2px solid #E2E6E9",
+        borderRadius: 2,
+        mb: 2,
+        backgroundColor: "#fffffd",
+      }}
+      display={"flex"}
+      flexDirection={"column"}
+      alignItems={"center"}
+      gap="16px"
+    >
+      <Typography variant="subtitle2">{item.requestId}</Typography>
+      <Typography variant="body2" color={"textSecondary"} fontSize={12}>
+        {item.dateCreated}
+      </Typography>
+      <Typography variant="body2" color={"textSecondary"} fontSize={12}>
+        {item.sourceLocation}
+      </Typography>
+      <Typography variant="body2" color="textSecondary" fontSize={12}>
+        {item.partner}
+      </Typography>
+      <Box display="flex" alignItems="center" gap={1}>
+        <Box
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            bgcolor: getStatusColor(item.status),
+            mr: 1,
+          }}
+        />
+        <Typography
+          variant="caption"
+          color={getStatusColor(item.status)}
+          fontSize={12}
+        >
+          {item.status}
+        </Typography>
+      </Box>
+    </Box>
+  );
 
   return (
-    <TableContainer component={Paper}>
-      <Table stickyHeader>
-        <TableHead>
-          <TableRow>
-            <TableCell padding="checkbox">
-              <Checkbox
-                checked={selectAll}
-                onChange={handleSelectAll}
-                color="primary"
-              />
-            </TableCell>
-            <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-              Request ID
-            </TableCell>
-            <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-              Partner
-            </TableCell>
-            <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-              Source Location
-            </TableCell>
-            <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-              Destination Location
-            </TableCell>
-            <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-              Date Created
-            </TableCell>
-            <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-              Status
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {mockData.map((row, index) => (
-            <TableRow
-              key={row.requestId}
-              style={{
-                backgroundColor: index % 2 === 0 ? "#f5f5f5" : "#F2F2F2",
-              }}
-            >
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedRows.includes(row.requestId)}
-                  onChange={() => handleRowSelect(row.requestId)}
-                  color="primary"
-                />
-              </TableCell>
-              <TableCell style={{ color: "#1A1A1A" }}>
-                {row.requestId}
-              </TableCell>
-              <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-                {row.partner}
-              </TableCell>
-              <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-                {row.sourceLocation}
-              </TableCell>
-              <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-                {row.destinationLocation}
-              </TableCell>
-              <TableCell style={{ color: "#7A8A98", fontSize: "14px" }}>
-                {row.dateCreated}
-              </TableCell>
-              <TableCell
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: getStatusColor(row.status),
-                  fontSize: "14px",
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    backgroundColor: getStatusColor(row.status),
-                    marginRight: 1,
-                  }}
-                />
-                {row.status}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Box>
+      <CommonTable
+        columns={columns}
+        rows={mockData.filter((item) =>
+          Object.values(item).some((v) =>
+            String(v).toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        )}
+        rowKey="requestId"
+        searchable
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        paginated
+        page={page}
+        totalPages={Math.ceil(mockData.length / 5)}
+        onPageChange={setPage}
+        viewModes={["list", "grid"]}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        selectable
+        selectedRows={selectedRows}
+        onRowSelect={(id) =>
+          setSelectedRows((prev) =>
+            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+          )
+        }
+        onSelectAll={() =>
+          setSelectedRows((prev) =>
+            prev.length === mockData.length
+              ? []
+              : mockData.map((r) => r.requestId)
+          )
+        }
+        actionButton={{
+          text: "New Incoming Product",
+          link: `/${tenantSchemaName}/inventory/operations/creat-incoming-product`,
+        }}
+        gridRenderItem={renderGridItem}
+        path={`/${tenantSchemaName}/inventory/operations/incoming-product`}
+      />
+    </Box>
   );
 };
 

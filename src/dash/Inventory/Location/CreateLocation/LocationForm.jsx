@@ -125,8 +125,8 @@ const LocationForm = () => {
         showCancelButton: true,
         confirmButtonText: "Enable Now",
       });
-      if (isConfirmed)
-        history.push(`/${tenant_schema_name}/inventory/location-configuration`);
+      if (isConfirmed) history.push("/location-configuration");
+
       return;
     }
 

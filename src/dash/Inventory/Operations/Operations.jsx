@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   useTheme,
   Box,
@@ -6,13 +6,13 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Button,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
+import IncomingProductManualListview from "./IncomingProduct/IncomingProductManualListview";
 import inventoryShareStyle from "../inventorySharedStyles";
 import draftIcon from "../../../image/icons/draft.png";
-import SecondaryBar from "../secondaryBar/SecondaryBar";
-import ProductsView from "../ProductsView/ProductsView";
-import { mockData2 } from "../data/incomingProductData.js";
 
 // Data for pending boxes
 const pendingBoxesData = [
@@ -47,6 +47,30 @@ const pendingBoxesData = [
     count: 6,
   },
 ];
+
+// Styled components for cleaner styling
+const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 40px 0 26px 0;
+`;
+
+const OperationsHeadingText = styled.h1`
+  font-family: "Product Sans";
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19.41px;
+  color: #1a1a1a;
+  text-align: left;
+`;
+
+const PendingBoxesContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+`;
 
 // PendingBox component
 const PendingBox = ({
@@ -93,56 +117,12 @@ const PendingBox = ({
 
 const Operations = () => {
   const theme = useTheme();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("list");
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [apiData, setApiData] = useState([]);
-  const itemsPerPage = 8;
 
   const [selectedLocation, setSelectedLocation] = useState("");
   const options = ["Suppliers location", "Customers location"];
 
   const handleChange = (event) => {
     setSelectedLocation(event.target.value);
-  };
-
-  // Mock API call to fetch data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Simulated API call
-        const mockData = mockData2; // mockData from the imported file
-        setApiData(mockData);
-        setTotalItems(mockData.length);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  const handleSearch = (data) => {
-    return data.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value).toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  };
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
-
-  const paginatedData = handleSearch(apiData).slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handleViewChange = (newView) => {
-    setViewMode(newView);
-    setCurrentPage(1);
   };
 
   return (
@@ -202,61 +182,11 @@ const Operations = () => {
         ))}
       </PendingBoxesContainer>
 
-      <SecondaryBar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        viewMode={viewMode}
-        onViewChange={handleViewChange}
-        currentPage={currentPage}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onPageChange={handlePageChange}
-      />
-
-      <ProductsView
-        viewMode={viewMode}
-        data={paginatedData}
-        selected={selectedItems}
-        onSelect={(id) =>
-          setSelectedItems((prev) =>
-            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-          )
-        }
-        onSelectAll={() =>
-          setSelectedItems((prev) =>
-            prev.length === paginatedData.length
-              ? []
-              : paginatedData.map((i) => i.requestId)
-          )
-        }
-        onItemClick={(item) => console.log("Item clicked:", item)}
-      />
+      <Box paddingTop={"32px"}>
+        <IncomingProductManualListview />
+      </Box>
     </Box>
   );
 };
-
-// Styled components for cleaner styling
-const HeaderContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin: 40px 0 26px 0;
-`;
-
-const OperationsHeadingText = styled.h1`
-  font-family: "Product Sans";
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 19.41px;
-  color: #1a1a1a;
-  text-align: left;
-`;
-
-const PendingBoxesContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-`;
 
 export default Operations;
