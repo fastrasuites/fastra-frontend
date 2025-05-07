@@ -21,6 +21,7 @@ import LocationInfo from "./Location/LocationInfo/LocationInfo";
 import ScrapInfo from "./stock/scrap/ScrapInfo/ScrapInfo";
 import StockAdjustmentInfo from "./stock/StockAdjustment/StockAdjustmentInfo/StockAdjustmentInfo";
 import InternalTransferInfo from "./Operations/InternalTransfer/InternalTransferInfo/InternalTransferInfo";
+import EditStockAdjustment from "./stock/StockAdjustment/StockAdjustmentForm/EditStockAdjustment";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -42,7 +43,7 @@ const InventoryLayout = () => {
           />
 
           <Route
-          exact
+            exact
             path={`${path}/operations/material-consumption`}
             component={MaterialConsumption}
           />
@@ -93,9 +94,16 @@ const InventoryLayout = () => {
             component={NewStockAdjustment}
           />
           <Route
+            exact
             path={`${path}/stock/stock-adjustment/:id`}
             component={StockAdjustmentInfo}
           />
+
+          <Route
+            path={`${path}/stock/stock-adjustment/:id/edit`}
+            component={EditStockAdjustment}
+          />
+
           <Route path={`${path}/stock/stock-moves`} component={StockMoves} />
 
           {/* Inventory Scrap Routes */}

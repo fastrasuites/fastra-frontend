@@ -2,16 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
-import "./NewStockAdjustment.css";
 import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjustment";
 import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import Swal from "sweetalert2";
+import { useLocation, useParams } from "react-router-dom";
 
-// Default form data
+// Default form state
 const defaultFormData = {
   adjustmentType: "Stock Level Update",
-  // id: Date.now(),
   date: formatDate(Date.now()),
   location: "",
   items: [],
@@ -20,61 +19,66 @@ const defaultFormData = {
   notes: "",
 };
 
-// Renders your “basic info” block exactly as before
+// Renders the top form section
 const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
-  const [selectedLoaction, setSelectedLocation] = useState(null);
-  const {
-    locationList,
-    getLocationList,
-  } = useCustomLocation();
+  const { locationList, getLocationList } = useCustomLocation();
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
     getLocationList();
   }, []);
+
+  useEffect(() => {
+    // Prefill Autocomplete with matching location object
+    if (formData.location && locationList.length > 0) {
+      const matched = locationList.find(
+        (loc) => loc.id === formData.location?.id || formData.location
+      );
+      setSelectedLocation(matched || null);
+    }
+  }, [formData.location, locationList]);
 
   const handleReceiptChange = (event, newValue) => {
     setSelectedLocation(newValue);
     handleInputChange("location", newValue);
   };
 
-  // console.log("Location List", locationList);
-
   return (
     <div className="stockbasicInformationInputs">
-      {/* <div className="formLabelAndValue">
+      <div className="formLabelAndValue">
         <label>ID</label>
         <p>{formData.id}</p>
-      </div> */}
+      </div>
       <div className="formLabelAndValue">
         <label>Adjustment Type</label>
         <p>{formData.adjustmentType}</p>
       </div>
+
       <div className="formLabelAndValue">
         <label>Date</label>
         <p>{formData.date}</p>
       </div>
+
       {locationList.length <= 1 ? (
         <div className="formLabelAndValue">
           <label>Location</label>
-          <p>{formData.location}</p>
+          <p>{formData.location?.id || formData.location}</p>
         </div>
       ) : (
-        <div className="">
+        <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Location
           </label>
           <Autocomplete
             disablePortal
             options={locationList}
-            value={selectedLoaction}
+            value={selectedLocation}
             getOptionLabel={(option) => option?.id || ""}
-            isOptionEqualToValue={(option, value) =>
-              option?.receiptType === value?.id
-            }
+            isOptionEqualToValue={(option, value) => option?.id === value?.id}
             onChange={handleReceiptChange}
             sx={{ width: "100%", mb: 2 }}
             renderInput={(params) => (
-              <TextField {...params} placeholder="Receipt Type" />
+              <TextField {...params} placeholder="Select Location" />
             )}
           />
         </div>
@@ -94,44 +98,79 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   );
 };
 
-const NewStockAdjustment = () => {
+const EditStockAdjustment = () => {
   const [formData, setFormData] = useState(defaultFormData);
-
-  // Purchase context
+  const location = useLocation();
   const { products, fetchProducts } = usePurchase();
-
-  // Stock adjustment context (renamed flags to avoid collision)
+  const { locationList } = useCustomLocation(); // Get locationList here
   const {
     isLoading: stockLoading,
+    updateStockAdjustment,
     error: stockError,
-    createStockAdjustment,
   } = useStockAdjustment();
 
-  // Location context (renamed flags)
+  const { id } = useParams();
 
-  // Fetch once on mount
+  // Transform products with UOM structure
+  const transformProducts = (products) =>
+    products.map((prod) => ({
+      ...prod,
+      unit_of_measure: Array.isArray(prod.unit_of_measure)
+        ? {
+            url: prod.unit_of_measure[0],
+            unit_category: prod.unit_of_measure[1],
+          }
+        : prod.unit_of_measure,
+    }));
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Centralized state updater
+  // Initialize form data when products/locations load
+  useEffect(() => {
+    if (
+      location?.state?.StockAdjustment &&
+      products.length &&
+      locationList.length
+    ) {
+      const adj = location.state.StockAdjustment;
+
+      // Map adjustment items to form items
+      const items = adj.stock_adjustment_items.map((item) => {
+        return {
+          ...item,
+          product: item?.product,
+          unit_of_measure: item.product?.unit_of_measure
+            ? { unit_category: item.product.unit_of_measure[1] }
+            : { unit_category: item?.unit_of_measure },
+          available_product_quantity: item.current_quantity,
+          qty_received: item.adjusted_quantity,
+        };
+      });
+
+      // Find matching location object
+      const locationObj = locationList.find(
+        (loc) => loc.url === adj.warehouse_location
+      );
+
+      setFormData({
+        ...defaultFormData,
+        id: adj.id,
+        adjustmentType: adj.adjustment_type || "Stock Level Update",
+        date: formatDate(adj.date ? new Date(adj.date) : Date.now()),
+        location: locationObj || adj.warehouse_location,
+        items: items,
+        notes: adj.notes || "",
+        status: adj.status || "draft",
+        is_hidden: adj.is_hidden || false,
+      });
+    }
+  }, [location.state, products, locationList]); // Re-run when these update
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-
-  // Turn [url, unit_code] into an object
-  const transformProducts = (products) =>
-    products.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
-      return {
-        ...prod,
-        unit_of_measure: {
-          url,
-          unit_category,
-          unit_name: unit_category,
-        },
-      };
-    });
 
   const rowConfig = [
     {
@@ -152,7 +191,7 @@ const NewStockAdjustment = () => {
       label: "Current Quantity",
       field: "available_product_quantity",
       type: "number",
-      transform: (val) => val || "",
+      disabled: true,
     },
     {
       label: "Adjusted Quantity",
@@ -163,21 +202,19 @@ const NewStockAdjustment = () => {
 
   const handleSubmit = (filledData) => {
     const cleanData = {
-      id: filledData.id,
-      warehouse_location: filledData.location.url,
-      notes: filledData.notes,
-      status: filledData.status,
+      id: filledData.id || null,
+      adjustment_type: filledData.adjustmentType || null,
+      warehouse_location: filledData.location?.url || filledData.location,
+      notes: filledData.notes || null,
+      status: filledData.status || null,
       is_hidden: false,
       items: filledData.items.map((item) => ({
         product: item.product.url,
-        // unit_of_measure: item.unit_of_measure.url,
-        // available_product_quantity: item.available_product_quantity,
         adjusted_quantity: item.qty_received,
       })),
     };
-    // console.log("Final Form Data", cleanData);
-    createStockAdjustment(cleanData).then((data) => {
-      console.log(data);
+
+    updateStockAdjustment(cleanData, id).then((data) => {
       if (data.success) {
         setFormData(defaultFormData);
         return Swal.fire({
@@ -195,23 +232,21 @@ const NewStockAdjustment = () => {
     });
   };
 
-  console.log(formData.items);
-
   return (
     <CommonForm
       basicInformationTitle="Product Information"
       basicInformationInputs={StockAdjustmentBasicInputs}
-      formTitle="New Stock Adjustment"
+      formTitle="Edit Stock Adjustment"
       formData={formData}
       setFormData={setFormData}
       handleInputChange={handleInputChange}
       rowConfig={rowConfig}
-      isEdit={false}
+      isEdit={true}
       onSubmit={handleSubmit}
-      submitBtnText={stockLoading ? "Submitting..." : "Validate"}
+      submitBtnText={stockLoading ? "Submitting..." : "Update"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
     />
   );
 };
 
-export default NewStockAdjustment;
+export default EditStockAdjustment;

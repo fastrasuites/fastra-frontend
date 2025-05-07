@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useHistory, useParams } from "react-router-dom";
 import { useTenant } from "../../../../../context/TenantContext";
 import {
   Box,
@@ -19,6 +19,7 @@ import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjust
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import { extractId } from "../../../../../helper/helper";
 import { usePurchase } from "../../../../../context/PurchaseContext";
+import StockAdjustment from "../StockAdjustment";
 
 // Safely normalize status to a string before lowercasing
 const getStatusColor = (status) => {
@@ -54,6 +55,8 @@ export default function StockAdjustmentInfo() {
   const { getSingleStockAdjustment } = useStockAdjustment();
   const { getSingleLocation } = useCustomLocation();
   const { fetchSingleProduct } = usePurchase();
+
+  const history = useHistory();
 
   const [stock, setStock] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -94,6 +97,12 @@ export default function StockAdjustmentInfo() {
     loadData();
   }, [loadData]);
 
+  const handleNavigateToEdit = (id) => {
+    history.push({
+      pathname: `/${schema}/inventory/stock/stock-adjustment/${id}/edit`,
+      state: { StockAdjustment: stock },
+    });
+  };
   if (loading)
     return (
       <Box p={4} textAlign="center">
@@ -126,14 +135,20 @@ export default function StockAdjustmentInfo() {
             Stock Adjustment
           </Button>
         </Link>
-        <Button
-          variant="outlined"
-          size="large"
-          disableElevation
-          onClick={() => window.history.back()}
-        >
-          Close
-        </Button>
+        <Box display="flex" gap={4}>
+          <Button
+            // variant="outlined"
+            size="large"
+            disableElevation
+            onClick={() => window.history.back()}
+          >
+            Close
+          </Button>
+         
+            <Button variant="contained" size="large" disableElevation onClick={() => handleNavigateToEdit(id)}>
+              Edit
+            </Button>
+        </Box>
       </Box>
 
       {/* Main info card */}
@@ -238,7 +253,7 @@ export default function StockAdjustmentInfo() {
                   <TableCell
                     sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}
                   >
-                    5
+                    {row?.current_quantity}
                   </TableCell>
                   <TableCell
                     sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}

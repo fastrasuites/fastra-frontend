@@ -174,6 +174,49 @@ export const StockAdjustmentProvider = ({ children }) => {
     [client]
   );
 
+  const updateStockAdjustment = useCallback(
+    async (adjustmentData, id) => {
+      console.log("Adjustment Data", adjustmentData);
+      // const errors = validateStockAdjustmentData(adjustmentData);
+      // if (Object.keys(errors).length) return Promise.reject(errors);
+      if (!client) {
+        const msg = "API client not initialized.";
+        setError(msg);
+        return Promise.reject(new Error(msg));
+      }
+      setIsLoading(true);
+      // console.log("Axios base URL", client.defaults.baseURL);
+      // console.log("Full request URL", client.defaults.baseURL + "/inventory/stock-adjustment/");
+      console.log(id);
+      try {
+        const payload = {
+          warehouse_location: adjustmentData.warehouse_location || null,
+          adjustment_type: adjustmentData.adjustmentType || null,
+          stock_adjustment_items: adjustmentData.items,
+          notes: adjustmentData.notes,
+          status: adjustmentData.status || "draft",
+          is_hidden: false,
+        };
+        // console.log("Payload", payload);
+        // Send the request to create a new stock adjustment
+        const { data } = await client.patch(
+          `/inventory/stock-adjustment/${id}/`,
+          payload
+        );
+        setAdjustmentList((prev) => [...prev, data]);
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        console.log(err);
+        setError(err.message || "Failed to create stock adjustment");
+        return { success: false, error: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
   // Stock adjustment item endpoints
   const getStockAdjustmentItemList = useCallback(async () => {
     if (!client) {
@@ -346,6 +389,7 @@ export const StockAdjustmentProvider = ({ children }) => {
       getStockAdjustmentItemList,
       getSingleStockAdjustmentItem,
       createStockAdjustmentItem,
+      updateStockAdjustment,
       updateStockAdjustmentItem,
       patchStockAdjustmentItem,
       deleteStockAdjustmentItem,
@@ -363,6 +407,7 @@ export const StockAdjustmentProvider = ({ children }) => {
       getStockAdjustmentItemList,
       getSingleStockAdjustmentItem,
       createStockAdjustmentItem,
+      updateStockAdjustment,
       updateStockAdjustmentItem,
       patchStockAdjustmentItem,
       deleteStockAdjustmentItem,
