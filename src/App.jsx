@@ -1,7 +1,6 @@
 // App.js
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import { useTenant } from "./context/TenantContext";
 import ProtectedRoute from "./ProtectedRoute";
 import Register from "./Reglog/Register";
 import EmailVerification from "./Reglog/EmailVerification";
@@ -42,8 +41,6 @@ import RFQFormWrapper from "./dash/PurchaseModule/Rfq/RfqForm/RFQFormWrapper";
 import InventoryLayout from "./dash/Inventory/Inventory";
 
 function App() {
-  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
-
   return (
     <div className="App" style={{ width: "100vw", minHeight: "100vh" }}>
       <Router>
@@ -59,141 +56,113 @@ function App() {
           />
 
           {/* Tenant-aware routes */}
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/dashboard`}
-            component={Dashboard}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/contact`}
-            component={Contact}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/settings`}
-            component={Settings}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/apk`}
-            component={Apk}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/user`}
-            component={User}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/accessgroups`}
-            component={AccessGroups}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/purchase`}
-            component={Purchase}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/npr`}
-            component={Newpr}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/papr`}
-            component={Papr}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/crfq`}
-            component={CRfq}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/rfq/convert`}
-            component={RFQFormWrapper}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/rfq`}
-            component={Rfq}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/newrfq`}
-            component={Rform}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/rapr`}
-            component={Rapr}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/purchase-order/convert`}
-            component={POFormWrapper}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/purchase-order`}
-            component={PurchaseOrder}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/newPurchaseOrder`}
-            component={POrderform}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/orapr`}
-            component={Orapr}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/vendor`}
-            component={Vend}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/vendetails`}
-            component={VendorDetails}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/Newvendor`}
-            component={Newvendor}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/purchase-configuration-settings`}
-            component={ConfigurationSettings}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/varcat`}
-            component={Varcat}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/edit`}
-            component={Edit}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/product`}
-            component={Prod}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/prodetails`}
-            component={ProductDetails}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/Newprod`}
-            component={Newprod}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/procat`}
-            component={Procat}
-          />
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/pedit`}
-            component={Pedit}
-          />
-          
+          <Route path="/:tenant">
+            <Switch>
+              <ProtectedRoute
+                exact
+                path="/:tenant/dashboard"
+                component={Dashboard}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/contact"
+                component={Contact}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/settings"
+                component={Settings}
+              />
+              <ProtectedRoute exact path="/:tenant/apk" component={Apk} />
+              <ProtectedRoute exact path="/:tenant/user" component={User} />
+              <ProtectedRoute
+                exact
+                path="/:tenant/accessgroups"
+                component={AccessGroups}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/purchase"
+                component={Purchase}
+              />
+              <ProtectedRoute exact path="/:tenant/npr" component={Newpr} />
+              <ProtectedRoute exact path="/:tenant/papr" component={Papr} />
+              <ProtectedRoute exact path="/:tenant/crfq" component={CRfq} />
+              <ProtectedRoute
+                exact
+                path="/:tenant/rfq/convert"
+                component={RFQFormWrapper}
+              />
+              <ProtectedRoute exact path="/:tenant/rfq" component={Rfq} />
+              <ProtectedRoute exact path="/:tenant/newrfq" component={Rform} />
+              <ProtectedRoute exact path="/:tenant/rapr" component={Rapr} />
+              <ProtectedRoute
+                exact
+                path="/:tenant/purchase-order/convert"
+                component={POFormWrapper}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/purchase-order"
+                component={PurchaseOrder}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/newPurchaseOrder"
+                component={POrderform}
+              />
+              <ProtectedRoute exact path="/:tenant/orapr" component={Orapr} />
+              <ProtectedRoute exact path="/:tenant/vendor" component={Vend} />
+              <ProtectedRoute
+                exact
+                path="/:tenant/vendetails"
+                component={VendorDetails}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/Newvendor"
+                component={Newvendor}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/purchase-configuration-settings"
+                component={ConfigurationSettings}
+              />
+              <ProtectedRoute exact path="/:tenant/varcat" component={Varcat} />
+              <ProtectedRoute exact path="/:tenant/edit" component={Edit} />
+              <ProtectedRoute exact path="/:tenant/product" component={Prod} />
+              <ProtectedRoute
+                exact
+                path="/:tenant/prodetails"
+                component={ProductDetails}
+              />
+              <ProtectedRoute
+                exact
+                path="/:tenant/Newprod"
+                component={Newprod}
+              />
+              <ProtectedRoute exact path="/:tenant/procat" component={Procat} />
+              <ProtectedRoute exact path="/:tenant/pedit" component={Pedit} />
 
-          {/* Inventory Routes: All inventory URLs now use InventoryLayout */}
-          <ProtectedRoute
-            path={`/${tenant_schema_name}/inventory`}
-            component={() => <InventoryLayout />}
-          />
+              {/* Inventory Route - allows nested routes */}
+              <ProtectedRoute
+                path="/:tenant/inventory"
+                component={InventoryLayout}
+              />
 
-          {/* Additional tenant routes can be defined here */}
+              {/* Additional tenant routes can be defined here */}
 
-          {/* Fallback for 404 */}
-          <Route
-            path="*"
-            render={() => (
-              <NoHeaderLayout>
-                <NotFound />
-              </NoHeaderLayout>
-            )}
-          />
+              {/* Fallback for 404 */}
+              <Route
+                path="*"
+                render={() => (
+                  <NoHeaderLayout>
+                    <NotFound />
+                  </NoHeaderLayout>
+                )}
+              />
+            </Switch>
+          </Route>
         </Switch>
       </Router>
     </div>

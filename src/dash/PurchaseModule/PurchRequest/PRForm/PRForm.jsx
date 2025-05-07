@@ -202,7 +202,7 @@ const PRForm = ({ onCancel, formUse, quotation }) => {
           <h2>Basic Information</h2>
           <div className="editCancel">
             <Button variant="text" onClick={handleReload}>
-              Cancel
+              Close
             </Button>
           </div>
         </div>

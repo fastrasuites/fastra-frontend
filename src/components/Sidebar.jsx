@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTenant } from "../context/TenantContext";
 import { Link } from "react-router-dom";
 import "./sidebar.css";
@@ -16,7 +16,12 @@ import settings from "../image/sidebar/settings.svg";
 
 const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
   const { tenantData } = useTenant();
+
   const tenant_schema_name = tenantData?.tenant_schema_name;
+  const handleReload = () => {
+    window.location.reload();
+  };
+
   return (
     <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
       <div className="sidebar-menu">
@@ -27,7 +32,10 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/dashboard`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={home} alt="Home" className="sidebar-icon" />
           <span>Home</span>
@@ -36,7 +44,10 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/accounts`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={accounts} alt="Accounts" className="sidebar-icon" />
           <span>Accounts</span>
@@ -54,16 +65,23 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/sales`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={sales} alt="Sales" className="sidebar-icon" />
           <span>Sales</span>
         </Link>
 
         <Link
-          to={`/${tenant_schema_name}/inventory`}
+          to={`/${tenant_schema_name}/inventory/operations`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          // onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={inventory} alt="Inventory" className="sidebar-icon" />
           <span>Inventory</span>
@@ -72,7 +90,10 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/hr`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={hr} alt="HR" className="sidebar-icon" />
           <span>HR</span>
@@ -81,7 +102,10 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/logistics`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={logistics} alt="Logistics" className="sidebar-icon" />
           <span>Logistics</span>
@@ -90,7 +114,10 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/contacts`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={contacts} alt="Contacts" className="sidebar-icon" />
           <span>Contacts</span>
@@ -101,7 +128,10 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/apps`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={apps} alt="Apps" className="sidebar-icon" />
           <span>Apps</span>
@@ -110,7 +140,10 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         <Link
           to={`/${tenant_schema_name}/settings`}
           className="sidebar-item"
-          onClick={handleCloseSidebar}
+          onClick={() => {
+            handleCloseSidebar();
+            handleReload();
+          }}
         >
           <img src={settings} alt="Settings" className="sidebar-icon" />
           <span>Settings</span>

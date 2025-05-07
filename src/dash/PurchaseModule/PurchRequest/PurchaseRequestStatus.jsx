@@ -79,7 +79,7 @@ const PurchaseRequestStatus = ({
     <div className="rfqStatus">
       <div className="rfqStatusCancel">
         <Button variant="outlined" className="cancel" onClick={onCancel}>
-          Cancel
+          Close
         </Button>
       </div>
       <div className="rfqHeader">

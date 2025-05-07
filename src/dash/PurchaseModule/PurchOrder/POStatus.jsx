@@ -41,23 +41,19 @@ const POStatus = ({
 
   useEffect(() => {
     if (selectedStatus[0] && selectedStatus[0].length) {
-      setPurchaseOrder(() =>{
-
+      setPurchaseOrder(() => {
         const statusMap = {
-            rejected: 'cancelled',
-            pending: 'awaiting',
-            approved: 'completed',
-            draft: 'draft'
-          };
+          rejected: "cancelled",
+          pending: "awaiting",
+          approved: "completed",
+          draft: "draft",
+        };
         const status = statusMap[selectedStatus[1].toLowerCase()];
         console.log(status);
-        return purchaseOrderData.filter((item) => item.status === status)
-      }
-        
-      );
+        return purchaseOrderData.filter((item) => item.status === status);
+      });
     }
   }, [selectedStatus]);
-
 
   // Filter purchase orders based on search query
   const filteredPurchaseOrders = useMemo(() => {
@@ -91,7 +87,6 @@ const POStatus = ({
 
   const totalPages = Math.ceil(filteredPurchaseOrders.length / itemsPerPage);
 
-
   const paginatedPurchaseOrders = useMemo(() => {
     return filteredPurchaseOrders.slice(
       (page - 1) * itemsPerPage,
@@ -108,7 +103,6 @@ const POStatus = ({
     [totalPages]
   );
 
-
   const toggleViewMode = (mode) => {
     setViewMode(mode);
   };
@@ -118,7 +112,7 @@ const POStatus = ({
       <PurchaseHeader />
       <div className="rfqStatusCancel">
         <Button variant="outlined" className="cancel" onClick={onCancel}>
-          Cancel
+          Close
         </Button>
       </div>
       <div className="rfqHeader">
@@ -138,9 +132,9 @@ const POStatus = ({
         </div>
 
         <div className="r3b">
-        <p className="r3bpage" style={{ whiteSpace: "nowrap" }}>
-                {page} of {totalPages}
-              </p>
+          <p className="r3bpage" style={{ whiteSpace: "nowrap" }}>
+            {page} of {totalPages}
+          </p>
           <div className="r3bnav">
             <FaCaretLeft
               className="lr"

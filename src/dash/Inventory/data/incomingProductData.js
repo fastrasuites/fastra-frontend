@@ -26,7 +26,6 @@ export const incomingProductData = {
   },
 };
 
-
 export const mockData = [
   {
     requestId: "LAGIN001",
@@ -43,7 +42,7 @@ export const mockData = [
         unit_of_measure: "Kg",
         current_quantity: "120",
         adjusted_quantity: "150",
-        quantity_received: "30"
+        quantity_received: "30",
       },
       {
         url: "https://via.placeholder.com/150",
@@ -52,9 +51,9 @@ export const mockData = [
         unit_of_measure: "Litre",
         current_quantity: "200",
         adjusted_quantity: "250",
-        quantity_received: "50"
-      }
-    ]
+        quantity_received: "50",
+      },
+    ],
   },
   {
     requestId: "LAGIN002",
@@ -71,9 +70,9 @@ export const mockData = [
         unit_of_measure: "Pieces",
         current_quantity: "500",
         adjusted_quantity: "480",
-        quantity_received: "20"
-      }
-    ]
+        quantity_received: "20",
+      },
+    ],
   },
   {
     requestId: "LAGIN003",
@@ -90,9 +89,9 @@ export const mockData = [
         unit_of_measure: "Boxes",
         current_quantity: "351",
         adjusted_quantity: "1077",
-        quantity_received: "73"
-      }
-    ]
+        quantity_received: "73",
+      },
+    ],
   },
   {
     requestId: "LAGIN004",
@@ -109,9 +108,9 @@ export const mockData = [
         unit_of_measure: "Kg",
         current_quantity: "95",
         adjusted_quantity: "100",
-        quantity_received: "5"
-      }
-    ]
+        quantity_received: "5",
+      },
+    ],
   },
   {
     requestId: "LAGIN005",
@@ -120,7 +119,7 @@ export const mockData = [
     destinationLocation: "Outlet 8",
     dateCreated: "8 Apr 2024 - 3:00PM",
     status: "Draft",
-    items: []
+    items: [],
   },
   {
     requestId: "LAGIN006",
@@ -137,9 +136,9 @@ export const mockData = [
         unit_of_measure: "Litres",
         current_quantity: "600",
         adjusted_quantity: "620",
-        quantity_received: "20"
-      }
-    ]
+        quantity_received: "20",
+      },
+    ],
   },
   {
     requestId: "LAGIN007",
@@ -156,9 +155,9 @@ export const mockData = [
         unit_of_measure: "Sacks",
         current_quantity: "700",
         adjusted_quantity: "730",
-        quantity_received: "30"
-      }
-    ]
+        quantity_received: "30",
+      },
+    ],
   },
   {
     requestId: "LAGIN008",
@@ -167,7 +166,7 @@ export const mockData = [
     destinationLocation: "Showroom 1",
     dateCreated: "11 Apr 2024 - 4:15PM",
     status: "Draft",
-    items: []
+    items: [],
   },
   {
     requestId: "LAGIN009",
@@ -184,9 +183,9 @@ export const mockData = [
         unit_of_measure: "Cartons",
         current_quantity: "1000",
         adjusted_quantity: "950",
-        quantity_received: "-50"
-      }
-    ]
+        quantity_received: "-50",
+      },
+    ],
   },
   {
     requestId: "LAGIN010",
@@ -195,7 +194,7 @@ export const mockData = [
     destinationLocation: "Sub Branch 4",
     dateCreated: "13 Apr 2024 - 8:30AM",
     status: "Drafted",
-    items: []
+    items: [],
   },
   {
     requestId: "LAGIN011",
@@ -204,7 +203,7 @@ export const mockData = [
     destinationLocation: "Retail Branch 1",
     dateCreated: "14 Apr 2024 - 12:30PM",
     status: "Draft",
-    items: []
+    items: [],
   },
   {
     requestId: "LAGIN012",
@@ -221,13 +220,11 @@ export const mockData = [
         unit_of_measure: "Tons",
         current_quantity: "850",
         adjusted_quantity: "800",
-        quantity_received: "-50"
-      }
-    ]
-  }
+        quantity_received: "-50",
+      },
+    ],
+  },
 ];
-
-
 
 export const scraps = [
   {
@@ -245,7 +242,7 @@ export const scraps = [
         scrap: "Packaging damage",
         product: "Widget A",
         scrap_quantity: "120",
-        adjusted_quantity: "-120"
+        adjusted_quantity: "-120",
       },
       {
         url: "https://via.placeholder.com/100",
@@ -253,9 +250,9 @@ export const scraps = [
         scrap: "Expired",
         product: "Widget B",
         scrap_quantity: "45",
-        adjusted_quantity: "-45"
-      }
-    ]
+        adjusted_quantity: "-45",
+      },
+    ],
   },
   {
     id: "ABJ002",
@@ -272,9 +269,9 @@ export const scraps = [
         scrap: "Over-received",
         product: "Gadget X",
         scrap_quantity: "30",
-        adjusted_quantity: "-30"
-      }
-    ]
+        adjusted_quantity: "-30",
+      },
+    ],
   },
   {
     id: "LAG003",
@@ -291,7 +288,7 @@ export const scraps = [
         scrap: "Broken",
         product: "Gadget Y",
         scrap_quantity: "10",
-        adjusted_quantity: "-10"
+        adjusted_quantity: "-10",
       },
       {
         url: "https://via.placeholder.com/100",
@@ -299,9 +296,9 @@ export const scraps = [
         scrap: "Misplaced",
         product: "Widget C",
         scrap_quantity: "5",
-        adjusted_quantity: "-5"
-      }
-    ]
+        adjusted_quantity: "-5",
+      },
+    ],
   },
   {
     id: "KAN004",
@@ -318,9 +315,9 @@ export const scraps = [
         scrap: "Water damage",
         product: "Widget D",
         scrap_quantity: "200",
-        adjusted_quantity: "-200"
-      }
-    ]
+        adjusted_quantity: "-200",
+      },
+    ],
   },
   {
     id: "PHC005",
@@ -337,9 +334,9 @@ export const scraps = [
         scrap: "Inventory count error",
         product: "Gadget Z",
         scrap_quantity: "0",
-        adjusted_quantity: "0"
-      }
-    ]
+        adjusted_quantity: "0",
+      },
+    ],
   },
   {
     id: "ABJ006",
@@ -356,7 +353,7 @@ export const scraps = [
         scrap: "Data migration error",
         product: "Widget E",
         scrap_quantity: "75",
-        adjusted_quantity: "-75"
+        adjusted_quantity: "-75",
       },
       {
         url: "https://via.placeholder.com/100",
@@ -364,13 +361,11 @@ export const scraps = [
         scrap: "Damaged in transit",
         product: "Gadget W",
         scrap_quantity: "20",
-        adjusted_quantity: "-20"
-      }
-    ]
-  }
+        adjusted_quantity: "-20",
+      },
+    ],
+  },
 ];
-
-
 
 export const stocks = [
   {
@@ -520,7 +515,6 @@ export const stocks = [
   },
 ];
 
-
 export const internalTransferData = [
   {
     id: "IT001",
@@ -533,7 +527,7 @@ export const internalTransferData = [
     items: [
       { productName: "Laptop Keyboard", quantity: 4, unitOfMeasure: "pcs" },
       { productName: "Keyboard Dust Cover", quantity: 4, unitOfMeasure: "pcs" },
-      { productName: "Keycap Puller", quantity: 4, unitOfMeasure: "pcs" }
+      { productName: "Keycap Puller", quantity: 4, unitOfMeasure: "pcs" },
     ],
   },
   {
@@ -548,7 +542,11 @@ export const internalTransferData = [
       { productName: "Laptop", quantity: 2, unitOfMeasure: "pcs" },
       { productName: "Laptop Sleeve", quantity: 2, unitOfMeasure: "pcs" },
       { productName: "Power Adapter", quantity: 2, unitOfMeasure: "pcs" },
-      { productName: "Screen Cleaning Cloth", quantity: 2, unitOfMeasure: "pcs" }
+      {
+        productName: "Screen Cleaning Cloth",
+        quantity: 2,
+        unitOfMeasure: "pcs",
+      },
     ],
   },
   {
@@ -562,7 +560,7 @@ export const internalTransferData = [
     items: [
       { productName: "Keyboard & Mouse", quantity: 10, unitOfMeasure: "set" },
       { productName: "Mouse Pad", quantity: 10, unitOfMeasure: "pcs" },
-      { productName: "Wrist Rest", quantity: 10, unitOfMeasure: "pcs" }
+      { productName: "Wrist Rest", quantity: 10, unitOfMeasure: "pcs" },
     ],
   },
   {
@@ -576,7 +574,7 @@ export const internalTransferData = [
     items: [
       { productName: "Monitor Stand", quantity: 5, unitOfMeasure: "pcs" },
       { productName: "Stand Bolt Kit", quantity: 5, unitOfMeasure: "pcs" },
-      { productName: "Cable Ties", quantity: 20, unitOfMeasure: "pcs" }
+      { productName: "Cable Ties", quantity: 20, unitOfMeasure: "pcs" },
     ],
   },
   {
@@ -591,7 +589,7 @@ export const internalTransferData = [
       { productName: "USB-C Hub", quantity: 8, unitOfMeasure: "pcs" },
       { productName: "USB-C Cable", quantity: 8, unitOfMeasure: "pcs" },
       { productName: "Driver CD", quantity: 8, unitOfMeasure: "pcs" },
-      { productName: "Dust Cover", quantity: 8, unitOfMeasure: "pcs" }
+      { productName: "Dust Cover", quantity: 8, unitOfMeasure: "pcs" },
     ],
   },
   {
@@ -606,7 +604,7 @@ export const internalTransferData = [
       { productName: "HDMI Cable", quantity: 20, unitOfMeasure: "m" },
       { productName: "HDMI Adapter", quantity: 5, unitOfMeasure: "pcs" },
       { productName: "Cable Clips", quantity: 20, unitOfMeasure: "pcs" },
-      { productName: "Cable Organizer", quantity: 5, unitOfMeasure: "pcs" }
+      { productName: "Cable Organizer", quantity: 5, unitOfMeasure: "pcs" },
     ],
   },
   {
@@ -621,7 +619,11 @@ export const internalTransferData = [
       { productName: "External HDD 1TB", quantity: 3, unitOfMeasure: "pcs" },
       { productName: "USB 3.0 Cable", quantity: 3, unitOfMeasure: "pcs" },
       { productName: "Protective Case", quantity: 3, unitOfMeasure: "pcs" },
-      { productName: "Backup Software License", quantity: 3, unitOfMeasure: "license" }
+      {
+        productName: "Backup Software License",
+        quantity: 3,
+        unitOfMeasure: "license",
+      },
     ],
   },
   {
@@ -636,7 +638,7 @@ export const internalTransferData = [
       { productName: "Ethernet Cable", quantity: 50, unitOfMeasure: "m" },
       { productName: "RJ45 Connectors", quantity: 50, unitOfMeasure: "pcs" },
       { productName: "Cable Clips", quantity: 50, unitOfMeasure: "pcs" },
-      { productName: "Cable Ties", quantity: 100, unitOfMeasure: "pcs" }
+      { productName: "Cable Ties", quantity: 100, unitOfMeasure: "pcs" },
     ],
   },
 ];

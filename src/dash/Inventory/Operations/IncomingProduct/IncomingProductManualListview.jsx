@@ -30,7 +30,6 @@ const IncomingProductManualListview = () => {
     }
   };
 
-
   const columns = [
     { id: "requestId", label: "Request ID" },
     { id: "partner", label: "Partner" },

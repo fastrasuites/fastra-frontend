@@ -95,7 +95,7 @@ const ActionButtons = ({ onClose, onSave }) => (
     <p style={{ fontSize: "20px" }}>Basic Information</p>
     <div className="rpr3e">
       <button type="button" className="rpr3but" onClick={onClose}>
-        Cancel
+        Close
       </button>
       <button type="button" className="rpr3btn" onClick={onSave}>
         Save

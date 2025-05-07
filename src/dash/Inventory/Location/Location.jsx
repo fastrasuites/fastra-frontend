@@ -69,8 +69,6 @@ function Location() {
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
 
-  
-
   const { locationList, getLocationList, isLoading, error } =
     useCustomLocation();
 
@@ -96,7 +94,7 @@ function Location() {
       prev.length === locationList.length ? [] : locationList.map((r) => r.id)
     );
   };
-console.log(locationList);
+  console.log(locationList);
   return (
     <Box sx={{ p: 3 }}>
       {/* Header Section */}
