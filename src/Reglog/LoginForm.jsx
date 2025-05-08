@@ -1,18 +1,20 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
 import "./LoginForm.css";
 import { useTenant } from "../context/TenantContext";
+import { current } from "@reduxjs/toolkit";
 
 export default function LoginForm() {
+  const [connecting, setConnecting] = useState("Login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const { login } = useTenant();
   const history = useHistory();
-
+  const buttonRef = useRef(null);
   // // checks url for localhost:3000 or app.fastrasuite.com
   // const MAIN_DOMAIN_URL = window.location.href.includes("app.fastrasuite.com")
   //   ? "app.fastrasuite.com"
@@ -44,11 +46,14 @@ export default function LoginForm() {
     }
 
     try {
+      setConnecting("Connecting...");
+      buttonRef.current.disabled = true; // Disable the button to prevent multiple clicks
       const apiBaseUrl = `https://fastrasuiteapi.com.ng`;
       const loginEndpoint = "/login/";
       const requestUrl = apiBaseUrl + loginEndpoint;
 
       const response = await axios.post(requestUrl, { email, password });
+      setError(""); // Clear any previous error messages
       const { access_token, tenant_schema_name, ...rest } = response.data || {};
       console.log("Login Response:", response.data);
 
@@ -76,6 +81,8 @@ export default function LoginForm() {
           "Unable to connect to the server. Check your internet connection."
         );
       }
+      buttonRef.current.disabled = false;
+      setConnecting("Retry");
       console.error("Login Error:", error);
     }
   };
@@ -129,8 +136,8 @@ export default function LoginForm() {
 
             {error && <p className="error-message">{error}</p>}
 
-            <button type="submit" className="login-button">
-              Login
+            <button type="submit" className="login-button" ref={buttonRef}>
+              {connecting}
             </button>
           </form>
 
@@ -147,17 +154,3 @@ export default function LoginForm() {
     </div>
   );
 }
-
-//  // checks url for localhost:3000 or app.fastrasuite.com
-//   const MAIN_DOMAIN = window.location.href.includes("app.fastrasuite.com")
-//     ? "app.fastrasuite.com"
-//     : "localhost:3000";
-
-//   // Determine protocol dynamically (http for localhost, https for production)
-//   const PROTOCOL = window.location.protocol.includes("https")
-//     ? "https"
-//     : "http";
-
-// // Redirect to dashboard
-//       window.location.href = dashboardUrl; // Redirect to tenant-specific dashboard
-//       const dashboardUrl = `${PROTOCOL}://${MAIN_DOMAIN}/${tenant}/dashboard`;
