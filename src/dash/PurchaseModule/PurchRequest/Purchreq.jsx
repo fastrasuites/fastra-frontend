@@ -55,7 +55,12 @@ export default function Purchreq() {
       setIsModalOpen(true);
     } else {
       const timer = setTimeout(() => {
-        setIsModalOpen(true);
+        const isWizardHidden = localStorage.getItem("hideWizard");
+        if (isWizardHidden === "true") {
+          setIsModalOpen(false);
+        } else {
+          setIsModalOpen(true);
+        }
       }, 500);
       return () => clearTimeout(timer);
     }
@@ -63,6 +68,7 @@ export default function Purchreq() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    localStorage.setItem("hideWizard", "true");
   };
 
   const toggleViewMode = (mode) => {

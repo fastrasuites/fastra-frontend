@@ -254,9 +254,14 @@
 }
 .go-back-link {
   cursor: pointer;
-  /* text-decoration: underline; */
   background-color: #3b7ced;
   padding: 5px 10px;
   color: #fff;
   border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
+
+
+

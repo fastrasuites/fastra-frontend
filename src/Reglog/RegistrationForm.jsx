@@ -208,13 +208,13 @@ const PasswordSetup = ({
     >
       {({ errors, touched, values }) => (
         <Form className="reg-form">
-          {/* {showBackButton && (
+          {showBackButton && (
             <div className="back-button-container">
               <p className="go-back-link" onClick={previous}>
-                <FaArrowLeft /> Go Back
+                <FaArrowLeft /> Go back
               </p>
             </div>
-          )} */}
+          )}
           <h2 className="form-title">Password</h2>
           <p className="form-subtitle">Create a password for your account</p>
 
