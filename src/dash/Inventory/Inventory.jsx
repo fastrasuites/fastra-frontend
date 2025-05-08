@@ -25,7 +25,6 @@ import EditStockAdjustment from "./stock/StockAdjustment/StockAdjustmentForm/Edi
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
-
   return (
     <div>
       <InventoryHeader />

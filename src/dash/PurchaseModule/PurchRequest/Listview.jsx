@@ -57,7 +57,6 @@ const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
     );
   }, []);
 
-  console.log(items);
 
   // Delete logic: call the external onDeleteSelected callback and reset selection.
   const handleDeleteSelected = useCallback(() => {
@@ -156,9 +155,9 @@ const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
             "&.MuiTable-root": { border: "none" },
             "& .MuiTableCell-root": { border: "none" },
           }}
+          stickyHeader
         >
           <TableHead
-            sx={{ backgroundColor: "#f2f2f2", position: "sticky", top: 0 }}
           >
             <TableRow>
               <TableCell padding="checkbox">

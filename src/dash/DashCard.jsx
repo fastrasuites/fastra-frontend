@@ -135,7 +135,7 @@ const DashCard = () => {
       name: "Purchase",
       description:
         "Streamline procurement processes by tracking purchase orders, vendor management, and inventory replenishment to optimize supply chain efficiency and cost savings.",
-      link: `/${tenant_schema_name}/purchase`,
+      link: `/${tenant_schema_name}/purchase/purchase-request`,
     },
     {
       name: "Inventory",

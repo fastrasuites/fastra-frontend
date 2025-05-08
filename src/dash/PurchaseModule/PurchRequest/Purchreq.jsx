@@ -5,27 +5,23 @@ import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import ListView from "./Listview";
 import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
-import { useLocation } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import draft from "../../../../src/image/icons/draft (1).png";
 import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
-import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { extractRFQID, formatDate } from "../../../helper/helper";
-import PurchaseRequestModule from "./PurchaseRequestModule";
-import PurchaseRequestStatus from "./PurchaseRequestStatus";
-import PRForm from "./PRForm/PRForm";
 // import SecondaryBar.css
 import "../../Inventory/secondaryBar/SecondaryBar.css";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { Search } from "lucide-react";
 
 export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-  const [selectedStatus, setSelectedStatus] = useState(null);
+  // const [selectedStatus, setSelectedStatus] = useState(null);
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -33,6 +29,8 @@ export default function Purchreq() {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
+
+  const history = useHistory();
 
   useEffect(() => {
     const savedPR = localStorage.getItem("purchaseRequestData");
@@ -69,18 +67,6 @@ export default function Purchreq() {
     setViewMode(mode);
   };
 
-  const handleNewPurchaseRequest = () => {
-    // console.log("i am here");
-    setIsFormVisible(true);
-  };
-
-  const handleFormClose = () => {
-    setIsFormVisible(false);
-    setIsSubmitted(false);
-    setSelectedItem(null);
-  };
-
-  // Filter quotations on the fly based on the search query
   const filteredPurchaseRequest = purchaseRequestData.filter((item) => {
     if (!searchQuery) return true;
     const lowercasedQuery = searchQuery.toLowerCase();
@@ -130,17 +116,12 @@ export default function Purchreq() {
   }, {});
 
   const handleSelectedRequest = (item) => {
-    setSelectedItem(item);
+    history.push(`purchase-request/${item?.id}`);
   };
 
   const handleCardClick = async (item) => {
-    console.log(item);
-    // store the return response in a variable
     const result = await fetchSinglePurchaseRequest(item.id);
     setSelectedItem({ result });
-    // check the status of the response
-    console.log(result.status);
-    console.log(selectedItem);
     if (item.status === "draft") {
       setIsFormVisible(true);
     } else {
@@ -150,24 +131,14 @@ export default function Purchreq() {
   };
 
   const handleRfqStatusClick = (urlList, status) => {
-    setSelectedStatus([urlList, status]);
-  };
-
-  const handleCancel = () => {
-    setSelectedItem(null);
-  };
-
-  const handleEdit = (item) => {
-    setSelectedItem(item);
-  };
-
-  const handleStatusCancel = () => {
-    setSelectedStatus(null);
+    history.push({
+      pathname: `purchase-request/status/${status}`,
+      state: { urlList, status, purchaseRequestData },
+    });
   };
 
   return (
-    <div className="purchase-request" id="purchase">
-      <PurchaseHeader />
+    <Box className="purchase-request" id="purchase" mr={"20px"}>
       <div className="purchase-request-heading">
         <div className="purchase-request-content">
           {!isFormVisible && !selectedItem && (
@@ -205,15 +176,16 @@ export default function Purchreq() {
               <nav className="secondary-bar" aria-label="Secondary navigation">
                 {/* Left side */}
                 <div className="secondary-bar__left">
-                  <Button
-                    variant="contained"
-                    disableElevation
-                    className="secondary-bar__button"
-                    aria-label="Create new purchase request"
-                    onClick={handleNewPurchaseRequest}
-                  >
-                    New Purchase Request
-                  </Button>
+                  <Link to={`purchase-request/new`}>
+                    <Button
+                      variant="contained"
+                      disableElevation
+                      className="secondary-bar__button"
+                      aria-label="Create new purchase request"
+                    >
+                      New Purchase Request
+                    </Button>
+                  </Link>
                   <div className="secondary-bar__search">
                     <label htmlFor="searchInput" className="visually-hidden">
                       Search Purchase requests
@@ -252,8 +224,6 @@ export default function Purchreq() {
                         type="button"
                         className="secondary-bar__icon-button"
                         aria-label="Previous page"
-                        // disabled={currentPage === 1}
-                        // onClick={() => onPageChange(currentPage - 1)}
                       >
                         <FaCaretLeft aria-hidden="true" />
                       </button>
@@ -265,8 +235,6 @@ export default function Purchreq() {
                         type="button"
                         className="secondary-bar__icon-button"
                         aria-label="Next page"
-                        // disabled={currentPage === totalPages}
-                        // onClick={() => onPageChange(currentPage + 1)}
                       >
                         <FaCaretRight aria-hidden="true" />
                       </button>
@@ -309,25 +277,7 @@ export default function Purchreq() {
             </div>
           )}
 
-          {isFormVisible ? (
-            <div className="overlay1">
-              <PRForm
-                onCancel={handleFormClose}
-                quotation={{}}
-                formUse={"New RFQ"}
-              />
-            </div>
-          ) : selectedItem ? (
-            <div className="overlay1">
-              <PurchaseRequestModule
-                item={selectedItem}
-                formatDate={formatDate}
-                statusColor={getStatusColor}
-                onEdit={handleEdit}
-                onCancel={handleCancel}
-              />
-            </div>
-          ) : viewMode === "grid" ? (
+          {viewMode === "grid" ? (
             <div className="rfqStatusCards">
               {filteredPurchaseRequest.map((item) => {
                 return (
@@ -359,28 +309,13 @@ export default function Purchreq() {
               getStatusColor={getStatusColor}
             />
           )}
-
-          {selectedStatus && (
-            <div className="overlay">
-              <PurchaseRequestStatus
-                selectedStatus={selectedStatus}
-                getStatusColor={getStatusColor}
-                statusColor={getStatusColor}
-                formatDate={formatDate}
-                onCancel={handleStatusCancel}
-                quotationsData={purchaseRequestData}
-              />
-            </div>
-          )}
         </div>
       </div>
-
-      {/* controls the 'Purchase Module Wizard' following user clicking the Purchase card from the Home page */}
       <PurchaseModuleWizard
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
       />
-    </div>
+    </Box>
   );
 }

@@ -39,6 +39,7 @@ import NotFound from "./notFound/NotFound";
 import POFormWrapper from "./dash/PurchaseModule/PurchOrder/POForm/POFormWrapper";
 import RFQFormWrapper from "./dash/PurchaseModule/Rfq/RfqForm/RFQFormWrapper";
 import InventoryLayout from "./dash/Inventory/Inventory";
+import PurchaseLayout from "./dash/PurchaseModule/Purchase";
 
 function App() {
   return (
@@ -80,11 +81,6 @@ function App() {
                 path="/:tenant/accessgroups"
                 component={AccessGroups}
               />
-              <ProtectedRoute
-                exact
-                path="/:tenant/purchase"
-                component={Purchase}
-              />
               <ProtectedRoute exact path="/:tenant/npr" component={Newpr} />
               <ProtectedRoute exact path="/:tenant/papr" component={Papr} />
               <ProtectedRoute exact path="/:tenant/crfq" component={CRfq} />
@@ -106,12 +102,8 @@ function App() {
                 path="/:tenant/purchase-order"
                 component={PurchaseOrder}
               />
-              <ProtectedRoute
-                exact
-                path="/:tenant/newPurchaseOrder"
-                component={POrderform}
-              />
-              <ProtectedRoute exact path="/:tenant/orapr" component={Orapr} />
+     
+    
               <ProtectedRoute exact path="/:tenant/vendor" component={Vend} />
               <ProtectedRoute
                 exact
@@ -143,6 +135,12 @@ function App() {
               />
               <ProtectedRoute exact path="/:tenant/procat" component={Procat} />
               <ProtectedRoute exact path="/:tenant/pedit" component={Pedit} />
+
+              {/* Purchase Route - allows nested routes */}
+              <ProtectedRoute
+                path="/:tenant/purchase"
+                component={PurchaseLayout}
+              />
 
               {/* Inventory Route - allows nested routes */}
               <ProtectedRoute

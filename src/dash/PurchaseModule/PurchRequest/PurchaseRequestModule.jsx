@@ -15,7 +15,7 @@ import {
 import "../Rfq/RfqStatusModal.css";
 import { extractRFQID } from "../../../helper/helper";
 import { usePurchase } from "../../../context/PurchaseContext";
-import PRForm from "./PRForm/PRForm";
+import PRForm from "./CreatePRForm/CreatePRForm";
 import { useHistory } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
 

@@ -356,7 +356,7 @@ export const PurchaseProvider = ({ children }) => {
         const endpoint = `/purchase/purchase-request/${cleanId}/`;
         const response = await client.get(endpoint);
         const normalizedData = await normalizePurchaseRequest(response.data);
-        return normalizedData;
+        return {success: true, data: normalizedData};
       } catch (err) {
         setError(err);
         console.error("Error fetching single purchase request:", err);
