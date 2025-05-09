@@ -217,9 +217,16 @@ export const RFQProvider = ({ children }) => {
         const response = await client.get(
           `/purchase/request-for-quotation/${id}/`
         );
+
+        const rawData = response.data;
+
+        // Normalize each purchase request
+        const normalizedData = await normalizeRFQList(rawData)
+  
+
         setError(null);
-        setSingleRFQ(response.data);
-        return response.data;
+        setSingleRFQ(normalizedData);
+        return { success: true, data: normalizedData };
       } catch (err) {
         setError(err);
         console.error("Error fetching RFQ by ID:", err);
@@ -254,7 +261,7 @@ export const RFQProvider = ({ children }) => {
             rfq.id === id ? { ...rfq, ...response.data } : rfq
           )
         );
-        return response.data;
+        return { success: true, data: response.data };
       } catch (err) {
         console.error("Error updating RFQ:", err);
         console.error("Request config:", err.config.data);

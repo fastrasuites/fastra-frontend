@@ -279,6 +279,7 @@ export const PurchaseProvider = ({ children }) => {
   const createPurchaseRequest = useCallback(
     async (newRequest) => {
       try {
+        console.log("newRequest:", newRequest);
         const response = await client.post(
           "/purchase/purchase-request/",
           newRequest

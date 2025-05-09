@@ -14,7 +14,6 @@ import {
 import PropTypes from "prop-types";
 import { extractRFQID, formatDate } from "../../../helper/helper";
 import { Trash } from "lucide-react";
-import { Tab } from "react-bootstrap";
 
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
@@ -77,7 +76,7 @@ const Orderlistview = ({
           cursor: "pointer",
           "&:last-child td, &:last-child th": { border: 0 },
         }}
-        onClick={() => onCardClick && onCardClick(item)}
+        onClick={() => onCardClick && onCardClick(item?.id)}
       >
         <TableCell sx={cellStyle(index)} padding="checkbox">
           <Checkbox
@@ -88,16 +87,7 @@ const Orderlistview = ({
           />
         </TableCell>
         <TableCell sx={cellStyle(index)}>{extractRFQID(item?.url)}</TableCell>
-        <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item, index) => (
-            <p key={index}>{item?.product?.product_name}</p>
-          ))}
-        </TableCell>
-        <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item, index) => (
-            <p key={index}>{item?.qty}</p>
-          ))}
-        </TableCell>
+
         <TableCell sx={cellStyle(index)}>
           {formatDate(item?.date_created)}
         </TableCell>
@@ -156,10 +146,9 @@ const Orderlistview = ({
             "&.MuiTable-root": { border: "none" },
             "& .MuiTableCell-root": { border: "none" },
           }}
+          stickyHeader
         >
-          <TableHead
-            sx={{ backgroundColor: "#f2f2f2", position: "sticky", top: 0 }}
-          >
+          <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox
@@ -172,27 +161,16 @@ const Orderlistview = ({
                 />
               </TableCell>
               <TableCell>Purchase Order ID</TableCell>
-              <TableCell>Product Name</TableCell>
-              <TableCell>Qty</TableCell>
               <TableCell>Date Created</TableCell>
               <TableCell>Vendor</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {renderedRows}
-          </TableBody>
+          <TableBody>{renderedRows}</TableBody>
         </Table>
       </TableContainer>
     </Box>
   );
-};
-
-Orderlistview.propTypes = {
-  items: PropTypes.array.isRequired,
-  onCardClick: PropTypes.func,
-  getStatusColor: PropTypes.func.isRequired,
-  onDeleteSelected: PropTypes.func,
 };
 
 export default Orderlistview;

@@ -115,6 +115,7 @@ export const PurchaseOrderProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
+        console.log(info);
         const response = await client.post("/purchase/purchase-order/", info);
         setError(null);
         setPurchaseOrderList((prevOrders) => [...prevOrders, response.data]);
@@ -292,6 +293,32 @@ export const PurchaseOrderProvider = ({ children }) => {
     }
   }, [client]);
 
+
+   // Retrieve single Purchase Order.
+   const getPurchaseOrderById = useCallback(async (id) => {
+    if (!client) {
+      const clientError =
+        "API client is not available. Please check tenant configuration.";
+      setError(clientError);
+      return Promise.reject(new Error(clientError));
+    }
+    try {
+      setIsLoading(true);
+      const response = await client.get(`/purchase/purchase-order/${id}/`);
+      const rawData = response.data;
+      const normalizedData = await normalizePurchaseOrder(rawData);
+      setError(null);
+      setSinglePurchaseOrder(normalizedData);
+      return { success: true, data: normalizedData };
+    } catch (err) {
+      console.error("Error fetching single purchase order:", err);
+      setError(err);
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   // Memoize the context value.
   const contextValue = useMemo(
     () => ({
@@ -304,6 +331,7 @@ export const PurchaseOrderProvider = ({ children }) => {
       updatePurchaseReject,
       updatePurchaseApproved,
       getPurchaseOrderList,
+      getPurchaseOrderById,
       singlePurchaseOrder,
       setSinglePurchaseOrder,
       setPurchaseOrderList,
@@ -318,6 +346,7 @@ export const PurchaseOrderProvider = ({ children }) => {
       updatePurchaseReject,
       updatePurchaseApproved,
       getPurchaseOrderList,
+      getPurchaseOrderById,
       singlePurchaseOrder,
     ]
   );

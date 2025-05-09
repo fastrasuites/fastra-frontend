@@ -1,4 +1,3 @@
-// src/dash/PurchaseModule/PurchaseRequestModule/PurchaseRequestInfo.js
 import React, {
   useEffect,
   useState,
@@ -160,9 +159,18 @@ const PurchaseRequestInfo = () => {
 
   // Convert to RFQ
   const handleConvertToRFQ = useCallback(() => {
+    const prToConvert = { 
+      purchase_request: item.url,
+      currency: item.currency,
+      vendor: item.vendor,
+      vendor_category: "",
+      items: item.items,
+      status: "draft",
+      is_hidden: true,
+    }
     history.push({
-      pathname: `/${tenantSchema}/rfq/convert`,
-      state: { pr: item },
+      pathname: `/${tenantSchema}/purchase/request-for-quotations/new`,
+      state: { rfq: prToConvert },
     });
   }, [history, tenantSchema, item]);
 

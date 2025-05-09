@@ -76,7 +76,7 @@ const RListView = ({
           cursor: "pointer",
           "&:last-child td, &:last-child th": { border: 0 },
         }}
-        onClick={() => onCardClick && onCardClick(item)}
+        onClick={() => onCardClick && onCardClick(item?.id)}
       >
         <TableCell sx={cellStyle(index)} padding="checkbox">
           <Checkbox
@@ -88,6 +88,9 @@ const RListView = ({
         </TableCell>
         <TableCell sx={cellStyle(index)}>
           {extractRFQID(item.purchase_request)}
+        </TableCell>
+        <TableCell sx={cellStyle(index)}>
+          {extractRFQID(item?.id)}
         </TableCell>
         <TableCell sx={cellStyle(index)}>
           {item?.vendor?.company_name}
@@ -151,9 +154,9 @@ const RListView = ({
             "&.MuiTable-root": { border: "none" },
             "& .MuiTableCell-root": { border: "none" },
           }}
+          stickyHeader
         >
           <TableHead
-            sx={{ backgroundColor: "#f2f2f2", position: "sticky", top: 0 }}
           >
             <TableRow>
               <TableCell padding="checkbox">
@@ -166,7 +169,8 @@ const RListView = ({
                   onChange={handleSelectAll}
                 />
               </TableCell>
-              <TableCell>Request ID</TableCell>
+              <TableCell>PR ID</TableCell>
+              <TableCell>RPQ ID</TableCell>
               <TableCell>Vendor</TableCell>
               {/* <TableCell>Qty</TableCell> */}
               <TableCell>Amount</TableCell>
