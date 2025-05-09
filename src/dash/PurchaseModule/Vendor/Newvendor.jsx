@@ -8,6 +8,7 @@ import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
 import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { useTenant } from "../../../context/TenantContext";
+import Swal from "sweetalert2";
 
 export default function Newvendor({
   onClose,
@@ -29,7 +30,32 @@ export default function Newvendor({
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    console.log(file);
     if (file) {
+      // Check if the file is an image
+      const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+      if (!validImageTypes.includes(file.type)) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid file type",
+          text: "Please upload a valid image (JPEG, PNG).",
+        });
+        return;
+      }
+      if (file.size > 1 * 1024 * 1024) {
+        Swal.fire({
+          icon: "error",
+          title: "File size exceeds 1MB",
+          text: "Please upload a smaller image.",
+        });
+        setFormState((prev) => ({
+          ...prev,
+          imageFile: null, // Reset file
+          imagePreview: "", // Reset preview
+        }));
+        return;
+      }
+
       setFormState((prev) => ({
         ...prev,
         imageFile: file, // Store file
@@ -182,6 +208,7 @@ export default function Newvendor({
                         </Box>
                       )}
                     </Box>
+                    <Typography>Maximum: 1Mb </Typography>
                   </Grid>
                 </Grid>
 

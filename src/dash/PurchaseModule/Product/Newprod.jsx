@@ -25,8 +25,8 @@ export default function Newprod({
     // cp: "",
     image: null, // New state for image
     productDesc: "",
-    availableProductQty: "",
-    totalQtyPurchased: "",
+    availableProductQty: 0,
+    totalQtyPurchased: 0,
   });
 
   const [showForm] = useState(true);
@@ -231,6 +231,7 @@ export default function Newprod({
                     placeholder="0"
                     value={formState.availableProductQty}
                     onChange={handleChange}
+                    disabled
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -244,6 +245,7 @@ export default function Newprod({
                     placeholder="0"
                     value={formState.totalQtyPurchased}
                     onChange={handleChange}
+                    disabled
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
