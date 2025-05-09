@@ -1,43 +1,47 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import "../Rfq/RfqStatus.css";
-import PurchaseHeader from "../PurchaseHeader";
+import "../../Rfq/RfqStatus.css";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa6";
 import { IoGrid } from "react-icons/io5";
 import { Button } from "@mui/material";
 import { Search } from "lucide-react";
-import POStatusModal from "./POStatusModal";
-import POGrid from "./POGrid";
-import Orderlistview from "./Orderlistview";
+import POGrid from "../POGrid";
+import Orderlistview from "../Orderlistview";
+import { useHistory, useLocation } from "react-router-dom";
+import { formatDate } from "../../../../helper/helper";
+import { useTenant } from "../../../../context/TenantContext";
 
-const POStatus = ({
-  selectedStatus,
-  formatDate,
-  statusColor,
-  onCancel,
-  triggerRefresh,
-  purchaseOrderData,
-}) => {
+const PurchaseOrderStatus = () => {
+  const history = useHistory();
+  const location = useLocation();
+  console.log(location);
+  const { status: selectedStatus, purchaseOrderData } = location.state || {};
   const [purchaseOrder, setPurchaseOrder] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+
   const itemsPerPage = 10;
 
-
-
-  const handleClick = (item) => {
-    setSelectedItem(item);
+  const handleClick = (id) => {
+    history.push(`/${tenant_schema_name}/purchase/purchase-order/${id}`);
   };
 
-  const handleCancel = () => {
-    setSelectedItem(null);
-  };
-
-  const handleEdit = (item) => {
-    setSelectedItem(item);
-  };
+  const statusColor = useCallback((status) => {
+    const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1);
+    switch (formattedStatus) {
+      case "Completed":
+        return "#2ba24c";
+      case "Awaiting":
+        return "#f0b501";
+      case "Cancelled":
+        return "#e43e2b";
+      default:
+        return "#3B7CED";
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedStatus[0] && selectedStatus[0].length) {
@@ -48,8 +52,7 @@ const POStatus = ({
           approved: "completed",
           draft: "draft",
         };
-        const status = statusMap[selectedStatus[1].toLowerCase()];
-        console.log(status);
+        const status = statusMap[selectedStatus.toLowerCase()];
         return purchaseOrderData.filter((item) => item.status === status);
       });
     }
@@ -109,15 +112,20 @@ const POStatus = ({
 
   return (
     <div className="rfqStatus">
-      <PurchaseHeader />
       <div className="rfqStatusCancel">
-        <Button variant="outlined" className="cancel" onClick={onCancel}>
+        <Button
+          variant="outlined"
+          className="cancel"
+          onClick={() => {
+            window.history.back();
+          }}
+        >
           Close
         </Button>
       </div>
       <div className="rfqHeader">
         <div className="rfqHeaderContent">
-          <h2 className="rfqHeaderTitle">{selectedStatus[1]}</h2>
+          <h2 className="rfqHeaderTitle">{selectedStatus}</h2>
           <div className="rfqsash">
             <Search style={{ color: "#C6CCD2" }} className="rfqsearch-icon" />
             <input
@@ -175,22 +183,8 @@ const POStatus = ({
           />
         </div>
       )}
-
-      {selectedItem && (
-        <div className="rfqStatusModal overlay">
-          <POStatusModal
-            item={selectedItem}
-            formatDate={formatDate}
-            statusColor={statusColor}
-            onCancel={handleCancel}
-            triggerRefresh={triggerRefresh}
-            // handleNewRfq={handleNewRfq}
-            onEdit={handleEdit}
-          />
-        </div>
-      )}
     </div>
   );
 };
 
-export default POStatus;
+export default PurchaseOrderStatus;

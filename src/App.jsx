@@ -11,16 +11,8 @@ import Contact from "./dash/Contact";
 import Settings from "./dash/Settings/Setting";
 import Apk from "./dash/App/Apk";
 import User from "./dash/Settings/user/User";
-import Purchase from "./dash/PurchaseModule/Purchase";
 import Newpr from "./dash/PurchaseModule/PurchRequest/Newpr";
 import Papr from "./dash/PurchaseModule/PurchRequest/Papr";
-import CRfq from "./dash/PurchaseModule/PurchRequest/CRfq";
-import Rfq from "./dash/PurchaseModule/Rfq/Rfq";
-import Rform from "./dash/PurchaseModule/Rfq/Rform";
-import Rapr from "./dash/PurchaseModule/Rfq/Rapr";
-import PurchaseOrder from "./dash/PurchaseModule/PurchOrder/PurchaseOrder";
-import POrderform from "./dash/PurchaseModule/PurchOrder/POrderform";
-import Orapr from "./dash/PurchaseModule/PurchOrder/POStatusModal";
 import Vend from "./dash/PurchaseModule/Vendor/Vend";
 import VendorDetails from "./dash/PurchaseModule/Vendor/VendorDetails";
 import Newvendor from "./dash/PurchaseModule/Vendor/Newvendor";
@@ -37,7 +29,6 @@ import ResendEmailVerification from "./Reglog/ResendEmailVerification";
 import NoHeaderLayout from "./notFound/NoHeaderLayout";
 import NotFound from "./notFound/NotFound";
 import POFormWrapper from "./dash/PurchaseModule/PurchOrder/POForm/POFormWrapper";
-import RFQFormWrapper from "./dash/PurchaseModule/Rfq/RfqForm/RFQFormWrapper";
 import InventoryLayout from "./dash/Inventory/Inventory";
 import PurchaseLayout from "./dash/PurchaseModule/Purchase";
 
@@ -83,27 +74,11 @@ function App() {
               />
               <ProtectedRoute exact path="/:tenant/npr" component={Newpr} />
               <ProtectedRoute exact path="/:tenant/papr" component={Papr} />
-              <ProtectedRoute exact path="/:tenant/crfq" component={CRfq} />
-              <ProtectedRoute
-                exact
-                path="/:tenant/rfq/convert"
-                component={RFQFormWrapper}
-              />
-              <ProtectedRoute exact path="/:tenant/rfq" component={Rfq} />
-              <ProtectedRoute exact path="/:tenant/newrfq" component={Rform} />
-              <ProtectedRoute exact path="/:tenant/rapr" component={Rapr} />
               <ProtectedRoute
                 exact
                 path="/:tenant/purchase-order/convert"
                 component={POFormWrapper}
               />
-              <ProtectedRoute
-                exact
-                path="/:tenant/purchase-order"
-                component={PurchaseOrder}
-              />
-     
-    
               <ProtectedRoute exact path="/:tenant/vendor" component={Vend} />
               <ProtectedRoute
                 exact

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import {
+  Box,
   Button,
   Paper,
   Table,
@@ -44,21 +45,21 @@ const POStatusModal = ({
     updatePurchaseApproved,
   } = usePurchaseOrder();
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
-  const history = useHistory();
+  // const history = useHistory();
 
-  const handleReload = () => {
-    setTimeout(() => window.location.reload(), 1000);
-  };
+  // const handleReload = () => {
+  //   setTimeout(() => window.location.reload(), 1000);
+  // };
 
-  const handleConvertToInventory = () => {
-    history.push({
-      pathname: `/${tenant_schema_name}/inventory/location`,
-      state: {
-        pr: item,
-      },
-    });
-    handleReload();
-  };
+  // const handleConvertToInventory = () => {
+  //   history.push({
+  //     pathname: `/${tenant_schema_name}/inventory/location`,
+  //     state: {
+  //       pr: item,
+  //     },
+  //   });
+  //   handleReload();
+  // };
 
   // Function to clean the form data for submission.
   const cleanFormData = () => ({
@@ -174,7 +175,7 @@ const POStatusModal = ({
                 variant="contained"
                 className="newRfqBtn"
                 disableElevation
-                onClick={onNewRfq}
+                // onClick={onNewRfq}
               >
                 Share
               </Button>
@@ -211,7 +212,7 @@ const POStatusModal = ({
                 className="newRfqBtn"
                 disableElevation
                 sx={{ textTransform: "capitalize" }}
-                onClick={onNewRfq}
+                // onClick={onNewRfq}
               >
                 Set back to Draft
               </Button>
@@ -400,18 +401,15 @@ const POStatusModal = ({
         <p className="rfqContent">Purchase Order Items</p>
 
         {/* RFQ Items Table Section */}
-        <div className="rfqStatusTable">
+        <Box border={"1px solid #f2f2f2"} borderRadius={"10px"}>
           <TableContainer
             component={Paper}
             sx={{ boxShadow: "none", borderRadius: "10px" }}
           >
             <Table
-              sx={{
-                "&.MuiTable-root": { border: "none" },
-                "& .MuiTableCell-root": { border: "none" },
-              }}
+             stickyHeader
             >
-              <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
+              <TableHead>
                 <TableRow>
                   <TableCell>Product Name</TableCell>
                   <TableCell>Description</TableCell>
@@ -424,7 +422,7 @@ const POStatusModal = ({
               <TableBody>{renderedRows}</TableBody>
             </Table>
           </TableContainer>
-        </div>
+        </Box>
 
         {renderStatusFooter()}
       </div>
