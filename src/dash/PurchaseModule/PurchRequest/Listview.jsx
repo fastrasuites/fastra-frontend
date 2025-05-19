@@ -33,8 +33,7 @@ const statusCellStyle = (index, getStatusColor, status) => ({
 const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
   const [selected, setSelected] = useState([]);
   const { tenantData } = useTenant();
-  const tenant_schema_name = tenantData?.tenant_schema_name;
-
+  const requester = tenantData?.user?.username;
   // Handler to select/deselect all items.
   const handleSelectAll = useCallback(
     (event) => {
@@ -56,7 +55,6 @@ const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
         : [...prevSelected, id]
     );
   }, []);
-
 
   // Delete logic: call the external onDeleteSelected callback and reset selection.
   const handleDeleteSelected = useCallback(() => {
@@ -91,23 +89,9 @@ const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
         <TableCell sx={cellStyle(index)}>
           {formatDate(item?.date_created)}
         </TableCell>
-
         <TableCell sx={cellStyle(index)}>{extractRFQID(item.id)}</TableCell>
-        <TableCell sx={cellStyle(index)}>{tenant_schema_name}</TableCell>
+        <TableCell sx={cellStyle(index)}>{requester}</TableCell>
         <TableCell sx={cellStyle(index)}>{item?.vendor.company_name}</TableCell>
-        {/* <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item, index) => (
-            <p key={index}>{item?.product?.product_name}</p>
-          ))}
-        </TableCell> */}
-        {/* <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item, index) => (
-            <p key={index}>{item?.qty}</p>
-          ))}
-        </TableCell> */}
-        {/* Vendor */}
-        {/* <TableCell sx={cellStyle(index)}>{item?.vendor}</TableCell> */}
-        {/* Amount */}
         <TableCell sx={cellStyle(index)}>{item?.total_price}</TableCell>
         <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -157,8 +141,7 @@ const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
           }}
           stickyHeader
         >
-          <TableHead
-          >
+          <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox

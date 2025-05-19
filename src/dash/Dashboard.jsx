@@ -20,19 +20,26 @@ export default function Dashboard() {
   const [currentStep, setCurrentStep] = useState(1);
   const location = useLocation();
   useEffect(() => {
+    // Check if the modal has been closed before
+    const modalClosed = localStorage.getItem("modalClosed");
     if (location.state?.step) {
       setCurrentStep(location.state.step);
       setIsModalOpen(true);
     } else {
-      const timer = setTimeout(() => {
-        setIsModalOpen(true);
-      }, 500);
-      return () => clearTimeout(timer);
+      if (modalClosed) {
+        setIsModalOpen(false);
+      } else {
+        const timer = setTimeout(() => {
+          setIsModalOpen(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
   }, [location.state]);
 
   const handleCloseModal = () => {
     setIsModalOpen((prevState) => !prevState);
+    localStorage.setItem("modalClosed", "true");
   };
 
   //End ---------------------------------------------------------------------------

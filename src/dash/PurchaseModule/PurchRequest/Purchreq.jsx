@@ -74,6 +74,7 @@ export default function Purchreq() {
   };
 
   const filteredPurchaseRequest = purchaseRequestData.filter((item) => {
+    console.log(item);
     if (!searchQuery) return true;
     const lowercasedQuery = searchQuery.toLowerCase();
 
@@ -81,14 +82,15 @@ export default function Purchreq() {
     const status = item?.status?.toLowerCase() || "";
     const currencyName = item?.currency?.company_name?.toLowerCase() || "";
     const purchaseID = item.id?.toLowerCase() || "";
-    const vendor =
-      typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
+    const vendor = item?.vendor?.company_name.toLowerCase() || "";
+    const date = formatDate(item?.date_created)?.toLowerCase() || "";
     return (
       price.includes(lowercasedQuery) ||
       status.includes(lowercasedQuery) ||
       currencyName.includes(lowercasedQuery) ||
       purchaseID.includes(lowercasedQuery) ||
-      vendor.includes(lowercasedQuery)
+      vendor.includes(lowercasedQuery) ||
+      date.includes(lowercasedQuery)
     );
   });
 
