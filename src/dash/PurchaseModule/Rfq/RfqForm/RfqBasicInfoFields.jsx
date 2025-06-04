@@ -1,12 +1,14 @@
+// src/dash/PurchaseModule/Rfq/RfqBasicInfoFields.jsx
+import React from "react";
 import { Autocomplete, TextField } from "@mui/material";
-import CustomAutocomplete from "../../../../components/ui/CustomAutocomplete";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 
-// Helper that returns the full object from the list based on the form value.
-// It accepts either an object or a string. If a string is passed, it looks up
-// the object by comparing a specific key.
-const getSelectedOption = (formValue, list, key) => {
-  if (typeof formValue === "object" && formValue !== null) return formValue;
+// Helper: resolves a formValue (object or string) into the corresponding object from `list`.
+// If formValue is already an object, return it. If string, find it by `item[key] === formValue`.
+const getSelectedOption = (formValue, list = [], key) => {
+  if (typeof formValue === "object" && formValue !== null) {
+    return formValue;
+  }
   if (typeof formValue === "string") {
     return list.find((item) => item[key] === formValue) || null;
   }
@@ -17,16 +19,25 @@ const RfqBasicInfoFields = ({
   formData,
   handleInputChange,
   formUse,
-  currencies,
-  vendors,
-  purchaseIdList,
+  currencies = [],
+  vendors = [],
+  purchaseIdList = [],
   rfqID,
 }) => {
+  console.log(purchaseIdList);
+  // Resolve selected objects from formData (which may be strings or objects)
+  const selectedPurchaseRequest = getSelectedOption(
+    formData.purchase_request,
+    purchaseIdList,
+    "id"
+  );
+  const selectedCurrency = getSelectedOption(
+    formData.currency,
+    currencies,
+    "url"
+  );
+  const selectedVendor = getSelectedOption(formData.vendor, vendors, "url");
 
-  const selectedCurrency =
-    getSelectedOption(formData?.currency, currencies, "currency_name") || null;
-  const selectedVendor =
-    getSelectedOption(formData?.vendor, vendors, "company_name") || null;
   return (
     <div className="rfqBasicInfoField">
       <div className="rfqBasicInfoFields1">
@@ -42,6 +53,7 @@ const RfqBasicInfoFields = ({
             <p>{formatDate(Date.now())}</p>
           </div>
         </div>
+
         <div className="rfqBasicInfoFields1SelectFields">
           <label style={{ marginBottom: "6px", display: "block" }}>
             Input PR ID
@@ -49,25 +61,18 @@ const RfqBasicInfoFields = ({
           <Autocomplete
             disablePortal
             options={purchaseIdList}
-            value={
-              purchaseIdList.find(
-                (option) => option.url === formData.purchase_request
-              ) || null
-            }
-            getOptionLabel={(option) => option.rfqID}
-            isOptionEqualToValue={(option, value) => option.url === value.url}
+            value={selectedPurchaseRequest}
+            getOptionLabel={(option) => option.id}
+            isOptionEqualToValue={(opt, val) => opt.id === val.id}
             onChange={(event, newValue) => {
-              handleInputChange(
-                "purchase_request",
-                newValue ? newValue.url : ""
-              );
+              // Store the full object in formData
+              handleInputChange("purchase_request", newValue || "");
             }}
             sx={{ width: "100%" }}
-            renderInput={(params) => (
-              <TextField {...params} />
-            )}
+            renderInput={(params) => <TextField {...params} />}
           />
         </div>
+
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Select Currency
@@ -79,15 +84,17 @@ const RfqBasicInfoFields = ({
             getOptionLabel={(option) =>
               `${option.currency_name} - ${option.currency_symbol}`
             }
-            onChange={(event, value) =>
-              // Store the full object so that the lookup remains consistent.
-              handleInputChange("currency", value)
-            }
+            isOptionEqualToValue={(opt, val) => opt.url === val.url}
+            onChange={(event, newValue) => {
+              // Store the full currency object
+              handleInputChange("currency", newValue || "");
+            }}
             sx={{ width: "100%" }}
             renderInput={(params) => <TextField {...params} />}
           />
         </div>
       </div>
+
       <div className="rfqBasicInfoFields2">
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
@@ -105,6 +112,7 @@ const RfqBasicInfoFields = ({
             onChange={(e) => handleInputChange("expiry_date", e.target.value)}
           />
         </div>
+
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Vendor
@@ -114,17 +122,16 @@ const RfqBasicInfoFields = ({
             options={vendors}
             value={selectedVendor}
             getOptionLabel={(option) => option.company_name || ""}
-            isOptionEqualToValue={(option, value) =>
-              option.company_name === value.company_name
-            }
-            onChange={(event, value) =>
-              // Store the full object.
-              handleInputChange("vendor", value)
-            }
+            isOptionEqualToValue={(opt, val) => opt.url === val.url}
+            onChange={(event, newValue) => {
+              // Store the full vendor object
+              handleInputChange("vendor", newValue || "");
+            }}
             sx={{ width: "100%" }}
             renderInput={(params) => <TextField {...params} />}
           />
         </div>
+
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Vendor Category

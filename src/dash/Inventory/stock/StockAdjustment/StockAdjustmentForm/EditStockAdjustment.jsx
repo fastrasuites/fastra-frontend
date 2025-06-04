@@ -6,7 +6,8 @@ import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjust
 import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import Swal from "sweetalert2";
-import { useLocation, useParams } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useTenant } from "../../../../../context/TenantContext";
 
 // Default form state
 const defaultFormData = {
@@ -99,6 +100,8 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
 };
 
 const EditStockAdjustment = () => {
+  const { tenant_schema_name } = useTenant().tenantData || {};
+  const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
   const location = useLocation();
   const { products, fetchProducts } = usePurchase();
@@ -106,7 +109,6 @@ const EditStockAdjustment = () => {
   const {
     isLoading: stockLoading,
     updateStockAdjustment,
-    error: stockError,
   } = useStockAdjustment();
 
   const { id } = useParams();
@@ -200,7 +202,15 @@ const EditStockAdjustment = () => {
     },
   ];
 
-  const handleSubmit = (filledData) => {
+  const navigateToDetail = (id) => {
+    setTimeout(() => {
+      history.push(
+        `/${tenant_schema_name}/inventory/stock/stock-adjustment/${id}`
+      );
+    }, 1500);
+  };
+
+  const handleSubmit = async (filledData) => {
     const cleanData = {
       id: filledData.id || null,
       adjustment_type: filledData.adjustmentType || null,
@@ -213,24 +223,78 @@ const EditStockAdjustment = () => {
         adjusted_quantity: item.qty_received,
       })),
     };
-
-    updateStockAdjustment(cleanData, id).then((data) => {
-      if (data.success) {
-        setFormData(defaultFormData);
-        return Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Stock adjustment created successfully",
+  
+    try {
+      const { data } = await updateStockAdjustment(cleanData, id);
+      setFormData(defaultFormData);
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Stock adjustment updated successfully",
+      });
+      navigateToDetail(data.id);
+    } catch (err) {
+      // Validation errors thrown as { validation: {...} }
+      if (err.validation) {
+        Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: Object.values(err.validation)
+            .map((msg) => `<p>${msg}</p>`)
+            .join(""),
         });
-      } else if (stockError) {
-        return Swal.fire({
+      } else {
+        Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Failed to create stock adjustment, please try again",
+          text: err.message || "Failed to update stock adjustment",
         });
       }
-    });
+    }
   };
+  
+  const handleSubmitAsDone = async (filledData) => {
+    const cleanData = {
+      id: filledData.id || null,
+      adjustment_type: filledData.adjustmentType || null,
+      warehouse_location: filledData.location?.url || filledData.location,
+      notes: filledData.notes || null,
+      status: "done",
+      is_hidden: false,
+      items: filledData.items.map((item) => ({
+        product: item.product.url,
+        adjusted_quantity: item.qty_received,
+      })),
+    };
+  
+    try {
+      const { data } = await updateStockAdjustment(cleanData, id);
+      setFormData(defaultFormData);
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Stock adjustment marked as done",
+      });
+      navigateToDetail(data.id);
+    } catch (err) {
+      if (err.validation) {
+        Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: Object.values(err.validation)
+            .map((msg) => `<p>${msg}</p>`)
+            .join(""),
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.message || "Failed to mark adjustment as done",
+        });
+      }
+    }
+  };
+  
 
   return (
     <CommonForm
@@ -243,8 +307,9 @@ const EditStockAdjustment = () => {
       rowConfig={rowConfig}
       isEdit={true}
       onSubmit={handleSubmit}
-      submitBtnText={stockLoading ? "Submitting..." : "Update"}
+      submitBtnText={stockLoading ? "Submitting..." : "Validate"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
+      onSubmitAsDone={handleSubmitAsDone}
     />
   );
 };

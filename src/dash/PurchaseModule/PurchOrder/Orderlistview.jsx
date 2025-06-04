@@ -87,6 +87,9 @@ const Orderlistview = ({
           />
         </TableCell>
         <TableCell sx={cellStyle(index)}>{extractRFQID(item?.url)}</TableCell>
+        <TableCell sx={cellStyle(index)}>
+          {extractRFQID(item?.related_rfq)}
+        </TableCell>
 
         <TableCell sx={cellStyle(index)}>
           {formatDate(item?.date_created)}
@@ -161,6 +164,7 @@ const Orderlistview = ({
                 />
               </TableCell>
               <TableCell>Purchase Order ID</TableCell>
+              <TableCell>RRF ID</TableCell>
               <TableCell>Date Created</TableCell>
               <TableCell>Vendor</TableCell>
               <TableCell>Status</TableCell>

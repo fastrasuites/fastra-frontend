@@ -11,7 +11,9 @@ import PRBasicInfoFields from "./PRBasicInfoFields";
 import PRItemsTable from "./PRItemsTable";
 import { useHistory, useLocation } from "react-router-dom";
 import { useTenant } from "../../../../context/TenantContext";
+import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 
+// eslint-disable-next-line no-unused-vars
 const CreatePRForm = ({ formUse, quotation = {} }) => {
   const {
     products,
@@ -25,31 +27,40 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     createPurchaseRequest,
     updatePurchaseRequest,
   } = usePurchase();
-  const {tenantData} = useTenant();
-  const {tenant_schema_name: tenantSchemaName} = tenantData;
+
+  const { locationList, getLocationList } = useCustomLocation();
+  const { tenantData } = useTenant();
+  const { tenant_schema_name: tenantSchemaName } = tenantData;
   const history = useHistory();
   const location = useLocation();
   const { pr = {}, edit = false } = location.state || {};
   let isEdit =
     edit === true ? "Edit Purchase Request" : "Create Purchase Request";
+
+  // ─── DESTRUCTURE pr (existing data) ────────────────────────────────────────
   const {
     purpose = "",
-    currency = "",
-    vendor = "",
+    currency = "", // string URL (or empty)
+    requesting_location = "", // string ID (or empty)
+    vendor = "", // string URL (or empty)
     items = [],
     status = "draft",
     is_hidden = true,
     url,
   } = pr;
 
+  // ─── INITIALIZE formData (all simple types or strings) ────────────────────
   const [formData, setFormData] = useState({
     purpose,
-    currency,
-    vendor,
+    currency, // plain URL string
+    vendor, // plain URL string
+    requesting_location, // plain location ID string
     items,
     status,
     is_hidden,
   });
+
+  // eslint-disable-next-line no-unused-vars
   const [prID, setPrID] = useState([]);
 
   useEffect(() => {
@@ -57,7 +68,14 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     fetchCurrencies();
     fetchProducts();
     fetchPurchaseRequests();
-  }, []);
+    getLocationList();
+  }, [
+    fetchVendors,
+    fetchCurrencies,
+    fetchProducts,
+    fetchPurchaseRequests,
+    getLocationList,
+  ]);
 
   useEffect(() => {
     setPrID(normalizedRFQ(purchaseRequests));
@@ -98,11 +116,13 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     }, 2000);
   };
 
+  // Helper to transform formData → API payload
   const getCleanedFormData = (overrideStatus) => ({
     status: overrideStatus || formData.status,
-    currency: formData.currency?.url || formData.currency,
+    currency: formData?.currency?.url || formData?.currency, // already a URL string
     purpose: formData.purpose,
-    vendor: formData.vendor?.url || formData.vendor,
+    vendor: formData?.vendor?.url || formData?.vendor, // already a URL string
+    requesting_location: formData.requesting_location, // already an ID string
     items: formData.items.map((item) => ({
       product: item.product?.url || item.product,
       description: item.description,
@@ -114,13 +134,14 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
           : item.unit_of_measure),
       estimated_unit_price: item.estimated_unit_price,
     })),
-    is_hidden: formData.is_hidden,
+    is_hidden: false,
   });
 
   const resetForm = () =>
     setFormData({
       purpose: "",
       currency: "",
+      requesting_location: "",
       vendor: "",
       items: [],
       status: "draft",
@@ -133,7 +154,8 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     try {
       if (edit) {
         const id = extractRFQID(url);
-        const res = await updatePurchaseRequest(id, payload);
+        console.log(payload, "Payload");
+        const res = await updatePurchaseRequest(id, { ...payload });
         if (res.success) {
           Swal.fire({
             title: "Updated!",
@@ -159,7 +181,6 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
           resetForm();
           fetchPurchaseRequests();
           handleSuccessfulNavigation(extractRFQID(res.data.url));
-
         } else {
           Swal.fire({
             title: "Creation Failed",
@@ -181,23 +202,43 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
   const saveAndSubmit = async () => {
     const payload = getCleanedFormData("pending");
     try {
-      const res = await createPurchaseRequest(payload);
-      if (res.success) {
-        console.log(res);
-
-        Swal.fire({
-          title: "Shared!",
-          text: "Purchase Request created and shared successfully.",
-          icon: "success",
+      if (edit) {
+        const id = extractRFQID(url);
+        const resUpdate = await updatePurchaseRequest(id, {
+          ...payload,
+          status: "pending",
         });
-        resetForm();
-        handleSuccessfulNavigation(extractRFQID(res.data.url));
+        if (resUpdate.success) {
+          Swal.fire({
+            title: "Updated!",
+            text: "Purchase Request updated successfully.",
+            icon: "success",
+          });
+          handleSuccessfulNavigation(id);
+        } else {
+          Swal.fire({
+            title: "Update Failed",
+            text: resUpdate.message || "Could not update the Purchase Request.",
+            icon: "error",
+          });
+        }
       } else {
-        Swal.fire({
-          title: "Share Failed",
-          text: res.message || "Could not share Purchase Request.",
-          icon: "error",
-        });
+        const res = await createPurchaseRequest(payload);
+        if (res.success) {
+          Swal.fire({
+            title: "Shared!",
+            text: "Purchase Request created and shared successfully.",
+            icon: "success",
+          });
+          resetForm();
+          handleSuccessfulNavigation(extractRFQID(res.data.url));
+        } else {
+          Swal.fire({
+            title: "Share Failed",
+            text: res.message || "Could not share Purchase Request.",
+            icon: "error",
+          });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -236,8 +277,9 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
             formUse={edit}
             currencies={currencies}
             vendors={vendors}
-            purchaseIdList={prID}
+            requester={pr.requester_name}
             rfqID={url}
+            locationList={locationList}
           />
           <PRItemsTable
             items={formData.items}

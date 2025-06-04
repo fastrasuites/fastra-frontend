@@ -1,29 +1,18 @@
-import {
-  TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Checkbox,
-  Box,
-  Typography,
-} from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import "./Scrap.css";
 import { useTenant } from "../../../../context/TenantContext";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CommonTable from "../../../../components/CommonTable/CommonTable";
-import { scraps } from "../../data/incomingProductData";
+import { useScrap } from "../../../../context/Inventory/Scrap";
+// import { scraps } from "../../data/incomingProductData";
 
 const getStatusColor = (status) => {
   switch (status) {
-    case "Validate":
-    case "Validated":
+    case "DONE":
+    case "Done":
       return "#2ba24c";
-    case "Draft":
+    case "DRAFT":
     case "Drafted":
       return "#158fec";
     case "Cancelled":
@@ -37,8 +26,7 @@ const getStatusColor = (status) => {
 const columns = [
   { id: "id", label: "ID" },
   { id: "adjustment_type", label: "Adjustment Type" },
-  { id: "location", label: "Location" },
-  { id: "date", label: "Adjusted Date" },
+  { id: "warehouse_location", label: "Location" },
   {
     id: "status",
     label: "Status",
@@ -65,7 +53,6 @@ const columns = [
   },
 ];
 
-
 function Scrap() {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
@@ -74,6 +61,19 @@ function Scrap() {
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
 
+  const { scrapList, isLoading, error, getScrapList } = useScrap();
+
+  useEffect(() => {
+    getScrapList();
+  }, []);
+
+  const arrangeScrap = scrapList.map((item) => ({
+    ...item,
+    status: item.status.toUpperCase(),
+    warehouse_location: item.warehouse_location?.location_name ?? "—",
+  }));
+
+  console.log("arrangeScrap", arrangeScrap);
   const renderGridItem = (item) => (
     <Box
       key={item.requestId}
@@ -91,11 +91,17 @@ function Scrap() {
       gap="16px"
     >
       <Typography variant="subtitle2">{item?.id}</Typography>
+
       <Typography variant="body2" color={"textSecondary"} fontSize={12}>
-        {item?.adjustment_type}
+        {item?.warehouse_location}
       </Typography>
-      <Typography variant="body2" color={"textSecondary"} fontSize={12}>
-        {item?.location}
+      <Typography
+        variant="body2"
+        color={"textSecondary"}
+        fontSize={12}
+        textTransform={"capitalize"}
+      >
+        {item?.adjustment_type}
       </Typography>
       <Typography variant="body2" color="textSecondary" fontSize={12}>
         {item?.date}
@@ -121,14 +127,37 @@ function Scrap() {
     </Box>
   );
 
+  if (error) {
+    return (
+      <Box padding={"20px"} marginRight={"20px"}>
+        <Typography
+          variant="h6"
+          fontSize={"24px"}
+          fontWeight={500}
+          marginBottom={2}
+        >
+          Scrap
+        </Typography>
+        <Typography variant="body2" color={"textSecondary"} fontSize={12}>
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box padding={"20px"} marginRight={"20px"}>
-      <Typography variant="h6" fontSize={"24px"} fontWeight={500} marginBottom={2}>
+      <Typography
+        variant="h6"
+        fontSize={"24px"}
+        fontWeight={500}
+        marginBottom={2}
+      >
         Scrap
       </Typography>
       <CommonTable
         columns={columns}
-        rows={scraps.filter((item) =>
+        rows={arrangeScrap.filter((item) =>
           Object.values(item).some((v) =>
             String(v).toLowerCase().includes(searchQuery.toLowerCase())
           )
@@ -139,7 +168,7 @@ function Scrap() {
         onSearchChange={setSearchQuery}
         paginated
         page={page}
-        totalPages={Math.ceil(scraps.length / 5)}
+        totalPages={Math.ceil(arrangeScrap.length / 5)}
         onPageChange={setPage}
         viewModes={["list", "grid"]}
         viewMode={viewMode}
@@ -153,7 +182,9 @@ function Scrap() {
         }
         onSelectAll={() =>
           setSelectedRows((prev) =>
-            prev.length === scraps.length ? [] : scraps.map((r) => r.requestId)
+            prev.length === arrangeScrap.length
+              ? []
+              : arrangeScrap.map((r) => r.requestId)
           )
         }
         actionButton={{
@@ -162,6 +193,7 @@ function Scrap() {
         }}
         gridRenderItem={renderGridItem}
         path={`/${tenant_schema_name}/inventory/stock/scrap`}
+        isLoading={isLoading}
       />
     </Box>
   );

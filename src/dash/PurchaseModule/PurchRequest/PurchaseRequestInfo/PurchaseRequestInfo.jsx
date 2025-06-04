@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
 import {
   Button,
@@ -20,10 +15,7 @@ import {
 
 import autosaveIcon from "../../../../image/autosave.svg";
 import approvedIcon from "../../../../../src/image/icons/approved-rfq.svg";
-import {
-  extractRFQID,
-  formatDate,
-} from "../../../../helper/helper";
+import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
 
@@ -39,8 +31,7 @@ const statusColorMap = {
   rejected: "#e43e2b",
   default: "#3B7CED",
 };
-const statusColor = (s) =>
-  statusColorMap[s] || statusColorMap.default;
+const statusColor = (s) => statusColorMap[s] || statusColorMap.default;
 
 // Status → handler mapping
 const statusActions = {
@@ -84,6 +75,7 @@ const PurchaseRequestInfo = () => {
     setLoading(true);
     try {
       const res = await fetchSinglePurchaseRequest(id);
+      console.log(res, "res");
       if (res.success) {
         setItem(res.data);
       } else {
@@ -117,8 +109,7 @@ const PurchaseRequestInfo = () => {
           product: it.product.url,
           description: it.description,
           qty: Number(it.qty) || 0,
-          unit_of_measure:
-            it.unit_of_measure?.url || it.unit_of_measure?.[0],
+          unit_of_measure: it.unit_of_measure?.url || it.unit_of_measure?.[0],
           estimated_unit_price: it.estimated_unit_price,
         })),
         is_hidden: item.is_hidden,
@@ -159,15 +150,15 @@ const PurchaseRequestInfo = () => {
 
   // Convert to RFQ
   const handleConvertToRFQ = useCallback(() => {
-    const prToConvert = { 
-      purchase_request: item.url,
+    const prToConvert = {
+      purchase_request: { id: item.id, items: item.items },
       currency: item.currency,
       vendor: item.vendor,
       vendor_category: "",
       items: item.items,
       status: "draft",
-      is_hidden: true,
-    }
+      is_hidden: false,
+    };
     history.push({
       pathname: `/${tenantSchema}/purchase/request-for-quotations/new`,
       state: { rfq: prToConvert },
@@ -175,8 +166,11 @@ const PurchaseRequestInfo = () => {
   }, [history, tenantSchema, item]);
 
   const handleEditClick = (id) => {
-    history.push({pathname: `/${tenantSchema}/purchase/purchase-request/${id}/edit`, state: { pr: item, edit: true }});
-  }
+    history.push({
+      pathname: `/${tenantSchema}/purchase/purchase-request/${id}/edit`,
+      state: { pr: item, edit: true },
+    });
+  };
 
   // Render items table rows
   const renderedRows = useMemo(
@@ -190,12 +184,9 @@ const PurchaseRequestInfo = () => {
               <TableCell sx={cellStyle(idx)}>
                 {row.description || "N/A"}
               </TableCell>
+              <TableCell sx={cellStyle(idx)}>{row.qty ?? "N/A"}</TableCell>
               <TableCell sx={cellStyle(idx)}>
-                {row.qty ?? "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.unit_of_measure?.unit_category ||
-                  "N/A"}
+                {row.unit_of_measure?.unit_category || "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>
                 {row.estimated_unit_price || "N/A"}
@@ -226,12 +217,7 @@ const PurchaseRequestInfo = () => {
       case "approved":
         return {
           icon: (
-            <img
-              src={approvedIcon}
-              alt="approved"
-              width={24}
-              height={24}
-            />
+            <img src={approvedIcon} alt="approved" width={24} height={24} />
           ),
           label: "Approved",
           actions: [
@@ -276,12 +262,7 @@ const PurchaseRequestInfo = () => {
       default:
         return null;
     }
-  }, [
-    item.status,
-    handleConvertToRFQ,
-    handleStatusChange,
-    actionLoading,
-  ]);
+  }, [item.status, handleConvertToRFQ, handleStatusChange, actionLoading]);
 
   if (loading) {
     return (
@@ -297,18 +278,16 @@ const PurchaseRequestInfo = () => {
       </Box>
     );
   }
-
   return (
     <div className="rfqStatus">
       {/* Header */}
       <div className="rfqHeader">
         <div className="rfqHeaderLeft">
-          <Button
-            variant="contained"
-            disableElevation
-          >
-            New Purchase Request
-          </Button>
+          <Link to={`/${tenantSchema}/purchase/purchase-request/new`}>
+            <Button variant="contained" disableElevation>
+              New Purchase Request
+            </Button>
+          </Link>
           <div className="rfqAutosave">
             <p>Autosave</p>
             <img
@@ -327,15 +306,14 @@ const PurchaseRequestInfo = () => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            {!["pending", "approved", "rejected"].includes(
-              item.status
-            ) && <Button onClick={() => handleEditClick(item.id)}>Edit</Button>}
-            <Button
-              variant="outlined"
-              onClick={() => history.goBack()}
-            >
-              Close
-            </Button>
+            {!["pending", "approved", "rejected"].includes(item.status) && (
+              <Button onClick={() => handleEditClick(item.id)}>Edit</Button>
+            )}
+            <Link to={`/${tenantSchema}/purchase/purchase-request`}>
+              <Button variant="outlined" onClick={() => history.goBack()}>
+                Close
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -358,18 +336,14 @@ const PurchaseRequestInfo = () => {
           sx={{ boxShadow: "none", border: "none" }}
         >
           <Table>
-            <TableHead
-              sx={{ backgroundColor: "#f2f2f2" }}
-            >
+            <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
               <TableRow>
                 <TableCell>ID</TableCell>
+                <TableCell>Requesting Location ID</TableCell>
                 <TableCell>Date</TableCell>
-                <TableCell>Requester</TableCell>
               </TableRow>
             </TableHead>
-            <TableBody
-              sx={{ borderBottom: "1px solid #E2E6E9" }}
-            >
+            <TableBody sx={{ borderBottom: "1px solid #E2E6E9" }}>
               <TableRow>
                 <TableCell
                   sx={{
@@ -387,8 +361,30 @@ const PurchaseRequestInfo = () => {
                     fontSize: 12,
                   }}
                 >
+                  {item?.requesting_location}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    backgroundColor: "#fff",
+                    color: "#7a8a98",
+                    fontSize: 12,
+                  }}
+                >
                   {formatDate(item.date_created) || "N/A"}
                 </TableCell>
+              </TableRow>
+            </TableBody>
+
+            {/* Purpose/Vendor */}
+            <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
+              <TableRow>
+                <TableCell>Requester</TableCell>
+                <TableCell>Purpose</TableCell>
+                <TableCell>Vendor</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
                 <TableCell
                   sx={{
                     backgroundColor: "#fff",
@@ -398,20 +394,6 @@ const PurchaseRequestInfo = () => {
                 >
                   {item.requester || "N/A"}
                 </TableCell>
-              </TableRow>
-            </TableBody>
-
-            {/* Purpose/Vendor */}
-            <TableHead
-              sx={{ backgroundColor: "#f2f2f2" }}
-            >
-              <TableRow>
-                <TableCell>Purpose</TableCell>
-                <TableCell>Vendor</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
                 <TableCell
                   sx={{
                     backgroundColor: "#fff",
@@ -436,17 +418,13 @@ const PurchaseRequestInfo = () => {
         </TableContainer>
 
         {/* Items */}
-        <p className="rfqContent">
-          Purchase Request Items
-        </p>
+        <p className="rfqContent">Purchase Request Items</p>
         <TableContainer
           component={Paper}
           sx={{ boxShadow: "none", borderRadius: 2 }}
         >
           <Table>
-            <TableHead
-              sx={{ backgroundColor: "#f2f2f2" }}
-            >
+            <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
               <TableRow>
                 {[
                   "Product Name",
@@ -456,9 +434,7 @@ const PurchaseRequestInfo = () => {
                   "Estimated Unit Price",
                   "Total Price",
                 ].map((head) => (
-                  <TableCell key={head}>
-                    {head}
-                  </TableCell>
+                  <TableCell key={head}>{head}</TableCell>
                 ))}
               </TableRow>
             </TableHead>

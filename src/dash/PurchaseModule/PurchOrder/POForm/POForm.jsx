@@ -4,15 +4,36 @@ import "../../Rfq/RfqForm/RfqForm.css";
 import autosave from "../../../../image/autosave.svg";
 import { Button } from "@mui/material";
 import Swal from "sweetalert2";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import { usePurchase } from "../../../../context/PurchaseContext";
 import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 import { useTenant } from "../../../../context/TenantContext";
 import POBasicInfoFields from "./POBasicInfoFields";
 import POItemsTable from "./POItemsTable";
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
+import { useRFQ } from "../../../../context/RequestForQuotation";
+import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
+
+const DEFAULT_FORM = {
+  vendor: null,
+  rfq: null,
+  destination_location: null,
+  currency: null,
+  payment_terms: "",
+  purchase_policy: "",
+  delivery_terms: "",
+  items: [],
+  status: "draft",
+  is_hidden: true,
+};
 
 const POForm = () => {
+  const history = useHistory();
+  const { state } = useLocation();
+  const { po = {}, edit = false, conversionRFQ = {} } = state || {};
+  const { tenant_schema_name } = useTenant().tenantData || {};
+  const { id } = useParams();
+
   const {
     products,
     fetchProducts,
@@ -23,53 +44,64 @@ const POForm = () => {
     fetchPurchaseRequests,
     purchaseRequests,
   } = usePurchase();
-
+  const { approvedGetRFQList, rfqList, isLoading: isRfqLoading } = useRFQ();
+  const { locationList, getLocationList } = useCustomLocation();
   const { createPurchaseOrder, updatePurchaseOrder } = usePurchaseOrder();
-  const { state } = useLocation();
-  const {
-    po = {},
-    edit = false,
-    conversionRFQ = {},
-  } = state || {};
+
   const formUse = edit ? "Edit Purchase Order" : "Create Purchase Order";
   const isEdit = formUse === "Edit Purchase Order";
-  const history = useHistory();
-  const { tenant_schema_name } = useTenant().tenantData || {};
 
-  // 1. Default & initial form data
-  const defaultForm = {
-    vendor: null,
-    currency: null,
-    payment_terms: "",
-    purchase_policy: "",
-    delivery_terms: "",
-    items: [],
-    status: "draft",
-    is_hidden: true,
+  // ─── 1. Determine whether conversionRFQ actually has data ─────────────────
+  // We check if conversionRFQ has at least one own property.
+  const hasConversion = conversionRFQ && Object.keys(conversionRFQ).length > 0;
+
+  // ─── 2. Build initial form state based on priority:
+  //  a) If conversionRFQ is non-empty, use that (always status="draft")
+  //  b) Else if editing (isEdit), use `po`
+  //  c) Otherwise, use DEFAULT_FORM
+  const computeInitialForm = () => {
+    if (hasConversion) {
+      return { ...DEFAULT_FORM, ...conversionRFQ, status: "draft" };
+    } else if (isEdit) {
+      return { ...po };
+    } else {
+      return DEFAULT_FORM;
+    }
   };
 
-  const initial = conversionRFQ
-    ? { ...defaultForm, ...conversionRFQ, status: "draft" }
-    : isEdit
-    ? { ...defaultForm, ...po }
-    : defaultForm;
-
-  const [formData, setFormData] = useState(initial);
+  // ─── 3. State: formData and purchase‐request ID list ───────────────────────
+  const [formData, setFormData] = useState(computeInitialForm());
   const [prIDList, setPrIDList] = useState([]);
 
-  // 2. Fetch dependencies
+  // ─── 4. Fetch dependencies on mount ────────────────────────────────────────
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
     fetchProducts();
     fetchPurchaseRequests();
-  }, [fetchVendors, fetchCurrencies, fetchProducts, fetchPurchaseRequests]);
+    approvedGetRFQList();
+    getLocationList();
+  }, [
+    fetchVendors,
+    fetchCurrencies,
+    fetchProducts,
+    fetchPurchaseRequests,
+    approvedGetRFQList,
+    getLocationList,
+  ]);
 
+  // ─── 5. Update PR ID list whenever purchaseRequests change ────────────────
   useEffect(() => {
     setPrIDList(normalizedRFQ(purchaseRequests));
   }, [purchaseRequests]);
 
-  // 3. Handlers
+  // ─── 6. If `po` or `conversionRFQ` changes (e.g. after navigation), reset formData ───
+  // For example, if user navigates with a new state, we want formData to reflect that.
+  useEffect(() => {
+    setFormData(computeInitialForm());
+  }, []); // re‐run whenever the source objects change
+
+  // ─── 7. Handlers for field changes ─────────────────────────────────────────
   const handleInputChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
@@ -103,16 +135,24 @@ const POForm = () => {
     }));
   }, []);
 
-  // 4. Prepare payload for API
+  // ─── 8. Determine which set of items to use for payload ―──
+  // If conversion is happening, we use conversionRFQ.items; otherwise `po.rfq.items`.
+  // For simplicity, we just use formData.rfq.items if present, else empty array.
+  const poItems = formData?.rfq?.items || [];
+
+  // ─── 9. Prepare payload to send to API (map objects → URLs or IDs) ───────
   const cleanData = (status) => ({
     ...formData,
     status,
-    vendor: formData.vendor?.url || formData.vendor,
+    vendor: formData.rfq.vendor?.url || formData.rfq.vendor,
+    destination_location:
+      formData.destination_location?.id || formData.destination_location,
+    related_rfq: formData.rfq?.id || formData.rfq,
     currency: formData.currency?.url || formData.currency,
     payment_terms: formData.payment_terms,
     purchase_policy: formData.purchase_policy,
     delivery_terms: formData.delivery_terms,
-    items: formData.items.map((i) => ({
+    items: poItems.map((i) => ({
       product: i.product?.url || i.product,
       description: i.description,
       qty: Number(i.qty) || 0,
@@ -125,24 +165,24 @@ const POForm = () => {
     })),
     is_hidden: false,
     created_by: tenant_schema_name,
-    purchase_request:
-      formData.purchase_request?.url || formData.purchase_request,
+    is_submitted: true,
+    can_edit: true,
   });
 
-  // 5. Navigate to detail page after create/update
+  // ─── 10. Navigate to detail page after create/update ─────────────────────
   const navigateToDetail = (id) => {
     setTimeout(() => {
       history.push(`/${tenant_schema_name}/purchase/purchase-order/${id}`);
     }, 1500);
   };
 
-  // 6. Submit handlers
+  // ─── 11. Submit: save as draft or update ─────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = cleanData("draft");
+    console.log(payload);
     try {
       if (isEdit) {
-        const id = extractRFQID(po.url);
         const res = await updatePurchaseOrder(payload, id);
         if (res.success)
           Swal.fire("Updated!", "Purchase Order updated.", "success");
@@ -155,21 +195,30 @@ const POForm = () => {
           navigateToDetail(extractRFQID(res.data.url));
         } else Swal.fire("Error", res.message, "error");
       }
-      setFormData(defaultForm);
+      // setFormData(DEFAULT_FORM);
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "Unexpected error occurred.", "error");
     }
   };
 
+  // ─── 12. “Save & Send” handler ―──────────────────────────────────────────
   const saveAndSend = async () => {
     const payload = cleanData("awaiting");
     try {
-      const res = await createPurchaseOrder(payload);
-      if (res.success) {
-        Swal.fire("Sent!", "Purchase Order created and sent.", "success");
-        navigateToDetail(extractRFQID(res.data.url));
-      } else Swal.fire("Error", res.message, "error");
+      if (isEdit) {
+        const res = await updatePurchaseOrder(payload, id);
+        if (res.success)
+          Swal.fire("Updated!", "Purchase Order updated.", "success");
+        else Swal.fire("Error", res.message, "error");
+        navigateToDetail(id);
+      } else {
+        const res = await createPurchaseOrder(payload);
+        if (res.success) {
+          Swal.fire("Sent!", "Purchase Order created and sent.", "success");
+          navigateToDetail(extractRFQID(res.data.url));
+        } else Swal.fire("Error", res.message, "error");
+      }
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "Unexpected error occurred.", "error");
@@ -180,7 +229,10 @@ const POForm = () => {
     history.goBack();
   };
 
-  // 7. Render
+  // Debug: see final formData at each render
+  // console.log("POForm formData:", formData);
+
+  // ─── 13. Render ───────────────────────────────────────────────────────────
   return (
     <div className="RfqForm">
       <div className="rfqAutoSave">
@@ -210,12 +262,16 @@ const POForm = () => {
             vendors={vendors}
             purchaseIdList={prIDList}
             poID={po?.url}
+            rfqList={rfqList}
+            locationList={locationList}
+            isRfqLoading={isRfqLoading}
           />
 
           <POItemsTable
-            items={formData.items}
+            items={formData?.rfq?.items}
             handleRowChange={handleRowChange}
             products={products}
+            isConversion={!!conversionRFQ?.items?.length}
           />
 
           <div
@@ -232,11 +288,9 @@ const POForm = () => {
               <Button variant="outlined" type="submit">
                 {isEdit ? "Save Changes" : "Save Draft"}
               </Button>
-              
-                <Button variant="contained" onClick={saveAndSend}>
-                  Save &amp; Send
-                </Button>
-              
+              <Button variant="contained" onClick={saveAndSend}>
+                Save &amp; Send
+              </Button>
             </div>
           </div>
         </form>

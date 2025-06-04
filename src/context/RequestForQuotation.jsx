@@ -104,7 +104,7 @@ export const RFQProvider = ({ children }) => {
   // Create an RFQ.
   const createRFQ = useCallback(
     async (info) => {
-      console.log(info)
+      console.log(info);
       if (!validateRFQFields(info)) {
         const errMsg = "All fields are required and must be valid.";
         console.log(info);
@@ -178,7 +178,9 @@ export const RFQProvider = ({ children }) => {
     }
     try {
       setIsLoading(true);
-      const response = await client.get("/purchase/request-for-quotation/approved_list/");
+      const response = await client.get(
+        "/purchase/request-for-quotation/approved_list/"
+      );
       const rawData = response.data;
 
       // Normalize each purchase request
@@ -221,8 +223,7 @@ export const RFQProvider = ({ children }) => {
         const rawData = response.data;
 
         // Normalize each purchase request
-        const normalizedData = await normalizeRFQList(rawData)
-  
+        const normalizedData = await normalizeRFQList(rawData);
 
         setError(null);
         setSingleRFQ(normalizedData);
@@ -284,7 +285,7 @@ export const RFQProvider = ({ children }) => {
       try {
         setIsLoading(true);
         // Using PUT as per the API documentation for the approve endpoint
-        const response = await client.put(
+        const response = await client.patch(
           `/purchase/request-for-quotation/${id}/approve/`,
           info
         );
@@ -295,7 +296,7 @@ export const RFQProvider = ({ children }) => {
             rfq.id === id ? { ...rfq, ...response.data } : rfq
           )
         );
-        return {success: true, data: response.data};
+        return { success: true, data: response.data };
       } catch (err) {
         console.error("Error updating RFQ Approved Status:", err);
         if (err.response && err.response.data) {
@@ -322,8 +323,8 @@ export const RFQProvider = ({ children }) => {
       try {
         setIsLoading(true);
         // Using PUT as per the API documentation for the approve endpoint
-        const response = await client.put(
-          `/purchase/request-for-quotation/${id}/submit/`,
+        const response = await client.patch(
+          `/purchase/request-for-quotation/${id}/`,
           info
         );
         setError(null);
@@ -333,7 +334,7 @@ export const RFQProvider = ({ children }) => {
             rfq.id === id ? { ...rfq, ...response.data } : rfq
           )
         );
-        return {success: true, data: response.data};
+        return { success: true, data: response.data };
       } catch (err) {
         console.error("Error updating RFQ Pending Status:", err);
         if (err.response && err.response.data) {
@@ -371,7 +372,7 @@ export const RFQProvider = ({ children }) => {
             rfq.id === id ? { ...rfq, ...response.data } : rfq
           )
         );
-        return {success: true, data: response.data};
+        return { success: true, data: response.data };
       } catch (err) {
         console.error("Error updating RFQ Reject Status:", err);
         console.error("Request config:", err.config.data);
@@ -385,7 +386,8 @@ export const RFQProvider = ({ children }) => {
   const deleteRFQ = useCallback(
     async (id) => {
       if (!client) {
-        const errMsg = "API client is not available. Please check tenant configuration.";
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
         setError(errMsg);
         return Promise.reject(new Error(errMsg));
       }
@@ -409,7 +411,6 @@ export const RFQProvider = ({ children }) => {
     },
     [client]
   );
-  
 
   // Memoize the context value to avoid unnecessary re-renders.
   const contextValue = useMemo(

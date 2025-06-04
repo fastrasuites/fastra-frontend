@@ -18,6 +18,7 @@ export const PurchaseProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [singleProducts, setSingleProducts] = useState(null);
   const [vendors, setVendors] = useState([]);
+  const [singleVendors, setSingleVendors] = useState([]);
   const [error, setError] = useState(null);
 
   // Destructure tenant information and create client only when tenantData changes.
@@ -97,6 +98,7 @@ export const PurchaseProvider = ({ children }) => {
     try {
       const response = await client.get("/purchase/vendors/");
       setVendors(response.data);
+      return response.data;
     } catch (err) {
       setError(err);
       console.error("Error fetching vendors:", err);
@@ -113,6 +115,20 @@ export const PurchaseProvider = ({ children }) => {
       } catch (err) {
         setError(err);
         console.error("Error creating vendor:", err);
+      }
+    },
+    [client]
+  );
+
+  const fetchSingleVendors = useCallback(
+    async (id) => {
+      try {
+        const response = await client.get(`/purchase/vendors/${id}/`);
+        setSingleVendors(response.data);
+        return response.data;
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching vendors:", err);
       }
     },
     [client]
@@ -152,13 +168,13 @@ export const PurchaseProvider = ({ children }) => {
   const fetchSingleProduct = useCallback(
     async (id) => {
       if (!client) {
-        console.error("API client not initialized");  // API client must be ready
+        console.error("API client not initialized"); // API client must be ready
         return;
       }
       try {
         // 1. Fetch the single product object
         const { data: product } = await client.get(`/purchase/products/${id}/`);
-  
+
         // 2. Fetch and augment its unit info
         let augmentedProduct = product;
         try {
@@ -177,19 +193,18 @@ export const PurchaseProvider = ({ children }) => {
             unitErr
           );
         }
-  
+
         // 3. Update state with the single augmented product
         setSingleProducts(augmentedProduct);
         setError(null);
-        return {success: true, data: augmentedProduct};
+        return { success: true, data: augmentedProduct };
       } catch (err) {
         console.error("Error fetching product:", err);
         setError(err);
-      } 
+      }
     },
     [client, fetchResource]
   );
-  
 
   const createProduct = useCallback(
     async (newProduct) => {
@@ -300,7 +315,7 @@ export const PurchaseProvider = ({ children }) => {
       try {
         const response = await client.patch(
           `/purchase/purchase-request/${id}/`,
-          updatedData
+          { ...updatedData, is_hidden: false }
         );
         setPurchaseRequests((prev) =>
           prev.map((req) => (req.url === id ? response.data : req))
@@ -357,7 +372,7 @@ export const PurchaseProvider = ({ children }) => {
         const endpoint = `/purchase/purchase-request/${cleanId}/`;
         const response = await client.get(endpoint);
         const normalizedData = await normalizePurchaseRequest(response.data);
-        return {success: true, data: normalizedData};
+        return { success: true, data: normalizedData };
       } catch (err) {
         setError(err);
         console.error("Error fetching single purchase request:", err);
@@ -460,12 +475,14 @@ export const PurchaseProvider = ({ children }) => {
       purchaseRequests,
       products,
       singleProducts,
+      singleVendors,
       vendors,
       error,
       fetchCurrencies,
       createCurrency,
       uploadFile,
       fetchVendors,
+      fetchSingleVendors,
       createVendor,
       fetchProducts,
       fetchSingleProduct,
@@ -487,11 +504,13 @@ export const PurchaseProvider = ({ children }) => {
       products,
       singleProducts,
       vendors,
+      singleVendors,
       error,
       fetchCurrencies,
       createCurrency,
       uploadFile,
       fetchVendors,
+      fetchSingleVendors,
       createVendor,
       fetchSingleProduct,
       fetchProducts,

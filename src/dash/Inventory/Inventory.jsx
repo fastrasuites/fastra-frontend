@@ -22,6 +22,10 @@ import ScrapInfo from "./stock/scrap/ScrapInfo/ScrapInfo";
 import StockAdjustmentInfo from "./stock/StockAdjustment/StockAdjustmentInfo/StockAdjustmentInfo";
 import InternalTransferInfo from "./Operations/InternalTransfer/InternalTransferInfo/InternalTransferInfo";
 import EditStockAdjustment from "./stock/StockAdjustment/StockAdjustmentForm/EditStockAdjustment";
+import ScrapEditForm from "./stock/scrap/ScrapForm/ScrapEditForm";
+import EditIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/EditIncomingProduct";
+import ConvertPoToIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/ConvertPotoIncomingProduct";
+
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -36,6 +40,12 @@ const InventoryLayout = () => {
           {/* Inventory Operation Routes */}
           <Route exact path={`${path}/operations`} component={Operations} />
           <Route
+            exact
+            path={`${path}/operations/incoming-product/inventory-conversion`}
+            component={ConvertPoToIncomingProduct}
+          />
+          <Route
+            exact
             path={`${path}/operations/incoming-product/:id`}
             component={IncomingProductInfo}
           />
@@ -43,6 +53,12 @@ const InventoryLayout = () => {
             path={`${path}/operations/creat-incoming-product`}
             component={CreateIncomingProduct}
           />
+          <Route
+            exact
+            path={`${path}/operations/incoming-product/:id/edit`}
+            component={EditIncomingProduct}
+          />
+         
 
           <Route
             exact
@@ -115,6 +131,11 @@ const InventoryLayout = () => {
             exact
             path={`${path}/stock/scrap/create-scrap`}
             component={ScrapForm}
+          />
+          <Route
+            exact
+            path={`${path}/stock/scrap/:id/edit`}
+            component={ScrapEditForm}
           />
           <Route path={`${path}/stock/scrap/:id`} component={ScrapInfo} />
 

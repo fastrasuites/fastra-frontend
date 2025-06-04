@@ -191,6 +191,8 @@ export default function PurchaseOrder() {
 
 
 
+  console.log(purchaseOrderData, "purchaseOrderData in PurchaseOrder.jsx");
+
   return (
     <div className="rfq" id="rfq">
       <div className="rfq1">

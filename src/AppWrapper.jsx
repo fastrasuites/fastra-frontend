@@ -10,6 +10,8 @@ import { TenantUsersProvider } from "./context/Tanants/TanantUsers";
 import { LocationProvider } from "./context/Inventory/LocationContext";
 import { LocationConfigProvider } from "./context/Inventory/LocationConfigContext";
 import { StockAdjustmentProvider } from "./context/Inventory/StockAdjustment";
+import { ScrapProvider } from "./context/Inventory/Scrap";
+import { IncomingProductProvider } from "./context/Inventory/IncomingProduct";
 
 function AppWrapper() {
   return (
@@ -21,11 +23,15 @@ function AppWrapper() {
             <RFQProvider>
               <PurchaseOrderProvider>
                 <LocationProvider>
+                  <IncomingProductProvider>
                   <StockAdjustmentProvider>
+                    <ScrapProvider>
                   <Router>
                     <App />
                   </Router>
+                  </ScrapProvider>
                   </StockAdjustmentProvider>
+                  </IncomingProductProvider>
                 </LocationProvider>
               </PurchaseOrderProvider>
             </RFQProvider>

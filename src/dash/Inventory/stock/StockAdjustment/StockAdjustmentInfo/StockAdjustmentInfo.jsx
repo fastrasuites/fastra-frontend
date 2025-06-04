@@ -20,13 +20,14 @@ import { useCustomLocation } from "../../../../../context/Inventory/LocationCont
 import { extractId } from "../../../../../helper/helper";
 import { usePurchase } from "../../../../../context/PurchaseContext";
 import StockAdjustment from "../StockAdjustment";
+import Swal from "sweetalert2";
 
 // Safely normalize status to a string before lowercasing
 const getStatusColor = (status) => {
   const s = status != null ? String(status) : "";
   switch (s.toLowerCase()) {
-    case "validate":
-    case "validated":
+    case "done":
+    case "Done":
       return "#2ba24c";
     case "draft":
     case "drafted":
@@ -52,7 +53,8 @@ export default function StockAdjustmentInfo() {
   const { id } = useParams();
   const { tenantData } = useTenant();
   const schema = tenantData?.tenant_schema_name;
-  const { getSingleStockAdjustment } = useStockAdjustment();
+  const { getSingleStockAdjustment, updateStockAdjustmentToDone } =
+    useStockAdjustment();
   const { getSingleLocation } = useCustomLocation();
   const { fetchSingleProduct } = usePurchase();
 
@@ -110,6 +112,34 @@ export default function StockAdjustmentInfo() {
       </Box>
     );
 
+  const handleSubmitAsDone = async () => {
+    try {
+      await updateStockAdjustmentToDone(id);
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Stock adjustment marked as done",
+      });
+      loadData();
+    } catch (err) {
+      if (err.validation) {
+        Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: Object.values(err.validation)
+            .map((msg) => `<p>${msg}</p>`)
+            .join(""),
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.message || "Failed to mark adjustment as done",
+        });
+      }
+    }
+  };
+
   if (error || !stock)
     return (
       <Box p={4} textAlign="center">
@@ -136,18 +166,26 @@ export default function StockAdjustmentInfo() {
           </Button>
         </Link>
         <Box display="flex" gap={4}>
-          <Button
-            // variant="outlined"
-            size="large"
-            disableElevation
-            onClick={() => window.history.back()}
-          >
-            Close
-          </Button>
-         
-            <Button variant="contained" size="large" disableElevation onClick={() => handleNavigateToEdit(id)}>
+          <Link to={`/${schema}/inventory/stock/stock-adjustment`}>
+            <Button
+              // variant="outlined"
+              size="large"
+              disableElevation
+            >
+              Close
+            </Button>
+          </Link>
+
+          {stock.status === "draft" && (
+            <Button
+              variant="contained"
+              size="large"
+              disableElevation
+              onClick={() => handleNavigateToEdit(id)}
+            >
               Edit
             </Button>
+          )}
         </Box>
       </Box>
 
@@ -270,11 +308,22 @@ export default function StockAdjustmentInfo() {
 
       {/* Footer with status and action */}
       <Box display="flex" justifyContent="space-between" mr={4}>
-        <Typography variant="body1" color={getStatusColor(stock.status)}>
+        <Typography
+          variant="body1"
+          color={getStatusColor(stock.status)}
+          sx={{ textTransform: "capitalize" }}
+        >
           {stock.status}
         </Typography>
-        {stock.status === "Draft" && (
-          <Button variant="contained" size="large" disableElevation>
+        {stock.status === "draft" && (
+          <Button
+            variant="contained"
+            size="large"
+            disableElevation
+            onClick={() => {
+              handleSubmitAsDone(id);
+            }}
+          >
             Validate
           </Button>
         )}

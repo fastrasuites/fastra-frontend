@@ -16,6 +16,7 @@ const CommonForm = ({
   setFormData,
   onSubmit,
   submitBtnText = "Save",
+  onSubmitAsDone,
   autofillRow=["product_name", "product_description", "unit_of_measure", "available_product_quantity"],
 }) => {
   // Update a single field in formData
@@ -83,6 +84,12 @@ const CommonForm = ({
     }
   };
 
+  const handleSubmitAsDone = (e) => {
+    e.preventDefault();
+    if (onSubmitAsDone) {
+      onSubmitAsDone(formData);
+    }
+  }
   const handleBack = () => {
     window.history.back();
   };
@@ -128,14 +135,14 @@ const CommonForm = ({
               Add Item
             </Button>
             <Box sx={{ display: "flex", gap: 2 }}>
-              <Button variant="outlined" type="submit">
-                {isEdit ? "Save Changes" : submitBtnText}
+              <Button variant="outlined" onClick={handleSubmitAsDone}>
+                {submitBtnText}
               </Button>
-              {!isEdit && (
-                <Button variant="contained" onClick={handleSubmit}>
-                  Save
+               {}
+                <Button variant="contained" onClick={handleSubmit} type="submit">
+                  {isEdit ? "Update" : "Save"}
                 </Button>
-              )}
+              
             </Box>
           </Box>
         </div>

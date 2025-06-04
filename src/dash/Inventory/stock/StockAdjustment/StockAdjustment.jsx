@@ -30,7 +30,7 @@ function StockAdjustment() {
   const {
     adjustmentList,
     isLoading,
-    error,
+    // error,
     getStockAdjustmentList,
   } = useStockAdjustment();
 
@@ -53,15 +53,12 @@ function StockAdjustment() {
   const getStatusColor = (status) => {
     const normalized = status.toLowerCase();
     switch (normalized) {
-      case "validate":
-      case "validated":
+      case "done":
+      case "Done":
         return "#2ba24c";
       case "draft":
       case "drafted":
         return "#158fec";
-      case "cancelled":
-      case "cancel":
-        return "#e43e2b";
       default:
         return "#9e9e9e";
     }
@@ -171,7 +168,7 @@ function StockAdjustment() {
         searchable
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        paginated
+        paginated={true}
         page={page}
         totalPages={Math.ceil(stocks.length / 5)}
         onPageChange={setPage}

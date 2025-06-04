@@ -7,6 +7,8 @@ import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjust
 import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import Swal from "sweetalert2";
+import { useTenant } from "../../../../../context/TenantContext";
+import { useHistory } from "react-router-dom";
 
 // Default form data
 const defaultFormData = {
@@ -23,10 +25,7 @@ const defaultFormData = {
 // Renders your “basic info” block exactly as before
 const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedLoaction, setSelectedLocation] = useState(null);
-  const {
-    locationList,
-    getLocationList,
-  } = useCustomLocation();
+  const { locationList, getLocationList } = useCustomLocation();
 
   useEffect(() => {
     getLocationList();
@@ -95,6 +94,8 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
 };
 
 const NewStockAdjustment = () => {
+  const { tenant_schema_name } = useTenant().tenantData || {};
+  const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
 
   // Purchase context
@@ -103,7 +104,7 @@ const NewStockAdjustment = () => {
   // Stock adjustment context (renamed flags to avoid collision)
   const {
     isLoading: stockLoading,
-    error: stockError,
+    // error: stockError,
     createStockAdjustment,
   } = useStockAdjustment();
 
@@ -161,38 +162,89 @@ const NewStockAdjustment = () => {
     },
   ];
 
-  const handleSubmit = (filledData) => {
+  const navigateToDetail = (id) => {
+    setTimeout(() => {
+      history.push(
+        `/${tenant_schema_name}/inventory/stock/stock-adjustment/${id}`
+      );
+    }, 1500);
+  };
+  const handleSubmit = async (filledData) => {
     const cleanData = {
-      id: filledData.id,
       warehouse_location: filledData.location.url,
       notes: filledData.notes,
       status: filledData.status,
       is_hidden: false,
       items: filledData.items.map((item) => ({
         product: item.product.url,
-        // unit_of_measure: item.unit_of_measure.url,
-        // available_product_quantity: item.available_product_quantity,
         adjusted_quantity: item.qty_received,
       })),
     };
-    // console.log("Final Form Data", cleanData);
-    createStockAdjustment(cleanData).then((data) => {
-      console.log(data);
-      if (data.success) {
-        setFormData(defaultFormData);
-        return Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Stock adjustment created successfully",
+
+    try {
+      const created = await createStockAdjustment(cleanData);
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Stock adjustment created successfully",
+      });
+      navigateToDetail(created.data.id);
+    } catch (err) {
+      if (err.validation) {
+        Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: Object.values(err.validation)
+            .map((msg) => `<p>${msg}</p>`)
+            .join(""),
         });
-      } else if (stockError) {
-        return Swal.fire({
+      } else {
+        Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Failed to create stock adjustment, please try again",
+          text: err.message,
         });
       }
-    });
+    }
+  };
+
+  const handleSubmitAsDone = async (filledData) => {
+    const cleanData = {
+      ...filledData,
+      status: "done",
+      warehouse_location: filledData.location.url,
+      notes: filledData.notes,
+      items: filledData.items.map((item) => ({
+        product: item.product.url,
+        adjusted_quantity: item.qty_received,
+      })),
+    };
+
+    try {
+      const created = await createStockAdjustment(cleanData);
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Stock adjustment marked as done",
+      });
+      navigateToDetail(created.data.id);
+    } catch (err) {
+      if (err.validation) {
+        Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: Object.values(err.validation)
+            .map((msg) => `<p>${msg}</p>`)
+            .join(""),
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.message,
+        });
+      }
+    }
   };
 
   console.log(formData.items);
@@ -208,6 +260,7 @@ const NewStockAdjustment = () => {
       rowConfig={rowConfig}
       isEdit={false}
       onSubmit={handleSubmit}
+      onSubmitAsDone={handleSubmitAsDone}
       submitBtnText={stockLoading ? "Submitting..." : "Validate"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
     />

@@ -1,10 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, Button, Paper, Typography } from "@mui/material";
 import CommonTable from "../../../../components/CommonTable/CommonTable";
 import { useTenant } from "../../../../context/TenantContext";
-import { mockData } from "../../data/incomingProductData";
+import { useIncomingProduct } from "../../../../context/Inventory/IncomingProduct";
+// import { mockData } from "../../data/incomingProductData";
 // import { getStatusColor } from '../../utils';
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case "validated":
+    case "Validated":
+      return "#2ba24c";
+    case "draft":
+    case "Drafted":
+      return "#158fec";
+    case "Cancelled":
+    case "Cancel":
+      return "#e43e2b";
+    default:
+      return "#9e9e9e";
+  }
+};
 
 const IncomingProductManualListview = () => {
   const { tenantData } = useTenant();
@@ -14,28 +31,19 @@ const IncomingProductManualListview = () => {
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Validate":
-      case "Validated":
-        return "#2ba24c";
-      case "Draft":
-      case "Drafted":
-        return "#158fec";
-      case "Cancelled":
-      case "Cancel":
-        return "#e43e2b";
-      default:
-        return "#9e9e9e";
-    }
-  };
+  const { incomingProductList, isLoading, getIncomingProductList } =
+    useIncomingProduct();
+
+  useEffect(() => {
+    getIncomingProductList();
+  }, [getIncomingProductList]);
 
   const columns = [
-    { id: "requestId", label: "Request ID" },
-    { id: "partner", label: "Partner" },
-    { id: "dateCreated", label: "Date Created" },
-    { id: "sourceLocation", label: "Source Location" },
-    { id: "destinationLocation", label: "Destination Location" },
+    { id: "incoming_product_id", label: "Incoming Product ID" },
+    { id: "receipt_type", label: "Receipt Type" },
+    // { id: "dateCreated", label: "Date Created" },
+    { id: "source_location", label: "Source Location" },
+    { id: "destination_location", label: "Destination Location" },
     {
       id: "status",
       label: "Status",
@@ -52,6 +60,7 @@ const IncomingProductManualListview = () => {
           />
           <Typography
             variant="caption"
+            sx={{ textTransform: "capitalize" }}
             color={getStatusColor(row.status)}
             fontSize={12}
           >
@@ -79,15 +88,20 @@ const IncomingProductManualListview = () => {
       alignItems={"center"}
       gap="16px"
     >
-      <Typography variant="subtitle2">{item.requestId}</Typography>
-      <Typography variant="body2" color={"textSecondary"} fontSize={12}>
-        {item.dateCreated}
+      <Typography variant="subtitle2">{item.id}</Typography>
+      <Typography
+        variant="body2"
+        color={"textSecondary"}
+        fontSize={12}
+        sx={{ textTransform: "capitalize" }}
+      >
+        {item.receipt_type.split("_").join(" ")}
       </Typography>
       <Typography variant="body2" color={"textSecondary"} fontSize={12}>
-        {item.sourceLocation}
+        {item.source_location}
       </Typography>
       <Typography variant="body2" color="textSecondary" fontSize={12}>
-        {item.partner}
+        {item.destination_location}
       </Typography>
       <Box display="flex" alignItems="center" gap={1}>
         <Box
@@ -101,6 +115,7 @@ const IncomingProductManualListview = () => {
         />
         <Typography
           variant="caption"
+          sx={{ textTransform: "capitalize" }}
           color={getStatusColor(item.status)}
           fontSize={12}
         >
@@ -109,23 +124,26 @@ const IncomingProductManualListview = () => {
       </Box>
     </Box>
   );
-
+  console.log("Incoming Product List", incomingProductList);
   return (
     <Box>
       <CommonTable
         columns={columns}
-        rows={mockData.filter((item) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        )}
-        rowKey="requestId"
+        rows={
+          searchQuery === ""
+            ? incomingProductList
+            : incomingProductList.filter((item) =>
+                Object.values(item).some((v) =>
+                  String(v).toLowerCase().includes(searchQuery.toLowerCase())
+                )
+              )
+        }
         searchable
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         paginated
         page={page}
-        totalPages={Math.ceil(mockData.length / 5)}
+        totalPages={Math.ceil(incomingProductList.length / 5)}
         onPageChange={setPage}
         viewModes={["list", "grid"]}
         viewMode={viewMode}
@@ -139,9 +157,9 @@ const IncomingProductManualListview = () => {
         }
         onSelectAll={() =>
           setSelectedRows((prev) =>
-            prev.length === mockData.length
+            prev.length === incomingProductList.length
               ? []
-              : mockData.map((r) => r.requestId)
+              : incomingProductList.map((r) => r.requestId)
           )
         }
         actionButton={{
@@ -150,6 +168,8 @@ const IncomingProductManualListview = () => {
         }}
         gridRenderItem={renderGridItem}
         path={`/${tenantSchemaName}/inventory/operations/incoming-product`}
+        isLoading={isLoading}
+        rowKey="incoming_product_id"
       />
     </Box>
   );

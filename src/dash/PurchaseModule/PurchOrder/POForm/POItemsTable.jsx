@@ -2,7 +2,7 @@ import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 import { useMemo } from "react";
 import RfqItemRow from "./POItemRow";
 
-const RfqItemsTable = ({ items, handleRowChange, products }) => {
+const RfqItemsTable = ({ items, handleRowChange, products, isConversion }) => {
   const renderedRows = useMemo(() => {
     if (Array.isArray(items) && items.length > 0) {
       return items.map((row, index) => (
@@ -12,6 +12,7 @@ const RfqItemsTable = ({ items, handleRowChange, products }) => {
           index={index}
           handleRowChange={handleRowChange}
           products={products}
+          isConversion={isConversion}
         />
       ));
     }
