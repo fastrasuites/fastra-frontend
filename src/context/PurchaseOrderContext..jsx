@@ -115,7 +115,7 @@ export const PurchaseOrderProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        console.log(info);
+        console.log(info, "info in createPurchaseOrder");
         const response = await client.post("/purchase/purchase-order/", info);
         setError(null);
         setPurchaseOrderList((prevOrders) => [...prevOrders, response.data]);
@@ -143,7 +143,7 @@ export const PurchaseOrderProvider = ({ children }) => {
       try {
         setIsLoading(true);
         // Update using a POST endpoint; adjust method if necessary.
-        const response = await client.put(
+        const response = await client.patch(
           `/purchase/purchase-order/${id}/`,
           info
         );
@@ -293,9 +293,7 @@ export const PurchaseOrderProvider = ({ children }) => {
     }
   }, [client]);
 
-
-   // Retrieve single Purchase Order.
-   const getPurchaseOrderById = useCallback(async (id) => {
+  const getApprovedPurchaseOrderList = useCallback(async () => {
     if (!client) {
       const clientError =
         "API client is not available. Please check tenant configuration.";
@@ -304,20 +302,52 @@ export const PurchaseOrderProvider = ({ children }) => {
     }
     try {
       setIsLoading(true);
-      const response = await client.get(`/purchase/purchase-order/${id}/`);
+      const response = await client.get(
+        "/purchase/purchase-order/completed_list/"
+      );
       const rawData = response.data;
-      const normalizedData = await normalizePurchaseOrder(rawData);
+      const normalizedData = await Promise.all(
+        rawData.map(normalizePurchaseOrder)
+      );
       setError(null);
-      setSinglePurchaseOrder(normalizedData);
+      setPurchaseOrderList(normalizedData);
       return { success: true, data: normalizedData };
     } catch (err) {
-      console.error("Error fetching single purchase order:", err);
+      console.error("Error fetching purchase order list:", err);
       setError(err);
       return Promise.reject(err);
     } finally {
       setIsLoading(false);
     }
   }, [client]);
+
+  // Retrieve single Purchase Order.
+  const getPurchaseOrderById = useCallback(
+    async (id) => {
+      if (!client) {
+        const clientError =
+          "API client is not available. Please check tenant configuration.";
+        setError(clientError);
+        return Promise.reject(new Error(clientError));
+      }
+      try {
+        setIsLoading(true);
+        const response = await client.get(`/purchase/purchase-order/${id}/`);
+        const rawData = response.data;
+        const normalizedData = await normalizePurchaseOrder(rawData);
+        setError(null);
+        setSinglePurchaseOrder(normalizedData);
+        return { success: true, data: normalizedData };
+      } catch (err) {
+        console.error("Error fetching single purchase order:", err);
+        setError(err);
+        return Promise.reject(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
 
   // Memoize the context value.
   const contextValue = useMemo(
@@ -331,6 +361,7 @@ export const PurchaseOrderProvider = ({ children }) => {
       updatePurchaseReject,
       updatePurchaseApproved,
       getPurchaseOrderList,
+      getApprovedPurchaseOrderList,
       getPurchaseOrderById,
       singlePurchaseOrder,
       setSinglePurchaseOrder,
@@ -346,6 +377,7 @@ export const PurchaseOrderProvider = ({ children }) => {
       updatePurchaseReject,
       updatePurchaseApproved,
       getPurchaseOrderList,
+      getApprovedPurchaseOrderList,
       getPurchaseOrderById,
       singlePurchaseOrder,
     ]

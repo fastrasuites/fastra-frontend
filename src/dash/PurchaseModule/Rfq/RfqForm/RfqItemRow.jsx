@@ -48,6 +48,7 @@ const RfqItemRow = ({ row, index, handleRowChange, products}) => {
               }}
             />
           )}
+          disabled
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>
@@ -62,6 +63,7 @@ const RfqItemRow = ({ row, index, handleRowChange, products}) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
+          disabled
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>
@@ -75,6 +77,7 @@ const RfqItemRow = ({ row, index, handleRowChange, products}) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
+          disabled
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>
@@ -108,6 +111,7 @@ const RfqItemRow = ({ row, index, handleRowChange, products}) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
+          disabled
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>

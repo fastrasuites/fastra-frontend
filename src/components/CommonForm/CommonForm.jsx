@@ -24,6 +24,7 @@ const CommonForm = ({
   ],
   showSaveButton = true,
   primaryButtonVariant = "outlined",
+  onSubmitAsDone,
 }) => {
   // Update a single field in formData
   const handleInputChange = useCallback(
@@ -93,6 +94,12 @@ const CommonForm = ({
     }
   };
 
+  const handleSubmitAsDone = (e) => {
+    e.preventDefault();
+    if (onSubmitAsDone) {
+      onSubmitAsDone(formData);
+    }
+  };
   const handleBack = () => {
     window.history.back();
   };
@@ -138,14 +145,30 @@ const CommonForm = ({
               Add Item
             </Button>
             <Box sx={{ display: "flex", gap: 2 }}>
-              <Button variant={primaryButtonVariant} type="submit">
+              {/* <Button variant={primaryButtonVariant} type="submit">
                 {isEdit ? "Save Changes" : submitBtnText}
-              </Button>
-              {!isEdit && showSaveButton && (
+              </Button> */}
+              {/* {!isEdit && showSaveButton ? (
                 <Button variant="contained" onClick={handleSubmit}>
                   Save
                 </Button>
+                ""
+              ) : (
+                
+              )} */}
+              {onSubmitAsDone && (
+                <Button variant="outlined" onClick={handleSubmitAsDone}>
+                  {submitBtnText}
+                </Button>
               )}
+
+              <Button
+                variant={primaryButtonVariant}
+                onClick={handleSubmit}
+                type="submit"
+              >
+                {isEdit ? "Update" : "Save"}
+              </Button>
             </Box>
           </Box>
         </div>

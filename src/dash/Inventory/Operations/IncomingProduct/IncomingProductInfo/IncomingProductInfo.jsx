@@ -1,3 +1,4 @@
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -9,47 +10,225 @@ import {
   TableHead,
   TableRow,
   Typography,
+  CircularProgress,
 } from "@mui/material";
-import React from "react";
-import { Link, useParams } from "react-router-dom";
-import { mockData } from "../../../data/incomingProductData";
+import { Link, useHistory, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 
-const IncomingProductInfo = () => {
-  const { id } = new useParams();
-  const incomingProduct = mockData.find(
-    (value) => value.requestId === id.toUpperCase()
-  );
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Validate":
-      case "Validated":
-        return "#2ba24c";
-      case "Draft":
-      case "Drafted":
-        return "#158fec";
-      case "Cancelled":
-      case "Cancel":
-        return "#e43e2b";
-      default:
-        return "#9e9e9e";
+import { useIncomingProduct } from "../../../../../context/Inventory/IncomingProduct";
+import { usePurchase } from "../../../../../context/PurchaseContext";
+import { useTenant } from "../../../../../context/TenantContext";
+
+const getStatusColor = (status) => {
+  const s = status != null ? String(status) : "";
+  switch (s.toLowerCase()) {
+    case "validated":
+      return "#2ba24c";
+    case "draft":
+      return "#158fec";
+    case "canceled":
+      return "#e43e2b";
+    default:
+      return "#9e9e9e";
+  }
+};
+
+export default function IncomingProductInfo() {
+  const { id } = useParams();
+  const { tenantData } = useTenant();
+  const schema = tenantData?.tenant_schema_name;
+  const history = useHistory();
+
+  // context hooks
+  const { getSingleIncomingProduct, updateIncomingProductStatus } =
+    useIncomingProduct();
+  const { fetchVendors, vendors, fetchSingleProduct } = usePurchase();
+
+  // local state
+  const [incoming, setIncoming] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // load data exactly like StockAdjustmentInfo
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // fetch the raw incoming product
+      const { data: raw } = await getSingleIncomingProduct(id);
+
+      // fetch all vendors (so we can look up supplier name later)
+      await fetchVendors();
+
+      console.log("Incoming product:", raw);
+      // enrich each item with full product info
+      const items = await Promise.all(
+        (raw.incoming_product_items || []).map(async (item) => {
+          const { data: product } = await fetchSingleProduct(item.product);
+          return {
+            ...item,
+            product,
+          };
+        })
+      );
+
+      console.log("Incoming product items:", items);
+
+      setIncoming({
+        ...raw,
+        incoming_product_items: items,
+      });
+      setError(null);
+    } catch (e) {
+      console.error(e);
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, getSingleIncomingProduct, fetchVendors, fetchSingleProduct]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // navigate to edit screen
+  const handleEdit = () => {
+    history.push(`/${schema}/inventory/operations/incoming-product/${id}/edit`, {
+      incoming,
+    });
+  };
+
+  // mark as validated
+  const handleValidate = async () => {
+
+     const payload = {
+      status: "validated",
+      is_hidden: false,
+      is_validated: true,
+      can_edit: false,
+
+    };
+
+    try {
+      await updateIncomingProductStatus(id, payload);
+      Swal.fire({
+        icon: "success",
+        title: "Validated",
+        text: "Incoming product has been validated.",
+      });
+      loadData();
+    } catch (err) {
+      console.error("Validation error:", err);
+      if (err.validation) {
+        Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: Object.values(err.validation)
+            .map((msg) => `<p>${msg}</p>`)
+            .join(""),
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.message || "Failed to validate incoming product",
+        });
+      }
     }
   };
 
-  console.log(incomingProduct);
+  const handleCancel = async () => {
+     const payload = {
+      status: "canceled",
+      is_hidden: false,
+      is_validated: false,
+      can_edit: false,
+
+    };
+
+    try {
+      await updateIncomingProductStatus(id, payload);
+      Swal.fire({
+        icon: "success",
+        title: "Cancelled",
+        text: "Incoming product has been cancelled.",
+      });
+      loadData();
+    } catch (err) {
+      console.error("Validation error:", err);
+      if (err.validation) {
+        Swal.fire({
+          icon: "error",
+          title: "Validation Cancel Error",
+          html: Object.values(err.validation)
+            .map((msg) => `<p>${msg}</p>`)
+            .join(""),
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.message || "Failed to cancel incoming product",
+        });
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box p={4} textAlign="center">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error || !incoming) {
+    return (
+      <Box p={4} textAlign="center">
+        <Typography variant="h6">Incoming product not found</Typography>
+        <Link to={`/${schema}/inventory/operations`}>
+          <Button variant="outlined" sx={{ mt: 2 }}>
+            Back to List
+          </Button>
+        </Link>
+      </Box>
+    );
+  }
+
+  const supplier = vendors.find((v) => v.id === incoming.supplier);
+
   return (
-    <Box padding={"30px"} display={"grid"} gap="32px">
-      <Link>
-        <Button variant="contained" size="lg" disableElevation>
-          New Incoming Product
-        </Button>
-      </Link>
+    <Box p={4} display="grid" gap={4} mr={4}>
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <Link to="/inventory/incoming-product/new">
+          <Button variant="contained" size="large" disableElevation>
+            New Incoming Product
+          </Button>
+        </Link>
+        <Box display="flex" gap={2}>
+          <Link to={`/${schema}/inventory/operations`}>
+            <Button size="large" disableElevation>
+              Close
+            </Button>
+          </Link>
+          {incoming.status === "draft" && (
+            <Button
+              variant="contained"
+              size="large"
+              disableElevation
+              onClick={handleEdit}
+            >
+              Edit
+            </Button>
+          )}
+        </Box>
+      </Box>
 
       <Box
-        padding={"24px"}
-        display={"grid"}
-        gap="32px"
+        p={3}
+        display="grid"
+        gap={4}
         border="1px solid #E2E6E9"
-        sx={{ backgroundColor: "#FFFFFF" }}
+        bgcolor="#FFFFFF"
       >
         <Typography variant="h6" color="#3B7CED" fontSize={20} fontWeight={500}>
           Product Information
@@ -57,184 +236,141 @@ const IncomingProductInfo = () => {
 
         <Box>
           <Typography>Status</Typography>
-          <Typography color={getStatusColor(incomingProduct?.status)}>
-            {incomingProduct?.status}
+          <Typography color={getStatusColor(incoming.status)}>
+            {incoming.status}
           </Typography>
         </Box>
 
         <Box
-          display={"flex"}
-          gap={"170px"}
-          borderBottom={"1px solid #E2E6E9"}
-          paddingBottom={"24px"}
+          display="grid"
+          gridTemplateColumns={"1fr 1fr 1fr 1fr 1fr"}
+          justifyContent={"space-between"}
+          gap={1}
+          borderBottom="1px solid #E2E6E9"
+          pb={3}
         >
           <Box>
-            <Typography>Receipt Type</Typography>
-            <Typography color="#7A8A98">Goods Receipt</Typography>
+            <Typography mb={1}>ID</Typography>
+            <Typography variant="body2" color="#7A8A98">
+              {incoming.id}
+            </Typography>
           </Box>
           <Box>
-            <Typography>Receipt Number</Typography>
-            <Typography color="#7A8A98">ROOO001</Typography>
-          </Box>
-
-          <Box>
-            <Typography>Receipt Date</Typography>
-            <Typography color="#7A8A98">4 Apr 2024 - 4:48 PM</Typography>
-          </Box>
-
-          <Box>
-            <Typography>Location</Typography>
-            <Typography color="#7A8A98">xdx Stores</Typography>
+            <Typography mb={1}>Receipt Type</Typography>
+            <Typography
+              variant="body2"
+              color="#7A8A98"
+              sx={{ textTransform: "capitalize" }}
+            >
+              {incoming.receipt_type.replace(/_/g, " ")}
+            </Typography>
           </Box>
           <Box>
-            <Typography>Name of Supplier</Typography>
-            <Typography color="#7A8A98">Abc Stores</Typography>
+            <Typography mb={1}>Source Location</Typography>
+            <Typography variant="body2" color="#7A8A98">
+              {incoming.source_location}
+            </Typography>
+          </Box>
+          <Box>
+            <Typography mb={1}>Destination Location</Typography>
+            <Typography variant="body2" color="#7A8A98">
+              {incoming.destination_location}
+            </Typography>
+          </Box>
+          <Box>
+            <Typography mb={1}>Name of Supplier</Typography>
+            <Typography variant="body2" color="#7A8A98">
+              {supplier?.company_name}
+            </Typography>
           </Box>
         </Box>
 
-        <Box borderBottom={"1px solid #E2E6E9"} />
-
         <TableContainer
-          backgroundColor="#ffffff"
           component={Paper}
           elevation={0}
-          sx={{ borderRadius: "8px", border: "1px solid #E2E6E9" }}
+          sx={{ borderRadius: 2, border: "1px solid #E2E6E9", bgcolor: "#fff" }}
         >
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell
-                  sx={{
-                    fontWeight: 500,
-                    color: "#7A8A98",
-                    fontSize: "14px",
-                    padding: "24px",
-                  }}
-                >
-                  Product Name
-                </TableCell>
-                <TableCell
-                  sx={{ fontWeight: 500, color: "#7A8A98", fontSize: "14px" }}
-                >
-                  Description
-                </TableCell>
-                <TableCell
-                  sx={{ fontWeight: 500, color: "#7A8A98", fontSize: "14px" }}
-                >
-                  Description
-                </TableCell>
-                <TableCell
-                  sx={{ fontWeight: 500, color: "#7A8A98", fontSize: "14px" }}
-                >
-                  QTY Received
-                </TableCell>
+                {[
+                  "Product Name",
+                  "Expected QTY",
+                  "Unit of Measure",
+                  "Qty Received",
+                ].map((text) => (
+                  <TableCell
+                    key={text}
+                    sx={{
+                      fontWeight: 500,
+                      color: "#7A8A98",
+                      fontSize: "14px",
+                      p: 3,
+                    }}
+                  >
+                    {text}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
-
             <TableBody>
-              {incomingProduct.items.map((row, index) => (
+              {incoming.incoming_product_items.map((row, idx) => (
                 <TableRow
-                  key={index}
+                  key={idx}
                   hover
-                  sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" } }}
+                  sx={{ "&:nth-of-type(odd)": { bgcolor: "#f5f5f5" } }}
                 >
-                  <TableCell
-                    sx={{
-                      fontSize: "14px",
-                      color: "#7A8A98",
-                      fontWeight: 400,
-                      padding: "24px",
-                    }}
-                  >
-                    {row?.product}
+                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}>
+                    {row.product.product_name}
                   </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: "14px",
-                      color: "#7A8A98",
-                      fontWeight: 400,
-                    }}
-                  >
-                    Product Description
+                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                    {row.expected_quantity}
                   </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: "14px",
-                      color: "#7A8A98",
-                      fontWeight: 400,
-                    }}
-                  >
-                    5
+                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                    {row?.product?.unit_of_measure[1]}
                   </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: "14px",
-                      color: "#7A8A98",
-                      fontWeight: 400,
-                    }}
-                  >
-                    {row?.product}
-                    <Box borderBottom={"1px solid #E2E6E9"} marginTop={"8px"} />
+                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                    {row.quantity_received}
                   </TableCell>
                 </TableRow>
               ))}
-              <TableRow
-                hover
-                sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" } }}
-              >
-                <TableCell
-                  sx={{
-                    fontSize: "14px",
-                    color: "#7A8A98",
-                    fontWeight: 400,
-                    padding: "24px",
-                  }}
-                ></TableCell>
-                <TableCell
-                  sx={{
-                    fontSize: "14px",
-                    color: "#7A8A98",
-                    fontWeight: 400,
-                  }}
-                ></TableCell>
-                <TableCell
-                  sx={{
-                    fontSize: "14px",
-                    color: "#7A8A98",
-                    fontWeight: 400,
-                  }}
-                ></TableCell>
-                <TableCell
-                  sx={{
-                    fontSize: "14px",
-                    color: "#7A8A98",
-                    fontWeight: 400,
-                  }}
-                ></TableCell>
-              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
       </Box>
 
-      <Box display="flex" justifyContent="space-between" marginRight={"34px"}>
+      <Box display="flex" justifyContent="space-between" mr={4}>
         <Typography
-          variant="paragraph"
-          color={getStatusColor(incomingProduct?.status)}
+          variant="body1"
+          color={getStatusColor(incoming.status)}
+          sx={{ textTransform: "capitalize" }}
         >
-          {incomingProduct?.status}
+          {incoming.status}
         </Typography>
-
-        {incomingProduct?.status === "Draft" && (
-          <Button variant="contained" size="lg" disableElevation>
+        {incoming.status === "draft" && (
+          <Box display="flex" gap={2}>
+             <Button
+            variant="contained"
+            color="error"
+            size="large"
+            disableElevation
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+            <Button
+            variant="contained"
+            size="large"
+            disableElevation
+            onClick={handleValidate}
+          >
             Validate
           </Button>
+          </Box>
+
+         
         )}
       </Box>
-
-      
     </Box>
   );
-};
-
-export default IncomingProductInfo;
+}

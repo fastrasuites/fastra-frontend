@@ -26,6 +26,9 @@ import DeliveryOrder from "./Operations/DeliveryOrder/DeliveryOrder";
 import DeliveryOrderForm from "./Operations/DeliveryOrder/DeliveryOrderForm/DeliveryOrderForm";
 import DeliveryOrderInfo from "./Operations/DeliveryOrder/DeliveryOrderInfo/DeliveryOrderInfo";
 import EditDeliveryOrderForm from "./Operations/DeliveryOrder/EditDeliveryOrderForm/EditDeliveryOrderForm";
+import ScrapEditForm from "./stock/scrap/ScrapForm/ScrapEditForm";
+import EditIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/EditIncomingProduct";
+import ConvertPoToIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/ConvertPotoIncomingProduct";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -40,12 +43,23 @@ const InventoryLayout = () => {
           {/* Inventory Operation Routes */}
           <Route exact path={`${path}/operations`} component={Operations} />
           <Route
+            exact
+            path={`${path}/operations/incoming-product/inventory-conversion`}
+            component={ConvertPoToIncomingProduct}
+          />
+          <Route
+            exact
             path={`${path}/operations/incoming-product/:id`}
             component={IncomingProductInfo}
           />
           <Route
             path={`${path}/operations/creat-incoming-product`}
             component={CreateIncomingProduct}
+          />
+          <Route
+            exact
+            path={`${path}/operations/incoming-product/:id/edit`}
+            component={EditIncomingProduct}
           />
 
           <Route
@@ -149,6 +163,11 @@ const InventoryLayout = () => {
             exact
             path={`${path}/stock/scrap/create-scrap`}
             component={ScrapForm}
+          />
+          <Route
+            exact
+            path={`${path}/stock/scrap/:id/edit`}
+            component={ScrapEditForm}
           />
           <Route path={`${path}/stock/scrap/:id`} component={ScrapInfo} />
 

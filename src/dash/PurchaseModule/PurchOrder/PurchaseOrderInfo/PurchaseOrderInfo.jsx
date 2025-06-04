@@ -23,13 +23,14 @@ import { useHistory, useParams } from "react-router-dom";
 import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 import { useTenant } from "../../../../context/TenantContext";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
+import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 
 // Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
   color: "#7a8a98",
   fontSize: 12,
-  padding: "24px"
+  padding: "24px",
 });
 
 const statusColorMap = {
@@ -42,13 +43,6 @@ const statusColor = (s) =>
   statusColorMap[s.charAt(0).toUpperCase() + s.slice(1)] ||
   statusColorMap.default;
 
-// Map action keys to context functions
-const statusActions = {
-  approve: "updatePurchaseApproved",
-  reject: "updatePurchaseReject",
-  pending: "updatePurchasePending",
-};
-
 const PurchaseOrderInfo = () => {
   const { id } = useParams();
   const history = useHistory();
@@ -56,10 +50,12 @@ const PurchaseOrderInfo = () => {
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const {
     getPurchaseOrderById,
-    updatePurchasePending,
+    updatePurchaseOrder,
     updatePurchaseReject,
     updatePurchaseApproved,
   } = usePurchaseOrder();
+
+  const { singleLocation, getSingleLocation } = useCustomLocation();
 
   const [item, setItem] = useState({});
   const [loading, setLoading] = useState(true);
@@ -70,6 +66,15 @@ const PurchaseOrderInfo = () => {
     (msg) => toast.success(msg, { transition: Bounce }),
     []
   );
+
+  const handleConvertToInventory = () => {
+    history.push({
+      pathname: `/${tenant_schema_name}/inventory/operations/incoming-product/inventory-conversion`,
+      state: { po: item },
+    });
+  };
+
+  // console.log(item);
 
   // Load Purchase Order data
   const loadPO = useCallback(async () => {
@@ -89,41 +94,19 @@ const PurchaseOrderInfo = () => {
     loadPO();
   }, [loadPO]);
 
-  // Prepare payload for status updates
-  const createPayload = () => ({
-    vendor: item.vendor?.url || item.vendor,
-    payment_terms: item.payment_terms,
-    purchase_policy: item.purchase_policy,
-    delivery_terms: item.delivery_terms,
-    currency: item.currency?.url || item.currency,
-    status: item.status,
-    items: (item.items || []).map((itm) => ({
-      product: itm.product?.url || itm.product,
-      description: itm.description,
-      qty: Number(itm.qty) || 0,
-      unit_of_measure:
-        itm.unit_of_measure?.url ||
-        itm.unit_of_measure[0] ||
-        itm.unit_of_measure,
-      estimated_unit_price: itm.estimated_unit_price,
-    })),
-    is_hidden: item.is_hidden,
-  });
+  useEffect(() => {
+    if (item.destination_location) {
+      getSingleLocation(item?.destination_location);
+    }
+  }, [getSingleLocation, item]);
 
   // Handle status change actions
   const handleStatusChange = useCallback(
     async (actionKey) => {
       setActionLoading(true);
       try {
-        const payload = createPayload();
-        const poId = extractRFQID(item.url);
-        const actionFn = {
-          updatePurchasePending,
-          updatePurchaseReject,
-          updatePurchaseApproved,
-        }[statusActions[actionKey]];
-        if (!actionFn) throw new Error("Unknown action");
-        const result = await actionFn(payload, poId);
+        console.log(actionKey);
+        const result = await updatePurchaseOrder({ status: actionKey }, id);
         if (result.success) showSuccess(`Status set to ${actionKey}`);
         else showError(`Failed to ${actionKey} purchase order.`);
         loadPO();
@@ -138,13 +121,13 @@ const PurchaseOrderInfo = () => {
       loadPO,
       showError,
       showSuccess,
-      updatePurchasePending,
+      updatePurchaseOrder,
       updatePurchaseReject,
       updatePurchaseApproved,
     ]
   );
 
-//   // Navigate to inventory conversion
+  //   // Navigate to inventory conversion
   // Render table rows
   const renderedRows = useMemo(() => {
     const rows = item.items || [];
@@ -165,31 +148,27 @@ const PurchaseOrderInfo = () => {
       <TableRow key={row.url || idx}>
         <TableCell sx={cellStyle(idx)}>
           {row.product?.product_name || "N/A"}
-        <Box borderBottom={"1px solid #C6CCD2"} mt={1}/>
-
+          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
         </TableCell>
-        <TableCell sx={cellStyle(idx)}>{row.description || "N/A"}
-        <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
-
+        <TableCell sx={cellStyle(idx)}>
+          {row.description || "N/A"}
+          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
         </TableCell>
-        <TableCell sx={cellStyle(idx)}>{row.qty || "N/A"}
-        <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
-
+        <TableCell sx={cellStyle(idx)}>
+          {row.qty || "N/A"}
+          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.unit_of_measure?.unit_category || "N/A"}
-        <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
-
+          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.estimated_unit_price || "N/A"}
-        <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
-
+          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.get_total_price || "N/A"}
-        <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
-
+          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
         </TableCell>
       </TableRow>
     ));
@@ -205,7 +184,7 @@ const PurchaseOrderInfo = () => {
           actions: [
             {
               text: "Send to Inventory",
-            //   onClick: handleConvertToInventory,
+              onClick: handleConvertToInventory,
               disabled: actionLoading,
             },
           ],
@@ -217,12 +196,12 @@ const PurchaseOrderInfo = () => {
             {
               text: "Approve",
               color: "success",
-              onClick: () => handleStatusChange("approve"),
+              onClick: () => handleStatusChange("completed"),
             },
             {
               text: "Reject",
               color: "error",
-              onClick: () => handleStatusChange("reject"),
+              onClick: () => handleStatusChange("cancelled"),
             },
           ],
         };
@@ -237,15 +216,19 @@ const PurchaseOrderInfo = () => {
           ],
         };
       case "draft":
-        return { label: "Drafted", actions: [] };
+        return {
+          label: "Drafted",
+          actions: [
+            {
+              text: "Set to Pending",
+              onClick: () => handleStatusChange("awaiting"),
+            },
+          ],
+        };
       default:
         return null;
     }
-  }, [
-    item.status,
-    handleStatusChange,
-    actionLoading,
-  ]);
+  }, [item.status, handleStatusChange, actionLoading]);
 
   if (loading) {
     return (
@@ -266,7 +249,12 @@ const PurchaseOrderInfo = () => {
     <div className="rfqStatus">
       <div className="rfqHeader">
         <div className="rfqHeaderLeft">
-          <Typography variant="contained" disableElevation fontSize={"24px"} fontWeight={500}>
+          <Typography
+            variant="contained"
+            disableElevation
+            fontSize={"24px"}
+            fontWeight={500}
+          >
             New Purchase Order
           </Typography>
           <div className="rfqAutosave">
@@ -287,7 +275,26 @@ const PurchaseOrderInfo = () => {
                     pathname: `/${tenant_schema_name}/purchase/purchase-order/${extractRFQID(
                       item.url
                     )}/edit`,
-                    state: { po: item, edit: true },
+                    state: {
+                      po: {
+                        item,
+                        rfq: {
+                          id: item?.related_rfq,
+                          vendor: item?.vendor,
+                          items: item?.items,
+                        },
+                        destination_location: {
+                          ...singleLocation,
+                        },
+                        currency: item?.currency,
+                        payment_terms: item?.payment_terms,
+                        purchase_policy: item?.purchase_policy,
+                        delivery_terms: item?.delivery_terms,
+                        status: "draft",
+                        is_hidden: true,
+                      },
+                      edit: true,
+                    },
                   })
                 }
               >
@@ -317,6 +324,8 @@ const PurchaseOrderInfo = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
+                  <TableCell>RFQ ID</TableCell>
+                  <TableCell>Destination Location</TableCell>
                   <TableCell>Date Created</TableCell>
                   <TableCell>Created By</TableCell>
                 </TableRow>
@@ -331,6 +340,24 @@ const PurchaseOrderInfo = () => {
                     }}
                   >
                     {extractRFQID(item.url) || "N/A"}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: 12,
+                    }}
+                  >
+                    {extractRFQID(item?.related_rfq) || "N/A"}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#fff",
+                      color: "#7a8a98",
+                      fontSize: 12,
+                    }}
+                  >
+                    {extractRFQID(item?.destination_location) || "N/A"}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -436,7 +463,9 @@ const PurchaseOrderInfo = () => {
                   "Estimated Unit Price",
                   "Total Price",
                 ].map((head) => (
-                  <TableCell key={head} sx={{padding: "24px"}}>{head}</TableCell>
+                  <TableCell key={head} sx={{ padding: "24px" }}>
+                    {head}
+                  </TableCell>
                 ))}
               </TableRow>
             </TableHead>
@@ -479,6 +508,5 @@ const PurchaseOrderInfo = () => {
     </div>
   );
 };
-
 
 export default PurchaseOrderInfo;

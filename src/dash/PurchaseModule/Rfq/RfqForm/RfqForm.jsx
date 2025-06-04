@@ -2,6 +2,7 @@
 import "./RfqForm.css";
 import PurchaseHeader from "../../PurchaseHeader";
 import autosave from "../../../../image/autosave.svg";
+
 import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "@mui/material";
 import Swal from "sweetalert2";
@@ -27,16 +28,17 @@ const RfqForm = () => {
 
   const { createRFQ, updateRFQ } = useRFQ();
   const { state } = useLocation();
-  console.log(state)
-  const {rfq={}, edit=false} = state || {};
+  const { rfq = {}, edit = false } = state || {};
+
   const formUse = edit ? "Edit RFQ" : "Create RFQ";
   const quotation = rfq || {};
-  const  conversionRFQ = rfq || {};
+  const conversionRFQ = rfq || {};
 
   const isEdit = formUse === "Edit RFQ";
   const { tenant_schema_name } = useTenant().tenantData || {};
+  const history = useHistory();
 
-  // Default and initial form data
+  // ─── Default and initial form data ──────────────────────────────────────────
   const defaultForm = {
     purchase_request: "",
     expiry_date: "",
@@ -48,20 +50,19 @@ const RfqForm = () => {
     is_hidden: true,
   };
 
-  const initial =  conversionRFQ
-  ? {
-      ...defaultForm,
-      ...conversionRFQ,
-    }
-  : isEdit
-    ? { ...defaultForm, ...quotation }
-    : defaultForm;
+  const initial =
+    conversionRFQ && Object.keys(conversionRFQ).length > 0
+      ? { ...defaultForm, ...conversionRFQ }
+      : isEdit
+      ? { ...defaultForm, ...quotation }
+      : defaultForm;
 
   const [formData, setFormData] = useState(initial);
+  // eslint-disable-next-line no-unused-vars
   const [prIDList, setPrIDList] = useState([]);
-  const history = useHistory();
+  console.log(formData);
 
-  // Fetch dependencies
+  // ─── Fetch required data on mount ──────────────────────────────────────────
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
@@ -78,7 +79,7 @@ const RfqForm = () => {
     setPrIDList(normalizedRFQ(purchaseRequests));
   }, [purchaseRequests]);
 
-
+  // ─── Handlers for formData updates ─────────────────────────────────────────
   const handleInputChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
@@ -112,14 +113,21 @@ const RfqForm = () => {
     }));
   }, []);
 
+  // ─── Determine which items array to display ───────────────────────────────
+  const rfqItems =
+    formUse === "Edit RFQ"
+      ? formData?.items
+      : formData?.purchase_request?.items || [];
+
+  // ─── Prepare payload by cleaning formData (string URLs ↔ objects) ─────────
   const cleanData = (status) => ({
     ...formData,
     status,
     vendor: formData.vendor?.url || formData.vendor,
     currency: formData.currency?.url || formData.currency,
     purchase_request:
-      formData.purchase_request?.url || formData.purchase_request,
-    items: formData.items.map((i) => ({
+      formData.purchase_request?.id || formData.purchase_request,
+    items: rfqItems.map((i) => ({
       product: i.product?.url || i.product || "",
       description: i.description,
       qty: Number(i.qty) || 0,
@@ -130,18 +138,24 @@ const RfqForm = () => {
           : i.unit_of_measure),
       estimated_unit_price: i.estimated_unit_price,
     })),
+    is_submitted: true,
+    can_edit: true,
     is_hidden: false,
   });
 
   const navigateToDetail = (id) => {
     setTimeout(() => {
-      history.push(`/${tenant_schema_name}/purchase/request-for-quotations/${id}`);
+      history.push(
+        `/${tenant_schema_name}/purchase/request-for-quotations/${id}`
+      );
     }, 1500);
   };
 
+  // ─── Handle Save Draft or Save Changes ─────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = cleanData("draft");
+    console.log(payload, "payload");
     try {
       if (isEdit) {
         const id = extractRFQID(quotation.url);
@@ -158,38 +172,15 @@ const RfqForm = () => {
           navigateToDetail(extractRFQID(res.data.url));
         } else Swal.fire("Error", res.message, "error");
       }
-      setFormData(defaultForm);
+      // setFormData(defaultForm);
     } catch (err) {
       console.error(err);
-      Swal.fire("Error", "Unexpected error occurred.", "error");
+      const errMsg = err.message || "Unexpected error occurred.";
+      Swal.fire("Error", errMsg, "error");
     }
   };
 
-  // const saveAndSubmit = async () => {
-  //   try {
-  //     const cleanedData = cleanFormData("pending");
-  //     await createRFQ(cleanedData);
-  //     toast.success("RFQ created successfully", {
-  //       position: "top-right",
-  //       autoClose: 5000,
-  //       transition: Bounce,
-  //       toastId: "rfq-save-share",
-  //     });
-  //     setFormData(defaultFormData);
-  //     if (conversionRFQ) {
-  //       history.push(`/${tenant_schema_name}/rfq`);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error saving and submitting RFQ:", error);
-  //     toast.error(`Error saving and submitting RFQ: ${error.message}`, {
-  //       position: "top-right",
-  //       autoClose: 5000,
-  //       transition: Bounce,
-  //       toastId: "rfq-save-share-error",
-  //     });
-  //   }
-  // };
-// console.log((formData, "formData"));
+  // ─── Handle Save & Send (only in Create mode) ──────────────────────────────
   const saveAndShare = async () => {
     const payload = cleanData("pending");
     try {
@@ -198,14 +189,13 @@ const RfqForm = () => {
         Swal.fire("Shared!", "RFQ created and shared.", "success");
         navigateToDetail(extractRFQID(res.data.url));
       } else Swal.fire("Error", res.message, "error");
-      // setFormData(defaultForm);
     } catch (err) {
       console.error(err);
       Swal.fire("Error", "Unexpected error on share.", "error");
     }
   };
 
-  console.log(formUse);
+  console.log(formData, "formData");
 
   return (
     <div className="RfqForm">
@@ -216,6 +206,7 @@ const RfqForm = () => {
           <img src={autosave} alt="Autosaved" />
         </div>
       </div>
+
       <div className="rfqFormSection">
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
@@ -225,6 +216,7 @@ const RfqForm = () => {
             </Button>
           </div>
         </div>
+
         <form onSubmit={handleSubmit} className="rfqformEditAndCreate">
           <RfqBasicInfoFields
             formData={formData}
@@ -232,14 +224,25 @@ const RfqForm = () => {
             formUse={formUse}
             currencies={currencies}
             vendors={vendors}
-            purchaseIdList={prIDList}
+            purchaseIdList={purchaseRequests}
             rfqID={quotation?.url}
           />
-          <RfqItemsTable
-            items={formData.items}
-            handleRowChange={handleRowChange}
-            products={products}
-          />
+
+          {/** Show existing RFQ items in Edit mode, or associated PR items in Create mode */}
+          {formUse === "Edit RFQ" ? (
+            <RfqItemsTable
+              items={formData?.items}
+              handleRowChange={handleRowChange}
+              products={products}
+            />
+          ) : (
+            <RfqItemsTable
+              items={formData?.purchase_request?.items || formData?.items}
+              handleRowChange={handleRowChange}
+              products={products}
+            />
+          )}
+
           <div
             style={{
               display: "flex",

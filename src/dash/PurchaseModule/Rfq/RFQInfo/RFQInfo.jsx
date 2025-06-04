@@ -76,6 +76,7 @@ const RFQInfo = () => {
   useEffect(() => {
     loadRFQ();
   }, [loadRFQ]);
+  console.log(item);
 
   // Status change handler
   const handleStatusChange = useCallback(
@@ -83,20 +84,7 @@ const RFQInfo = () => {
       setActionLoading(true);
       const prId = extractRFQID(item.url);
       const payload = {
-        expiry_date: item.expiry_date,
-        vendor: item.vendor?.url || item.vendor,
-        vendor_category: item.vendor_category,
-        purchase_request: item.purchase_request,
-        currency: item.currency?.url || item.currency,
         status: newStatus,
-        items: (item.items || []).map((it) => ({
-          product: it.product.url,
-          description: it.description,
-          qty: Number(it.qty) || 0,
-          unit_of_measure: it.unit_of_measure?.url || it.unit_of_measure,
-          estimated_unit_price: it.estimated_unit_price,
-        })),
-        is_hidden: item.is_hidden,
       };
       try {
         const actionName = statusActions[newStatus];
@@ -117,7 +105,7 @@ const RFQInfo = () => {
   const handleConvertToPO = useCallback(() => {
     history.push({
       pathname: `/${tenantSchema}/purchase/purchase-order/new`,
-      state: { conversionRFQ: item },
+      state: { conversionRFQ: { item, rfq: item }, ref: item },
     });
   }, [history, tenantSchema, item]);
 
@@ -159,7 +147,6 @@ const RFQInfo = () => {
     [item.items]
   );
 
-
   // Footer config
   const footerConfig = useMemo(() => {
     switch (item.status) {
@@ -198,14 +185,22 @@ const RFQInfo = () => {
         return {
           label: "Rejected",
           actions: [
+            // {
+            //   text: "Set Back to Pending",
+            //   onClick: () => handleStatusChange("pending"),
+            // },
+          ],
+        };
+      case "draft":
+        return {
+          label: "Drafted",
+          actions: [
             {
-              text: "Set Back to Pending",
+              text: "Set to Pending",
               onClick: () => handleStatusChange("pending"),
             },
           ],
         };
-      case "draft":
-        return { label: "Drafted", actions: [] };
       default:
         return null;
     }
@@ -229,9 +224,11 @@ const RFQInfo = () => {
     <div className="rfqStatus">
       <div className="rfqHeader">
         <div className="rfqHeaderLeft">
-          <Button variant="contained" disableElevation>
-            New RFQ
-          </Button>
+          <Link to={`/${tenantSchema}/purchase/request-for-quotations/new`}>
+            <Button variant="contained" disableElevation>
+              New RFQ
+            </Button>
+          </Link>
           <div className="rfqAutosave">
             <p>Autosave</p>
             <img
@@ -264,9 +261,11 @@ const RFQInfo = () => {
                 Edit
               </Button>
             )}
-            <Button variant="outlined" onClick={() => history.goBack()}>
-              Close
-            </Button>
+            <Link to={`/${tenantSchema}/purchase/request-for-quotations`}>
+              <Button variant="outlined" onClick={() => history.goBack()}>
+                Close
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -354,13 +353,17 @@ const RFQInfo = () => {
             </Table>
           </TableContainer>
         </Box>
-        
-        <Box borderBottom={1} borderColor={"#f2f2f2"} mt={-4}/>
+
+        <Box borderBottom={1} borderColor={"#f2f2f2"} mt={-4} />
 
         <p className="rfqContent">RFQ Items</p>
         <TableContainer
           component={Paper}
-          sx={{ boxShadow: "none", borderRadius: 2, border: "1px solid #f2f2f2" }}
+          sx={{
+            boxShadow: "none",
+            borderRadius: 2,
+            border: "1px solid #f2f2f2",
+          }}
         >
           <Table>
             <TableHead>

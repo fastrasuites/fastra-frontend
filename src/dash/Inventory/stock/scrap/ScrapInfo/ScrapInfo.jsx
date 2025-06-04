@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useHistory, useParams } from "react-router-dom";
 import { scraps } from "../../../data/incomingProductData";
 import {
   Box,
   Button,
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -14,12 +15,16 @@ import {
   Typography,
 } from "@mui/material";
 import { useTenant } from "../../../../../context/TenantContext";
+import { useScrap } from "../../../../../context/Inventory/Scrap";
+import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
+import { usePurchase } from "../../../../../context/PurchaseContext";
+import { extractId } from "../../../../../helper/helper";
 
 // Status‐to‐color mapping extracted for reuse and easy maintenance
 const STATUS_COLOR = {
-  Validate: "#2ba24c",
-  Validated: "#2ba24c",
-  Draft: "#158fec",
+  done: "#2ba24c",
+  Done: "#2ba24c",
+  draft: "#158fec",
   Drafted: "#158fec",
   Cancel: "#e43e2b",
   Cancelled: "#e43e2b",
@@ -38,28 +43,80 @@ const InfoRow = ({ label, children }) => (
 const ScrapInfo = () => {
   // useParams should not be instantiated with `new`
   const { id } = useParams();
+  const history = useHistory();
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
+  const { getSingleScrap } = useScrap();
 
-  // Memoize lookup to avoid re-computing on each render
-  const scrap = useMemo(
-    () => scraps.find((s) => s.id === id?.toUpperCase()),
-    [id]
-  );
+  const [scrap, setScrap] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!scrap) {
+  const { getSingleLocation } = useCustomLocation();
+  const { fetchSingleProduct } = usePurchase();
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data: raw } = await getSingleScrap(id);
+      const { data: location } = await getSingleLocation(
+        extractId(raw.warehouse_location)
+      );
+      const items = await Promise.all(
+        raw.scrap_items.map(async (item) => {
+          const { data: product } = await fetchSingleProduct(
+            extractId(item.product)
+          );
+          return {
+            ...item,
+            product,
+          };
+        })
+      );
+      setScrap({
+        ...raw,
+        warehouse_location: location,
+        scrap_items: items,
+      });
+    } catch (e) {
+      console.error(e);
+      setError(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, getSingleScrap, getSingleLocation, fetchSingleProduct]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleNavigateToEdit = (id) => {
+    history.push({
+      pathname: `/${tenant_schema_name}/inventory/stock/scrap/${id}/edit`,
+      state: { Scrap: scrap },
+    });
+  };
+  if (loading)
     return (
       <Box p={4} textAlign="center">
-        <Typography variant="h6">Scrap record not found</Typography>
-        <Link to="/inventory/stock/scrap">
-          <Button variant="outlined">Back to List</Button>
+        <CircularProgress />
+      </Box>
+    );
+
+  if (error || !scrap)
+    return (
+      <Box p={4} textAlign="center">
+        <Typography variant="h6">Adjustment not found</Typography>
+        <Link to={`/${tenant_schema_name}/inventory/stock/scrap`}>
+          <Button variant="outlined" sx={{ mt: 2 }}>
+            Back to List
+          </Button>
         </Link>
       </Box>
     );
-  }
 
   return (
-    <Box p={4} display="grid" gap={4}>
+    <Box p={4} display="grid" gap={4} mr={4}>
       {/* Action button */}
 
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -68,14 +125,25 @@ const ScrapInfo = () => {
             New Scrap
           </Button>
         </Link>
-        <Button
-          variant="outlined"
-          size="large"
-          disableElevation
-          onClick={() => window.history.back()}
-        >
-          Close
-        </Button>
+        <Box display="flex" gap={4}>
+          <Link
+            to={`/${tenant_schema_name}/inventory/stock/scrap`}
+          >
+            <Button variant="outlined" size="large" disableElevation>
+              Close
+            </Button>
+          </Link>
+          {scrap.status === "draft" && (
+            <Button
+              variant="contained"
+              size="large"
+              disableElevation
+              onClick={() => handleNavigateToEdit(id)}
+            >
+              Edit
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {/* Main info card */}
@@ -92,8 +160,8 @@ const ScrapInfo = () => {
 
         {/* Status row */}
         <InfoRow label="Status">
-          <Typography color={getStatusColor(scrap.status)}>
-            {scrap.status}
+          <Typography color={getStatusColor(scrap.status)} textTransform={"capitalize"}>
+            {scrap.status.toUpperCase()}
           </Typography>
         </InfoRow>
 
@@ -101,9 +169,9 @@ const ScrapInfo = () => {
         <Box display="flex" gap={14} borderBottom="1px solid #E2E6E9" pb={3}>
           <InfoRow label="ID">{scrap.id}</InfoRow>
           <InfoRow label="Adjustment Type">{scrap.adjustment_type}</InfoRow>
-          <InfoRow label="Date">{scrap.date}</InfoRow>
+          {/* <InfoRow label="Date">{scrap.date}</InfoRow> */}
           <InfoRow label="Warehouse Location">
-            {scrap.warehouse_location}
+            {scrap.warehouse_location?.location_name}
           </InfoRow>
         </Box>
 
@@ -123,28 +191,25 @@ const ScrapInfo = () => {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                {[
-                  "Product Name",
-                  "Description",
-                  "Description",
-                  "QTY Received",
-                ].map((text) => (
-                  <TableCell
-                    key={text}
-                    sx={{
-                      fontWeight: 500,
-                      color: "#7A8A98",
-                      fontSize: "14px",
-                      p: 3,
-                    }}
-                  >
-                    {text}
-                  </TableCell>
-                ))}
+                {["Product Name", "Scrap Quantity", "Adjusted Quantity"].map(
+                  (text) => (
+                    <TableCell
+                      key={text}
+                      sx={{
+                        fontWeight: 500,
+                        color: "#7A8A98",
+                        fontSize: "14px",
+                        p: 3,
+                      }}
+                    >
+                      {text}
+                    </TableCell>
+                  )
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
-              {scrap.items?.map((row, idx) => (
+              {scrap.scrap_items?.map((row, idx) => (
                 <TableRow
                   key={idx}
                   hover
@@ -158,22 +223,18 @@ const ScrapInfo = () => {
                       p: 3,
                     }}
                   >
-                    {row.product}
+                    {row?.product?.product_name}
                   </TableCell>
                   <TableCell
                     sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}
                   >
-                    Product Description
+                    {row?.scrap_quantity}
                   </TableCell>
+
                   <TableCell
                     sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}
                   >
-                    5
-                  </TableCell>
-                  <TableCell
-                    sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}
-                  >
-                    {row.product}
+                    {row?.adjusted_quantity}
                     <Box borderBottom="1px solid #E2E6E9" mt={1} />
                   </TableCell>
                 </TableRow>
@@ -185,10 +246,14 @@ const ScrapInfo = () => {
 
       {/* Footer with status and action */}
       <Box display="flex" justifyContent="space-between" mr={4}>
-        <Typography variant="body1" color={getStatusColor(scrap.status)}>
+        <Typography
+          variant="body1"
+          color={getStatusColor(scrap.status)}
+          textTransform={"capitalize"}
+        >
           {scrap.status}
         </Typography>
-        {scrap.status === "Draft" && (
+        {scrap.status === "draft" && (
           <Button variant="contained" size="large" disableElevation>
             Validate
           </Button>

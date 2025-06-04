@@ -14,22 +14,30 @@ const StockAdjustmentContext = createContext(null);
 // Validation utilities
 const validateStockAdjustmentData = (data) => {
   const errors = {};
-  if (!data.warehouse_location)
+  if (!data.warehouse_location) {
     errors.warehouse_location = "Warehouse location is required";
-  // if (!data.adjustmentType) errors.adjustmentType = "Adjustment type is required";
-  // if (!data.date) errors.date = "Date is required";
-  if (!data.notes) errors.notes = "Notes are required";
+  }
+  if (!data.notes) {
+    errors.notes = "Notes are required";
+  }
+  if (!Array.isArray(data.items) || data.items.length === 0) {
+    errors.items = "At least one adjustment item is required";
+  }
   return errors;
 };
 
-const validateItemData = (data) => {
-  console.log(data);
+const validateItemData = (item) => {
+  console.log(item);
   const errors = {};
-  if (!data.product) errors.product = "Product is required";
-  if (data.adjusted_quantity == null)
+  if (!item.product) {
+    errors.product = "Product is required";
+  }
+  if (item.adjusted_quantity == null) {
     errors.adjusted_quantity = "Adjusted quantity is required";
-  if (!data.stock_adjustment)
+  }
+  if (!item.stock_adjustment) {
     errors.stock_adjustment = "Stock adjustment ID is required";
+  }
   return errors;
 };
 
@@ -132,30 +140,24 @@ export const StockAdjustmentProvider = ({ children }) => {
 
   const createStockAdjustment = useCallback(
     async (adjustmentData) => {
-      console.log("Adjustment Data", adjustmentData);
-      const errors = validateStockAdjustmentData(adjustmentData);
-      if (Object.keys(errors).length) return Promise.reject(errors);
       if (!client) {
-        const msg = "API client not initialized.";
-        setError(msg);
-        return Promise.reject(new Error(msg));
+        throw new Error("API client not initialized.");
       }
+
+      const errors = validateStockAdjustmentData(adjustmentData);
+      if (Object.keys(errors).length > 0) {
+        throw { validation: errors };
+      }
+
       setIsLoading(true);
-      // console.log("Axios base URL", client.defaults.baseURL);
-      // console.log("Full request URL", client.defaults.baseURL + "/inventory/stock-adjustment/");
       try {
         const payload = {
-          // id: adjustmentData.id,
           warehouse_location: adjustmentData.warehouse_location,
-          // adjustment_type: adjustmentData.adjustmentType,
-          // date: Date.now(),
           stock_adjustment_items: adjustmentData.items,
           notes: adjustmentData.notes,
           status: adjustmentData.status || "draft",
           is_hidden: false,
         };
-        console.log("Payload", payload);
-        // Send the request to create a new stock adjustment
         const { data } = await client.post(
           "/inventory/stock-adjustment/",
           payload
@@ -176,39 +178,76 @@ export const StockAdjustmentProvider = ({ children }) => {
 
   const updateStockAdjustment = useCallback(
     async (adjustmentData, id) => {
-      console.log("Adjustment Data", adjustmentData);
-      // const errors = validateStockAdjustmentData(adjustmentData);
-      // if (Object.keys(errors).length) return Promise.reject(errors);
       if (!client) {
-        const msg = "API client not initialized.";
-        setError(msg);
-        return Promise.reject(new Error(msg));
+        throw new Error("API client not initialized.");
       }
+
+      const errors = validateStockAdjustmentData(adjustmentData);
+      if (Object.keys(errors).length > 0) {
+        throw { validation: errors };
+      }
+
       setIsLoading(true);
-      // console.log("Axios base URL", client.defaults.baseURL);
-      // console.log("Full request URL", client.defaults.baseURL + "/inventory/stock-adjustment/");
-      console.log(id);
       try {
         const payload = {
           warehouse_location: adjustmentData.warehouse_location || null,
-          adjustment_type: adjustmentData.adjustmentType || null,
+          adjustment_type: adjustmentData.adjustment_type || null,
           stock_adjustment_items: adjustmentData.items,
-          notes: adjustmentData.notes,
+          notes: adjustmentData.notes || null,
           status: adjustmentData.status || "draft",
           is_hidden: false,
         };
-        // console.log("Payload", payload);
-        // Send the request to create a new stock adjustment
-        const { data } = await client.patch(
+
+        console.log("Payload", payload);
+
+        const { data } = await client.put(
           `/inventory/stock-adjustment/${id}/`,
           payload
         );
-        setAdjustmentList((prev) => [...prev, data]);
+
+        setAdjustmentList((prev) =>
+          prev.map((item) => (item.id === id ? data : item))
+        );
         setError(null);
         return { success: true, data };
       } catch (err) {
         console.log(err);
-        setError(err.message || "Failed to create stock adjustment");
+        setError(err.message || "Failed to update stock adjustment");
+        return { success: false, error: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  const updateStockAdjustmentToDone = useCallback(
+    async (id) => {
+      if (!client) {
+        throw new Error("API client not initialized.");
+      }
+
+      setIsLoading(true);
+      try {
+        const payload = {
+          status: "done",
+        };
+
+        console.log("Payload", payload);
+
+        const { data } = await client.patch(
+          `/inventory/stock-adjustment/${id}/`,
+          payload
+        );
+
+        setAdjustmentList((prev) =>
+          prev.map((item) => (item.id === id ? data : item))
+        );
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        console.log(err);
+        setError(err.message || "Failed to update stock adjustment");
         return { success: false, error: err.message };
       } finally {
         setIsLoading(false);
@@ -385,6 +424,7 @@ export const StockAdjustmentProvider = ({ children }) => {
       error,
       getStockAdjustmentList,
       getSingleStockAdjustment,
+      updateStockAdjustmentToDone,
       createStockAdjustment,
       getStockAdjustmentItemList,
       getSingleStockAdjustmentItem,
@@ -405,6 +445,7 @@ export const StockAdjustmentProvider = ({ children }) => {
       getSingleStockAdjustment,
       createStockAdjustment,
       getStockAdjustmentItemList,
+      updateStockAdjustmentToDone,
       getSingleStockAdjustmentItem,
       createStockAdjustmentItem,
       updateStockAdjustment,

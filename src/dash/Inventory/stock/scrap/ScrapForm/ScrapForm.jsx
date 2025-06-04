@@ -1,150 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Autocomplete, TextField } from "@mui/material";
-import { extractRFQID, formatDate } from "../../../../../helper/helper";
+import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import "./ScrapForm.css";
+import { useScrap } from "../../../../../context/Inventory/Scrap";
+import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
+import { usePurchase } from "../../../../../context/PurchaseContext";
+import Swal from "sweetalert2";
+import { useTenant } from "../../../../../context/TenantContext";
+import { useHistory } from "react-router-dom";
 
-// Sample products list array
-const productsList = [
-  {
-    id: 3,
-    product_name: "Meat Burger",
-    product_description: "Delicious Meat",
-    product_category: "consumable",
-    available_product_quantity: 2,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/3/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/2/",
-      unit_name: "centimeter",
-      unit_category: "cm",
-    },
-  },
-  {
-    id: 4,
-    product_name: "Vegetable Mix",
-    product_description: "Assorted fresh vegetables",
-    product_category: "perishable",
-    available_product_quantity: 50,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/4/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/3/",
-      unit_name: "kilogram",
-      unit_category: "kg",
-    },
-  },
-  {
-    id: 5,
-    product_name: "Wheat Bread",
-    product_description: "Freshly baked wheat bread",
-    product_category: "bakery",
-    available_product_quantity: 100,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/5/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/4/",
-      unit_name: "loaf",
-      unit_category: "unit",
-    },
-  },
-  {
-    id: 6,
-    product_name: "Organic Whole Milk",
-    product_description: "Fresh organic whole milk",
-    product_category: "dairy",
-    available_product_quantity: 75,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/6/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/5/",
-      unit_name: "liter",
-      unit_category: "L",
-    },
-  },
-  {
-    id: 7,
-    product_name: "Premium Cheese",
-    product_description: "High quality premium cheese",
-    product_category: "dairy",
-    available_product_quantity: 20,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/7/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/6/",
-      unit_name: "slice",
-      unit_category: "unit",
-    },
-  },
-];
+const adjustmentTypes = ["Damage", "Loss"];
 
-const rowConfig = [
-  {
-    label: "Product Name",
-    field: "product",
-    type: "autocomplete",
-    options: productsList,
-    getOptionLabel: (option) => option?.product_name || "",
-  },
-  {
-    label: "Unit of Measure",
-    field: "unit_of_measure",
-    type: "text",
-    disabled: true,
-    transform: (value) => value?.unit_category || "",
-  },
-  {
-    label: "Current Quantity",
-    field: "available_product_quantity",
-    type: "number",
-    transform: (value) => value || "",
-  },
-  {
-    label: "Adjusted Quantity",
-    field: "qty_received",
-    type: "number",
-  },
-];
-
-const receiptTypes = [
-  {
-    receiptType: "Goods Receipt Against Purchase Order",
-    description:
-      "Receipt of goods referencing an existing purchase order, ensuring delivered items match order specifications.",
-    movementType: "101",
-    referenceDocument: "Purchase Order",
-  },
-  {
-    receiptType: "Goods Receipt Against Production Order",
-    description:
-      "Receipt of finished products into inventory following internal production processes.",
-    movementType: "101",
-    referenceDocument: "Production Order",
-  },
-  {
-    receiptType: "Goods Receipt Without Reference",
-    description:
-      "Receipt of goods without any preceding document, such as unplanned deliveries or free samples.",
-    movementType: "501",
-    referenceDocument: "None",
-  },
-  {
-    receiptType: "Goods Receipt for Returns",
-    description:
-      "Receipt of returned goods from customers back into inventory.",
-    movementType: "451",
-    referenceDocument: "Sales Order",
-  },
-  {
-    receiptType: "Goods Receipt from Stock Transport Order",
-    description:
-      "Receipt of goods transferred from another plant or storage location within the organization.",
-    movementType: "101",
-    referenceDocument: "Stock Transport Order",
-  },
-];
-
-// Default form data structure
 const defaultFormData = {
-  receiptTypes: null,
-  id: extractRFQID("LAGIN0001"),
+  adjustmentType: null,
   date: formatDate(Date.now()),
-  location: "xdx Stores",
+  location: null,
   items: [],
   status: "draft",
   is_hidden: true,
@@ -152,89 +23,228 @@ const defaultFormData = {
 };
 
 const ScrapBasicInputs = ({ formData, handleInputChange }) => {
-  const [selectedReceipt, setSelectedReceipt] = useState(formData.receiptTypes || null);
+  const [selectedLocation, setSelectedLocation] = useState(formData.location);
+  const [selectedAdjustment, setSelectedAdjustment] = useState(
+    formData.adjustmentType
+  );
+  const { locationList, getLocationList } = useCustomLocation();
 
   useEffect(() => {
-    setSelectedReceipt(formData.receiptTypes || null);
-  }, [formData.receiptTypes]);
+    getLocationList();
+  }, [getLocationList]);
 
-  const handleReceiptChange = (event, newValue) => {
-    setSelectedReceipt(newValue);
-    handleInputChange("receiptTypes", newValue);
+  // Sync local state when formData changes
+  useEffect(() => {
+    setSelectedLocation(formData.location);
+  }, [formData.location]);
+
+  useEffect(() => {
+    setSelectedAdjustment(formData.adjustmentType);
+  }, [formData.adjustmentType]);
+
+  const handleAdjustmentChange = (event, newValue) => {
+    setSelectedAdjustment(newValue);
+    handleInputChange("adjustmentType", newValue);
   };
 
+  const handleLocationChange = (event, newValue) => {
+    setSelectedLocation(newValue);
+    handleInputChange("location", newValue);
+  };
 
-  console.log(formData, "formData");
+  console.log(formData?.notes)
+
   return (
     <>
       <div className="scrapBasicInformationInputs">
-        <div className="scrapFormLabelAndValue">
+        {/* <div className="scrapFormLabelAndValue">
           <label>ID</label>
           <p>{formData.id}</p>
-        </div>
-        <div className="">
-          <label style={{ marginBottom: "6px", display: "block" }}>
-            Receipt Type
+        </div> */}
+        <div>
+          <label style={{ marginBottom: 6, display: "block" }}>
+            Adjustment Type
           </label>
           <Autocomplete
             disablePortal
-            options={receiptTypes}
-            value={selectedReceipt}
-            getOptionLabel={(option) => option?.receiptType || ""}
-            isOptionEqualToValue={(option, value) =>
-              option?.receiptType === value?.receiptType
-            }
-            onChange={handleReceiptChange}
-            sx={{ width: "100%", mb: 2 }}
+            options={adjustmentTypes}
+            value={selectedAdjustment}
+            onChange={handleAdjustmentChange}
             renderInput={(params) => (
-              <TextField {...params} placeholder="Receipt Type" />
+              <TextField {...params} placeholder="Select Adjustment" />
             )}
+            sx={{ width: "100%", mb: 2 }}
           />
         </div>
         <div className="formLabelAndValue">
           <label>Date</label>
           <p>{formData.date}</p>
         </div>
-        <div className="formLabelAndValue">
-          <label>Warehouse Location</label>
-          <p>{formData.location}</p>
+        <div>
+          <label style={{ marginBottom: 6, display: "block" }}>
+            Warehouse Location
+          </label>
+          <Autocomplete
+            disablePortal
+            options={locationList}
+            value={selectedLocation}
+            getOptionLabel={(option) => option.name || option.id || ""}
+            isOptionEqualToValue={(option, value) => option?.id === value?.id}
+            onChange={handleLocationChange}
+            renderInput={(params) => (
+              <TextField {...params} placeholder="Select Location" />
+            )}
+            sx={{ width: "100%", mb: 2 }}
+          />
         </div>
       </div>
       <div className="scrapNotes">
-        <label style={{ marginBottom: "6px", display: "block" }}>Notes</label>
+        <label style={{ marginBottom: 6, display: "block" }}>Notes</label>
         <TextField
-          type="text"
-          value={formData.notes || ""}
-          onChange={(e) => handleInputChange("notes", e.target.value)}
-          sx={{ width: "100%" }}
-          placeholder="Input your notes here"
-        />
+                type="text"
+                value={formData.notes}
+                onChange={(e) => {handleInputChange("notes", e.target.value)}}
+                sx={{ width: "100%" }}
+                placeholder="Input your notes here"
+              />
       </div>
     </>
   );
 };
 
 const ScrapForm = () => {
+    const { tenant_schema_name } = useTenant().tenantData || {};
+    const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
+  const { products, fetchProducts } = usePurchase();
+  const { createScrap } = useScrap();
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const transformProducts = (products) =>
+    products.map((prod) => {
+      const [url, unit_category] = prod.unit_of_measure;
+      return {
+        ...prod,
+        unit_of_measure: {
+          url,
+          unit_category,
+          unit_name: unit_category,
+        },
+      };
+    });
+
+  const rowConfig = [
+    {
+      label: "Product Name",
+      field: "product",
+      type: "autocomplete",
+      options: transformProducts(products),
+      getOptionLabel: (option) => option.product_name || "",
+    },
+    {
+      label: "Unit of Measure",
+      field: "unit_of_measure",
+      type: "text",
+      disabled: true,
+      transform: (value) => value.unit_category || "",
+    },
+    {
+      label: "Current Quantity",
+      field: "available_product_quantity",
+      type: "number",
+      transform: (value) => value || "",
+    },
+    {
+      label: "Adjusted Quantity",
+      field: "qty_received",
+      type: "number",
+    },
+  ];
+
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+  const navigateToDetail = (id) => {
+    setTimeout(() => {
+      history.push(
+        `/${tenant_schema_name}/inventory/stock/scrap/${id}`
+      );
+    }, 1500);
   };
 
-  const handleSubmit = (filledFormData) => {
-    console.log("Final Form Data", filledFormData);
+  const handleSubmit = async (filledFormData) => {
+    const items = filledFormData.items.map((item) => ({
+      product: item.product.url,
+      adjusted_quantity: item.qty_received
+    }))
+    
+    try {
+      const createdScrap = await createScrap({ ...filledFormData, items });
+      setFormData(defaultFormData);
+      console.log(createdScrap);
+      Swal.fire("Success", "Scrap created successfully", "success");
+      navigateToDetail(createdScrap?.data?.id);
+    } catch (err) {
+      if (err.validation) {
+              Swal.fire({
+                icon: "error",
+                title: "Validation Error",
+                html: Object.values(err.validation)
+                  .map((msg) => `<p>${msg}</p>`)
+                  .join(""),
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: err.message,
+              });
+            }
+    }
+  };
+
+
+  const handleSubmitValidate = async (filledFormData) => {
+    const items = filledFormData.items.map((item) => ({
+      product: item.product.url,
+      adjusted_quantity: item.qty_received
+    }))
+    
+    try {
+      const createdScrap = await createScrap({ ...filledFormData, items, status: "done" });
+      setFormData(defaultFormData);
+      console.log(createdScrap);
+      Swal.fire("Success", "Scrap created successfully", "success");
+      navigateToDetail(createdScrap?.data?.id);
+    } catch (err) {
+      if (err.validation) {
+              Swal.fire({
+                icon: "error",
+                title: "Validation Error",
+                html: Object.values(err.validation)
+                  .map((msg) => `<p>${msg}</p>`)
+                  .join(""),
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: err.message,
+              });
+            }
+    }
   };
 
   return (
     <CommonForm
       basicInformationTitle="Product Information"
-      basicInformationInputs={(props) => (
-        <ScrapBasicInputs {...props} handleInputChange={handleInputChange} />
-      )}
-      formTitle="New Stock Adjustment"
+      basicInformationInputs={ScrapBasicInputs}
+      handleInputChange={handleInputChange}
+      formTitle="New Scrap"
       formData={formData}
       setFormData={setFormData}
       rowConfig={rowConfig}
@@ -242,6 +252,7 @@ const ScrapForm = () => {
       onSubmit={handleSubmit}
       submitBtnText="Validate"
       autofillRow={["unit_of_measure", "available_product_quantity"]}
+      onSubmitAsDone={handleSubmitValidate}
     />
   );
 };

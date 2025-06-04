@@ -15,7 +15,7 @@ import autosaveIcon from "../../../../image/autosave.svg";
 import "./LocationForm.css";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import { useLocationConfig } from "../../../../context/Inventory/LocationConfigContext";
-import { useTenant } from "../../../../context/TenantContext";
+// import { useTenant } from "../../../../context/TenantContext";
 
 const STORAGE_KEY = "draftLocationForm";
 
@@ -37,7 +37,7 @@ const initialFormState = {
 };
 
 const LocationForm = () => {
-  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+  // const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
   const {
     locationList,
@@ -158,6 +158,7 @@ const LocationForm = () => {
         getLocationList();
       }
     } catch (err) {
+      console.error(err);
       const messages = Object.values(err || {}).filter(Boolean);
       if (messages.length) {
         return Swal.fire({
@@ -176,7 +177,7 @@ const LocationForm = () => {
 
   const handleCancel = () => history.goBack();
 
-  console.log("Form Data", formData);
+  // console.log("Form Data", formData);
   return (
     <div className="inven-header">
       <div className="location-form-wrapper fade-in">
