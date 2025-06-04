@@ -1,0 +1,390 @@
+// EditDeliveryOrderForm.jsx
+import React, { useMemo, useEffect, useState } from "react";
+import "./EditDeliveryOrderForm.css";
+import {
+  Autocomplete,
+  TextField,
+  Grid,
+  Typography,
+  Divider,
+  Box,
+  CircularProgress,
+} from "@mui/material";
+import CommonForm from "../../../../../components/CommonForm/CommonForm";
+import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
+import Swal from "sweetalert2";
+import { useDeliveryOrder } from "../../../../../context/Inventory/DeliveryOrderContext";
+import { usePurchase } from "../../../../../context/PurchaseContext";
+import { useParams } from "react-router-dom";
+
+const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
+  const { locationList, getLocationList } = useCustomLocation();
+
+  useEffect(() => {
+    getLocationList();
+  }, [getLocationList]);
+
+  // Handle location change
+  const handleLocationChange = (_, newValue) => {
+    handleInputChange("source_location", newValue);
+  };
+
+  return (
+    <>
+      <Box display="flex" flexDirection="column" gap={3}>
+        <Box>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                ID
+              </label>
+              <TextField
+                type="text"
+                variant="standard"
+                size="small"
+                value={formData.order_unique_id || ""}
+                disabled
+                placeholder="Order unique id"
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                Customer's name
+              </label>
+              <TextField
+                type="text"
+                variant="standard"
+                size="small"
+                value={formData.customer_name || ""}
+                onChange={(e) =>
+                  handleInputChange("customer_name", e.target.value)
+                }
+                placeholder="Enter customer name"
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                Source Location
+              </label>
+              <Autocomplete
+                disablePortal
+                options={locationList}
+                value={formData.source_location || null}
+                getOptionLabel={(option) => option?.id || ""}
+                isOptionEqualToValue={(option, value) =>
+                  option?.id === value?.id
+                }
+                onChange={handleLocationChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select Source Location"
+                    size="small"
+                    variant="standard"
+                    fullWidth
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                Delivery Address
+              </label>
+              <TextField
+                type="text"
+                variant="standard"
+                size="small"
+                value={formData.delivery_address || ""}
+                onChange={(e) =>
+                  handleInputChange("delivery_address", e.target.value)
+                }
+                placeholder="Input Delivery Address"
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+        </Box>
+        <Divider />
+        <Box>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                Delivery Date
+              </label>
+              <TextField
+                fullWidth
+                type="date"
+                variant="outlined"
+                size="small"
+                value={formData.delivery_date || ""}
+                onChange={(e) =>
+                  handleInputChange("delivery_date", e.target.value)
+                }
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                Shipping Policy
+              </label>
+              <TextField
+                fullWidth
+                type="text"
+                value={formData.shipping_policy || ""}
+                onChange={(e) =>
+                  handleInputChange("shipping_policy", e.target.value)
+                }
+                placeholder="Input Shipping Policy"
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                Return Policy
+              </label>
+              <TextField
+                type="text"
+                fullWidth
+                size="small"
+                value={formData.return_policy || ""}
+                onChange={(e) =>
+                  handleInputChange("return_policy", e.target.value)
+                }
+                placeholder="Input Return Policy"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <label style={{ marginBottom: "6px", display: "block" }}>
+                Assigned To
+              </label>
+              <TextField
+                type="text"
+                size="small"
+                value={formData.assigned_to || ""}
+                onChange={(e) =>
+                  handleInputChange("assigned_to", e.target.value)
+                }
+                placeholder="Input Assigned To"
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+        </Box>
+        <Divider />
+      </Box>
+    </>
+  );
+};
+
+const EditDeliveryOrderForm = () => {
+  const { fetchProducts, products } = usePurchase();
+  const {
+    updateDeliveryOrder,
+    isLoading: isContextLoading,
+    getDeliveryOrderList,
+    deliveryOrderList,
+  } = useDeliveryOrder();
+  const { id } = useParams();
+  const orderId = Number(id);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await getDeliveryOrderList();
+      await fetchProducts();
+      setInitialDataLoaded(true);
+    };
+
+    fetchData();
+  }, [getDeliveryOrderList, fetchProducts]);
+
+  const singleDeliveryOrder = useMemo(() => {
+    return deliveryOrderList.find((order) => order.id === orderId);
+  }, [deliveryOrderList, orderId]);
+
+  // Transform products for options
+  const transformedProducts = useMemo(() => {
+    return products.map((prod) => {
+      return {
+        ...prod,
+        unit_of_measure: Array.isArray(prod.unit_of_measure)
+          ? { unit_category: prod.unit_of_measure[1] }
+          : prod.unit_of_measure,
+      };
+    });
+  }, [products]);
+
+  const [formData, setFormData] = useState({
+    id: "",
+    order_unique_id: "",
+    customer_name: "",
+    source_location: null,
+    delivery_address: "",
+    delivery_date: "",
+    shipping_policy: "",
+    return_policy: "",
+    assigned_to: "",
+    items: [],
+    status: "draft",
+  });
+
+  // Initialize form data when data is available
+  useEffect(() => {
+    if (initialDataLoaded && singleDeliveryOrder) {
+      // Transform items
+      const items = singleDeliveryOrder.delivery_order_items.map((item) => {
+        const product =
+          transformedProducts.find((p) => p.id === item.product_item?.id) ||
+          item.product_item;
+
+        return {
+          ...item,
+          id: item.id,
+          product: product,
+          quantity_to_deliver: item.quantity_to_deliver,
+          unit_of_measure: product?.unit_of_measure || item.unit_of_measure,
+        };
+      });
+
+      setFormData({
+        id: singleDeliveryOrder.id,
+        order_unique_id: singleDeliveryOrder.order_unique_id,
+        customer_name: singleDeliveryOrder.customer_name,
+        source_location: singleDeliveryOrder.source_location,
+        delivery_address: singleDeliveryOrder.delivery_address,
+        delivery_date: singleDeliveryOrder.delivery_date?.split("T")[0],
+        shipping_policy: singleDeliveryOrder.shipping_policy,
+        return_policy: singleDeliveryOrder.return_policy,
+        assigned_to: singleDeliveryOrder.assigned_to,
+        items: items,
+        status: singleDeliveryOrder.status,
+      });
+    }
+  }, [singleDeliveryOrder, initialDataLoaded, transformedProducts]);
+
+  const rowConfig = [
+    {
+      label: "Product Name",
+      field: "product",
+      type: "autocomplete",
+      options: transformedProducts,
+      getOptionLabel: (option) => option?.product_name || "",
+      isOptionEqualToValue: (option, value) => option?.id === value?.id,
+    },
+    {
+      label: "Quantity to Deliver",
+      field: "quantity_to_deliver",
+      type: "number",
+      transform: (value) => value || "",
+    },
+    {
+      label: "Unit of Measure",
+      field: "unit_of_measure",
+      type: "text",
+      disabled: true,
+      transform: (value) => value?.unit_category || "",
+    },
+  ];
+
+  const handleSubmit = async (filledFormData) => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        customer_name: filledFormData.customer_name,
+        source_location: filledFormData.source_location?.id,
+        delivery_address: filledFormData.delivery_address,
+        delivery_date: filledFormData.delivery_date,
+        shipping_policy: filledFormData.shipping_policy,
+        return_policy: filledFormData.return_policy,
+        assigned_to: filledFormData.assigned_to,
+        items: filledFormData.items.map((item) => ({
+          unit_of_measure:
+            item.unit_of_measure?.unit_category || item.unit_of_measure,
+          product: item.product?.id || item.product,
+          quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
+        })),
+      };
+
+      const result = await updateDeliveryOrder(orderId, payload);
+
+      if (result && result.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Delivery order updated successfully",
+        });
+      } else {
+        throw new Error("Update failed without error message");
+      }
+    } catch (error) {
+      console.error("Update error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text:
+          error.message || "Failed to update delivery order. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!initialDataLoaded) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!singleDeliveryOrder) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <Typography variant="h6">Delivery order not found</Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <CommonForm
+      basicInformationTitle="Delivery Order Information"
+      basicInformationInputs={DeliveryOrderFormBasicInputs}
+      formTitle="Edit Delivery Order"
+      formData={formData}
+      setFormData={setFormData}
+      rowConfig={rowConfig}
+      isEdit={true}
+      showSaveButton={true}
+      primaryButtonVariant="contained"
+      onSubmit={handleSubmit}
+      submitBtnText={
+        isSubmitting || isContextLoading ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          "Save changes"
+        )
+      }
+      autofillRow={[
+        "product_name",
+        "product_description",
+        "unit_of_measure",
+        "available_product_quantity",
+      ]}
+    />
+  );
+};
+
+export default EditDeliveryOrderForm;

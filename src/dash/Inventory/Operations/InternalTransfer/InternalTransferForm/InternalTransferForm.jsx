@@ -6,7 +6,6 @@ import { extractRFQID, formatDate } from "../../../../../helper/helper";
 import "./InternalTransferForm.css";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 
-
 // Sample products list array
 const productsList = [
   {
@@ -76,7 +75,6 @@ const productsList = [
   },
 ];
 
-
 // Row configuration for the dynamic table
 const rowConfig = [
   {
@@ -118,31 +116,21 @@ const defaultFormData = {
 };
 
 // Basic input component for the incoming product form
-const InternalTransferFormBasicInputs = ({
-  formData,
-  handleInputChange,
-}) => {
+const InternalTransferFormBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedReceipt, setSelectedReceipt] = React.useState(null);
-    const [selectedLoaction, setSelectedLocation] = useState(null);
-  
-    
+  const [selectedLoaction, setSelectedLocation] = useState(null);
 
-    const {
-      locationList,
-      getLocationList,
-    } = useCustomLocation();
-  
-    useEffect(() => {
-      getLocationList();
-    }, []);
+  const { locationList, getLocationList } = useCustomLocation();
+
+  useEffect(() => {
+    getLocationList();
+  }, []);
 
   // Sync with parent state upon selection change
   const handleReceiptChange = (event, newValue) => {
     setSelectedReceipt(newValue);
     handleInputChange("receiptTypes", newValue);
   };
-
-
 
   return (
     <>
@@ -156,42 +144,44 @@ const InternalTransferFormBasicInputs = ({
           <p>{formData.dateCreated}</p>
         </div>
         {locationList.length <= 1 ? (
-        <div className="formLabelAndValue">
-          <label>Location</label>
-          <p>{formData.location}</p>
-        </div>
-      ) : (
-        <div className="">
+          <div className="formLabelAndValue">
+            <label>Location</label>
+            <p>{formData.location}</p>
+          </div>
+        ) : (
+          <div className="">
+            <label style={{ marginBottom: "6px", display: "block" }}>
+              Source Location
+            </label>
+            <Autocomplete
+              disablePortal
+              options={locationList}
+              value={selectedLoaction}
+              getOptionLabel={(option) => option?.id || ""}
+              isOptionEqualToValue={(option, value) =>
+                option?.receiptType === value?.id
+              }
+              onChange={handleReceiptChange}
+              sx={{ width: "100%", mb: 2 }}
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Input Source Location" />
+              )}
+            />
+          </div>
+        )}
+
+        <div className="supplierName">
           <label style={{ marginBottom: "6px", display: "block" }}>
-            Source Location
+            Destination Location
           </label>
-          <Autocomplete
-            disablePortal
-            options={locationList}
-            value={selectedLoaction}
-            getOptionLabel={(option) => option?.id || ""}
-            isOptionEqualToValue={(option, value) =>
-              option?.receiptType === value?.id
-            }
-            onChange={handleReceiptChange}
-            sx={{ width: "100%", mb: 2 }}
-            renderInput={(params) => (
-              <TextField {...params} placeholder="Input Source Location" />
-            )}
+          <TextField
+            type="text"
+            value={formData.notes}
+            onChange={(e) => handleInputChange("notes", e.target.value)}
+            sx={{ width: "100%" }}
+            placeholder="Input Destination Location"
           />
         </div>
-      )}
-
-      <div className="supplierName">
-        <label style={{ marginBottom: "6px", display: "block" }}>Destination Location</label>
-        <TextField
-          type="text"
-          value={formData.notes}
-          onChange={(e) => handleInputChange("notes", e.target.value)}
-          sx={{ width: "100%" }}
-          placeholder="Input Destination Location"
-        />
-      </div>
       </div>
     </>
   );

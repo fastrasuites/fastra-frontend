@@ -16,7 +16,14 @@ const CommonForm = ({
   setFormData,
   onSubmit,
   submitBtnText = "Save",
-  autofillRow=["product_name", "product_description", "unit_of_measure", "available_product_quantity"],
+  autofillRow = [
+    "product_name",
+    "product_description",
+    "unit_of_measure",
+    "available_product_quantity",
+  ],
+  showSaveButton = true,
+  primaryButtonVariant = "outlined",
 }) => {
   // Update a single field in formData
   const handleInputChange = useCallback(
@@ -54,10 +61,13 @@ const CommonForm = ({
       ...prev,
       items: [
         ...prev.items,
-        rowConfig.reduce((acc, cfg) => {
-          acc[cfg.field] = "";
-          return acc;
-        }, { id: `new-${prev.items.length + 1}` }),
+        rowConfig.reduce(
+          (acc, cfg) => {
+            acc[cfg.field] = "";
+            return acc;
+          },
+          { id: `new-${prev.items.length + 1}` }
+        ),
       ],
     }));
   }, [rowConfig, setFormData]);
@@ -128,10 +138,10 @@ const CommonForm = ({
               Add Item
             </Button>
             <Box sx={{ display: "flex", gap: 2 }}>
-              <Button variant="outlined" type="submit">
+              <Button variant={primaryButtonVariant} type="submit">
                 {isEdit ? "Save Changes" : submitBtnText}
               </Button>
-              {!isEdit && (
+              {!isEdit && showSaveButton && (
                 <Button variant="contained" onClick={handleSubmit}>
                   Save
                 </Button>
