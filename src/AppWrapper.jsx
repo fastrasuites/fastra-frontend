@@ -20,21 +20,21 @@ function AppWrapper() {
         <FormProvider>
           <PurchaseProvider>
             <LocationConfigProvider>
-            <RFQProvider>
-              <PurchaseOrderProvider>
-                <LocationProvider>
-                  <IncomingProductProvider>
-                  <StockAdjustmentProvider>
-                    <ScrapProvider>
-                  <Router>
-                    <App />
-                  </Router>
-                  </ScrapProvider>
-                  </StockAdjustmentProvider>
-                  </IncomingProductProvider>
-                </LocationProvider>
-              </PurchaseOrderProvider>
-            </RFQProvider>
+              <RFQProvider>
+                <PurchaseOrderProvider>
+                  <LocationProvider>
+                    <IncomingProductProvider>
+                      <StockAdjustmentProvider>
+                        <ScrapProvider>
+                          <Router>
+                            <App />
+                          </Router>
+                        </ScrapProvider>
+                      </StockAdjustmentProvider>
+                    </IncomingProductProvider>
+                  </LocationProvider>
+                </PurchaseOrderProvider>
+              </RFQProvider>
             </LocationConfigProvider>
           </PurchaseProvider>
         </FormProvider>
