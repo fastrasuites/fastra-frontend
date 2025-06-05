@@ -29,6 +29,7 @@ import EditDeliveryOrderForm from "./Operations/DeliveryOrder/EditDeliveryOrderF
 import ScrapEditForm from "./stock/scrap/ScrapForm/ScrapEditForm";
 import EditIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/EditIncomingProduct";
 import ConvertPoToIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/ConvertPotoIncomingProduct";
+import DeliveryOrderReturnForm from "./Operations/DeliveryOrder/DeliveryOrderReturnForm/DeliveryOrderReturnForm";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -104,12 +105,6 @@ const InventoryLayout = () => {
 
           <Route
             exact
-            path={`${path}/operations/delivery-order/`}
-            component={DeliveryOrder}
-          />
-
-          <Route
-            exact
             path={`${path}/operations/delivery-order/:id`}
             component={DeliveryOrderInfo}
           />
@@ -118,6 +113,13 @@ const InventoryLayout = () => {
             exact
             path={`${path}/operations/delivery-order/:id/edit`}
             component={EditDeliveryOrderForm}
+          />
+
+          {/* Redirect for Delivery Order Return Form */}
+          <Route
+            exact
+            path={`${path}/operations/delivery-order/:id/return`}
+            component={DeliveryOrderReturnForm}
           />
 
           {/* Inventory Location Routes */}

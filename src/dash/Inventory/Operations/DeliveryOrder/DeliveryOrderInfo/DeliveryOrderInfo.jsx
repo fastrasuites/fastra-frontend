@@ -379,7 +379,13 @@ const DeliveryOrderInfo = () => {
                 : ""}
             </Button>
           )}
-          {status === "done" && <Button>Return</Button>}
+          {status === "done" && (
+            <Link
+              to={`/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/return`}
+            >
+              <Button>Return</Button>
+            </Link>
+          )}
         </Box>
       </Box>
     </Box>
