@@ -1,6 +1,6 @@
 // src/dash/PurchaseModule/Rfq/RfqBasicInfoFields.jsx
 import React from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 
 // Helper: resolves a formValue (object or string) into the corresponding object from `list`.
@@ -15,6 +15,16 @@ const getSelectedOption = (formValue, list = [], key) => {
   return null;
 };
 
+const REQUIRED_ASTERISK = (
+  <Typography component="span" color="#D32F2F" ml={0.5} fontSize="20px">
+    *
+  </Typography>
+);
+
+const GrayText = ({ children }) => (
+  <Typography color="text.secondary">{children}</Typography>
+);
+
 const RfqBasicInfoFields = ({
   formData,
   handleInputChange,
@@ -24,7 +34,6 @@ const RfqBasicInfoFields = ({
   purchaseIdList = [],
   rfqID,
 }) => {
-  console.log(purchaseIdList);
   // Resolve selected objects from formData (which may be strings or objects)
   const selectedPurchaseRequest = getSelectedOption(
     formData.purchase_request,
@@ -57,6 +66,7 @@ const RfqBasicInfoFields = ({
         <div className="rfqBasicInfoFields1SelectFields">
           <label style={{ marginBottom: "6px", display: "block" }}>
             Input PR ID
+            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -76,6 +86,7 @@ const RfqBasicInfoFields = ({
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Select Currency
+            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -96,26 +107,28 @@ const RfqBasicInfoFields = ({
       </div>
 
       <div className="rfqBasicInfoFields2">
-        <div>
-          <label style={{ marginBottom: "6px", display: "block" }}>
+        <Box>
+          <label>
             Expiry Date
+            {REQUIRED_ASTERISK}
           </label>
-          <input
+          <TextField
             type="date"
             name="expiry_date"
-            className="rpr3cb"
             value={
               formData.expiry_date
                 ? new Date(formData.expiry_date).toISOString().slice(0, 10)
                 : ""
             }
             onChange={(e) => handleInputChange("expiry_date", e.target.value)}
+            sx={{ width: "100%", mt: 0.5 }}
           />
-        </div>
+        </Box>
 
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Vendor
+            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -135,6 +148,7 @@ const RfqBasicInfoFields = ({
         <div>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Vendor Category
+            {REQUIRED_ASTERISK}
           </label>
           <TextField
             type="text"

@@ -105,7 +105,11 @@ const RFQInfo = () => {
   const handleConvertToPO = useCallback(() => {
     history.push({
       pathname: `/${tenantSchema}/purchase/purchase-order/new`,
-      state: { conversionRFQ: { item, rfq: item }, ref: item },
+      state: {
+        conversionRFQ: { item, rfq: item },
+        ref: item,
+        isConvertToPO: true,
+      },
     });
   }, [history, tenantSchema, item]);
 
@@ -262,9 +266,7 @@ const RFQInfo = () => {
               </Button>
             )}
             <Link to={`/${tenantSchema}/purchase/request-for-quotations`}>
-              <Button variant="outlined" onClick={() => history.goBack()}>
-                Close
-              </Button>
+              <Button variant="outlined">Close</Button>
             </Link>
           </div>
         </div>

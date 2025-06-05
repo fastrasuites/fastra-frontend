@@ -13,6 +13,7 @@ import { useRFQ } from "../../../../context/RequestForQuotation";
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
 import { useHistory, useLocation } from "react-router-dom";
 import { useTenant } from "../../../../context/TenantContext";
+import RfqBasicInfoFieldsConvertToRFQ from "./RFQBasisInfoConvert";
 
 const RfqForm = () => {
   const {
@@ -28,12 +29,12 @@ const RfqForm = () => {
 
   const { createRFQ, updateRFQ } = useRFQ();
   const { state } = useLocation();
-  const { rfq = {}, edit = false } = state || {};
+  const { rfq = {}, edit = false, isConvertToRFQ } = state || {};
 
   const formUse = edit ? "Edit RFQ" : "Create RFQ";
   const quotation = rfq || {};
   const conversionRFQ = rfq || {};
-
+  console.log(isConvertToRFQ);
   const isEdit = formUse === "Edit RFQ";
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
@@ -60,7 +61,6 @@ const RfqForm = () => {
   const [formData, setFormData] = useState(initial);
   // eslint-disable-next-line no-unused-vars
   const [prIDList, setPrIDList] = useState([]);
-  console.log(formData);
 
   // ─── Fetch required data on mount ──────────────────────────────────────────
   useEffect(() => {
@@ -96,22 +96,22 @@ const RfqForm = () => {
     });
   }, []);
 
-  const handleAddRow = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        {
-          id: `new-${prev.items.length + 1}`,
-          product: null,
-          description: "",
-          qty: "",
-          unit_of_measure: "",
-          estimated_unit_price: "",
-        },
-      ],
-    }));
-  }, []);
+  // const handleAddRow = useCallback(() => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     items: [
+  //       ...prev.items,
+  //       {
+  //         id: `new-${prev.items.length + 1}`,
+  //         product: null,
+  //         description: "",
+  //         qty: "",
+  //         unit_of_measure: "",
+  //         estimated_unit_price: "",
+  //       },
+  //     ],
+  //   }));
+  // }, []);
 
   // ─── Determine which items array to display ───────────────────────────────
   const rfqItems =
@@ -195,8 +195,6 @@ const RfqForm = () => {
     }
   };
 
-  console.log(formData, "formData");
-
   return (
     <div className="RfqForm">
       <div className="rfqAutoSave">
@@ -218,15 +216,28 @@ const RfqForm = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="rfqformEditAndCreate">
-          <RfqBasicInfoFields
-            formData={formData}
-            handleInputChange={handleInputChange}
-            formUse={formUse}
-            currencies={currencies}
-            vendors={vendors}
-            purchaseIdList={purchaseRequests}
-            rfqID={quotation?.url}
-          />
+          {isConvertToRFQ ? (
+            <RfqBasicInfoFieldsConvertToRFQ
+              formData={formData}
+              handleInputChange={handleInputChange}
+              formUse={formUse}
+              currencies={currencies}
+              vendors={vendors}
+              purchaseIdList={purchaseRequests}
+              rfqID={quotation?.url}
+              isConvertToRFQ={!!conversionRFQ}
+            />
+          ) : (
+            <RfqBasicInfoFields
+              formData={formData}
+              handleInputChange={handleInputChange}
+              formUse={formUse}
+              currencies={currencies}
+              vendors={vendors}
+              purchaseIdList={purchaseRequests}
+              rfqID={quotation?.url}
+            />
+          )}
 
           {/** Show existing RFQ items in Edit mode, or associated PR items in Create mode */}
           {formUse === "Edit RFQ" ? (
@@ -246,13 +257,13 @@ const RfqForm = () => {
           <div
             style={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "end",
               alignItems: "center",
             }}
           >
-            <Button variant="outlined" onClick={handleAddRow}>
+            {/* <Button variant="outlined" onClick={handleAddRow}>
               Add Item
-            </Button>
+            </Button> */}
             <div style={{ display: "flex", gap: 16 }}>
               <Button variant="outlined" type="submit">
                 {isEdit ? "Save Changes" : "Save Draft"}

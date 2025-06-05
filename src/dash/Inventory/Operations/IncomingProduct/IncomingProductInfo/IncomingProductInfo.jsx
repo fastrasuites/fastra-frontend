@@ -71,8 +71,6 @@ export default function IncomingProductInfo() {
         })
       );
 
-      console.log("Incoming product items:", items);
-
       setIncoming({
         ...raw,
         incoming_product_items: items,
@@ -92,20 +90,42 @@ export default function IncomingProductInfo() {
 
   // navigate to edit screen
   const handleEdit = () => {
-    history.push(`/${schema}/inventory/operations/incoming-product/${id}/edit`, {
-      incoming,
-    });
+    history.push(
+      `/${schema}/inventory/operations/incoming-product/${id}/edit`,
+      {
+        incoming,
+      }
+    );
   };
+
+  const refactoredIncoming_product_items = incoming?.incoming_product_items.map(
+    (item) => {
+      return {
+        expected_quantity: item?.expected_quantity,
+        id: item?.id,
+        incoming_product: item?.incoming_product,
+        product: item?.product?.id,
+      };
+    }
+  );
+
+  console.log(refactoredIncoming_product_items);
 
   // mark as validated
   const handleValidate = async () => {
-
-     const payload = {
+    const payload = {
+      // incoming_product_items: refactoredIncoming_product_items,
       status: "validated",
       is_hidden: false,
       is_validated: true,
       can_edit: false,
 
+      // receipt_type: incoming?.receipt_type,
+      // related_po: incoming?.related_po || null,
+      // supplier: parseInt(incoming?.supplier),
+      // source_location: incoming?.source_location,
+      // destination_location: incoming?.destination_location,
+      // incoming_product_items: item?.incoming_product_items,
     };
 
     try {
@@ -137,12 +157,17 @@ export default function IncomingProductInfo() {
   };
 
   const handleCancel = async () => {
-     const payload = {
+    const payload = {
       status: "canceled",
+      // incoming_product_items: refactoredIncoming_product_items,
       is_hidden: false,
-      is_validated: false,
+      is_validated: true,
       can_edit: false,
-
+      // receipt_type: incoming?.receipt_type,
+      // related_po: incoming?.related_po || null,
+      // supplier: parseInt(incoming?.supplier),
+      // source_location: incoming?.source_location,
+      // destination_location: incoming?.destination_location,
     };
 
     try {
@@ -196,10 +221,11 @@ export default function IncomingProductInfo() {
 
   const supplier = vendors.find((v) => v.id === incoming.supplier);
 
+  console.log(incoming);
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <Link to="/inventory/incoming-product/new">
+        <Link to={`/${schema}/inventory/operations/creat-incoming-product`}>
           <Button variant="contained" size="large" disableElevation>
             New Incoming Product
           </Button>
@@ -349,26 +375,24 @@ export default function IncomingProductInfo() {
         </Typography>
         {incoming.status === "draft" && (
           <Box display="flex" gap={2}>
-             <Button
-            variant="contained"
-            color="error"
-            size="large"
-            disableElevation
-            onClick={handleCancel}
-          >
-            Cancel
-          </Button>
             <Button
-            variant="contained"
-            size="large"
-            disableElevation
-            onClick={handleValidate}
-          >
-            Validate
-          </Button>
+              variant="contained"
+              color="error"
+              size="large"
+              disableElevation
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              size="large"
+              disableElevation
+              onClick={handleValidate}
+            >
+              Validate
+            </Button>
           </Box>
-
-         
         )}
       </Box>
     </Box>
