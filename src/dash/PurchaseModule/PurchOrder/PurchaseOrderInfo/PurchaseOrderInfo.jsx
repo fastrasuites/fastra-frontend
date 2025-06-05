@@ -148,27 +148,27 @@ const PurchaseOrderInfo = () => {
       <TableRow key={row.url || idx}>
         <TableCell sx={cellStyle(idx)}>
           {row.product?.product_name || "N/A"}
-          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
+          <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.description || "N/A"}
-          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
+          <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.qty || "N/A"}
-          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
+          <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.unit_of_measure?.unit_category || "N/A"}
-          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
+          <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.estimated_unit_price || "N/A"}
-          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
+          <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
           {row.get_total_price || "N/A"}
-          <Box borderBottom={"1px solid #C6CCD2"} mt={1} />
+          <Box />
         </TableCell>
       </TableRow>
     ));
@@ -388,12 +388,10 @@ const PurchaseOrderInfo = () => {
         <div className="poStatusVendor">
           <Box display={"grid"} gap={1}>
             <p>Vendor</p>
-            <TextField
-              type="text"
-              value={item.vendor?.company_name || ""}
-              sx={{ width: "100%" }}
-              disabled
-            />
+
+            <Typography variant="p" color={"#8C9AA6"}>
+              {item.vendor?.company_name || ""}
+            </Typography>
           </Box>
         </div>
 

@@ -92,7 +92,7 @@ export default function Newvendor({
 
   return (
     <div className="nvr-contain">
-      <PurchaseHeader />
+      {/* <PurchaseHeader /> */}
       <div id="nvr" className={`nvr ${showForm ? "fade-in" : "fade-out"}`}>
         <div className="nvr1">
           <div className="nvr2">

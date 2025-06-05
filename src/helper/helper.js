@@ -12,7 +12,6 @@ export function formatDate(isoString) {
   return `${day} ${month} ${year} - ${hours}:${minutesFormatted} ${ampm}`;
 }
 
-
 export const normalizedRFQ = (rfqList) =>
   rfqList.map((item) => {
     const segments = item.url.split("/").filter(Boolean);
@@ -29,9 +28,12 @@ export const extractRFQID = (url) => {
   return segments[segments.length - 1];
 };
 
-
-export  const extractId = (url) => {
+export const extractId = (url) => {
   if (!url) return "";
   const segments = url.split("/").filter(Boolean);
   return segments[segments.length - 1];
+};
+
+export const escapeRegex = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };

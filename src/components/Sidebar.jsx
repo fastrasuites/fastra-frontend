@@ -34,14 +34,13 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           className="sidebar-item"
           onClick={() => {
             handleCloseSidebar();
-            handleReload();
           }}
         >
           <img src={home} alt="Home" className="sidebar-icon" />
           <span>Home</span>
         </Link>
 
-        <Link
+        {/* <Link
           to={`/${tenant_schema_name}/accounts`}
           className="sidebar-item"
           onClick={() => {
@@ -51,7 +50,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         >
           <img src={accounts} alt="Accounts" className="sidebar-icon" />
           <span>Accounts</span>
-        </Link>
+        </Link> */}
 
         <Link
           to={`/${tenant_schema_name}/purchase`}
@@ -62,7 +61,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           <span>Purchase</span>
         </Link>
 
-        <Link
+        {/* <Link
           to={`/${tenant_schema_name}/sales`}
           className="sidebar-item"
           onClick={() => {
@@ -72,7 +71,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         >
           <img src={sales} alt="Sales" className="sidebar-icon" />
           <span>Sales</span>
-        </Link>
+        </Link> */}
 
         <Link
           to={`/${tenant_schema_name}/inventory/operations`}
@@ -80,14 +79,13 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           // onClick={handleCloseSidebar}
           onClick={() => {
             handleCloseSidebar();
-            handleReload();
           }}
         >
           <img src={inventory} alt="Inventory" className="sidebar-icon" />
           <span>Inventory</span>
         </Link>
 
-        <Link
+        {/* <Link
           to={`/${tenant_schema_name}/hr`}
           className="sidebar-item"
           onClick={() => {
@@ -97,9 +95,9 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         >
           <img src={hr} alt="HR" className="sidebar-icon" />
           <span>HR</span>
-        </Link>
+        </Link> */}
 
-        <Link
+        {/* <Link
           to={`/${tenant_schema_name}/logistics`}
           className="sidebar-item"
           onClick={() => {
@@ -109,9 +107,9 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         >
           <img src={logistics} alt="Logistics" className="sidebar-icon" />
           <span>Logistics</span>
-        </Link>
+        </Link> */}
 
-        <Link
+        {/* <Link
           to={`/${tenant_schema_name}/contacts`}
           className="sidebar-item"
           onClick={() => {
@@ -121,11 +119,11 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         >
           <img src={contacts} alt="Contacts" className="sidebar-icon" />
           <span>Contacts</span>
-        </Link>
+        </Link> */}
 
         <hr style={{ border: "solid 2px #0d3c8c", marginBottom: "8px" }} />
 
-        <Link
+        {/* <Link
           to={`/${tenant_schema_name}/apps`}
           className="sidebar-item"
           onClick={() => {
@@ -135,14 +133,13 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
         >
           <img src={apps} alt="Apps" className="sidebar-icon" />
           <span>Apps</span>
-        </Link>
+        </Link> */}
 
         <Link
           to={`/${tenant_schema_name}/settings`}
           className="sidebar-item"
           onClick={() => {
             handleCloseSidebar();
-            handleReload();
           }}
         >
           <img src={settings} alt="Settings" className="sidebar-icon" />

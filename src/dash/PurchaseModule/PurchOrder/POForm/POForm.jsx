@@ -13,6 +13,7 @@ import POItemsTable from "./POItemsTable";
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
 import { useRFQ } from "../../../../context/RequestForQuotation";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
+import POBasicInfoFieldsConverToPO from "./POBasicInforCoverToPO";
 
 const DEFAULT_FORM = {
   vendor: null,
@@ -30,7 +31,12 @@ const DEFAULT_FORM = {
 const POForm = () => {
   const history = useHistory();
   const { state } = useLocation();
-  const { po = {}, edit = false, conversionRFQ = {} } = state || {};
+  const {
+    po = {},
+    edit = false,
+    conversionRFQ = {},
+    isConvertToPO = false,
+  } = state || {};
   const { tenant_schema_name } = useTenant().tenantData || {};
   const { id } = useParams();
 
@@ -118,22 +124,22 @@ const POForm = () => {
     });
   }, []);
 
-  const handleAddRow = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        {
-          id: `new-${prev.items.length + 1}`,
-          product: null,
-          description: "",
-          qty: "",
-          unit_of_measure: "",
-          estimated_unit_price: "",
-        },
-      ],
-    }));
-  }, []);
+  // const handleAddRow = useCallback(() => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     items: [
+  //       ...prev.items,
+  //       {
+  //         id: `new-${prev.items.length + 1}`,
+  //         product: null,
+  //         description: "",
+  //         qty: "",
+  //         unit_of_measure: "",
+  //         estimated_unit_price: "",
+  //       },
+  //     ],
+  //   }));
+  // }, []);
 
   // ─── 8. Determine which set of items to use for payload ―──
   // If conversion is happening, we use conversionRFQ.items; otherwise `po.rfq.items`.
@@ -148,7 +154,7 @@ const POForm = () => {
     destination_location:
       formData.destination_location?.id || formData.destination_location,
     related_rfq: formData.rfq?.id || formData.rfq,
-    currency: formData.currency?.url || formData.currency,
+    currency: formData?.rfq?.currency?.url || formData?.rfq.currency,
     payment_terms: formData.payment_terms,
     purchase_policy: formData.purchase_policy,
     delivery_terms: formData.delivery_terms,
@@ -233,6 +239,8 @@ const POForm = () => {
   // console.log("POForm formData:", formData);
 
   // ─── 13. Render ───────────────────────────────────────────────────────────
+
+  // console.log(formData);
   return (
     <div className="RfqForm">
       <div className="rfqAutoSave">
@@ -254,18 +262,34 @@ const POForm = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="rfqformEditAndCreate">
-          <POBasicInfoFields
-            formData={formData}
-            handleInputChange={handleInputChange}
-            formUse={formUse}
-            currencies={currencies}
-            vendors={vendors}
-            purchaseIdList={prIDList}
-            poID={po?.url}
-            rfqList={rfqList}
-            locationList={locationList}
-            isRfqLoading={isRfqLoading}
-          />
+          {isConvertToPO ? (
+            <POBasicInfoFieldsConverToPO
+              formData={formData}
+              handleInputChange={handleInputChange}
+              formUse={formUse}
+              currencies={currencies}
+              vendors={vendors}
+              purchaseIdList={prIDList}
+              poID={po?.url}
+              rfqList={rfqList}
+              locationList={locationList}
+              isRfqLoading={isRfqLoading}
+              isConvertToPO={isConvertToPO}
+            />
+          ) : (
+            <POBasicInfoFields
+              formData={formData}
+              handleInputChange={handleInputChange}
+              formUse={formUse}
+              currencies={currencies}
+              vendors={vendors}
+              purchaseIdList={prIDList}
+              poID={po?.url}
+              rfqList={rfqList}
+              locationList={locationList}
+              isRfqLoading={isRfqLoading}
+            />
+          )}
 
           <POItemsTable
             items={formData?.rfq?.items}
@@ -277,13 +301,13 @@ const POForm = () => {
           <div
             style={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "end",
               alignItems: "center",
             }}
           >
-            <Button variant="outlined" onClick={handleAddRow}>
+            {/* <Button variant="outlined" onClick={handleAddRow}>
               Add Item
-            </Button>
+            </Button> */}
             <div style={{ display: "flex", gap: 16 }}>
               <Button variant="outlined" type="submit">
                 {isEdit ? "Save Changes" : "Save Draft"}

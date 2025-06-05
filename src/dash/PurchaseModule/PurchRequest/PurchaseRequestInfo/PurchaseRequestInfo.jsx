@@ -161,7 +161,7 @@ const PurchaseRequestInfo = () => {
     };
     history.push({
       pathname: `/${tenantSchema}/purchase/request-for-quotations/new`,
-      state: { rfq: prToConvert },
+      state: { rfq: prToConvert, isConvertToRFQ: true },
     });
   }, [history, tenantSchema, item]);
 
@@ -257,7 +257,13 @@ const PurchaseRequestInfo = () => {
       case "draft":
         return {
           label: "Drafted",
-          actions: [],
+          actions: [
+            {
+              text: "Send to Approval",
+              onClick: () => handleStatusChange("pending"),
+              disabled: actionLoading,
+            },
+          ],
         };
       default:
         return null;
@@ -310,9 +316,7 @@ const PurchaseRequestInfo = () => {
               <Button onClick={() => handleEditClick(item.id)}>Edit</Button>
             )}
             <Link to={`/${tenantSchema}/purchase/purchase-request`}>
-              <Button variant="outlined" onClick={() => history.goBack()}>
-                Close
-              </Button>
+              <Button variant="outlined">Close</Button>
             </Link>
           </div>
         </div>

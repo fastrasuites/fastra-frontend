@@ -1,4 +1,12 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import { useMemo } from "react";
 import RfqItemRow from "./RfqItemRow";
 
@@ -29,7 +37,10 @@ const RfqItemsTable = ({ items, handleRowChange, products }) => {
   }, [items, handleRowChange, products]);
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: "none", borderRadius: "10px" }}>
+    <TableContainer
+      component={Paper}
+      sx={{ boxShadow: "none", borderRadius: "10px" }}
+    >
       <Table
         sx={{
           "&.MuiTable-root": { border: "none" },
@@ -51,7 +62,5 @@ const RfqItemsTable = ({ items, handleRowChange, products }) => {
     </TableContainer>
   );
 };
-
-
 
 export default RfqItemsTable;

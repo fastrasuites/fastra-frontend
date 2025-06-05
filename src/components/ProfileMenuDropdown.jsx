@@ -10,40 +10,19 @@ import logoutIcon from "../image/logout-03.svg";
 
 import "./profileMenuDropdown.css";
 
-const users = [
-  {
-    name: "Administrator",
-    email: "info@companyname.com",
-    image: admin,
-    active: true,
-  },
-  // add more user here
-];
-
-// Profile menu list for configurations
-// const configs = [
-//   {
-//     url: `/${tenant_schema_name}/company`,
-//     desc: "Company Profile",
-//     icon: userIcon,
-//   },
-//   { url: `/${tenant_schema_name}/apk`, desc: "Settings", icon: settingIcon },
-//   { url: `/${tenant_schema_name}/user`, desc: "Users", icon: usergroupIcon },
-// ];
-
-const UserCard = ({ handleClickOpen, users }) => {
+const UserCard = ({ handleClickOpen, user }) => {
   return (
     <div>
       <button onClick={handleClickOpen} className="icon-and-profile">
         <img
           alt="User Avatar"
-          src={users[0].image}
+          src={admin}
           className="avatar"
           title={`Administrator\ninfo@companyname.com`}
         />
         <span className="profile" id="profile">
-          <p>{users[0].name}</p>
-          <small>{users[0].email}</small>
+          <p>{user.username}</p>
+          <small>{user.email}</small>
         </span>
       </button>
     </div>
@@ -62,6 +41,7 @@ const ProfileConfigs = ({ url, icon, desc, handleClose }) => {
 const ProfileMenuDropdown = () => {
   const { tenantData, logout } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
+  const user = tenantData?.user;
   const [open, setOpen] = useState(false);
 
   // Profile menu list for configurations
@@ -91,7 +71,7 @@ const ProfileMenuDropdown = () => {
 
   return (
     <div className="">
-      <UserCard handleClickOpen={handleClickOpen} users={users} />
+      <UserCard handleClickOpen={handleClickOpen} user={user} />
 
       <Dialog
         className="profile-dialog"
@@ -110,7 +90,7 @@ const ProfileMenuDropdown = () => {
         }}
       >
         <DialogContent>
-          <UserCard users={users} />
+          <UserCard user={user} />
           <ul className="config-wrapper">
             {configs.map((item) => (
               <ProfileConfigs

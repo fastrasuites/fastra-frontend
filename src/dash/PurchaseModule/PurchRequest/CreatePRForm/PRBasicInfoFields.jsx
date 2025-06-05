@@ -1,6 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, TextField, Typography } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
+
+const REQUIRED_ASTERISK = (
+  <Typography component="span" color="#D32F2F" ml={0.5}>
+    *
+  </Typography>
+);
+
+// Helper: resolve a formValue (string URL/ID or object) into the matching object
+const getSelectedOption = (formValue, list = [], key) => {
+  if (formValue && typeof formValue === "object") return formValue;
+  if (typeof formValue === "string") {
+    return list.find((item) => item[key] === formValue) || null;
+  }
+  return null;
+};
 
 const PRBasicInfoFields = ({
   formData,
@@ -12,68 +27,28 @@ const PRBasicInfoFields = ({
   rfqID,
   locationList = [],
 }) => {
-  //
-  // ─── LOCAL STATE FOR SELECTED OBJECTS ──────────────────────────────────────
-  //
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
 
-  //
-  // ─── RESOLVE CURRENCY OBJECT WHEN `formData.currency` OR `currencies` CHANGE ─
-  //
+  // Sync currency when formData.currency or currencies change
   useEffect(() => {
-    if (typeof formData.currency === "string" && currencies.length > 0) {
-      const match = currencies.find((c) => c.url === formData.currency);
-      setSelectedCurrency(match || null);
-    } else if (formData.currency && typeof formData.currency === "object") {
-      setSelectedCurrency(formData.currency);
-    } else {
-      setSelectedCurrency(null);
-    }
+    setSelectedCurrency(
+      getSelectedOption(formData.currency, currencies, "url")
+    );
   }, [formData.currency, currencies]);
 
-  //
-  // ─── RESOLVE VENDOR OBJECT WHEN `formData.vendor` OR `vendors` CHANGE ───────
-  //
+  // Sync vendor when formData.vendor or vendors change
   useEffect(() => {
-    if (typeof formData.vendor === "string" && vendors.length > 0) {
-      const match = vendors.find((v) => v.url === formData.vendor);
-      setSelectedVendor(match || null);
-    } else if (formData.vendor && typeof formData.vendor === "object") {
-      setSelectedVendor(formData.vendor);
-    } else {
-      setSelectedVendor(null);
-    }
+    setSelectedVendor(getSelectedOption(formData.vendor, vendors, "url"));
   }, [formData.vendor, vendors]);
 
-  //
-  // ─── RESOLVE LOCATION OBJECT WHEN `formData.requesting_location` OR `locationList` CHANGE ─
-  //
+  // Sync location when formData.requesting_location or locationList change
   useEffect(() => {
-    if (
-      typeof formData.requesting_location === "string" &&
-      locationList.length > 0
-    ) {
-      const match = locationList.find(
-        (loc) => loc.id === formData.requesting_location
-      );
-      setSelectedLocation(match || null);
-    } else if (
-      formData.requesting_location &&
-      typeof formData.requesting_location === "object"
-    ) {
-      setSelectedLocation(formData.requesting_location);
-    } else {
-      setSelectedLocation(null);
-    }
+    setSelectedLocation(
+      getSelectedOption(formData.requesting_location, locationList, "id")
+    );
   }, [formData.requesting_location, locationList]);
-
-  //
-  // ─── SOURCE LOC OBJECT (for display only) ──────────────────────────────────
-  //
-  // eslint-disable-next-line no-unused-vars
-  const sourceLocObj = locationList.find((loc) => loc.location_code === "SUPP");
 
   return (
     <div className="rfqBasicInfoField">
@@ -97,78 +72,74 @@ const PRBasicInfoFields = ({
       </div>
 
       <div className="rfqBasicInfoFields2">
-        {/** ──────────── Select Currency ──────────── **/}
+        {/* Select Currency */}
         <div>
-          <label style={{ marginBottom: "6px", display: "block" }}>
-            Select Currency
+          <label style={{ marginBottom: 6, display: "block" }}>
+            Select Currency {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
-            options={Array.isArray(currencies) ? currencies : []}
+            options={currencies}
             value={selectedCurrency}
             getOptionLabel={(option) =>
               `${option.currency_name} - ${option.currency_symbol}`
             }
             isOptionEqualToValue={(opt, val) => opt.url === val?.url}
-            onChange={(event, value) => {
-              setSelectedCurrency(value || null);
-              handleInputChange("currency", value ? value.url : "");
+            onChange={(e, value) => {
+              setSelectedCurrency(value);
+              handleInputChange("currency", value?.url || "");
             }}
-            sx={{ width: "100%" }}
             renderInput={(params) => <TextField {...params} />}
           />
         </div>
 
-        {/** ──────────── Purpose ──────────── **/}
+        {/* Purpose */}
         <div>
-          <label style={{ marginBottom: "6px", display: "block" }}>
-            Purpose
+          <label style={{ marginBottom: 6, display: "block" }}>
+            Purpose {REQUIRED_ASTERISK}
           </label>
           <TextField
-            type="text"
+            fullWidth
             value={formData.purpose}
             onChange={(e) => handleInputChange("purpose", e.target.value)}
-            sx={{ width: "100%" }}
             placeholder="Enter a purpose"
           />
         </div>
 
-        {/** ──────────── Requesting Location ──────────── **/}
+        {/* Requesting Location */}
         <div>
-          <label style={{ marginBottom: "6px", display: "block" }}>
-            Requesting Location
+          <label style={{ marginBottom: 6, display: "block" }}>
+            Requesting Location {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
-            options={Array.isArray(locationList) ? locationList : []}
+            options={locationList}
             value={selectedLocation}
             getOptionLabel={(option) => option.location_name || ""}
             isOptionEqualToValue={(opt, val) => opt.id === val?.id}
-            onChange={(event, value) => {
-              setSelectedLocation(value || null);
-              handleInputChange("requesting_location", value ? value.id : "");
+            onChange={(e, value) => {
+              setSelectedLocation(value);
+              handleInputChange("requesting_location", value?.id || "");
             }}
-            sx={{ width: "100%" }}
             renderInput={(params) => <TextField {...params} />}
           />
         </div>
 
-        {/** ──────────── Select Vendor ──────────── **/}
+        {/* Select Vendor */}
         <div>
-          <label style={{ marginBottom: "6px", display: "block" }}>
-            Select Vendor
+          <label style={{ marginBottom: 6, display: "block" }}>
+            Select Vendor {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
-            options={Array.isArray(vendors) ? vendors : []}
+            options={vendors}
             value={selectedVendor}
             getOptionLabel={(option) => option.company_name || ""}
             isOptionEqualToValue={(opt, val) => opt.url === val?.url}
-            onChange={(event, value) => {
-              setSelectedVendor(value || null);
-              handleInputChange("vendor", value ? value.url : "");
+            onChange={(e, value) => {
+              setSelectedVendor(value);
+              handleInputChange("vendor", value?.url || "");
             }}
-            sx={{ width: "100%" }}
             renderInput={(params) => <TextField {...params} />}
           />
         </div>

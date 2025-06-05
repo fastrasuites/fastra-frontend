@@ -26,11 +26,11 @@ export default function Rfq() {
 
   const itemsPerPage = 10;
 
-  const { fetchApprovedPurchaseRequests} = usePurchase();
+  const { fetchApprovedPurchaseRequests } = usePurchase();
   const { getRFQList, deleteRFQ } = useRFQ();
   const history = useHistory();
 
-  const {tenantData} = useTenant();
+  const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
 
   // Load data from localStorage on mount
@@ -82,12 +82,10 @@ export default function Rfq() {
     setPage(1);
   }, [searchQuery]);
 
-
-
-
   // Filter quotations based on search query
   const filteredQuotations = useMemo(() => {
     return quotationsData.filter((item) => {
+      console.log(item);
       if (!searchQuery) return true;
       const lowercasedQuery = searchQuery.toLowerCase();
       const price = item?.rfq_total_price?.toString().toLowerCase() || "";
@@ -96,9 +94,9 @@ export default function Rfq() {
       const currencyName = item?.currency?.company_name?.toLowerCase() || "";
       const purchaseID =
         extractRFQID(item.purchase_request)?.toLowerCase() || "";
-      const vendor =
-        typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
+      const vendor = item?.vendor.company_name.toLowerCase() || "";
       const vendorCategory = item.vendor_category?.toLowerCase() || "";
+      const rfqID = item?.id?.toString().toLowerCase() || "";
       return (
         price.includes(lowercasedQuery) ||
         expiryDate.includes(lowercasedQuery) ||
@@ -106,7 +104,8 @@ export default function Rfq() {
         currencyName.includes(lowercasedQuery) ||
         purchaseID.includes(lowercasedQuery) ||
         vendor.includes(lowercasedQuery) ||
-        vendorCategory.includes(lowercasedQuery)
+        vendorCategory.includes(lowercasedQuery) ||
+        rfqID.includes(lowercasedQuery)
       );
     });
   }, [quotationsData, searchQuery]);
@@ -131,7 +130,6 @@ export default function Rfq() {
   const toggleViewMode = (mode) => {
     setViewMode(mode);
   };
-
 
   const handleStatusCancel = () => {
     setSelectedStatus(null);
@@ -166,13 +164,15 @@ export default function Rfq() {
   );
 
   const handleSelectRfq = useCallback((id) => {
-    history.push(`/${tenant_schema_name}/purchase/request-for-quotations/${id}`);
-  }, [])
+    history.push(
+      `/${tenant_schema_name}/purchase/request-for-quotations/${id}`
+    );
+  }, []);
 
   const handleRfqStatusClick = (urlList, status) => {
     history.push({
       pathname: `/${tenant_schema_name}/purchase/request-for-quotations/status/${status}`,
-      state: { urlList, status, quotationsData},
+      state: { urlList, status, quotationsData },
     });
   };
 
@@ -236,14 +236,16 @@ export default function Rfq() {
           </div>
           <div className="rfq3">
             <div className="r3a">
-              <Link to={`/${tenant_schema_name}/purchase/request-for-quotations/new`}>
-              <Button
-                disableElevation
-                variant="contained"
-                sx={{ width: "auto", whiteSpace: "nowrap" }}
+              <Link
+                to={`/${tenant_schema_name}/purchase/request-for-quotations/new`}
               >
-                New RFQ
-              </Button>
+                <Button
+                  disableElevation
+                  variant="contained"
+                  sx={{ width: "auto", whiteSpace: "nowrap" }}
+                >
+                  New RFQ
+                </Button>
               </Link>
               <div className="rfqsash">
                 <Search
@@ -289,7 +291,7 @@ export default function Rfq() {
             </div>
           </div>
 
-          { selectedStatus ? (
+          {selectedStatus ? (
             <div className="overlay">
               <RfqStatus
                 selectedStatus={selectedStatus}

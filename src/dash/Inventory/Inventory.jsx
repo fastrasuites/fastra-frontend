@@ -22,10 +22,13 @@ import ScrapInfo from "./stock/scrap/ScrapInfo/ScrapInfo";
 import StockAdjustmentInfo from "./stock/StockAdjustment/StockAdjustmentInfo/StockAdjustmentInfo";
 import InternalTransferInfo from "./Operations/InternalTransfer/InternalTransferInfo/InternalTransferInfo";
 import EditStockAdjustment from "./stock/StockAdjustment/StockAdjustmentForm/EditStockAdjustment";
+import DeliveryOrder from "./Operations/DeliveryOrder/DeliveryOrder";
+import DeliveryOrderForm from "./Operations/DeliveryOrder/DeliveryOrderForm/DeliveryOrderForm";
+import DeliveryOrderInfo from "./Operations/DeliveryOrder/DeliveryOrderInfo/DeliveryOrderInfo";
+import EditDeliveryOrderForm from "./Operations/DeliveryOrder/EditDeliveryOrderForm/EditDeliveryOrderForm";
 import ScrapEditForm from "./stock/scrap/ScrapForm/ScrapEditForm";
 import EditIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/EditIncomingProduct";
 import ConvertPoToIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/ConvertPotoIncomingProduct";
-
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -58,7 +61,6 @@ const InventoryLayout = () => {
             path={`${path}/operations/incoming-product/:id/edit`}
             component={EditIncomingProduct}
           />
-         
 
           <Route
             exact
@@ -86,6 +88,36 @@ const InventoryLayout = () => {
             exact
             path={`${path}/operations/internal-transfer/:id`}
             component={InternalTransferInfo}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/delivery-order`}
+            component={DeliveryOrder}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/delivery-order/create-delivery-order`}
+            component={DeliveryOrderForm}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/delivery-order/`}
+            component={DeliveryOrder}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/delivery-order/:id`}
+            component={DeliveryOrderInfo}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/delivery-order/:id/edit`}
+            component={EditDeliveryOrderForm}
           />
 
           {/* Inventory Location Routes */}

@@ -1,6 +1,6 @@
 // CreateIncomingProduct.jsx
 import React, { useEffect, useState } from "react";
-import { Autocomplete, Box, TextField } from "@mui/material";
+import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import { formatDate } from "../../../../../helper/helper";
 import "./CreateIncomingProduct.css";
@@ -20,6 +20,12 @@ const receiptTypes = [
   { value: "returns", label: "Returns" },
   { value: "scrap", label: "Scrap" },
 ];
+
+const REQUIRED_ASTERISK = (
+  <Typography component="span" color="#D32F2F" ml={0.5} fontSize="20px">
+    *
+  </Typography>
+);
 
 // Default formData: keep related_po and suppliersName as single selected objects
 const defaultFormData = {
@@ -96,6 +102,7 @@ const IncomingProductBasicInputs = ({
         <div>
           <label style={{ marginBottom: 6, display: "block" }}>
             Receipt Type
+            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -111,11 +118,11 @@ const IncomingProductBasicInputs = ({
           />
         </div>
         <div className="formLabelAndValue">
-          <label>Source ID</label>
+          <label>Source ID {REQUIRED_ASTERISK}</label>
           <p>{sourceLocObj?.id || formData.source_location}</p>
         </div>
         <div className="formLabelAndValue">
-          <label>Receipt Date</label>
+          <label>Receipt Date {REQUIRED_ASTERISK}</label>
           <p>{formData.receiptDate}</p>
         </div>
       </div>
@@ -124,6 +131,7 @@ const IncomingProductBasicInputs = ({
         <Box flex={1}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Purchase Order
+            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -141,6 +149,7 @@ const IncomingProductBasicInputs = ({
         <Box flex={1}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Name of Supplier
+            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -158,13 +167,13 @@ const IncomingProductBasicInputs = ({
 
         {locationList.length <= 1 ? (
           <Box flex={1}>
-            <label>Destination Location</label>
+            <label>Destination Location {REQUIRED_ASTERISK}</label>
             <p>{formData.location?.id || ""}</p>
           </Box>
         ) : (
           <Box flex={1}>
             <label style={{ marginBottom: 6, display: "block" }}>
-              Destination Location
+              Destination Location {REQUIRED_ASTERISK}
             </label>
             <Autocomplete
               disablePortal

@@ -642,3 +642,63 @@ export const internalTransferData = [
     ],
   },
 ];
+
+export const deliveryOrderData = [
+  {
+    requestId: "LAGOUT0001",
+    partner: "Supplier",
+    sourceLocation: "Source Location",
+    destinationLocation: "Destination Location",
+    dateCreated: "4 Apr 2024 - 4:48 PM",
+    status: "Ready",
+  },
+  {
+    requestId: "LAGOUT0002",
+    partner: "Customer",
+    sourceLocation: "Source Location",
+    destinationLocation: "Destination Location",
+    dateCreated: "4 Apr 2024 - 4:48 PM",
+    status: "Draft",
+  },
+  {
+    requestId: "LAGOUT0003",
+    partner: "Supplier",
+    sourceLocation: "Source Location",
+    destinationLocation: "Destination Location",
+    dateCreated: "4 Apr 2024 - 4:48 PM",
+    status: "Waiting",
+  },
+];
+
+// GET: /inventory/delivery-orders/
+export const deliveryOrderList = [
+  {
+    order_unique_id: "CUS-OUT-0001",
+    customer_name: "Lukman",
+    source_location: "CUST00002",
+    delivery_address: "32, Ajanlekoko Road, Kutuwenji.",
+    delivery_date: "2025-05-27",
+    shipping_policy: "Delivery with 24 hours",
+    return_policy: "Return within 2days from delivery",
+    assigned_to: "Oladokun",
+    delivery_order_items: [
+      {
+        id: 1,
+        delivery_order: 1,
+        quantity_to_deliver: 1,
+        is_available: false,
+        date_created: "2025-05-26T18:19:08.033867+01:00",
+        product_item: 7,
+      },
+      {
+        id: 2,
+        delivery_order: 1,
+        quantity_to_deliver: 5,
+        is_available: false,
+        date_created: "2025-05-26T18:19:08.033902+01:00",
+        product_item: 5,
+      },
+    ],
+    status: "waiting",
+  },
+];

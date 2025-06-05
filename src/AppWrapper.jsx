@@ -1,17 +1,20 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
+
+// Context Providers
 import { TenantProvider } from "./context/TenantContext";
+import { TenantUsersProvider } from "./context/Tanants/TanantUsers";
+import { FormProvider } from "./context/FormContext";
 import { PurchaseProvider } from "./context/PurchaseContext";
 import { RFQProvider } from "./context/RequestForQuotation";
-import { PurchaseOrderProvider } from "./context/PurchaseOrderContext.";
-import { FormProvider } from "./context/FormContext";
-import { TenantUsersProvider } from "./context/Tanants/TanantUsers";
-import { LocationProvider } from "./context/Inventory/LocationContext";
 import { LocationConfigProvider } from "./context/Inventory/LocationConfigContext";
+import { LocationProvider } from "./context/Inventory/LocationContext";
+import { IncomingProductProvider } from "./context/Inventory/IncomingProduct";
+import { DeliveryOrderProvider } from "./context/Inventory/DeliveryOrderContext";
 import { StockAdjustmentProvider } from "./context/Inventory/StockAdjustment";
 import { ScrapProvider } from "./context/Inventory/Scrap";
-import { IncomingProductProvider } from "./context/Inventory/IncomingProduct";
+import { PurchaseOrderProvider } from "./context/PurchaseOrderContext.";
 
 function AppWrapper() {
   return (
@@ -19,23 +22,25 @@ function AppWrapper() {
       <TenantUsersProvider>
         <FormProvider>
           <PurchaseProvider>
-            <LocationConfigProvider>
-              <RFQProvider>
-                <PurchaseOrderProvider>
+            <RFQProvider>
+              <PurchaseOrderProvider>
+                <LocationConfigProvider>
                   <LocationProvider>
                     <IncomingProductProvider>
-                      <StockAdjustmentProvider>
-                        <ScrapProvider>
-                          <Router>
-                            <App />
-                          </Router>
-                        </ScrapProvider>
-                      </StockAdjustmentProvider>
+                      <DeliveryOrderProvider>
+                        <StockAdjustmentProvider>
+                          <ScrapProvider>
+                            <Router>
+                              <App />
+                            </Router>
+                          </ScrapProvider>
+                        </StockAdjustmentProvider>
+                      </DeliveryOrderProvider>
                     </IncomingProductProvider>
                   </LocationProvider>
-                </PurchaseOrderProvider>
-              </RFQProvider>
-            </LocationConfigProvider>
+                </LocationConfigProvider>
+              </PurchaseOrderProvider>
+            </RFQProvider>
           </PurchaseProvider>
         </FormProvider>
       </TenantUsersProvider>
