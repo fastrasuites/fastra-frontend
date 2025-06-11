@@ -9,6 +9,7 @@ import { useCustomLocation } from "../../../../../context/Inventory/LocationCont
 import Swal from "sweetalert2";
 import { useTenant } from "../../../../../context/TenantContext";
 import { useHistory } from "react-router-dom";
+import Asterisk from "../../../../../components/Asterisk";
 
 // Default form data
 const defaultFormData = {
@@ -31,9 +32,16 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
     getLocationList();
   }, []);
 
-  const handleReceiptChange = (event, newValue) => {
-    setSelectedLocation(newValue);
-    handleInputChange("location", newValue);
+  useEffect(() => {
+    if (locationList.length <= 3 && locationList[0]) {
+      setSelectedLocation(locationList[0]);
+      handleInputChange("location", locationList[0]);
+    }
+  }, [locationList, handleInputChange]);
+
+  const handleLocationChange = (_, newLoc) => {
+    setSelectedLocation(newLoc);
+    handleInputChange("location", newLoc);
   };
 
   // console.log("Location List", locationList);
@@ -45,22 +53,32 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
         <p>{formData.id}</p>
       </div> */}
       <div className="formLabelAndValue">
-        <label>Adjustment Type</label>
+        <label style={{ marginBottom: 6, display: "flex" }}>
+          Adjustment Type
+          <Asterisk />
+        </label>
         <p>{formData.adjustmentType}</p>
       </div>
       <div className="formLabelAndValue">
-        <label>Date</label>
+        <label style={{ marginBottom: 6, display: "flex" }}>
+          Date
+          <Asterisk />
+        </label>
         <p>{formData.date}</p>
       </div>
-      {locationList.length <= 1 ? (
+      {locationList.length <= 3 ? (
         <div className="formLabelAndValue">
-          <label>Location</label>
-          <p>{formData.location}</p>
+          <label style={{ marginBottom: "6px", display: "flex" }}>
+            Location
+            <Asterisk />
+          </label>
+          <p>{selectedLoaction?.id || "N/A"}</p>
         </div>
       ) : (
         <div className="">
-          <label style={{ marginBottom: "6px", display: "block" }}>
+          <label style={{ marginBottom: "6px", display: "flex" }}>
             Location
+            <Asterisk />
           </label>
           <Autocomplete
             disablePortal
@@ -70,7 +88,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
             isOptionEqualToValue={(option, value) =>
               option?.receiptType === value?.id
             }
-            onChange={handleReceiptChange}
+            onChange={handleLocationChange}
             sx={{ width: "100%", mb: 2 }}
             renderInput={(params) => (
               <TextField {...params} placeholder="Receipt Type" />
@@ -80,7 +98,10 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
       )}
 
       <div className="supplierName">
-        <label style={{ marginBottom: "6px", display: "block" }}>Notes</label>
+        <label style={{ marginBottom: "6px", display: "flex" }}>
+          Notes
+          <Asterisk />
+        </label>
         <TextField
           type="text"
           value={formData.notes}

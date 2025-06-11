@@ -15,6 +15,7 @@ import { DeliveryOrderProvider } from "./context/Inventory/DeliveryOrderContext"
 import { StockAdjustmentProvider } from "./context/Inventory/StockAdjustment";
 import { ScrapProvider } from "./context/Inventory/Scrap";
 import { PurchaseOrderProvider } from "./context/PurchaseOrderContext.";
+import { StockMoveProvider } from "./context/Inventory/stockMoveContext";
 
 function AppWrapper() {
   return (
@@ -29,11 +30,14 @@ function AppWrapper() {
                     <IncomingProductProvider>
                       <DeliveryOrderProvider>
                         <StockAdjustmentProvider>
-                          <ScrapProvider>
-                            <Router>
-                              <App />
-                            </Router>
-                          </ScrapProvider>
+                          <StockMoveProvider>
+                            {" "}
+                            <ScrapProvider>
+                              <Router>
+                                <App />
+                              </Router>
+                            </ScrapProvider>
+                          </StockMoveProvider>
                         </StockAdjustmentProvider>
                       </DeliveryOrderProvider>
                     </IncomingProductProvider>

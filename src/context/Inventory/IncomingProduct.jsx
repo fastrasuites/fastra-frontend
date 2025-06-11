@@ -155,7 +155,7 @@ export const IncomingProductProvider = ({ children }) => {
           is_hidden: formData.is_hidden ?? false,
         };
         console.log(payload);
-        const { data } = await client.put(
+        const { data } = await client.patch(
           `/inventory/incoming-product/${id}/`,
           payload
         );

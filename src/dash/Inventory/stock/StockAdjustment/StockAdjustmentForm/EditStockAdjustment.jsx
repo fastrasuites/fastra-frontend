@@ -30,6 +30,13 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   }, []);
 
   useEffect(() => {
+    if (locationList.length <= 3 && locationList[0]) {
+      setSelectedLocation(locationList[0]);
+      handleInputChange("location", locationList[0]);
+    }
+  }, [locationList, handleInputChange]);
+
+  useEffect(() => {
     // Prefill Autocomplete with matching location object
     if (formData.location && locationList.length > 0) {
       const matched = locationList.find(
@@ -43,6 +50,8 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
     setSelectedLocation(newValue);
     handleInputChange("location", newValue);
   };
+
+  console.log(locationList);
 
   return (
     <div className="stockbasicInformationInputs">
@@ -60,10 +69,10 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
         <p>{formData.date}</p>
       </div>
 
-      {locationList.length <= 1 ? (
+      {locationList.length <= 3 ? (
         <div className="formLabelAndValue">
           <label>Location</label>
-          <p>{formData.location?.id || formData.location}</p>
+          <p>{selectedLocation?.id || "N/A"}</p>
         </div>
       ) : (
         <div>
@@ -106,10 +115,8 @@ const EditStockAdjustment = () => {
   const location = useLocation();
   const { products, fetchProducts } = usePurchase();
   const { locationList } = useCustomLocation(); // Get locationList here
-  const {
-    isLoading: stockLoading,
-    updateStockAdjustment,
-  } = useStockAdjustment();
+  const { isLoading: stockLoading, updateStockAdjustment } =
+    useStockAdjustment();
 
   const { id } = useParams();
 
@@ -223,7 +230,7 @@ const EditStockAdjustment = () => {
         adjusted_quantity: item.qty_received,
       })),
     };
-  
+
     try {
       const { data } = await updateStockAdjustment(cleanData, id);
       setFormData(defaultFormData);
@@ -252,7 +259,7 @@ const EditStockAdjustment = () => {
       }
     }
   };
-  
+
   const handleSubmitAsDone = async (filledData) => {
     const cleanData = {
       id: filledData.id || null,
@@ -266,7 +273,7 @@ const EditStockAdjustment = () => {
         adjusted_quantity: item.qty_received,
       })),
     };
-  
+
     try {
       const { data } = await updateStockAdjustment(cleanData, id);
       setFormData(defaultFormData);
@@ -294,7 +301,6 @@ const EditStockAdjustment = () => {
       }
     }
   };
-  
 
   return (
     <CommonForm
