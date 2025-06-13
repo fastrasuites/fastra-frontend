@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Box,
-  Button,
   TextField,
   InputAdornment,
   Table,
@@ -20,105 +19,40 @@ import SearchIcon from "@mui/icons-material/Search";
 import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import "./StockMoves.css";
-
-const stockMoves = [
-  {
-    productName: "Cement",
-    qty: "3",
-    unitOfMeasure: "L",
-    sourceId: "ABJ001",
-    dateCreated: "17 Nov, 2024 - 12:08 PM",
-    sourceLocation: "Abisco Store",
-    destinationLocation: "Azeemah Store",
-  },
-  {
-    productName: "Bag of Rice",
-    qty: "8",
-    unitOfMeasure: "Kg",
-    sourceId: "PORT001",
-    dateCreated: "22 Nov, 2024 - 08:08 AM",
-    sourceLocation: "Demmix Store",
-    destinationLocation: "Abisco Store",
-  },
-  {
-    productName: "Steel Rods",
-    qty: "120",
-    unitOfMeasure: "pcs",
-    sourceId: "IBD045",
-    dateCreated: "05 Dec, 2024 - 09:15 AM",
-    sourceLocation: "Ibrahim Steel Yard",
-    destinationLocation: "Central Warehouse",
-  },
-  {
-    productName: "Glass Panels",
-    qty: "50",
-    unitOfMeasure: "sheets",
-    sourceId: "LAG123",
-    dateCreated: "10 Dec, 2024 - 02:30 PM",
-    sourceLocation: "Lagos Glass Co.",
-    destinationLocation: "Abisco Store",
-  },
-  {
-    productName: "PVC Pipes",
-    qty: "200",
-    unitOfMeasure: "m",
-    sourceId: "PHC200",
-    dateCreated: "12 Dec, 2024 - 11:45 AM",
-    sourceLocation: "Port Harcourt Outlet",
-    destinationLocation: "Azeemah Store",
-  },
-  {
-    productName: "Electrical Cable",
-    qty: "75",
-    unitOfMeasure: "m",
-    sourceId: "ENU078",
-    dateCreated: "15 Dec, 2024 - 03:20 PM",
-    sourceLocation: "Enugu Electricals",
-    destinationLocation: "Central Warehouse",
-  },
-  {
-    productName: "Sand Bags",
-    qty: "30",
-    unitOfMeasure: "bags",
-    sourceId: "KAD052",
-    dateCreated: "18 Dec, 2024 - 10:00 AM",
-    sourceLocation: "Kaduna Builders",
-    destinationLocation: "Demmix Store",
-  },
-  {
-    productName: "Bricks",
-    qty: "500",
-    unitOfMeasure: "pcs",
-    sourceId: "ABJ002",
-    dateCreated: "20 Dec, 2024 - 01:10 PM",
-    sourceLocation: "Abisco Store",
-    destinationLocation: "Azeemah Store",
-  },
-  {
-    productName: "Paint Buckets",
-    qty: "40",
-    unitOfMeasure: "L",
-    sourceId: "LAG124",
-    dateCreated: "22 Dec, 2024 - 04:25 PM",
-    sourceLocation: "Lagos Paints",
-    destinationLocation: "Port Harcourt Outlet",
-  },
-  {
-    productName: "Wood Planks",
-    qty: "150",
-    unitOfMeasure: "pcs",
-    sourceId: "ENU079",
-    dateCreated: "24 Dec, 2024 - 09:50 AM",
-    sourceLocation: "Enugu Woodworks",
-    destinationLocation: "Central Warehouse",
-  },
-];
+import { useStockMove } from "../../../../context/Inventory/stockMoveContext";
 
 export default function StockMoves() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
+
+  // Pull in context values
+  const { stockMoveList, getStockMoveList, isLoading, error } = useStockMove();
+
+  // Fetch on mount
+  useEffect(() => {
+    getStockMoveList();
+  }, [getStockMoveList]);
+
+  // Map API data to UI shape
+  const stockMoves = useMemo(
+    () =>
+      stockMoveList.map((item) => ({
+        productName: item.product.product_name,
+        qty: item.quantity,
+        unitOfMeasure: item.product.unit_of_measure,
+        sourceId: item.id,
+        dateCreated: new Date(item.date_created).toLocaleString(),
+        sourceLocation:
+          item.source_location.location_name || item.source_location.name || "",
+        destinationLocation:
+          item.destination_location.location_name ||
+          item.destination_location.name ||
+          "",
+      })),
+    [stockMoveList]
+  );
 
   const rowsPerPage = 5;
 
@@ -128,7 +62,7 @@ export default function StockMoves() {
       stockMoves.filter((r) =>
         Object.values(r).join(" ").toLowerCase().includes(search.toLowerCase())
       ),
-    [search]
+    [search, stockMoves]
   );
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
   const pagedRows = useMemo(
@@ -158,7 +92,6 @@ export default function StockMoves() {
     );
 
   const handleRowClick = (row) => {
-    // navigate to detail if desired, or just log:
     console.log("Clicked:", row);
   };
 
@@ -180,6 +113,14 @@ export default function StockMoves() {
     color: isFirst ? "#000" : "#7A8A98",
     fontWeight: 400,
   });
+
+  // Render loading or error if needed
+  if (isLoading) {
+    return <Typography>Loading stock moves...</Typography>;
+  }
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
 
   return (
     <Box p={3} mr={3}>
@@ -269,7 +210,11 @@ export default function StockMoves() {
         <TableContainer
           component={Paper}
           elevation={0}
-          sx={{ backgroundColor: "#ffffff", borderRadius: 2, border: "1px solid #E2E6E9" }}
+          sx={{
+            backgroundColor: "#ffffff",
+            borderRadius: 2,
+            border: "1px solid #E2E6E9",
+          }}
         >
           <Table stickyHeader>
             <TableHead>
@@ -302,10 +247,9 @@ export default function StockMoves() {
                     padding="checkbox"
                     onClick={(e) => e.stopPropagation()}
                     sx={{ p: 2 }}
-
                   >
                     <Checkbox
-                    sx={{color: "#7A8A98"}}
+                      sx={{ color: "#7A8A98" }}
                       checked={selected.includes(row.sourceId)}
                       onChange={() => toggleSelectOne(row.sourceId)}
                     />
@@ -368,3 +312,8 @@ export default function StockMoves() {
     </Box>
   );
 }
+
+// Remember to wrap your App (or parent) with:
+// <StockMoveProvider>
+//   <StockMoves />
+// </StockMoveProvider>

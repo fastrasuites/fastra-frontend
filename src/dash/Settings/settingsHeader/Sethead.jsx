@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { FaBars, FaBell } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-import Sidebar from "../../components/Sidebar";
-import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
+import Sidebar from "../../../components/Sidebar";
+import ProfileMenuDropdown from "../../../components/ProfileMenuDropdown";
 import "./sethead.css";
 import { MdSettingsApplications } from "react-icons/md";
 import { RiArrowDropDownLine } from "react-icons/ri";
-import { useTenant } from "../../context/TenantContext";
+import { useTenant } from "../../../context/TenantContext";
 
 export default function SetHead() {
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
@@ -64,7 +64,7 @@ export default function SetHead() {
           <div className="settings-header__nav-links">
             <NavLink
               exact
-              to={`/${tenant_schema_name}/apk`}
+              to={`/${tenant_schema_name}/settings/apk`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
               onClick={handleMenuItemClick}
@@ -73,7 +73,7 @@ export default function SetHead() {
             </NavLink>
             <NavLink
               exact
-              to={`/${tenant_schema_name}/company`}
+              to={`/${tenant_schema_name}/settings/company`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
               onClick={handleMenuItemClick}
@@ -82,7 +82,7 @@ export default function SetHead() {
             </NavLink>
             <NavLink
               exact
-              to={`/${tenant_schema_name}/user`}
+              to={`/${tenant_schema_name}/settings/user`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
               onClick={handleMenuItemClick}
@@ -91,7 +91,7 @@ export default function SetHead() {
             </NavLink>
             <NavLink
               exact
-              to={`/${tenant_schema_name}/accessgroups`}
+              to={`/${tenant_schema_name}/settings/accessgroups`}
               className="settings-header__link"
               activeClassName="settings-header__link--active"
               onClick={handleMenuItemClick}

@@ -15,6 +15,7 @@ import autosaveIcon from "../../../../image/autosave.svg";
 import "./LocationForm.css";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import { useLocationConfig } from "../../../../context/Inventory/LocationConfigContext";
+import Asteriks from "../../../../components/Asterisk";
 // import { useTenant } from "../../../../context/TenantContext";
 
 const STORAGE_KEY = "draftLocationForm";
@@ -205,7 +206,9 @@ const LocationForm = () => {
                 <Grid container spacing={3}>
                   {/* Location Code */}
                   <Grid item xs={12} sm={6} md={4}>
-                    <Typography gutterBottom>Location Code</Typography>
+                    <Typography gutterBottom display={"flex"}>
+                      Location Code <Asteriks />
+                    </Typography>
                     <TextField
                       fullWidth
                       value={formData.locationCode}
@@ -217,7 +220,10 @@ const LocationForm = () => {
 
                   {/* Location Name */}
                   <Grid item xs={12} sm={6} md={4}>
-                    <Typography gutterBottom>Location Name</Typography>
+                    <Typography gutterBottom display={"flex"}>
+                      Location Name
+                      <Asteriks />
+                    </Typography>
                     <TextField
                       fullWidth
                       value={formData.locationName}
@@ -228,7 +234,9 @@ const LocationForm = () => {
 
                   {/* Location Type */}
                   <Grid item xs={12} sm={6} md={4}>
-                    <Typography gutterBottom>Location Type</Typography>
+                    <Typography gutterBottom display={"flex"}>
+                      Location Type <Asteriks />
+                    </Typography>
                     <TextField
                       fullWidth
                       select
@@ -250,7 +258,9 @@ const LocationForm = () => {
               {/* Address / Manager / Store Keeper */}
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Typography gutterBottom>Address</Typography>
+                  <Typography gutterBottom display={"flex"}>
+                    Address <Asteriks />
+                  </Typography>
                   <TextField
                     fullWidth
                     value={formData.address}
@@ -260,7 +270,9 @@ const LocationForm = () => {
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={4}>
-                  <Typography gutterBottom>Location Manager</Typography>
+                  <Typography gutterBottom display={"flex"}>
+                    Location Manager <Asteriks />
+                  </Typography>
                   <TextField
                     fullWidth
                     select
@@ -273,7 +285,9 @@ const LocationForm = () => {
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={4}>
-                  <Typography gutterBottom>Store Keeper</Typography>
+                  <Typography gutterBottom display={"flex"}>
+                    Store Keeper <Asteriks />
+                  </Typography>
                   <TextField
                     fullWidth
                     select
@@ -289,7 +303,9 @@ const LocationForm = () => {
               {/* Contact Info */}
               <Grid container spacing={3} mt={1}>
                 <Grid item xs={12} sm={6} md={4}>
-                  <Typography gutterBottom>Contact Information</Typography>
+                  <Typography gutterBottom display={"flex"}>
+                    Contact Information <Asteriks />
+                  </Typography>
                   <TextField
                     fullWidth
                     value={formData.contactInfo}

@@ -217,22 +217,7 @@ export default function StockAdjustmentInfo() {
             {stock?.warehouse_location?.location_name}
           </InfoRow>
 
-          {stock.notes && (
-            <Box>
-              <Typography>Notes</Typography>
-              <TextField
-                value={stock.notes}
-                multiline
-                fullWidth
-                rows={2}
-                variant="outlined"
-                sx={{ width: 500, mt: 1 }}
-                InputProps={{
-                  readOnly: true, // remove if you want it editable
-                }}
-              />
-            </Box>
-          )}
+          <InfoRow label="Notes">{stock?.notes}</InfoRow>
         </Box>
 
         {/* Optional notes section */}

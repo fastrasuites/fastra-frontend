@@ -8,9 +8,6 @@ import Login from "./Reglog/Login";
 import ForgetPassword from "./Reglog/ForgetPassword";
 import Dashboard from "./dash/Dashboard";
 import Contact from "./dash/Contact";
-import Settings from "./dash/Settings/Setting";
-import Apk from "./dash/App/Apk";
-import User from "./dash/Settings/user/User";
 import Newpr from "./dash/PurchaseModule/PurchRequest/Newpr";
 import Papr from "./dash/PurchaseModule/PurchRequest/Papr";
 import Vend from "./dash/PurchaseModule/Vendor/Vend";
@@ -23,7 +20,6 @@ import ProductDetails from "./dash/PurchaseModule/Product/ProductDetails";
 import Newprod from "./dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
-import AccessGroups from "./dash/Settings/accessgroups/AccessGroups";
 import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 import ResendEmailVerification from "./Reglog/ResendEmailVerification";
 import NoHeaderLayout from "./notFound/NoHeaderLayout";
@@ -31,6 +27,7 @@ import NotFound from "./notFound/NotFound";
 import POFormWrapper from "./dash/PurchaseModule/PurchOrder/POForm/POFormWrapper";
 import InventoryLayout from "./dash/Inventory/Inventory";
 import PurchaseLayout from "./dash/PurchaseModule/Purchase";
+import SettingsLayout from "./dash/Settings/SettingLayout";
 
 function App() {
   return (
@@ -61,17 +58,10 @@ function App() {
                 component={Contact}
               />
               <ProtectedRoute
-                exact
                 path="/:tenant/settings"
-                component={Settings}
+                component={SettingsLayout}
               />
-              <ProtectedRoute exact path="/:tenant/apk" component={Apk} />
-              <ProtectedRoute exact path="/:tenant/user" component={User} />
-              <ProtectedRoute
-                exact
-                path="/:tenant/accessgroups"
-                component={AccessGroups}
-              />
+
               <ProtectedRoute exact path="/:tenant/npr" component={Newpr} />
               <ProtectedRoute exact path="/:tenant/papr" component={Papr} />
               <ProtectedRoute

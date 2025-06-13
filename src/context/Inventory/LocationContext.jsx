@@ -18,7 +18,7 @@ const validateLocationData = (data) => {
   if (!data.locationName) errors.locationName = "Location name is required";
   if (!data.address) errors.address = "Location address is required";
   // if (!data.locationManager)
-    // errors.locationManager = "Location manager is required";
+  // errors.locationManager = "Location manager is required";
   // if (!data.storeKeeper) errors.storeKeeper = "Store keeper is required";
   if (!data.contactInfo) errors.contactInfo = "Contact information is required";
   return errors;
@@ -85,7 +85,6 @@ export const LocationProvider = ({ children }) => {
     },
     [fetchResource]
   );
-  
 
   // Update this block to avoid unnecessary destructuring
   const createLocation = useCallback(
@@ -94,14 +93,15 @@ export const LocationProvider = ({ children }) => {
       if (Object.keys(errors).length > 0) {
         return Promise.reject(errors);
       }
-  
+
       if (!client) {
-        const errMsg = "API client not available. Please check tenant configuration.";
+        const errMsg =
+          "API client not available. Please check tenant configuration.";
         console.error(errMsg);
         setError(errMsg);
         return Promise.reject(new Error(errMsg));
       }
-  
+
       setIsLoading(true);
       try {
         const requestBody = {
@@ -114,18 +114,18 @@ export const LocationProvider = ({ children }) => {
           contact_information: locationData.contactInfo,
           is_hidden: locationData.isHidden ?? true,
         };
-  
+
         console.log("Submitting location data:", requestBody); // Debug log
-  
+
         const response = await client.post("/inventory/location/", requestBody);
         const newLocation = response.data;
         console.log("Location created:", newLocation); // Debug log
-  
+
         setLocationList((prev) => [...prev, newLocation]);
         setError(null);
         return { success: true, data: newLocation };
       } catch (err) {
-        console.error("Error creating location:", err.response?.data || err.message);
+        console.error("Error creating location:", err);
         setError(err.message || "Failed to create location");
         return Promise.reject(err.response?.data || err.message);
       } finally {
@@ -162,31 +162,33 @@ export const LocationProvider = ({ children }) => {
     }
   }, [client]);
 
+  const getSingleLocation = useCallback(
+    async (id) => {
+      if (!client) {
+        const errMsg =
+          "API client not available. Please check tenant configuration.";
+        console.error(errMsg);
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
 
-  const getSingleLocation = useCallback(async (id) => {
-    if (!client) {
-      const errMsg =
-        "API client not available. Please check tenant configuration.";
-      console.error(errMsg);
-      setError(errMsg);
-      return Promise.reject(new Error(errMsg));
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await client.get(`/inventory/location/${id}/`);
-      const data = response.data;
-      setSingleLocation(data);
-      setError(null);
-      return { success: true, data };
-    } catch (err) {
-      console.error("Error fetching single location:", err);
-      setError(err.message || "Failed to fetch single location");
-      return Promise.reject(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [client]);
+      setIsLoading(true);
+      try {
+        const response = await client.get(`/inventory/location/${id}/`);
+        const data = response.data;
+        setSingleLocation(data);
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        console.error("Error fetching single location:", err);
+        setError(err.message || "Failed to fetch single location");
+        return Promise.reject(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
 
   const contextValue = useMemo(
     () => ({

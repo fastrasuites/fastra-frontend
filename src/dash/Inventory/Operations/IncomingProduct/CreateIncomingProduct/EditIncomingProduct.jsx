@@ -10,6 +10,7 @@ import { useIncomingProduct } from "../../../../../context/Inventory/IncomingPro
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import { usePurchase } from "../../../../../context/PurchaseContext";
 import Swal from "sweetalert2";
+import { usePurchaseOrder } from "../../../../../context/PurchaseOrderContext.";
 
 const receiptTypes = [
   { value: "vendor_receipt", label: "Vendor Receipt" },
@@ -18,6 +19,16 @@ const receiptTypes = [
   { value: "returns", label: "Returns" },
   { value: "scrap", label: "Scrap" },
 ];
+
+const getSelectedOption = (formValue, list = [], key) => {
+  if (typeof formValue === "object" && formValue !== null) {
+    return formValue;
+  }
+  if (typeof formValue === "string") {
+    return list.find((item) => item[key] === formValue) || null;
+  }
+  return null;
+};
 
 function IncomingProductBasicInputs({ formData, handleInputChange }) {
   const [selectedReceipt, setSelectedReceipt] = useState(
@@ -30,6 +41,14 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
     formData.location || null
   );
   const { locationList, getLocationList } = useCustomLocation();
+
+  const { purchaseOrderList, getApprovedPurchaseOrderList } =
+    usePurchaseOrder();
+
+  // Ensure RFQ list is loaded
+  useEffect(() => {
+    getApprovedPurchaseOrderList();
+  }, [getApprovedPurchaseOrderList]);
 
   useEffect(() => {
     getLocationList();
@@ -66,6 +85,12 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
 
   const sourceObj = locationList.find((l) => l.location_code === "SUPP");
 
+  const selectedPO = getSelectedOption(
+    formData.relatedPO,
+    purchaseOrderList,
+    "id"
+  );
+
   return (
     <>
       <div className="receiptTypeAndID">
@@ -91,9 +116,11 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
         </div>
       </div>
 
-      <Box className="supplierNameAndLocation" mt={2}>
-        <div>
-          <label>Name of Supplier</label>
+      <Box mt={2} display={"flex"} gap={4}>
+        <Box flex={1}>
+          <label style={{ marginBottom: 6, display: "flex" }}>
+            Name of Supplier
+          </label>
           <Autocomplete
             options={formData.suppliers}
             value={selectedSupplier}
@@ -103,9 +130,33 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
               <TextField {...params} placeholder="Select supplier" />
             )}
           />
-        </div>
-        <Box>
-          <label>Destination Location</label>
+        </Box>
+        <Box flex={1}>
+          <label style={{ marginBottom: 6, display: "flex" }}>
+            Purchase Order
+          </label>
+          <Autocomplete
+            disablePortal
+            options={purchaseOrderList || []}
+            value={selectedPO}
+            getOptionLabel={(opt) => opt.id || ""}
+            isOptionEqualToValue={(opt, val) => opt.id === val?.id}
+            onChange={(e, newValue) => {
+              // New PO selection: update relatedPO and auto‐fill items
+              handleInputChange("relatedPO", newValue || null);
+              if (newValue?.items) {
+                handleInputChange("items", newValue.items);
+              }
+            }}
+            renderInput={(params) => (
+              <TextField {...params} placeholder="Purchase Order" />
+            )}
+          />
+        </Box>
+        <Box flex={1}>
+          <label style={{ marginBottom: 6, display: "flex" }}>
+            Destination Location
+          </label>
           {formData.location && locationList.length > 1 ? (
             <Autocomplete
               options={locationList}
@@ -179,6 +230,7 @@ export default function EditIncomingProduct() {
         source_location: incoming.source_location,
         receiptDate: formatDate(new Date(incoming.receipt_date)),
         suppliersName: sup,
+        relatedPO: incoming.related_po,
         suppliers: vendors,
         location: loc,
         items,
@@ -189,15 +241,15 @@ export default function EditIncomingProduct() {
   }, [location.state, products, vendors, locationList]);
 
   const handleSubmit = async (data) => {
-    console.log(id);
     const payload = {
       destination_location: data.location.id,
       receipt_type: data.receiptType,
       source_location: data.source_location,
+      related_po: data.relatedPO,
       status: data.status,
       is_hidden: false,
       supplier: data.suppliersName?.id || null,
-      items: data.items.map((it) => ({
+      incoming_product_items: data.items.map((it) => ({
         product: it.product.id,
         expected_quantity: Number(it.available_product_quantity),
         quantity_received: Number(it.qty_received),
@@ -209,7 +261,7 @@ export default function EditIncomingProduct() {
 
       Swal.fire("Success", "Record saved", "success");
       history.push(
-        `/${tenant_schema_name}/inventory/operations/incoming-product/${res.id}`
+        `/${tenant_schema_name}/inventory/operations/incoming-product/${res.incoming_product_id}`
       );
     } catch (e) {
       console.error(e);
