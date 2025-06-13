@@ -1,172 +1,353 @@
-import React, { useState, useEffect } from "react";
+import { useTheme, useMediaQuery } from "@mui/material";
+import Avatar from "../../../assets/images/avatars/userAvatar.png";
 
-import { BsCaretLeftFill } from "react-icons/bs";
-import { BsCaretRightFill } from "react-icons/bs";
-import { CiSearch } from "react-icons/ci";
-import { FaBars } from "react-icons/fa";
-import { IoGrid } from "react-icons/io5";
-import NewUser from "./NewUser";
-import UserListView from "./UserListView"; // Import UserListView
-import { useLocation } from "react-router-dom";
+const USERS = [
+  {
+    id: 1,
+    avatar: Avatar,
+    fullName: "Efemiaya Oghenetega",
+    email: "efemiayafavour@gmail.com",
+    phone: "+234 0801 234 5679",
+    role: "Software Engineer",
+  },
+  {
+    id: 2,
+    avatar: Avatar,
+    fullName: "Adebayo Michael",
+    email: "adebayo.michael@example.com",
+    phone: "+234 0812 345 6789",
+    role: "HR Manager",
+  },
+  {
+    id: 3,
+    avatar: Avatar,
+    fullName: "Chinonso Okoro",
+    email: "chinonso.okoro@example.com",
+    phone: "+234 0902 456 7890",
+    role: "Accountant",
+  },
+  {
+    id: 4,
+    avatar: Avatar,
+    fullName: "Fatima Yusuf",
+    email: "fatima.yusuf@example.com",
+    phone: "+234 0703 567 8901",
+    role: "Administrator",
+  },
+  {
+    id: 5,
+    avatar: Avatar,
+    fullName: "Ifeanyi Nwosu",
+    email: "ifeanyi.nwosu@example.com",
+    phone: "+234 0813 678 9012",
+    role: "Product Manager",
+  },
+  {
+    id: 6,
+    avatar: Avatar,
+    fullName: "Zainab Bello",
+    email: "zainab.bello@example.com",
+    phone: "+234 0904 789 0123",
+    role: "Marketing Specialist",
+  },
+  {
+    id: 7,
+    avatar: Avatar,
+    fullName: "Tunde Afolayan",
+    email: "tunde.afolayan@example.com",
+    phone: "+234 0805 890 1234",
+    role: "Operations Lead",
+  },
+];
 
-export default function User() {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState(users);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showNewUser, setShowNewUser] = useState(false);
-  const [viewMode, setViewMode] = useState("list"); // Set default view mode to "list"
+import { Box, Typography } from "@mui/material";
 
-  // openForm prop is from working for dashboard modal
-  const location = useLocation();
-  useEffect(() => {
-    if (location.state?.openForm) {
-      setShowNewUser(true);
-    }
-  }, [location.openForm]);
+import { memo, useState } from "react";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Grid,
+  Skeleton,
+} from "@mui/material";
 
-  useEffect(() => {
-    const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
-    setUsers(storedUsers);
-  }, []);
+import { formatDate } from "../../../helper/helper";
+import { useList } from "../../../hooks/useList";
+import { SearchField } from "../../../components/SearchField/SearchField";
+import { ViewToggle } from "../../../components/ViewToggle/ViewToggle";
+import { PaginationControls } from "../../../components/PaginationControls/PaginationControls";
+import { ListToolbar } from "../../../components/ListToolbar/ListToolbar";
+import { Link } from "react-router-dom";
+import { useTenant } from "../../../context/TenantContext";
 
-  useEffect(() => {
-    handleSearch();
-  }, [searchQuery, users]);
+// -- CARD VIEW --
+const UserCard = memo(({ user }) => (
+  <Card
+    variant="outlined"
+    sx={{
+      width: "100%",
+      maxWidth: { md: 280 },
+      p: 2,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 1,
+      color: "text.secondary",
+      fontSize: "0.75rem",
+    }}
+  >
+    <Box
+      component="img"
+      src={user.avatar}
+      alt="avatar"
+      sx={{ borderRadius: "50%", width: 80, height: 80 }}
+    />
+    <Typography variant="subtitle1" color="text.primary" noWrap>
+      {user.fullName}
+    </Typography>
+    <Typography variant="caption" textTransform="uppercase" noWrap>
+      {user.role}
+    </Typography>
+    <Typography variant="body2" noWrap>
+      {user.email}
+    </Typography>
+    <Typography variant="body2" noWrap>
+      {user.phone}
+    </Typography>
+  </Card>
+));
 
-  const handleSearch = () => {
-    if (searchQuery === "") {
-      setFilteredUsers(users);
-    } else {
-      const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = users.filter(
-        (item) =>
-          item.name.toLowerCase().includes(lowercasedQuery) ||
-          item.mail.toLowerCase().includes(lowercasedQuery) ||
-          item.number.toLowerCase().includes(lowercasedQuery) ||
-          item.role.toLowerCase().includes(lowercasedQuery)
-      );
-      setFilteredUsers(filtered);
-    }
-  };
+// -- ROW VIEW --
+const UserRow = memo(
+  ({ user, index, selected, onSelect, onClick, showArchiveBtn }) => (
+    <TableRow
+      hover
+      onClick={onClick}
+      sx={{
+        cursor: "pointer",
+        backgroundColor: index % 2 === 0 ? "#F2F2F2" : "#FFFFFF",
+        "& td, & th": { borderBottom: "none" },
+      }}
+    >
+      <TableCell padding="checkbox">
+        <Checkbox
+          checked={selected}
+          onChange={(e) => {
+            e.stopPropagation();
+            onSelect(user.id, e.target.checked);
+          }}
+          sx={{ color: "#C6CCD2" }}
+        />
+      </TableCell>
+      <TableCell sx={{ p: 2, display: "flex", alignItems: "center" }}>
+        <Box
+          component="img"
+          src={user.avatar}
+          alt={user.fullName}
+          sx={{ width: 40, height: 40, borderRadius: "50%" }}
+        />
+        {user.fullName}
+      </TableCell>
+      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }}>
+        {user.role}
+      </TableCell>
+      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+        {user.email}
+      </TableCell>
+      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+        {user.phone}
+      </TableCell>
+      <TableCell
+        sx={{
+          p: 1,
+          typography: "caption",
+          textTransform: "uppercase",
+          color: "#7A8A98",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: `${showArchiveBtn ? "space-between" : "start"} `,
+            alignItems: "center",
+            pr: 4,
+          }}
+        >
+          {formatDate(Date.now())}
 
-  const handleNewUser = () => {
-    setShowNewUser(true);
-  };
+          {showArchiveBtn && (
+            <Button
+              disableElevation
+              variant="contained"
+              sx={{
+                backgroundColor: "#FF9500",
+                "&:hover": {
+                  opacity: 0.9,
+                  bgcolor: "#FF9500",
+                },
+              }}
+            >
+              Archive
+            </Button>
+          )}
+        </Box>
+      </TableCell>
+    </TableRow>
+  )
+);
 
-  const handleCloseNewUser = () => {
-    setShowNewUser(false);
-  };
+const UserList = () => {
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
-  const handleSaveAndSubmit = (newUser) => {
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-  };
+  const [showArchiveBtn, setShowArchiveBtn] = useState(false);
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-  };
+  const {
+    page,
+    totalPages,
+    paginated,
+    selectedIds,
+    allSelected,
+    gridView,
+    handleSearch,
+    handlePrev,
+    handleNext,
+    handleSelect,
+    handleSelectAll,
+    setGridView,
+  } = useList(USERS, {
+    pageSize: 5,
+    filterFn: (user, term) =>
+      user.fullName.toLowerCase().includes(term.toLowerCase()) ||
+      user.role.toLowerCase().includes(term.toLowerCase()) ||
+      user.email.toLowerCase().includes(term.toLowerCase()) ||
+      user.phone.toLowerCase().includes(term.toLowerCase()),
+  });
+
+  const renderSkeletons = () =>
+    Array.from({ length: 5 }).map((_, i) => (
+      <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+        <Card variant="outlined" sx={{ p: 2 }}>
+          <Skeleton variant="circular" width={80} height={80} />
+          <Skeleton width="60%" />
+          <Skeleton width="40%" />
+          <Skeleton width="80%" />
+          <Skeleton width="80%" />
+        </Card>
+      </Grid>
+    ));
 
   return (
-    <div className="container-body">
-      <div className="content-page" id="user">
-        {showNewUser ? (
-          <div className="overlay">
-            <NewUser
-              onClose={handleCloseNewUser}
-              onSaveAndSubmit={handleSaveAndSubmit}
-              fromStepModal={location.state?.openForm}
-            />
-          </div>
-        ) : (
-          <div className="content-body">
-            <div className="content-details">
-              <div className="content-header">
-                <div className="header-activity-1">
-                  <button className="btn" onClick={handleNewUser}>
-                    New User
-                  </button>
-                  <div className="search-box">
-                    <CiSearch className="icon" onClick={handleSearch} />
-                    <input
-                      type="text"
-                      placeholder="Search ..."
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {/* <label
-                    htmlFor="searchInput"
-                    className="users1"
-                    onClick={handleSearch}
-                  >
-                    <img src={SearchIcon} alt="Search" className="users2" />
-                    <input
-                      id="searchInput"
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="users3"
-                    />
-                  </label> */}
-                  </div>
-                </div>
-                <div className="header-activity-2">
-                  <p className="pagination">1-2 of {filteredUsers.length}</p>
-                  <div className="pagination-btn">
-                    <button>
-                      <BsCaretLeftFill className="icon" />
-                    </button>
-                    <button>
-                      <BsCaretRightFill className="icon" />
-                    </button>
-                  </div>
-                  <div className="view-toggle">
-                    <button>
-                      <IoGrid
-                        className={`icon ${
-                          viewMode === "grid" ? "active" : ""
-                        }`}
-                        onClick={() => toggleViewMode("grid")}
-                      />{" "}
-                    </button>
-                    <button>
-                      {" "}
-                      <FaBars
-                        className={`icon ${
-                          viewMode === "list" ? "active" : ""
-                        }`}
-                        onClick={() => toggleViewMode("list")}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
+    <Box p={{ xs: 2, sm: 4, md: 6 }}>
+      <ListToolbar
+        isXs={isXs}
+        leftActions={
+          <>
+            <Link to={`/${tenant_schema_name}/settings/user/new`}>
+              <Button fullWidth={isXs} variant="contained">
+                New User
+              </Button>
+            </Link>
 
-              <div className="user4">
-                {viewMode === "grid" ? (
-                  filteredUsers.map((user, index) => (
-                    <div className="user4gv" key={index}>
-                      <div className="usermage">
-                        <img
-                          src={user.image || "default-image-url"}
-                          alt={user.name}
-                          className="cirmage"
-                        />
-                      </div>
-                      <p className="username">{user.name}</p>
-                      <p className="userole">{user.role}</p>
-                      <p className="usermail">{user.mail}</p>
-                      <p className="usernum">{user.number}</p>
-                    </div>
-                  ))
-                ) : (
-                  <UserListView users={filteredUsers} />
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+            <Button
+              fullWidth={isXs}
+              variant="outlined"
+              onClick={() => setShowArchiveBtn((prev) => !prev)}
+            >
+              Archive User
+            </Button>
+            <SearchField onSearch={handleSearch} />
+          </>
+        }
+        rightActions={
+          <>
+            <PaginationControls
+              page={page}
+              totalPages={totalPages}
+              onPrev={handlePrev}
+              onNext={handleNext}
+            />
+            <ViewToggle gridView={gridView} onToggle={setGridView} />
+          </>
+        }
+      />
+
+      {/* Content Area */}
+      {gridView ? (
+        <Grid container spacing={2}>
+          {paginated.length > 0
+            ? paginated.map((user) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={user.id}>
+                  <UserCard user={user} />
+                </Grid>
+              ))
+            : renderSkeletons()}
+        </Grid>
+      ) : (
+        <TableContainer sx={{ border: "1px solid #E2E6E9" }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={allSelected}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    sx={{ color: "#C6CCD2" }}
+                  />
+                </TableCell>
+                <TableCell sx={{ p: 3, color: "#7A8A98" }}>Full Name</TableCell>
+                <TableCell sx={{ p: 3, typography: "body2", color: "#7A8A98" }}>
+                  Role
+                </TableCell>
+                <TableCell
+                  sx={{ p: 3, typography: "body2", color: "#7A8A98" }}
+                  noWrap
+                >
+                  Email
+                </TableCell>
+                <TableCell
+                  sx={{ p: 1, typography: "body2", color: "#7A8A98" }}
+                  noWrap
+                >
+                  Phone
+                </TableCell>
+                <TableCell
+                  sx={{
+                    p: 1,
+                    typography: "caption",
+                    textTransform: "uppercase",
+                    color: "#7A8A98",
+                    minWidth: "300px",
+                  }}
+                >
+                  Last Logic Date
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginated.map((user, index) => (
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  index={index}
+                  selected={selectedIds.includes(user.id)}
+                  onSelect={handleSelect}
+                  showArchiveBtn={showArchiveBtn}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Box>
   );
-}
+};
+
+export default memo(UserList);
