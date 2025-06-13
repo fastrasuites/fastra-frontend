@@ -13,9 +13,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
-  CircularProgress, // Fixed import
+  CircularProgress,
 } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import Swal from "sweetalert2";
@@ -48,12 +47,11 @@ const DeliveryOrderInfo = () => {
   const orderId = Number(id);
 
   const { tenantData } = useTenant();
-  const tenant_schema_name = tenantData?.tenant_schema_name || "lukudigital";
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+
   const {
-    getDeliveryOrderList,
-    deliveryOrderList,
-    // getSingleDeliveryOrder,
-    // singleDeliveryOrder,
+    getSingleDeliveryOrder,
+    singleDeliveryOrder,
     checkDeliveryOrderAvailability,
     confirmDeliveryOrder,
     error,
@@ -62,28 +60,13 @@ const DeliveryOrderInfo = () => {
   } = useDeliveryOrder();
 
   useEffect(() => {
-    getDeliveryOrderList();
-  }, [getDeliveryOrderList]);
-
-  const singleDeliveryOrder = useMemo(() => {
-    if (!orderId) return null;
-    return deliveryOrderList.find(
-      (order) =>
-        order?.id === orderId || order.order_unique_id === id?.toUpperCase()
-    );
-  }, [deliveryOrderList, id, orderId]);
-
-  // useEffect(() => {
-  //   console.log("Fetching single delivery order for ID:", orderId);
-  //   const fetchDeliveryOrder = async () => {
-  //     try {
-  //       await getSingleDeliveryOrder(orderId);
-  //     } catch (err) {
-  //       console.error("Error fetching delivery order:", err);
-  //     }
-  //   };
-  //   fetchDeliveryOrder();
-  // }, [orderId, getSingleDeliveryOrder]);
+    const fetchData = async () => {
+      if (orderId) {
+        await getSingleDeliveryOrder(orderId);
+      }
+    };
+    fetchData();
+  }, [orderId, getSingleDeliveryOrder]);
 
   // Handle loading state
   if (isLoading) {
@@ -115,14 +98,42 @@ const DeliveryOrderInfo = () => {
     );
   }
 
+  // Handle case where data is still null after loading
+  if (!singleDeliveryOrder) {
+    return (
+      <Box p={4}>
+        <Typography>Delivery order not found</Typography>
+        <Link to={`/${tenant_schema_name}/inventory/operations/delivery-order`}>
+          <Button variant="contained" sx={{ mt: 2 }}>
+            Back to List
+          </Button>
+        </Link>
+      </Box>
+    );
+  }
+
   console.log("Single Delivery Order:", singleDeliveryOrder);
   const status = singleDeliveryOrder?.status || "draft";
 
   const handleDelete = async () => {
-    const orderId = singleDeliveryOrder?.id;
+    // Add null check
+    if (!singleDeliveryOrder) return;
+    const orderId = singleDeliveryOrder.id;
     try {
+      // confirm before delete
+      const result = await Swal.fire({
+        title: "Are you sure",
+        text: `You are about to delete this order: ${singleDeliveryOrder.order_unique_id}`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
+      });
+      if (!result.isConfirmed) return;
       const response = await deleteDeliveryOrder(orderId);
-      if (response.data.success) {
+      if (response.success) {
         Swal.fire({
           title: "Deleted",
           text: "Delivery order has been deleted successfully.",
@@ -166,9 +177,9 @@ const DeliveryOrderInfo = () => {
           });
         } else {
           Swal.fire({
-            title: "Not enough stock",
-            text: "Please check the stock availability.",
-            icon: "error",
+            title: "Waiting: Not enough stock",
+            text: "Please check the stock availability later.",
+            icon: "info",
             confirmButtonText: "OK",
           });
         }
@@ -299,24 +310,12 @@ const DeliveryOrderInfo = () => {
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <FormGroup label="Shipping Policy">
-                <TextField
-                  type="text"
-                  value={singleDeliveryOrder.shipping_policy}
-                  readOnly
-                  variant="outlined"
-                  size="small"
-                />
+                <Box>{singleDeliveryOrder.shipping_policy}</Box>
               </FormGroup>
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <FormGroup label="Assigned to">
-                <TextField
-                  type="text"
-                  value={singleDeliveryOrder.assigned_to}
-                  readOnly
-                  size="small"
-                  variant="outlined"
-                />
+                <Box>{singleDeliveryOrder.assigned_to}</Box>
               </FormGroup>
             </Grid>
           </Grid>
@@ -356,9 +355,14 @@ const DeliveryOrderInfo = () => {
                       },
                     }}
                   >
-                    <TableCell>{row?.product_name || "Product name"}</TableCell>
+                    <TableCell>
+                      {row.product_details.product_name || "Product name"}
+                    </TableCell>
                     <TableCell>{row.quantity_to_deliver}</TableCell>
-                    <TableCell>{row?.unit || "Unit of measure"}</TableCell>
+                    <TableCell>
+                      {row.product_details.unit_of_measure_details
+                        .unit_category || "Unit of measure"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

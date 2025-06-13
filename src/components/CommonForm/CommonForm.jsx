@@ -167,7 +167,7 @@ const CommonForm = ({
                 onClick={handleSubmit}
                 type="submit"
               >
-                {isEdit ? "Update" : "Save"}
+                {isEdit ? "Update" : submitBtnText}
               </Button>
             </Box>
           </Box>

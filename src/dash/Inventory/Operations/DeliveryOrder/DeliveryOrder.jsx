@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import "./DeliveryOrder.css";
 import { Box } from "@mui/system";
-import { Typography, CircularProgress } from "@mui/material";
+import { Typography, CircularProgress, Button } from "@mui/material";
 import CommonTable from "../../../../components/CommonTable/CommonTable";
 import { useTenant } from "../../../../context/TenantContext";
 import { useDeliveryOrder } from "../../../../context/Inventory/DeliveryOrderContext";
@@ -22,7 +22,7 @@ const getStatusColor = (status) => {
 const DeliveryOrder = () => {
   const { tenantData } = useTenant();
   const tenantSchema = tenantData?.tenant_schema_name ?? "";
-  const { deliveryOrderList, getDeliveryOrderList, isLoading } =
+  const { deliveryOrderList, getDeliveryOrderList, isLoading, error } =
     useDeliveryOrder();
 
   useEffect(() => {
@@ -108,6 +108,38 @@ const DeliveryOrder = () => {
       Object.values(row).some((val) => String(val).toLowerCase().includes(q))
     );
   }, [searchQuery, transformedData]);
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <Box p={4}>
+        <Typography color="error">
+          Error: {error.message || "Failed to load delivery order"}
+        </Typography>
+        <Button
+          variant="contained"
+          sx={{ mt: 2 }}
+          onClick={() => window.history.back()}
+        >
+          Back
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box p={2} mr={2}>

@@ -21,10 +21,10 @@ const validateDeliveryOrderData = (data) => {
   if (!data.delivery_address?.trim())
     errors.delivery_address = "Delivery address required";
   if (!data.delivery_date) errors.delivery_date = "Delivery date is required";
-  if (!data.shipping_policy?.trim())
-    errors.shipping_policy = "Shipping policy is required";
-  if (!data.return_policy?.trim())
-    errors.return_policy = "Return policy is required";
+  // if (!data.shipping_policy?.trim())
+  //   errors.shipping_policy = "Shipping policy is required";
+  // if (!data.return_policy?.trim())
+  //   errors.return_policy = "Return policy is required";
   if (!data.assigned_to?.trim()) errors.assigned_to = "Assigned to is required";
   if (!data.items || data.items.length === 0) {
     errors.items = "At least one item is required";
@@ -87,7 +87,7 @@ export const DeliveryOrderProvider = ({ children }) => {
       }
       setIsLoading(true);
       try {
-        const { data } = await client.get(`/inventory/delivery-order/${id}/`);
+        const { data } = await client.get(`/inventory/delivery-orders/${id}/`);
         setSingleDeliveryOrder(data);
         setError(null);
         return { success: true, data };
@@ -292,22 +292,66 @@ export const DeliveryOrderProvider = ({ children }) => {
 
       setIsLoading(true);
       try {
-        const { data } = await client.post(
-          "/inventory/delivery-order-returns/",
-          deliveryOrderReturnData
-        );
-        setDeliveryOrderReturnList((prev) => [...prev, data]);
+        // Ensure delivery_order_return_items exists and is an array
+        const returnItems =
+          deliveryOrderReturnData.delivery_order_return_items || [];
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Generate mock response matching the expected structure
+        const mockResponse = {
+          unique_record_id: `mock-${Date.now()}`,
+          ...deliveryOrderReturnData, // Use all input data
+          delivery_order_return_items: returnItems.map((item) => ({
+            ...item,
+            // Add mock IDs if not provided
+            returned_product_item:
+              item.returned_product_item || Math.floor(Math.random() * 1000),
+          })),
+        };
+
+        // Update state with mock response
+        setDeliveryOrderReturnList((prev) => [...prev, mockResponse]);
         setError(null);
-        return { success: true, data };
+
+        return { success: true, data: mockResponse };
       } catch (err) {
-        setError(err.message || "Failed to create delivery order return");
-        return Promise.reject(err);
+        const errorMsg = err || "Simulated creation failed";
+        setError(errorMsg);
+        return Promise.reject(new Error(errorMsg));
       } finally {
         setIsLoading(false);
       }
     },
     [client]
   );
+
+  // const createDeliveryOrderReturn = useCallback(
+  //   async (deliveryOrderReturnData) => {
+  //     if (!client) {
+  //       const msg = "API client not initialized.";
+  //       setError(msg);
+  //       return Promise.reject(new Error(msg));
+  //     }
+
+  //     setIsLoading(true);
+  //     try {
+  //       const { data } = await client.post(
+  //         "/inventory/delivery-order-returns/",
+  //         deliveryOrderReturnData
+  //       );
+  //       setDeliveryOrderReturnList((prev) => [...prev, data]);
+  //       setError(null);
+  //       return { success: true, data };
+  //     } catch (err) {
+  //       setError(err.message || "Failed to create delivery order return");
+  //       return Promise.reject(err);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   },
+  //   [client]
+  // );
 
   const updateDeliveryOrderReturn = useCallback(
     async (id, returnData, partial = false) => {

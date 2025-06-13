@@ -15,6 +15,8 @@ import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useTenant } from "../../../../../context/TenantContext";
 import Swal from "sweetalert2";
 import { useHistory } from "react-router-dom";
+import { Asterisk, AsteriskIcon } from "lucide-react";
+import { FaAsterisk } from "react-icons/fa";
 
 const defaultFormData = {
   customer_name: "",
@@ -40,10 +42,11 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
 
   // Sync with parent state upon selection change
   const handleLocationChange = (event, newValue) => {
+    // console.log("inside handle location change", newValue);
     setSelectedLocation(newValue);
     handleInputChange("source_location", newValue);
   };
-
+  // console.log(locationList);
   return (
     <>
       <Box display="flex" flexDirection="column" gap={3}>
@@ -51,7 +54,18 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} lg={3}>
               <label style={{ marginBottom: "6px", display: "block" }}>
-                Customer's name
+                Customer's name{" "}
+                <span
+                  style={{
+                    color: "red",
+                    marginLeft: "4px",
+                    fontWeight: "bold",
+                    fontSize: "10px",
+                    lineHeight: "1",
+                  }}
+                >
+                  *
+                </span>
               </label>
               <TextField
                 type="text"
@@ -67,21 +81,52 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             </Grid>
             {locationList.length <= 1 ? (
               <Grid item xs={12} sm={6} lg={3}>
-                <label>Location</label>
+                <label>
+                  Location{" "}
+                  <span
+                    style={{
+                      color: "red",
+                      marginLeft: "4px",
+                      fontWeight: "bold",
+                      fontSize: "10px",
+                      lineHeight: "1",
+                    }}
+                  >
+                    *
+                  </span>
+                </label>
                 <Typography>{formData.location}</Typography>
               </Grid>
             ) : (
               <Grid item xs={12} sm={6} lg={3}>
-                <label style={{ marginBottom: "6px", display: "block" }}>
+                <label
+                  style={{
+                    marginBottom: "6px",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
                   Source Location
+                  <span
+                    style={{
+                      color: "red",
+                      marginLeft: "4px",
+                      fontWeight: "bold",
+                      fontSize: "10px",
+                      lineHeight: "1",
+                    }}
+                  >
+                    *
+                  </span>
                 </label>
+
                 <Autocomplete
                   disablePortal
                   options={locationList}
                   value={selectedLocation}
-                  getOptionLabel={(option) => option?.id || ""}
+                  getOptionLabel={(option) => option?.location_name || ""}
                   isOptionEqualToValue={(option, value) =>
-                    option?.receiptType === value?.id
+                    option?.location_name === value?.location_name
                   }
                   onChange={handleLocationChange}
                   renderInput={(params) => (
@@ -100,7 +145,18 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             {/* Input delivery Address*/}
             <Grid item xs={12} sm={6} lg={3}>
               <label style={{ marginBottom: "6px", display: "block" }}>
-                Delivery Address
+                Delivery Address{" "}
+                <span
+                  style={{
+                    color: "red",
+                    marginLeft: "4px",
+                    fontWeight: "bold",
+                    fontSize: "10px",
+                    lineHeight: "1",
+                  }}
+                >
+                  *
+                </span>
               </label>
               <TextField
                 type="text"
@@ -118,6 +174,17 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             <Grid item xs={12} sm={6} lg={3}>
               <label style={{ marginBottom: "6px", display: "block" }}>
                 Delivery Date
+                <span
+                  style={{
+                    color: "red",
+                    marginLeft: "4px",
+                    fontWeight: "bold",
+                    fontSize: "10px",
+                    lineHeight: "1",
+                  }}
+                >
+                  *
+                </span>
               </label>
               <TextField
                 type="date"
@@ -171,6 +238,17 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             <Grid item xs={12} sm={6} lg={3}>
               <label style={{ marginBottom: "6px", display: "block" }}>
                 Assigned To
+                <span
+                  style={{
+                    color: "red",
+                    marginLeft: "4px",
+                    fontWeight: "bold",
+                    fontSize: "10px",
+                    lineHeight: "1",
+                  }}
+                >
+                  *
+                </span>
               </label>
               <TextField
                 type="text"
@@ -238,6 +316,7 @@ const DeliveryOrderForm = () => {
 
   // Callback to process the final filled form data
   const handleSubmit = async (filledFormData) => {
+    console.log("filled form data", filledFormData);
     setFormErrors({}); // Clear previous errors
 
     try {

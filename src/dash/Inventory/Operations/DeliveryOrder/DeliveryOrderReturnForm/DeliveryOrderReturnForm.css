@@ -1,0 +1,17 @@
+.custom-swal {
+  font-size: 1.6rem !important;
+}
+
+.swal-html-container {
+  font-size: 1.6rem !important;
+  line-height: 1.5;
+}
+
+.swal-warning {
+  color: #d32f2f;
+  font-weight: bold;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #ffebee;
+  border-radius: 4px;
+}

@@ -68,11 +68,24 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
               <label style={{ marginBottom: "6px", display: "block" }}>
                 Source Location
               </label>
+
               <Autocomplete
                 disablePortal
                 options={locationList}
-                value={formData.source_location || null}
-                getOptionLabel={(option) => option?.id || ""}
+                value={
+                  locationList.find(
+                    (loc) =>
+                      loc.id ===
+                      (formData.source_location?.id || formData.source_location)
+                  ) || null
+                }
+                getOptionLabel={(option) =>
+                  typeof option === "string"
+                    ? option
+                    : option?.id
+                    ? `${option.id}${option.name ? " - " + option.name : ""}`
+                    : ""
+                }
                 isOptionEqualToValue={(option, value) =>
                   option?.id === value?.id
                 }
@@ -181,10 +194,11 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
 const EditDeliveryOrderForm = () => {
   const { fetchProducts, products } = usePurchase();
   const {
+    getSingleDeliveryOrder,
+    singleDeliveryOrder,
     updateDeliveryOrder,
     isLoading: isContextLoading,
     getDeliveryOrderList,
-    deliveryOrderList,
   } = useDeliveryOrder();
   const { id } = useParams();
   const orderId = Number(id);
@@ -201,9 +215,14 @@ const EditDeliveryOrderForm = () => {
     fetchData();
   }, [getDeliveryOrderList, fetchProducts]);
 
-  const singleDeliveryOrder = useMemo(() => {
-    return deliveryOrderList.find((order) => order.id === orderId);
-  }, [deliveryOrderList, orderId]);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (orderId) {
+        await getSingleDeliveryOrder(orderId);
+      }
+    };
+    fetchData();
+  }, [orderId, getSingleDeliveryOrder]);
 
   // Transform products for options
   const transformedProducts = useMemo(() => {
