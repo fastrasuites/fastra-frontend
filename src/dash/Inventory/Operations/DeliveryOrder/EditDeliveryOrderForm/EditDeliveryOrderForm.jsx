@@ -28,7 +28,6 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
   const handleLocationChange = (_, newValue) => {
     handleInputChange("source_location", newValue);
   };
-
   return (
     <>
       <Box display="flex" flexDirection="column" gap={3}>
@@ -75,17 +74,11 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
                 value={
                   locationList.find(
                     (loc) =>
-                      loc.id ===
-                      (formData.source_location?.id || formData.source_location)
+                      loc.location_name ===
+                      formData.source_location?.location_name
                   ) || null
                 }
-                getOptionLabel={(option) =>
-                  typeof option === "string"
-                    ? option
-                    : option?.id
-                    ? `${option.id}${option.name ? " - " + option.name : ""}`
-                    : ""
-                }
+                getOptionLabel={(option) => option?.location_name || ""}
                 isOptionEqualToValue={(option, value) =>
                   option?.id === value?.id
                 }
@@ -204,6 +197,11 @@ const EditDeliveryOrderForm = () => {
   const orderId = Number(id);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const { locationList, getLocationList } = useCustomLocation();
+
+  useEffect(() => {
+    getLocationList();
+  }, [getLocationList]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -255,24 +253,39 @@ const EditDeliveryOrderForm = () => {
     if (initialDataLoaded && singleDeliveryOrder) {
       // Transform items
       const items = singleDeliveryOrder.delivery_order_items.map((item) => {
-        const product =
-          transformedProducts.find((p) => p.id === item.product_item?.id) ||
-          item.product_item;
+        // const product =
+        //   transformedProducts.find((p) => p.id === item.product_item?.id) ||
+        //   item.product_item;
 
         return {
           ...item,
           id: item.id,
-          product: product,
+          product: {
+            ...item?.product_details,
+            id: item?.product_details?.id,
+            product_name: item?.product_details?.product_name,
+            unit_of_measure: {
+              unit_category:
+                item?.product_details?.unit_of_measure_details?.unit_category,
+            },
+          },
+          unit_of_measure: {
+            unit_category:
+              item?.product_details?.unit_of_measure_details?.unit_category,
+          },
           quantity_to_deliver: item.quantity_to_deliver,
-          unit_of_measure: product?.unit_of_measure || item.unit_of_measure,
         };
       });
+
+      const completeFormatForSourceLocation = locationList.find(
+        (value) => value?.id === singleDeliveryOrder?.source_location
+      );
 
       setFormData({
         id: singleDeliveryOrder.id,
         order_unique_id: singleDeliveryOrder.order_unique_id,
         customer_name: singleDeliveryOrder.customer_name,
-        source_location: singleDeliveryOrder.source_location,
+        source_location: completeFormatForSourceLocation,
         delivery_address: singleDeliveryOrder.delivery_address,
         delivery_date: singleDeliveryOrder.delivery_date?.split("T")[0],
         shipping_policy: singleDeliveryOrder.shipping_policy,
