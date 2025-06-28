@@ -17,6 +17,8 @@ import "../../Inventory/secondaryBar/SecondaryBar.css";
 import { Box, Button } from "@mui/material";
 import { Search } from "lucide-react";
 
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
+
 export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,6 +33,56 @@ export default function Purchreq() {
   const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
 
   const history = useHistory();
+
+  // Initialize wizard state properly
+  const [wizardState, setWizardState] = useState(() => {
+    const saved = localStorage.getItem(WIZARD_STORAGE_KEY);
+    return saved
+      ? JSON.parse(saved)
+      : {
+          hidden: false,
+          currentStep: 1,
+          skipped: false,
+          completed: false,
+        };
+  });
+
+  // Sync wizard state to localStorage
+  useEffect(() => {
+    localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
+  }, [wizardState]);
+
+  // Handle wizard visibility
+  useEffect(() => {
+    if (location.state?.preserveWizard) {
+      // Don't modify wizard state if preservation requested
+      return;
+    }
+    if (location.state?.step) {
+      // Step navigation from other components
+      setWizardState((prev) => ({
+        ...prev,
+        currentStep: location.state.step,
+        hidden: false,
+      }));
+    } else if (!wizardState.skipped && !wizardState.completed) {
+      // Show wizard if not skipped/completed
+      setWizardState((prev) => ({ ...prev, hidden: false }));
+    }
+  }, [location.state]);
+
+  const handleCloseModal = (action) => {
+    if (action === "skip") {
+      setWizardState({
+        hidden: true,
+        currentStep: 1,
+        skipped: true,
+        completed: false,
+      });
+    } else {
+      setWizardState((prev) => ({ ...prev, hidden: true }));
+    }
+  };
 
   useEffect(() => {
     const savedPR = localStorage.getItem("purchaseRequestData");
@@ -47,27 +99,27 @@ export default function Purchreq() {
     });
   }, [fetchPurchaseRequests]);
 
-  useEffect(() => {
-    if (location.state?.step) {
-      setCurrentStep(location.state.step);
-      setIsModalOpen(true);
-    } else {
-      const timer = setTimeout(() => {
-        const isWizardHidden = localStorage.getItem("hideWizard");
-        if (isWizardHidden === "true") {
-          setIsModalOpen(false);
-        } else {
-          setIsModalOpen(true);
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state]);
+  // useEffect(() => {
+  //   if (location.state?.step) {
+  //     setCurrentStep(location.state.step);
+  //     setIsModalOpen(true);
+  //   } else {
+  //     const timer = setTimeout(() => {
+  //       const isWizardHidden = localStorage.getItem("hideWizard");
+  //       if (isWizardHidden === "true") {
+  //         setIsModalOpen(false);
+  //       } else {
+  //         setIsModalOpen(true);
+  //       }
+  //     }, 500);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [location.state]);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    localStorage.setItem("hideWizard", "true");
-  };
+  // const handleCloseModal = () => {
+  //   setIsModalOpen(false);
+  //   localStorage.setItem("hideWizard", "true");
+  // };
 
   const toggleViewMode = (mode) => {
     setViewMode(mode);
@@ -320,10 +372,15 @@ export default function Purchreq() {
         </div>
       </div>
       <PurchaseModuleWizard
+        open={!wizardState.hidden}
+        onClose={(action) => handleCloseModal(action)}
+        step={wizardState.currentStep}
+      />
+      {/* <PurchaseModuleWizard
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-      />
+      /> */}
     </Box>
   );
 }

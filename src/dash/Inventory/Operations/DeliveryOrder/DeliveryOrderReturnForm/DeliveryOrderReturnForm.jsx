@@ -299,6 +299,8 @@ Thank you.`;
         })),
     };
 
+    console.log("Payload for return order:", payload);
+
     try {
       const response = await createDeliveryOrderReturn(payload);
 

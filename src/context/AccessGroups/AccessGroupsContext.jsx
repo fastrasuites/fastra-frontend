@@ -1,0 +1,510 @@
+import React, {
+  useState,
+  createContext,
+  useReducer,
+  useContext,
+  useMemo,
+  useCallback,
+  useEffect,
+} from "react";
+import { useTenant } from "../TenantContext";
+import { getTenantClient } from "../../services/apiService";
+import { smartFormatLabel, formatApiDate } from "../../helper/helper";
+import Swal from "sweetalert2";
+import CircularProgress from "@mui/material/CircularProgress";
+
+const initialState = {
+  accessGroups: [],
+  applications: [],
+  modules: {},
+  accessRights: [],
+  isLoading: false,
+  error: null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "FETCH_START":
+      return { ...state, isLoading: true, error: null };
+    case "FETCH_APPLICATIONS_SUCCESS":
+      return {
+        ...state,
+        applications: action.payload.applications,
+        modules: action.payload.modules,
+        accessRights: action.payload.accessRights,
+      };
+    case "FETCH_ACCESS_GROUPS_SUCCESS":
+      return { ...state, accessGroups: action.payload, isLoading: false };
+    case "CREATE_ACCESS_GROUP_SUCCESS":
+      return {
+        ...state,
+        accessGroups: [...state.accessGroups, action.payload],
+        isLoading: false,
+      };
+    case "UPDATE_ACCESS_GROUP_SUCCESS":
+      return {
+        ...state,
+        accessGroups: state.accessGroups.map((group) =>
+          group.access_code === action.payload.access_code
+            ? action.payload
+            : group
+        ),
+        isLoading: false,
+      };
+    case "OPERATION_FAILURE":
+      return { ...state, isLoading: false, error: action.payload };
+    default:
+      return state;
+  }
+}
+
+export const AccessGroupsContext = createContext();
+
+export function AccessGroupsProvider({ children }) {
+  const { tenantData } = useTenant();
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
+  const client = useMemo(() => {
+    if (!tenant_schema_name || !access_token || !refresh_token) return null;
+    return getTenantClient(tenant_schema_name, access_token, refresh_token);
+  }, [tenant_schema_name, access_token, refresh_token]);
+
+  // Fetch applications and access rights
+  const fetchApplications = useCallback(async () => {
+    if (!client) return;
+
+    try {
+      dispatch({ type: "FETCH_START" });
+      const response = await client.get(`/application/`);
+
+      const applications = response.data.applications.map(
+        (app) => Object.keys(app)[0]
+      );
+      const modules = {};
+
+      response.data.applications.forEach((app) => {
+        const appName = Object.keys(app)[0];
+        modules[appName] = app[appName];
+      });
+
+      dispatch({
+        type: "FETCH_APPLICATIONS_SUCCESS",
+        payload: {
+          applications,
+          modules,
+          accessRights: response.data.access_rights,
+        },
+      });
+      return {
+        applications,
+        modules,
+        accessRights: response.data.access_rights,
+      };
+    } catch (error) {
+      dispatch({ type: "OPERATION_FAILURE", payload: error.message });
+      Swal.fire("Error", "Failed to fetch applications", "error");
+      throw error;
+    }
+  }, [client]);
+
+  // Fetch access groups
+  const fetchAccessGroups = useCallback(async () => {
+    if (!client) return;
+
+    try {
+      dispatch({ type: "FETCH_START" });
+      const response = await client.get(`/users/access-group-right/`);
+
+      // Transform API response to match our UI structure
+      const groupsMap = {};
+      response.data.forEach((item) => {
+        if (!groupsMap[item.access_code]) {
+          groupsMap[item.access_code] = {
+            access_code: item.access_code,
+            groupName: item.group_name,
+            application: item.application.toUpperCase(),
+            createdAt: formatApiDate(item.date_created),
+            permissions: {},
+          };
+        }
+
+        if (!groupsMap[item.access_code].permissions[item.application_module]) {
+          groupsMap[item.access_code].permissions[item.application_module] = {};
+        }
+
+        const right = state.accessRights.find(
+          (r) => r.id === item.access_right
+        );
+        if (right) {
+          groupsMap[item.access_code].permissions[item.application_module][
+            right.name
+          ] = true;
+        }
+      });
+
+      dispatch({
+        type: "FETCH_ACCESS_GROUPS_SUCCESS",
+        payload: Object.values(groupsMap),
+      });
+    } catch (error) {
+      dispatch({ type: "OPERATION_FAILURE", payload: error.message });
+      Swal.fire("Error", "Failed to fetch access groups", "error");
+      throw error;
+    }
+  }, [client, state.accessRights]);
+
+  // Initialize data
+  useEffect(() => {
+    const initialize = async () => {
+      if (client && !isInitialized) {
+        await fetchApplications();
+        await fetchAccessGroups();
+        setIsInitialized(true);
+      }
+    };
+    initialize();
+  }, [client, fetchApplications, fetchAccessGroups, isInitialized]);
+
+  const createAccessGroup = async (newGroup) => {
+    if (!client) return;
+
+    try {
+      dispatch({ type: "FETCH_START" });
+
+      // Prepare API payload
+      const payload = {
+        application: newGroup.application.toLowerCase(),
+        group_name: newGroup.groupName,
+        access_rights: Object.entries(newGroup.permissions).map(
+          ([module, rights]) => {
+            const rightIds = Object.entries(rights)
+              .filter(([_, hasAccess]) => hasAccess)
+              .map(([rightName]) => {
+                const right = state.accessRights.find(
+                  (r) => r.name === rightName
+                );
+                return right ? right.id : null;
+              })
+              .filter((id) => id !== null);
+
+            return {
+              module,
+              rights: rightIds,
+            };
+          }
+        ),
+      };
+
+      const response = await client.post(`/users/access-group-right/`, payload);
+
+      // Transform the first item in response to our group format
+      const createdItem = response.data[0];
+      const createdGroup = {
+        access_code: createdItem.access_code,
+        groupName: createdItem.group_name,
+        application: createdItem.application.toUpperCase(),
+        createdAt: formatApiDate(createdItem.date_created),
+        permissions: {},
+      };
+
+      // Add permissions
+      response.data.forEach((item) => {
+        if (!createdGroup.permissions[item.application_module]) {
+          createdGroup.permissions[item.application_module] = {};
+        }
+        const right = state.accessRights.find(
+          (r) => r.id === item.access_right
+        );
+        if (right) {
+          createdGroup.permissions[item.application_module][right.name] = true;
+        }
+      });
+
+      dispatch({
+        type: "CREATE_ACCESS_GROUP_SUCCESS",
+        payload: createdGroup,
+      });
+
+      Swal.fire("Success", "Access group created successfully", "success");
+      return createdItem.access_code;
+    } catch (error) {
+      dispatch({ type: "OPERATION_FAILURE", payload: error.message });
+      Swal.fire("Error", "Failed to create access group", "error");
+      throw error;
+    }
+  };
+
+  const updateAccessGroup = async (access_code, updatedGroup) => {
+    if (!client) return;
+
+    try {
+      dispatch({ type: "FETCH_START" });
+
+      // Prepare API payload
+      const payload = {
+        application: updatedGroup.application.toLowerCase(),
+        group_name: updatedGroup.groupName,
+        access_rights: Object.entries(updatedGroup.permissions).map(
+          ([module, rights]) => {
+            const rightIds = Object.entries(rights)
+              .filter(([_, hasAccess]) => hasAccess)
+              .map(([rightName]) => {
+                const right = state.accessRights.find(
+                  (r) => r.name === rightName
+                );
+                return right ? right.id : null;
+              })
+              .filter((id) => id !== null);
+
+            return {
+              module,
+              rights: rightIds,
+            };
+          }
+        ),
+      };
+
+      await client.patch(`/users/access-group-right/${access_code}/`, payload);
+      await fetchAccessGroups();
+
+      Swal.fire("Success", "Access group updated successfully", "success");
+    } catch (error) {
+      dispatch({ type: "OPERATION_FAILURE", payload: error.message });
+      Swal.fire("Error", "Failed to update access group", "error");
+      throw error;
+    }
+  };
+
+  if (state.isLoading && !isInitialized) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  return (
+    <AccessGroupsContext.Provider
+      value={{
+        accessGroups: state.accessGroups,
+        applications: state.applications,
+        modules: state.modules,
+        accessRights: state.accessRights,
+        isLoading: state.isLoading,
+        error: state.error,
+        createAccessGroup,
+        updateAccessGroup,
+        fetchAccessGroups,
+      }}
+    >
+      {children}
+    </AccessGroupsContext.Provider>
+  );
+}
+
+export const useAccessGroups = () => {
+  const context = useContext(AccessGroupsContext);
+  if (!context) {
+    throw new Error(
+      "useAccessGroups must be used within an AccessGroupsProvider"
+    );
+  }
+  return context;
+};
+
+// import React, {
+//   useState,
+//   createContext,
+//   useReducer,
+//   useContext,
+//   useMemo,
+//   useCallback,
+// } from "react";
+// import { useTenant } from "../TenantContext";
+// import { getTenantClient } from "../../services/apiService";
+
+// // Mock data
+// const mockAccessGroups = [
+//   {
+//     id: "PUR-MGR-1023",
+//     groupName: "Manager",
+//     application: "Purchase",
+//     createdAt: "4 Apr 2024 - 4:48 PM",
+//     permissions: {
+//       "Purchase Request": {
+//         view: true,
+//         edit: false,
+//         approve: false,
+//         create: false,
+//         reject: false,
+//         delete: false,
+//       },
+//       "Purchase Order": {
+//         view: false,
+//         edit: false,
+//         approve: false,
+//         create: false,
+//         reject: false,
+//         delete: false,
+//       },
+//       "Send RFO": {
+//         view: false,
+//         edit: false,
+//         approve: false,
+//         create: false,
+//         reject: false,
+//         delete: false,
+//       },
+//       Product: {
+//         view: false,
+//         edit: false,
+//         approve: false,
+//         create: false,
+//         reject: false,
+//         delete: false,
+//       },
+//       "Vendor Information": {
+//         view: false,
+//         edit: false,
+//         approve: false,
+//         create: false,
+//         reject: false,
+//         delete: false,
+//       },
+//     },
+//   },
+//   {
+//     id: "HR-OFF-1287",
+//     groupName: "Officer",
+//     application: "Human Resource",
+//     createdAt: "4 Apr 2024 - 4:48 PM",
+//     permissions: {
+//       Recruitment: {
+//         view: true,
+//         edit: true,
+//         approve: false,
+//         create: false,
+//         reject: false,
+//         delete: false,
+//       },
+//       "Employee Management": {
+//         view: true,
+//         edit: false,
+//         approve: false,
+//         create: false,
+//         reject: false,
+//         delete: false,
+//       },
+//     },
+//   },
+// ];
+
+// const initialState = {
+//   accessGroups: mockAccessGroups,
+//   applications: [
+//     "Purchase",
+//     "Inventory",
+//     "Invoicing",
+//     "Human Resource",
+//     "Accounting",
+//   ],
+//   rights: {
+//     Purchase: [
+//       "Purchase Request",
+//       "Purchase Order",
+//       "Send RFO",
+//       "Product",
+//       "Vendor Information",
+//     ],
+//     "Human Resource": ["Recruitment", "Employee Management", "Payroll"],
+//     Accounting: ["Invoicing", "Expenses", "Reports"],
+//   },
+// };
+
+// function reducer(state, action) {
+//   switch (action.type) {
+//     case "CREATE_ACCESS_GROUP":
+//       return {
+//         ...state,
+//         accessGroups: [...state.accessGroups, action.payload],
+//       };
+//     case "UPDATE_ACCESS_GROUP":
+//       return {
+//         ...state,
+//         accessGroups: state.accessGroups.map((group) =>
+//           group.id === action.payload.id ? action.payload : group
+//         ),
+//       };
+//     default:
+//       return state;
+//   }
+// }
+
+// export const AccessGroupsContext = createContext();
+
+// export function AccessGroupsProvider({ children }) {
+//   const { tenantData } = useTenant();
+
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [error, setError] = useState(null);
+
+//   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
+//   const client = useMemo(() => {
+//     if (!tenant_schema_name || !access_token || !refresh_token) return null;
+//     return getTenantClient(tenant_schema_name, access_token, refresh_token);
+//   }, [tenant_schema_name, access_token, refresh_token]);
+
+//   const [state, dispatch] = useReducer(reducer, initialState);
+
+//   const createAccessGroup = (newGroup) => {
+//     console.log("newGroup", newGroup);
+//     const id = `${newGroup.application
+//       .substring(0, 3)
+//       .toUpperCase()}-${newGroup.groupName
+//       .substring(0, 3)
+//       .toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+//     const createdAt = new Date().toLocaleString();
+//     dispatch({
+//       type: "CREATE_ACCESS_GROUP",
+//       payload: { ...newGroup, id, createdAt },
+//     });
+//     return id;
+//   };
+
+//   const updateAccessGroup = (updatedGroup) => {
+//     dispatch({ type: "UPDATE_ACCESS_GROUP", payload: updatedGroup });
+//   };
+
+//   return (
+//     <AccessGroupsContext.Provider
+//       value={{
+//         accessGroups: state.accessGroups,
+//         applications: state.applications,
+//         rights: state.rights,
+//         createAccessGroup,
+//         updateAccessGroup,
+//       }}
+//     >
+//       {children}
+//     </AccessGroupsContext.Provider>
+//   );
+// }
+
+// export const useAccessGroups = () => {
+//   const context = useContext(AccessGroupsContext);
+//   if (!context) {
+//     throw new Error(
+//       "useAccessGroups must be used within an AccessGroupsProvider"
+//     );
+//   }
+//   return context;
+// };

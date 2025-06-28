@@ -1,10 +1,12 @@
 import React from "react";
-import { Route, Redirect, useParams } from "react-router-dom";
+import { Route, Redirect, useParams, useLocation } from "react-router-dom";
 import { useTenant } from "./context/TenantContext";
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
   const { tenantData } = useTenant();
-  const { tenant } = useParams();
+  // const { tenant } = useParams();
+  const location = useLocation();
+  const tenant = location.pathname.split("/")[1]; // Extract tenant from the URL
 
   return (
     <Route

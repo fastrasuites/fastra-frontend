@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import {
   Grid,
   TextField,
@@ -16,7 +16,7 @@ import "./LocationForm.css";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import { useLocationConfig } from "../../../../context/Inventory/LocationConfigContext";
 import Asteriks from "../../../../components/Asterisk";
-// import { useTenant } from "../../../../context/TenantContext";
+import { useTenant } from "../../../../context/TenantContext";
 
 const STORAGE_KEY = "draftLocationForm";
 
@@ -38,8 +38,11 @@ const initialFormState = {
 };
 
 const LocationForm = () => {
-  // const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
+  const location = useLocation();
+
+  const fromPurchaseModuleWizard = location.state?.openForm === true;
   const {
     locationList,
     getLocationList,
@@ -172,6 +175,13 @@ const LocationForm = () => {
         icon: "error",
         title: "Submission Error",
         text: err?.message || "An error occurred while submitting the form.",
+      });
+    }
+    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
+    if (fromPurchaseModuleWizard) {
+      history.push({
+        pathname: `/${tenant_schema_name}/purchase`,
+        state: { step: 2, preservedWizard: true },
       });
     }
   };

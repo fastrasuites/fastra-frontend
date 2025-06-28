@@ -25,9 +25,6 @@ const LocationConfiguration = () => {
     }
   }, [multiLocationList]);
 
- 
-
-
   // 3. Toggle handler
   const handleSwitchToggle = async () => {
     if (isLoading || multiLocationList.length === 0) return;
@@ -36,7 +33,7 @@ const LocationConfiguration = () => {
     // const id = extractId(multiLocationList[0].url);
 
     try {
-      await patchToggleMultiLocation({is_activated});
+      await patchToggleMultiLocation({ is_activated });
 
       setIsMultiLocationEnabled(is_activated);
     } catch (err) {
@@ -53,8 +50,12 @@ const LocationConfiguration = () => {
           <div className="pagination">
             <span>1-6 of 6</span>
             <div className="switch-btn">
-              <button className="prev" disabled={isLoading}>◀</button>
-              <button className="next" disabled={isLoading}>▶</button>
+              <button className="prev" disabled={isLoading}>
+                ◀
+              </button>
+              <button className="next" disabled={isLoading}>
+                ▶
+              </button>
             </div>
           </div>
         </div>
@@ -78,7 +79,6 @@ const LocationConfiguration = () => {
               />
             </div>
           </div>
-
           {/* {isLoading && <p className="loading">Updating…</p>}
           {error && <p className="error">Error updating status</p>} */}
         </Box>

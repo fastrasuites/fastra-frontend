@@ -81,11 +81,11 @@ export default function Newvendor({
     createVendor(formData);
     onClose();
 
-    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
+    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:4
     if (fromPurchaseModuleWizard) {
       history.push({
         pathname: `/${tenant_schema_name}/purchase`,
-        state: { step: 3 },
+        state: { step: 4, preserveWizard: true },
       });
     }
   };

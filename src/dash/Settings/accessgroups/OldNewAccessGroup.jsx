@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import uploadIcon from "../../../image/uploadIcon.svg";
-import { Table } from 'react-bootstrap';
+import { Table } from "react-bootstrap";
 import { useHistory } from "react-router-dom";
-import '../accessgroups/accessgroups.css';
+import "../accessgroups/accessgrp.css";
 
 export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
-
   const [formState, setFormState] = useState({
     groupName: "",
     application: "",
@@ -65,27 +64,27 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     // Capture the current date and time as dateOfCreation
     const dateOfCreation = new Date().toISOString();
-  
+
     // Combine formState, accessRights, and dateOfCreation
     const accessGroupData = {
-      ...formState,        // Spread the form state (includes groupName, application, etc.)
-      accessRights,        // Add access rights 
-      dateOfCreation,      // Add the creation date
+      ...formState, // Spread the form state (includes groupName, application, etc.)
+      accessRights, // Add access rights
+      dateOfCreation, // Add the creation date
     };
-  
+
     // Store the data in localStorage
-    localStorage.setItem('accessGroupData', JSON.stringify(accessGroupData));
-  
+    localStorage.setItem("accessGroupData", JSON.stringify(accessGroupData));
+
     // Pass the data to the onSaveAndSubmit callback
     onSaveAndSubmit(accessGroupData);
-  
+
     // Close the form/modal
     onClose();
   };
-  
+
   const applicationsOptions = [
     { value: "Purchase", label: "Purchase" },
     { value: "Inventory", label: "Inventory" },
@@ -110,7 +109,7 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
         console.error("Error fetching company name:", error);
       }
     };
-    
+
     fetchCompanyName();
   }, []);
 
@@ -141,8 +140,10 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
       <div className="form-header">
         <div className="form-header-details">
           <div className="form-header-activity">
-            <button className="header-btn" onClick={onClose}>Access groups</button>
-            
+            <button className="header-btn" onClick={onClose}>
+              Access groups
+            </button>
+
             <button className="header-btn active">Create</button>
           </div>
         </div>
@@ -155,14 +156,20 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
                 <button type="button" className="cancel-btn" onClick={onClose}>
                   Cancel
                 </button>
-                <button type="submit" style={{ display: "flex", justifyContent: "center" }}>
+                <button
+                  type="submit"
+                  style={{ display: "flex", justifyContent: "center" }}
+                >
                   Save
                 </button>
               </div>
             </div>
 
             <div className="registration-contact-info-grouped">
-              <div className="icon-upload" onClick={() => document.getElementById("imageInput").click()}>
+              <div
+                className="icon-upload"
+                onClick={() => document.getElementById("imageInput").click()}
+              >
                 <input
                   type="file"
                   accept=".png, .jpg, .jpeg"
@@ -193,7 +200,9 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
                   placeholder="Select Application"
                   options={applicationsOptions}
                   styles={customStyles}
-                  onChange={(selectedOption) => handleSelectChange("application", selectedOption)}
+                  onChange={(selectedOption) =>
+                    handleSelectChange("application", selectedOption)
+                  }
                 />
               </div>
 
@@ -215,7 +224,6 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
                   {formState.companyName}
                 </h1>
               </div>
-
             </div>
             <hr />
             <h2 className="heading">Access Rights</h2>
@@ -231,26 +239,30 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
               <tbody>
                 {Object.keys(accessRights).map((right) => (
                   <tr key={right}>
-                    <td>{right.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</td>
+                    <td>
+                      {right
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (str) => str.toUpperCase())}
+                    </td>
                     <td>
                       <input
                         type="checkbox"
                         checked={accessRights[right].view}
-                        onChange={() => handleCheckboxChange(right, 'view')}
+                        onChange={() => handleCheckboxChange(right, "view")}
                       />
                     </td>
                     <td>
                       <input
                         type="checkbox"
                         checked={accessRights[right].edit}
-                        onChange={() => handleCheckboxChange(right, 'edit')}
+                        onChange={() => handleCheckboxChange(right, "edit")}
                       />
                     </td>
                     <td>
                       <input
                         type="checkbox"
                         checked={accessRights[right].approve}
-                        onChange={() => handleCheckboxChange(right, 'approve')}
+                        onChange={() => handleCheckboxChange(right, "approve")}
                       />
                     </td>
                   </tr>
@@ -262,7 +274,10 @@ export default function NewAccessGroup({ onClose, onSaveAndSubmit }) {
               <button type="button" className="cancel-btn" onClick={onClose}>
                 Cancel
               </button>
-              <button type="submit" style={{ display: "flex", justifyContent: "center" }}>
+              <button
+                type="submit"
+                style={{ display: "flex", justifyContent: "center" }}
+              >
                 Save
               </button>
             </div>

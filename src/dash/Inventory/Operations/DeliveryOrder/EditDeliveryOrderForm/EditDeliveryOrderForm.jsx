@@ -324,7 +324,7 @@ const EditDeliveryOrderForm = () => {
   const handleSubmit = async (filledFormData) => {
     setIsSubmitting(true);
     try {
-      const payload = {
+      const cleanData = {
         customer_name: filledFormData.customer_name,
         source_location: filledFormData.source_location?.id,
         delivery_address: filledFormData.delivery_address,
@@ -339,8 +339,8 @@ const EditDeliveryOrderForm = () => {
           quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
         })),
       };
-
-      const result = await updateDeliveryOrder(orderId, payload);
+      console.log("Submitted Data to context:", cleanData);
+      const result = await updateDeliveryOrder(orderId, cleanData);
 
       if (result && result.success) {
         Swal.fire({

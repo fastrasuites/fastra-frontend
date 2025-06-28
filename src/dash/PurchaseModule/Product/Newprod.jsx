@@ -79,11 +79,11 @@ export default function Newprod({
     handleSaveAndSubmit(formData);
     onClose();
 
-    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
+    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:3
     if (fromPurchaseModuleWizard) {
       history.push({
         pathname: `/${tenant_schema_name}/purchase`,
-        state: { step: 2 },
+        state: { step: 3, preserveWizard: true },
       });
     }
   };
