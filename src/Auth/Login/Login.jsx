@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import LoginForm from "./LoginForm";
-import Navbar from "../components/nav/Navbar";
+import Navbar from "../../components/nav/Navbar";
 
 export default function Login() {
   return (

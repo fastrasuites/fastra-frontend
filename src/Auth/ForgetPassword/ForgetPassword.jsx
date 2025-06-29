@@ -1,89 +1,111 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import Navbar from "../components/nav/Navbar";
+import Navbar from "../../components/nav/Navbar";
 import styled from "styled-components";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./ForgetPassword.css";
+import { Box } from "@mui/material";
+import OtpInput from "../../components/Auth/OtpInput";
 
 export default function ForgetPassword() {
   const [email, setEmail] = useState("");
   const [step, setStep] = useState(0);
-  const [code, setCode] = useState(["", "", "", ""]);
-  const [timer, setTimer] = useState(30); // 30 seconds countdown
+  const [otp, setOtp] = useState("");
+  const [timer, setTimer] = useState(30);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Get tenant name from URL
-  const fullUrl = window.location.hostname; // e.g., "tenant1.fastra.com"
-  const parts = fullUrl.split(".");
-  const tenantName = parts[0]; // Assuming the first part is the subdomain (tenant name)
+  // Extract tenant subdomain
+  const tenant = window.location.hostname.split(".")[0];
 
-  // Start countdown timer
+  // Countdown for OTP resend
   useEffect(() => {
-    if (timer > 0) {
-      const countdown = setInterval(() => setTimer((prev) => prev - 1), 1000);
-      return () => clearInterval(countdown);
+    if (step === 1 && timer > 0) {
+      const id = setInterval(() => setTimer((t) => t - 1), 1000);
+      return () => clearInterval(id);
     }
-  }, [timer]);
+  }, [step, timer]);
 
-  // Send email to backend for password reset request
+  // Unified error handler
+  const handleError = useCallback((err, fallback) => {
+    const msg =
+      err.response?.data?.error || err.response?.data?.detail || fallback;
+    setError(msg);
+    toast.error(msg);
+  }, []);
+
+  // STEP 0 → send email
   const handleEmailSubmit = async () => {
+    setError("");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     try {
-      const response = await axios.post(
-        `https://${tenantName}.fastrasuite.com/request-forgotten-password/`, // Correct endpoint
-        { email }
+      const { data } = await axios.post(
+        `https://${tenant}.fastrasuiteapi.com.ng/request-forgotten-password/`,
+        { email },
+        { withCredentials: true }
       );
-      setStep(1); // Move to next step (Enter code)
-      toast.success(response.data.detail); // Notify user
-    } catch (error) {
-      const errorMsg =
-        error.response?.data.error || "Failed to send code. Please try again.";
-      setError(errorMsg); // Show error message
+      toast.success(data.detail || "Code sent to your email");
+      setStep(1);
+      setTimer(30);
+    } catch (err) {
+      console.error("Error sending code:", err);
+      handleError(err, "Unable to send code. Try again.");
     }
   };
 
-  // Verify the 4-digit code
+  // STEP 1 → verify OTP
   const handleVerifyCode = async () => {
+    if (otp.length !== 4) {
+      setError("Enter the 4-digit code.");
+      return;
+    }
     try {
-      const codeString = code.join(""); // Combine code array to string
-      const response = await axios.post(
-        `https://${tenantName}.fastrasuite.com/request-forgotten-password/`, // Ensure correct endpoint
-        { email, code: codeString }
+      await axios.post(
+        `https://${tenant}.fastrasuiteapi.com.ng/verify-otp/`,
+        {
+          email, // explicitly include email
+          otp, // use 'otp' instead of 'refresh'
+        },
+        { withCredentials: true }
       );
-      setStep(2); // Move to next step (Reset password)
-      toast.success("Code verified successfully!"); // Notify user
-    } catch (error) {
-      const errorMsg =
-        error.response?.data.error || "Invalid code. Please try again.";
-      setError(errorMsg); // Show error message
+      toast.success("Code verified!");
+      setStep(2);
+    } catch (err) {
+      console.error("Error verifying code:", err);
+      handleError(err, "Invalid code. Please retry.");
     }
   };
 
-  // Resend the code
-  const handleResendCode = async () => {
-    setTimer(30); // Reset the timer
-    await handleEmailSubmit();
+  const handleResendCode = () => {
+    setTimer(30);
+    handleEmailSubmit();
   };
 
-  // Submit the new password
+  // STEP 2 → reset password
   const handlePasswordReset = async () => {
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
     try {
-      const response = await axios.post(
-        "https://fastrav1-production.up.railway.app/reset-password", // Ensure correct endpoint
-        { email, newPassword }
+      const { data } = await axios.post(
+        `https://${tenant}.fastrasuiteapi.com.ng/reset-password/`,
+        {
+          email,
+          new_password: newPassword,
+        },
+        { withCredentials: true }
       );
-      toast.success(response.data.detail); // Notify user
-      setStep(3); // Move to success message
-    } catch (error) {
-      const errorMsg =
-        error.response?.data.error || "Failed to reset password.";
-      setError(errorMsg); // Show error message
+      toast.success(data.detail || "Password reset successful");
+      setStep(3);
+    } catch (err) {
+      handleError(err, "Failed to reset password.");
     }
   };
 
@@ -92,6 +114,7 @@ export default function ForgetPassword() {
       <FogPasNavBar>
         <Navbar />
       </FogPasNavBar>
+
       <div className="forget-password-container">
         <div className="forget-password-form-wrapper">
           {step === 0 && (
@@ -105,7 +128,7 @@ export default function ForgetPassword() {
                 className="form-input"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.trim())}
                 required
               />
               <button className="submit-button" onClick={handleEmailSubmit}>
@@ -117,37 +140,29 @@ export default function ForgetPassword() {
 
           {step === 1 && (
             <div className="forget-password-form">
-              <h2 className="form-title">Enter Verification Code</h2>
+              <h2 className="form-title">Verification</h2>
               <p className="form-subtitle">
-                We've sent a code to your email. It expires in {timer} seconds.
+                Enter the 4-digit code sent to your email.
               </p>
-              <div className="f-group">
-                {code.map((digit, index) => (
-                  <input
-                    key={index}
-                    className="form-input"
-                    type="text"
-                    maxLength="1"
-                    value={digit}
-                    onChange={(e) => {
-                      const newCode = [...code];
-                      newCode[index] = e.target.value;
-                      setCode(newCode);
-                    }}
-                  />
-                ))}
-              </div>
+              <Box>
+                <OtpInput value={otp} onChange={setOtp} />
+              </Box>
+
               <button className="submit-button" onClick={handleVerifyCode}>
-                Verify
+                Continue
               </button>
-              {timer === 0 && (
+
+              {timer > 0 ? (
+                <p className="timer-text">Resend in {timer}s</p>
+              ) : (
                 <p className="login-link">
                   Didn't receive a code?{" "}
-                  <button onClick={handleResendCode} className="resend-link">
+                  <button className="resend-link" onClick={handleResendCode}>
                     Resend another code
                   </button>
                 </p>
               )}
+
               {error && <p className="error-message">{error}</p>}
             </div>
           )}
@@ -202,6 +217,7 @@ const FogPasContainer = styled.div`
   width: 100%;
   height: 100vh;
 `;
+
 const FogPasNavBar = styled.div`
   width: 100%;
   height: 10%;

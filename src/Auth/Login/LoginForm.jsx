@@ -3,8 +3,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
 import axios from "axios";
 import "./LoginForm.css";
-import { useTenant } from "../context/TenantContext";
 import { current } from "@reduxjs/toolkit";
+import { useTenant } from "../../context/TenantContext";
 
 export default function LoginForm() {
   const [connecting, setConnecting] = useState("Login");
@@ -15,15 +15,6 @@ export default function LoginForm() {
   const { login } = useTenant();
   const history = useHistory();
   const buttonRef = useRef(null);
-  // // checks url for localhost:3000 or app.fastrasuite.com
-  // const MAIN_DOMAIN_URL = window.location.href.includes("app.fastrasuite.com")
-  //   ? "app.fastrasuite.com"
-  //   : "localhost:3000";
-
-  // // Determine protocol dynamically (http for localhost, https for production)
-  // const PROTOCOL = window.location.protocol.includes("https")
-  //   ? "https"
-  //   : "http";
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -145,9 +136,9 @@ export default function LoginForm() {
             <Link to="/" className="register-link">
               Don't have an account?
             </Link>
-            {/* <Link to="/forget-password" className="forgot-password-link">
+            <Link to="/forget-password" className="forgot-password-link">
               Forget Password
-            </Link> */}
+            </Link>
           </div>
         </div>
       </div>

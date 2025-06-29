@@ -1,179 +1,386 @@
-import React, { useState, useEffect } from "react";
-import { BsCaretLeftFill } from "react-icons/bs";
-import { BsCaretRightFill } from "react-icons/bs";
-import { FaBars } from "react-icons/fa";
-import { IoGrid } from "react-icons/io5";
-import NewCompany from "./NewCompanyForm";
-import ListView from "./CompanyLview";
-import { CiSearch } from "react-icons/ci";
-import { useLocation } from "react-router-dom";
+import { useTheme, useMediaQuery } from "@mui/material";
+import Avatar from "../../../assets/images/avatars/userAvatar.png";
 
-export default function Company() {
-  const [companies, setCompanies] = useState([]);
-  const [filteredCompanies, setFilteredCompanies] = useState(companies);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showNewCompany, setShowNewCompany] = useState(false);
-  const [viewMode, setViewMode] = useState("list");
+const USERS = [
+  {
+    id: 1,
+    avatar: Avatar,
+    company_name: "BigFix Technologies",
+    email: "info.bigfix@gmail.com",
+    phone: "+234 0801 234 5679",
+    registration_number: "BF12345678",
+    website: "www.bigfixtech.com",
+  },
+  {
+    id: 2,
+    avatar: Avatar,
+    company_name: "Steadfast Solutions",
+    email: "info.steadfast@example.com",
+    phone: "+234 0812 345 6789",
+    registration_number: "SS98765432",
+    website: "www.steadfastsolutions.com",
+  },
+  {
+    id: 3,
+    avatar: Avatar,
+    company_name: "EBIS",
+    email: "ebis@example.com",
+    phone: "+234 0902 456 7890",
+    registration_number: "EBIS123456",
+    website: "www.ebis.com",
+  },
+];
 
-  // openForm prop is from dashboard modal
-  const location = useLocation();
+import { Box, Typography } from "@mui/material";
+
+import { memo, useEffect, useState } from "react";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Grid,
+  Skeleton,
+} from "@mui/material";
+
+import { useList } from "../../../hooks/useList";
+import { SearchField } from "../../../components/SearchField/SearchField";
+import { ViewToggle } from "../../../components/ViewToggle/ViewToggle";
+import { PaginationControls } from "../../../components/PaginationControls/PaginationControls";
+import { ListToolbar } from "../../../components/ListToolbar/ListToolbar";
+import { Link } from "react-router-dom";
+import { useTenant } from "../../../context/TenantContext";
+import { useCompany } from "../../../context/Settings/CompanyContext";
+
+// -- CARD VIEW --
+// const UserCard = memo(({ user }) => (
+//   <Card
+//     variant="outlined"
+//     sx={{
+//       width: "100%",
+//       maxWidth: { md: 280 },
+//       p: 2,
+//       display: "flex",
+//       flexDirection: "column",
+//       alignItems: "center",
+//       gap: 1,
+//       color: "text.secondary",
+//       fontSize: "0.75rem",
+//     }}
+//   >
+//     <Box
+//       component="img"
+//       src={user.avatar}
+//       alt="avatar"
+//       sx={{ borderRadius: "50%", width: 80, height: 80 }}
+//     />
+//     <Typography variant="subtitle1" color="text.primary" noWrap>
+//       {user.company_name}
+//     </Typography>
+//     <Typography variant="caption" textTransform="uppercase" noWrap>
+//       {user.registration_number}
+//     </Typography>
+//     <Typography variant="body2" noWrap>
+//       {user.email}
+//     </Typography>
+//     <Typography variant="body2" noWrap>
+//       {user.phone}
+//     </Typography>
+//   </Card>
+// ));
+
+// -- ROW VIEW --
+// const UserRow = memo(({ user, index, selected, onSelect, onClick }) => (
+//   <TableRow
+//     hover
+//     onClick={onClick}
+//     sx={{
+//       cursor: "pointer",
+//       backgroundColor: index % 2 === 0 ? "#F2F2F2" : "#FFFFFF",
+//       "& td, & th": { borderBottom: "none" },
+//     }}
+//   >
+//     <TableCell padding="checkbox">
+//       <Checkbox
+//         checked={selected}
+//         onChange={(e) => {
+//           e.stopPropagation();
+//           onSelect(user.id, e.target.checked);
+//         }}
+//         sx={{ color: "#C6CCD2" }}
+//       />
+//     </TableCell>
+//     <TableCell sx={{ p: 2, display: "flex", alignItems: "center" }}>
+//       <Box
+//         component="img"
+//         src={user.avatar}
+//         alt={user.company_name}
+//         sx={{ width: 40, height: 40, borderRadius: "50%" }}
+//       />
+//       {user.company_name}
+//     </TableCell>
+//     <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }}>
+//       {user.registration_number}
+//     </TableCell>
+//     <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+//       {user.email}
+//     </TableCell>
+//     <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+//       {user.phone}
+//     </TableCell>
+//     <TableCell
+//       sx={{
+//         p: 1,
+//         typography: "caption",
+//         textTransform: "uppercase",
+//         color: "#7A8A98",
+//       }}
+//     >
+//       {user.website}
+//     </TableCell>
+//   </TableRow>
+// ));
+
+const Company = () => {
+  const tenant_schema = useTenant().tenantData;
+  const { company, getCompany } = useCompany();
+
+  const theme = useTheme();
+  const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+
   useEffect(() => {
-    if (location.state?.openForm) {
-      setShowNewCompany(true);
-    }
-  }, [location.openForm]);
-  // End openForm from dashboard modal
+    getCompany();
+  }, [getCompany]);
 
-  useEffect(() => {
-    const storedCompanies = JSON.parse(localStorage.getItem("companies")) || [];
-    setCompanies(storedCompanies);
-  }, []);
+  console.log(tenant_schema, company);
+  const {
+    page,
+    totalPages,
+    paginated,
+    selectedIds,
+    allSelected,
+    gridView,
+    handleSearch,
+    handlePrev,
+    handleNext,
+    handleSelect,
+    handleSelectAll,
+    setGridView,
+  } = useList(USERS, {
+    pageSize: 5,
+    filterFn: (user, term) =>
+      user.company_name.toLowerCase().includes(term.toLowerCase()) ||
+      user.registration_number.toLowerCase().includes(term.toLowerCase()) ||
+      user.email.toLowerCase().includes(term.toLowerCase()) ||
+      user.phone.toLowerCase().includes(term.toLowerCase()),
+  });
 
-  useEffect(() => {
-    handleSearch();
-  }, [searchQuery, companies]);
-
-  const handleSearch = () => {
-    if (searchQuery === "") {
-      setFilteredCompanies(companies);
-    } else {
-      const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = companies.filter(
-        (item) =>
-          item.companyName.toLowerCase().includes(lowercasedQuery) ||
-          item.email.toLowerCase().includes(lowercasedQuery) ||
-          item.phoneNumber.toLowerCase().includes(lowercasedQuery)
-      );
-      setFilteredCompanies(filtered);
-    }
-  };
-
-  const handleNewCompany = () => {
-    setShowNewCompany(true);
-  };
-
-  const handleCloseNewCompany = () => {
-    setShowNewCompany(false);
-  };
-
-  const handleSaveAndSubmit = (newCompany) => {
-    const updatedCompanies = [...companies, newCompany];
-    setCompanies(updatedCompanies);
-    localStorage.setItem("companies", JSON.stringify(updatedCompanies));
-    setShowNewCompany(false);
-  };
-
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-  };
+  const renderSkeletons = () =>
+    Array.from({ length: 5 }).map((_, i) => (
+      <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+        <Card variant="outlined" sx={{ p: 2 }}>
+          <Skeleton variant="circular" width={80} height={80} />
+          <Skeleton width="60%" />
+          <Skeleton width="40%" />
+          <Skeleton width="80%" />
+          <Skeleton width="80%" />
+        </Card>
+      </Grid>
+    ));
 
   return (
-    <div className="container-body">
-      <div className="content-page" id="Company">
-        {showNewCompany ? (
-          <div className="overlay">
-            <NewCompany
-              onClose={handleCloseNewCompany}
-              onSaveAndSubmit={handleSaveAndSubmit}
-              fromStepModal={location.state?.openForm}
+    <Box p={{ xs: 2, sm: 4, md: 6 }}>
+      <ListToolbar
+        isXs={isXs}
+        leftActions={
+          <>
+            <Link
+              to={`/${tenant_schema?.tenant_schema_name}/settings/company/new`}
+            >
+              <Button fullWidth={isXs} variant="contained">
+                New Company
+              </Button>
+            </Link>
+
+            <SearchField onSearch={handleSearch} />
+          </>
+        }
+        rightActions={
+          <>
+            <PaginationControls
+              page={page}
+              totalPages={totalPages}
+              onPrev={handlePrev}
+              onNext={handleNext}
             />
-          </div>
-        ) : (
-          <div className="content-body">
-            <div className="content-details">
-              <div className="content-header">
-                <div className="header-activity-1">
-                  <button className="btn" onClick={handleNewCompany}>
-                    New Company
-                  </button>
-                  <div className="search-box">
-                    <CiSearch className="icon" onClick={handleSearch} />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      placeholder="Search ..."
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+            <ViewToggle gridView={gridView} onToggle={setGridView} />
+          </>
+        }
+      />
 
-                    {/* <label
-                    htmlFor="searchInput"
-                    className="Companys1"
-                    onClick={handleSearch}
-                  >
-                    <img src={SearchIcon} alt="Search" className="Companys2" />
-                    <input
-                      id="searchInput"
-                      type="text"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="Companys3"
-                    />
-                  </label> */}
-                  </div>
-                </div>
-
-                <div className="header-activity-2">
-                  <p className="pagination">
-                    1-{filteredCompanies.length} of {filteredCompanies.length}
-                  </p>
-                  <div className="pagination-btn">
-                    <button>
-                      <BsCaretLeftFill className="icon" />
-                    </button>
-                    <button>
-                      <BsCaretRightFill className="icon" />
-                    </button>
-                  </div>
-                  <div className="view-toggle">
-                    <button>
-                      {" "}
-                      <IoGrid
-                        className={`icon ${
-                          viewMode === "grid" ? "active" : ""
-                        }`}
-                        onClick={() => toggleViewMode("grid")}
-                      />
-                    </button>
-                    <button>
-                      {" "}
-                      <FaBars
-                        className={`icon ${
-                          viewMode === "list" ? "active" : ""
-                        }`}
-                        onClick={() => toggleViewMode("list")}
-                      />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`Company4 ${viewMode}`}>
-                {viewMode === "grid" ? (
-                  filteredCompanies.map((company, index) => (
-                    <div className="Company4gv" key={index}>
-                      <div className="Companymage">
-                        <img
-                          src={company.image || "default-image-url"}
-                          alt={company.companyName}
-                          className="cirmage"
-                        />
-                      </div>
-                      <div className="Companydetails">
-                        <p className="Companyname">{company.companyName}</p>
-                        <p className="Companymail">{company.email}</p>
-                        <p className="Companynum">{company.phoneNumber}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <ListView companies={filteredCompanies} />
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-     </div>
+      {/* Content Area */}
+      {gridView ? (
+        <Grid container spacing={2}>
+          {/* {paginated.length > 0
+            ? paginated.map((user) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={user.id}>
+                  <UserCard user={user} />
+                </Grid>
+              ))
+            : renderSkeletons()} */}
+          <Grid item xs={12} sm={6} md={4} lg={3}>
+            <Card
+              variant="outlined"
+              sx={{
+                width: "100%",
+                maxWidth: { md: 280 },
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1,
+                color: "text.secondary",
+                fontSize: "0.75rem",
+              }}
+            >
+              <Box
+                component="img"
+                src={company?.logo}
+                alt="avatar"
+                sx={{ borderRadius: "50%", width: 80, height: 80 }}
+              />
+              <Typography variant="subtitle1" color="text.primary" noWrap>
+                {tenant_schema?.tenant_company_name?.company_name}
+              </Typography>
+              <Typography variant="caption" textTransform="uppercase" noWrap>
+                {company.registration_number}
+              </Typography>
+              <Typography variant="body2" noWrap>
+                {tenant_schema?.user?.email}
+              </Typography>
+              <Typography variant="body2" noWrap>
+                {company?.phone}
+              </Typography>
+            </Card>
+          </Grid>
+        </Grid>
+      ) : (
+        // <TableContainer sx={{ border: "1px solid #E2E6E9" }}>
+        //   <Table>
+        //     <TableHead>
+        //       <TableRow>
+        //         <TableCell padding="checkbox">
+        //           <Checkbox
+        //             checked={allSelected}
+        //             onChange={(e) => handleSelectAll(e.target.checked)}
+        //             sx={{ color: "#C6CCD2" }}
+        //           />
+        //         </TableCell>
+        //         <TableCell sx={{ p: 3, color: "#7A8A98" }}>Full Name</TableCell>
+        //         <TableCell sx={{ p: 3, typography: "body2", color: "#7A8A98" }}>
+        //           Registration Number
+        //         </TableCell>
+        //         <TableCell
+        //           sx={{ p: 3, typography: "body2", color: "#7A8A98" }}
+        //           noWrap
+        //         >
+        //           Email
+        //         </TableCell>
+        //         <TableCell
+        //           sx={{ p: 1, typography: "body2", color: "#7A8A98" }}
+        //           noWrap
+        //         >
+        //           Phone
+        //         </TableCell>
+        //         <TableCell
+        //           sx={{
+        //             p: 1,
+        //             typography: "caption",
+        //             textTransform: "uppercase",
+        //             color: "#7A8A98",
+        //             minWidth: "300px",
+        //           }}
+        //         >
+        //           Website
+        //         </TableCell>
+        //       </TableRow>
+        //     </TableHead>
+        //     <TableBody>
+        //       {/* {paginated.map((user, index) => (
+        //         <UserRow
+        //           key={user.id}
+        //           user={user}
+        //           index={index}
+        //           selected={selectedIds.includes(user.id)}
+        //           onSelect={handleSelect}
+        //         />
+        //       ))} */}
+        //       <TableRow
+        //         hover
+        //         // onClick={onClick}
+        //         sx={{
+        //           cursor: "pointer",
+        //           backgroundColor: "#FFFFFF",
+        //           "& td, & th": { borderBottom: "none" },
+        //         }}
+        //       >
+        //         <TableCell padding="checkbox">
+        //           <Checkbox
+        //             // checked={selected}
+        //             onChange={(e) => {
+        //               e.stopPropagation();
+        //               // onSelect(user.id, e.target.checked);
+        //             }}
+        //             sx={{ color: "#C6CCD2" }}
+        //           />
+        //         </TableCell>
+        //         <TableCell sx={{ p: 2, display: "flex", alignItems: "center" }}>
+        //           <Box
+        //             component="img"
+        //             src={user.avatar}
+        //             alt={user.company_name}
+        //             sx={{ width: 40, height: 40, borderRadius: "50%" }}
+        //           />
+        //           {user.company_name}
+        //         </TableCell>
+        //         <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }}>
+        //           {user.registration_number}
+        //         </TableCell>
+        //         <TableCell
+        //           sx={{ p: 2, typography: "body2", color: "#7A8A98" }}
+        //           noWrap
+        //         >
+        //           {user.email}
+        //         </TableCell>
+        //         <TableCell
+        //           sx={{ p: 2, typography: "body2", color: "#7A8A98" }}
+        //           noWrap
+        //         >
+        //           {user.phone}
+        //         </TableCell>
+        //         <TableCell
+        //           sx={{
+        //             p: 1,
+        //             typography: "caption",
+        //             textTransform: "uppercase",
+        //             color: "#7A8A98",
+        //           }}
+        //         >
+        //           {user.website}
+        //         </TableCell>
+        //       </TableRow>
+        //     </TableBody>
+        //   </Table>
+        // </TableContainer>
+        <div></div>
+      )}
+    </Box>
   );
-}
+};
+
+export default memo(Company);
