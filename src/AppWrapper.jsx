@@ -17,39 +17,43 @@ import { ScrapProvider } from "./context/Inventory/Scrap";
 import { PurchaseOrderProvider } from "./context/PurchaseOrderContext.";
 import { StockMoveProvider } from "./context/Inventory/stockMoveContext";
 import { AccessGroupsProvider } from "./context/AccessGroups/AccessGroupsContext";
+import { UserProvider } from "./context/Settings/UserContext";
+import { CompanyProvider } from "./context/Settings/CompanyContext";
 
 function AppWrapper() {
   return (
     <TenantProvider>
       <TenantUsersProvider>
-        <FormProvider>
-          <AccessGroupsProvider>
-            <PurchaseProvider>
-              <RFQProvider>
-                <PurchaseOrderProvider>
-                  <LocationConfigProvider>
-                    <LocationProvider>
-                      <IncomingProductProvider>
-                        <DeliveryOrderProvider>
-                          <StockAdjustmentProvider>
-                            <StockMoveProvider>
-                              {" "}
-                              <ScrapProvider>
-                                <Router>
-                                  <App />
-                                </Router>
-                              </ScrapProvider>
-                            </StockMoveProvider>
-                          </StockAdjustmentProvider>
-                        </DeliveryOrderProvider>
-                      </IncomingProductProvider>
-                    </LocationProvider>
-                  </LocationConfigProvider>
-                </PurchaseOrderProvider>
-              </RFQProvider>
-            </PurchaseProvider>
-          </AccessGroupsProvider>
-        </FormProvider>
+        <UserProvider>
+          <CompanyProvider>
+            <FormProvider>
+              <PurchaseProvider>
+                <RFQProvider>
+                  <PurchaseOrderProvider>
+                    <LocationConfigProvider>
+                      <LocationProvider>
+                        <IncomingProductProvider>
+                          <DeliveryOrderProvider>
+                            <StockAdjustmentProvider>
+                              <StockMoveProvider>
+                                {" "}
+                                <ScrapProvider>
+                                  <Router>
+                                    <App />
+                                  </Router>
+                                </ScrapProvider>
+                              </StockMoveProvider>
+                            </StockAdjustmentProvider>
+                          </DeliveryOrderProvider>
+                        </IncomingProductProvider>
+                      </LocationProvider>
+                    </LocationConfigProvider>
+                  </PurchaseOrderProvider>
+                </RFQProvider>
+              </PurchaseProvider>
+            </FormProvider>
+          </CompanyProvider>
+        </UserProvider>
       </TenantUsersProvider>
     </TenantProvider>
   );

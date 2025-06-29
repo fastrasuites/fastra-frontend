@@ -2,10 +2,8 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import Register from "./Reglog/Register";
-import EmailVerification from "./Reglog/EmailVerification";
-import Login from "./Reglog/Login";
-import ForgetPassword from "./Reglog/ForgetPassword";
+import EmailVerification from "./Auth/EmailVerification";
+import ForgetPassword from "./Auth/ForgetPassword/ForgetPassword";
 import Dashboard from "./dash/Dashboard";
 import Contact from "./dash/Contact";
 import Newpr from "./dash/PurchaseModule/PurchRequest/Newpr";
@@ -21,13 +19,15 @@ import Newprod from "./dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
 import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
-import ResendEmailVerification from "./Reglog/ResendEmailVerification";
+import ResendEmailVerification from "./Auth/ResendEmailVerification";
 import NoHeaderLayout from "./notFound/NoHeaderLayout";
 import NotFound from "./notFound/NotFound";
 import POFormWrapper from "./dash/PurchaseModule/PurchOrder/POForm/POFormWrapper";
 import InventoryLayout from "./dash/Inventory/Inventory";
 import PurchaseLayout from "./dash/PurchaseModule/Purchase";
 import SettingsLayout from "./dash/Settings/SettingLayout";
+import Register from "./Auth/Register/Register";
+import Login from "./Auth/Login/Login";
 
 function App() {
   return (

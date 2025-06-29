@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import RegistrationForm from "./RegistrationForm";
-import Navbar from "../components/nav/Navbar";
-import Footer from "../components/nav/Footer";
+import Navbar from "../../components/nav/Navbar";
 
 export default function Register() {
   return (
