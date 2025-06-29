@@ -1,7 +1,6 @@
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAccessGroups } from "../../../context/AccessGroups/AccessGroupsContext";
 
 const FormToolbar = ({
   tenant_schema_name,
@@ -11,7 +10,6 @@ const FormToolbar = ({
   access_code,
   isLoading = false,
 }) => {
-  const { isLoading: isloading } = useAccessGroups();
   return (
     <Box display="flex" justifyContent="space-between" mb={4}>
       <Typography variant="h6" color="primary" sx={{ fontWeight: "bold" }}>
@@ -43,7 +41,7 @@ const FormToolbar = ({
             type="submit"
             disabled={isLoading}
           >
-            {isloading ? <CircularProgress size={24} /> : btnContainedLabel}
+            {isLoading ? <CircularProgress size={24} /> : btnContainedLabel}
           </Button>
         )}
       </Box>

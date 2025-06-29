@@ -13,6 +13,7 @@ import {
   IconButton,
   Tooltip,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAccessGroups } from "../../../context/AccessGroups/AccessGroupsContext";
@@ -46,6 +47,7 @@ const AccessGroups = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
+
   return (
     <Box p={{ xs: 2, sm: 4, md: 6 }}>
       <Box
@@ -136,7 +138,7 @@ const AccessGroups = () => {
             <TableBody>
               {filteredGroups.map((group, index) => (
                 <TableRow
-                  key={group.id}
+                  key={group.access_code}
                   sx={{
                     backgroundColor: index / 2 === 0 ? "#F2F2F2" : "white",
                     "&:hover": {
@@ -158,7 +160,7 @@ const AccessGroups = () => {
                         display: "inline-block",
                       }}
                     />
-                    {group.id}
+                    {group.access_code}
                   </TableCell>
                   <TableCell sx={{ color: "#7A8A98" }}>
                     {group.groupName}
@@ -169,7 +171,7 @@ const AccessGroups = () => {
                   <TableCell align="right">
                     <Button
                       component={Link}
-                      to={`/${tenant_schema_name}/settings/accessgroups/${group.id}`}
+                      to={`/${tenant_schema_name}/settings/accessgroups/${group.access_code}`}
                       size="small"
                       sx={{ mr: 1 }}
                     >
@@ -177,7 +179,7 @@ const AccessGroups = () => {
                     </Button>
                     <Button
                       component={Link}
-                      to={`/${tenant_schema_name}/settings/accessgroups/${group.id}/edit`}
+                      to={`/${tenant_schema_name}/settings/accessgroups/${group.access_code}/edit`}
                       size="small"
                       color="secondary"
                     >
@@ -196,7 +198,7 @@ const AccessGroups = () => {
           gap={3}
         >
           {filteredGroups.map((group) => (
-            <Paper key={group.id} sx={{ p: 2 }}>
+            <Paper key={group.access_code} sx={{ p: 2 }}>
               <Box display="flex" sx={{ color: "#7A8A98" }}>
                 <Box>
                   <img
@@ -217,13 +219,13 @@ const AccessGroups = () => {
                   <Box mb={2}>
                     <Box display="flex" justifyContent="space-between">
                       <Box>
-                        <strong>{group.id}</strong>
+                        <strong>{group.access_code}</strong>
                       </Box>
 
                       <Box>
                         <Button
                           component={Link}
-                          to={`/${tenant_schema_name}/settings/accessgroups/${group.id}`}
+                          to={`/${tenant_schema_name}/settings/accessgroups/${group.access_code}`}
                           size="small"
                           sx={{ mr: 1 }}
                         >
@@ -231,7 +233,7 @@ const AccessGroups = () => {
                         </Button>
                         <Button
                           component={Link}
-                          to={`/${tenant_schema_name}/settings/accessgroups/${group.id}/edit`}
+                          to={`/${tenant_schema_name}/settings/accessgroups/${group.access_code}/edit`}
                           size="small"
                         >
                           Edit

@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useTenant } from "../TenantContext";
 import { getTenantClient } from "../../services/apiService";
-import { smartFormatLabel, formatApiDate } from "../../helper/helper";
+import { formatApiDate } from "../../helper/helper";
 import Swal from "sweetalert2";
 import CircularProgress from "@mui/material/CircularProgress";
 
@@ -77,7 +77,10 @@ export function AccessGroupsProvider({ children }) {
 
     try {
       dispatch({ type: "FETCH_START" });
-      const response = await client.get(`/application/`);
+
+      const response = await client.get(`/application/`, {
+        baseURL: "https://fastrasuiteapi.com.ng",
+      });
 
       const applications = response.data.applications.map(
         (app) => Object.keys(app)[0]
@@ -116,6 +119,7 @@ export function AccessGroupsProvider({ children }) {
     try {
       dispatch({ type: "FETCH_START" });
       const response = await client.get(`/users/access-group-right/`);
+      console.log("Access Groups Response:", response.data);
 
       // Transform API response to match our UI structure
       const groupsMap = {};
@@ -202,7 +206,7 @@ export function AccessGroupsProvider({ children }) {
       // Transform the first item in response to our group format
       const createdItem = response.data[0];
       const createdGroup = {
-        access_code: createdItem.access_code,
+        access_code: createdItem?.access_code,
         groupName: createdItem.group_name,
         application: createdItem.application.toUpperCase(),
         createdAt: formatApiDate(createdItem.date_created),
@@ -227,7 +231,6 @@ export function AccessGroupsProvider({ children }) {
         payload: createdGroup,
       });
 
-      Swal.fire("Success", "Access group created successfully", "success");
       return createdItem.access_code;
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
@@ -268,8 +271,6 @@ export function AccessGroupsProvider({ children }) {
 
       await client.patch(`/users/access-group-right/${access_code}/`, payload);
       await fetchAccessGroups();
-
-      Swal.fire("Success", "Access group updated successfully", "success");
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
       Swal.fire("Error", "Failed to update access group", "error");
@@ -320,191 +321,3 @@ export const useAccessGroups = () => {
   }
   return context;
 };
-
-// import React, {
-//   useState,
-//   createContext,
-//   useReducer,
-//   useContext,
-//   useMemo,
-//   useCallback,
-// } from "react";
-// import { useTenant } from "../TenantContext";
-// import { getTenantClient } from "../../services/apiService";
-
-// // Mock data
-// const mockAccessGroups = [
-//   {
-//     id: "PUR-MGR-1023",
-//     groupName: "Manager",
-//     application: "Purchase",
-//     createdAt: "4 Apr 2024 - 4:48 PM",
-//     permissions: {
-//       "Purchase Request": {
-//         view: true,
-//         edit: false,
-//         approve: false,
-//         create: false,
-//         reject: false,
-//         delete: false,
-//       },
-//       "Purchase Order": {
-//         view: false,
-//         edit: false,
-//         approve: false,
-//         create: false,
-//         reject: false,
-//         delete: false,
-//       },
-//       "Send RFO": {
-//         view: false,
-//         edit: false,
-//         approve: false,
-//         create: false,
-//         reject: false,
-//         delete: false,
-//       },
-//       Product: {
-//         view: false,
-//         edit: false,
-//         approve: false,
-//         create: false,
-//         reject: false,
-//         delete: false,
-//       },
-//       "Vendor Information": {
-//         view: false,
-//         edit: false,
-//         approve: false,
-//         create: false,
-//         reject: false,
-//         delete: false,
-//       },
-//     },
-//   },
-//   {
-//     id: "HR-OFF-1287",
-//     groupName: "Officer",
-//     application: "Human Resource",
-//     createdAt: "4 Apr 2024 - 4:48 PM",
-//     permissions: {
-//       Recruitment: {
-//         view: true,
-//         edit: true,
-//         approve: false,
-//         create: false,
-//         reject: false,
-//         delete: false,
-//       },
-//       "Employee Management": {
-//         view: true,
-//         edit: false,
-//         approve: false,
-//         create: false,
-//         reject: false,
-//         delete: false,
-//       },
-//     },
-//   },
-// ];
-
-// const initialState = {
-//   accessGroups: mockAccessGroups,
-//   applications: [
-//     "Purchase",
-//     "Inventory",
-//     "Invoicing",
-//     "Human Resource",
-//     "Accounting",
-//   ],
-//   rights: {
-//     Purchase: [
-//       "Purchase Request",
-//       "Purchase Order",
-//       "Send RFO",
-//       "Product",
-//       "Vendor Information",
-//     ],
-//     "Human Resource": ["Recruitment", "Employee Management", "Payroll"],
-//     Accounting: ["Invoicing", "Expenses", "Reports"],
-//   },
-// };
-
-// function reducer(state, action) {
-//   switch (action.type) {
-//     case "CREATE_ACCESS_GROUP":
-//       return {
-//         ...state,
-//         accessGroups: [...state.accessGroups, action.payload],
-//       };
-//     case "UPDATE_ACCESS_GROUP":
-//       return {
-//         ...state,
-//         accessGroups: state.accessGroups.map((group) =>
-//           group.id === action.payload.id ? action.payload : group
-//         ),
-//       };
-//     default:
-//       return state;
-//   }
-// }
-
-// export const AccessGroupsContext = createContext();
-
-// export function AccessGroupsProvider({ children }) {
-//   const { tenantData } = useTenant();
-
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
-//   const client = useMemo(() => {
-//     if (!tenant_schema_name || !access_token || !refresh_token) return null;
-//     return getTenantClient(tenant_schema_name, access_token, refresh_token);
-//   }, [tenant_schema_name, access_token, refresh_token]);
-
-//   const [state, dispatch] = useReducer(reducer, initialState);
-
-//   const createAccessGroup = (newGroup) => {
-//     console.log("newGroup", newGroup);
-//     const id = `${newGroup.application
-//       .substring(0, 3)
-//       .toUpperCase()}-${newGroup.groupName
-//       .substring(0, 3)
-//       .toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-//     const createdAt = new Date().toLocaleString();
-//     dispatch({
-//       type: "CREATE_ACCESS_GROUP",
-//       payload: { ...newGroup, id, createdAt },
-//     });
-//     return id;
-//   };
-
-//   const updateAccessGroup = (updatedGroup) => {
-//     dispatch({ type: "UPDATE_ACCESS_GROUP", payload: updatedGroup });
-//   };
-
-//   return (
-//     <AccessGroupsContext.Provider
-//       value={{
-//         accessGroups: state.accessGroups,
-//         applications: state.applications,
-//         rights: state.rights,
-//         createAccessGroup,
-//         updateAccessGroup,
-//       }}
-//     >
-//       {children}
-//     </AccessGroupsContext.Provider>
-//   );
-// }
-
-// export const useAccessGroups = () => {
-//   const context = useContext(AccessGroupsContext);
-//   if (!context) {
-//     throw new Error(
-//       "useAccessGroups must be used within an AccessGroupsProvider"
-//     );
-//   }
-//   return context;
-// };

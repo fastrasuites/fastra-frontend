@@ -34,8 +34,8 @@ const ViewAccessGroup = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 2;
 
-  const group = accessGroups.find((g) => g.id === id);
-  const access_code = group.id;
+  const group = accessGroups.find((g) => g.access_code === id);
+  const access_code = group.access_code;
 
   if (!group) {
     return (
@@ -99,12 +99,14 @@ const ViewAccessGroup = () => {
           </Tabs>
           {/* Right-aligned Page Controls */}
           {activeTab === "view" && (
-            <PaginationControls
-              page={currentPage}
-              totalPages={totalPages}
-              onPrev={handlePrevPage}
-              onNext={handleNextPage}
-            />
+            <Box>
+              <PaginationControls
+                page={currentPage}
+                totalPages={totalPages}
+                onPrev={handlePrevPage}
+                onNext={handleNextPage}
+              />
+            </Box>
           )}
         </Toolbar>
       </AppBar>

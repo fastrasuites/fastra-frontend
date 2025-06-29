@@ -27,6 +27,7 @@ import { PaginationControls } from "../../../components/PaginationControls/Pagin
 import FormToolbar from "./FormToolbar";
 import appIcons from "../../../helper/appIcons";
 import { smartFormatLabel, tabStyles } from "../../../helper/helper";
+import Swal from "sweetalert2";
 
 const CreateAccessGroup = () => {
   const { applications, modules, createAccessGroup, isLoading, accessRights } =
@@ -42,18 +43,6 @@ const CreateAccessGroup = () => {
     application: applications[0],
     permissions: {},
   });
-
-  // Initialize permissions when application changes
-  // React.useEffect(() => {
-  //   const initialPermissions = {};
-  //   rights[formData.application]?.forEach((right) => {
-  //     initialPermissions[right] = { view: false, edit: false, approve: false };
-  //   });
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     permissions: initialPermissions,
-  //   }));
-  // }, [formData.application, rights]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -78,10 +67,16 @@ const CreateAccessGroup = () => {
     if (newValue === "create") setCurrentPage(1);
   };
 
-  const handleSubmit = () => {
-    console.log("createAccessGroup", formData);
-    const id = createAccessGroup(formData);
-    history.push(`/${tenant_schema_name}/settings/accessgroups/${id}`);
+  const handleSubmit = async () => {
+    try {
+      const id = await createAccessGroup(formData);
+      console.log("Access group created with ID:", id);
+      Swal.fire("Success", "Access group created successfully", "success");
+      history.push(`/${tenant_schema_name}/settings/accessgroups/${id}`);
+    } catch (error) {
+      // Error handling is already done in context
+      console.log(error);
+    }
   };
 
   const handlePrevPage = () => {
@@ -128,12 +123,14 @@ const CreateAccessGroup = () => {
           </Tabs>
           {/* Right-aligned Page Controls */}
           {activeTab === "create" && (
-            <PaginationControls
-              page={currentPage}
-              totalPages={totalPages}
-              onPrev={handlePrevPage}
-              onNext={handleNextPage}
-            />
+            <Box>
+              <PaginationControls
+                page={currentPage}
+                totalPages={totalPages}
+                onPrev={handlePrevPage}
+                onNext={handleNextPage}
+              />
+            </Box>
           )}
         </Toolbar>
       </AppBar>
@@ -167,7 +164,7 @@ const CreateAccessGroup = () => {
               {/* chosen application Icon goes here */}
               <img
                 src={
-                  appIcons[formData.application.toUpperCase()] ||
+                  appIcons[formData.application?.toUpperCase()] ||
                   appIcons.INVENTORY
                 }
                 alt="app icons"
