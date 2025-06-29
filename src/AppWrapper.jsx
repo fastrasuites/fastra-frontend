@@ -24,36 +24,37 @@ function AppWrapper() {
   return (
     <TenantProvider>
       <TenantUsersProvider>
-        <UserProvider>
-          <CompanyProvider>
-            <FormProvider>
-              <PurchaseProvider>
-                <RFQProvider>
-                  <PurchaseOrderProvider>
-                    <LocationConfigProvider>
-                      <LocationProvider>
-                        <IncomingProductProvider>
-                          <DeliveryOrderProvider>
-                            <StockAdjustmentProvider>
-                              <StockMoveProvider>
-                                {" "}
-                                <ScrapProvider>
-                                  <Router>
-                                    <App />
-                                  </Router>
-                                </ScrapProvider>
-                              </StockMoveProvider>
-                            </StockAdjustmentProvider>
-                          </DeliveryOrderProvider>
-                        </IncomingProductProvider>
-                      </LocationProvider>
-                    </LocationConfigProvider>
-                  </PurchaseOrderProvider>
-                </RFQProvider>
-              </PurchaseProvider>
-            </FormProvider>
-          </CompanyProvider>
-        </UserProvider>
+        <FormProvider>
+          <AccessGroupsProvider>
+            <PurchaseProvider>
+              <RFQProvider>
+                <PurchaseOrderProvider>
+                  <LocationConfigProvider>
+                    <LocationProvider>
+                      <IncomingProductProvider>
+                        <DeliveryOrderProvider>
+                          <StockAdjustmentProvider>
+                            <StockMoveProvider>
+                              <UserProvider>
+                                <CompanyProvider>
+                                  <ScrapProvider>
+                                    <Router>
+                                      <App />
+                                    </Router>
+                                  </ScrapProvider>
+                                </CompanyProvider>
+                              </UserProvider>
+                            </StockMoveProvider>
+                          </StockAdjustmentProvider>
+                        </DeliveryOrderProvider>
+                      </IncomingProductProvider>
+                    </LocationProvider>
+                  </LocationConfigProvider>
+                </PurchaseOrderProvider>
+              </RFQProvider>
+            </PurchaseProvider>
+          </AccessGroupsProvider>
+        </FormProvider>
       </TenantUsersProvider>
     </TenantProvider>
   );

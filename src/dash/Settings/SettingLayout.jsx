@@ -8,6 +8,10 @@ import Company from "./company/Company";
 import User from "./user/User";
 import CreateUser from "./user/UserForms/CreateUser";
 import AccessGroups from "./accessgroups/AccessGroups";
+
+import ViewAccessGroup from "./accessgroups/ViewAccessGroup";
+import EditAccessGroup from "./accessgroups/EditAccessGroup";
+import CreateAccessGroup from "./accessgroups/CreateAccessGroup";
 import UserInfo from "./user/UserInfo/UserInfo";
 import NewCompany from "./company/CompanyForm/NewCompanyForm";
 
