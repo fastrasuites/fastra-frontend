@@ -81,6 +81,7 @@ export function AccessGroupsProvider({ children }) {
       const response = await client.get(`/application/`, {
         baseURL: "https://fastrasuiteapi.com.ng",
       });
+      console.log("Applications Response:", response.data);
 
       const applications = response.data.applications.map(
         (app) => Object.keys(app)[0]
@@ -136,7 +137,9 @@ export function AccessGroupsProvider({ children }) {
         if (!groupsMap[item.access_code].permissions[item.application_module]) {
           groupsMap[item.access_code].permissions[item.application_module] = {};
         }
-
+        console.log("state", state);
+        console.log("accessRights", state.accessRights);
+        console.log("item.access_right", item.access_right);
         const right = state.accessRights.find(
           (r) => r.id === item.access_right
         );
@@ -165,6 +168,10 @@ export function AccessGroupsProvider({ children }) {
         await fetchApplications();
         await fetchAccessGroups();
         setIsInitialized(true);
+
+        // // Refresh groups every 5 minutes
+        // const interval = setInterval(fetchAccessGroups, 5 * 60 * 1000);
+        // return () => clearInterval(interval);
       }
     };
     initialize();
@@ -201,36 +208,28 @@ export function AccessGroupsProvider({ children }) {
       };
 
       const response = await client.post(`/users/access-group-right/`, payload);
+      console.log("Create Access Group Response:", response.data);
 
-      // Transform the first item in response to our group format
-      const createdItem = response.data[0];
+      // Extract access_code from the response
+      const access_code = response.data.access_code;
+
+      // Create the group object for our state
       const createdGroup = {
-        access_code: createdItem?.access_code,
-        groupName: createdItem.group_name,
-        application: createdItem.application.toUpperCase(),
-        createdAt: formatApiDate(createdItem.date_created),
-        permissions: {},
+        access_code,
+        groupName: response.data.group_name || newGroup.groupName,
+        application: newGroup.application.toUpperCase(),
+        createdAt: new Date().toLocaleString(), // Temporary, will be updated on next fetch
+        permissions: newGroup.permissions,
       };
 
-      // Add permissions
-      response.data.forEach((item) => {
-        if (!createdGroup.permissions[item.application_module]) {
-          createdGroup.permissions[item.application_module] = {};
-        }
-        const right = state.accessRights.find(
-          (r) => r.id === item.access_right
-        );
-        if (right) {
-          createdGroup.permissions[item.application_module][right.name] = true;
-        }
-      });
-
+      // Update context state
       dispatch({
         type: "CREATE_ACCESS_GROUP_SUCCESS",
         payload: createdGroup,
       });
 
-      return createdItem.access_code;
+      // Return the access_code for navigation
+      return access_code;
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
       Swal.fire("Error", "Failed to create access group", "error");
@@ -270,6 +269,7 @@ export function AccessGroupsProvider({ children }) {
 
       await client.patch(`/users/access-group-right/${access_code}/`, payload);
       await fetchAccessGroups();
+      return true; // Indicate success
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
       Swal.fire("Error", "Failed to update access group", "error");

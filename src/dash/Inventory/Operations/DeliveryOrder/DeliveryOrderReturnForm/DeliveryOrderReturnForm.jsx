@@ -22,6 +22,7 @@ import Swal from "sweetalert2";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./DeliveryOrderReturnForm.css";
+import Asterisk from "../../../../../components/Asterisk";
 
 const DeliveryOrderReturnForm = () => {
   const { id } = useParams();
@@ -148,10 +149,13 @@ const DeliveryOrderReturnForm = () => {
     doc.text("Return Information", 15, 40);
 
     const details = [
-      ["Source Document", returnData.source_document],
+      // ["Source Document", returnData.source_document],
+      ["Source Document", singleDeliveryOrder.order_unique_id],
       ["Date of Return", returnData.date_of_return],
-      ["Source Location", returnData.source_location],
+      ["Source Location", singleDeliveryOrder.delivery_address],
+      // ["Source Location", returnData.source_location],
       ["Return Warehouse", returnData.return_warehouse_location],
+
       ["Reason", returnData.reason_for_return],
     ];
 
@@ -285,7 +289,7 @@ Thank you.`;
 
     // Prepare payload
     const payload = {
-      source_document: singleDeliveryOrder.order_unique_id,
+      source_document: singleDeliveryOrder.id,
       date_of_return: formData.date_of_return,
       source_location: singleDeliveryOrder.delivery_address,
       return_warehouse_location: singleDeliveryOrder.source_location,
@@ -353,6 +357,8 @@ Thank you.`;
     }
   };
 
+  console.log("singleDeliveryOrder", singleDeliveryOrder);
+
   return (
     <Box p={4} display="grid" gap={4}>
       <Box display="flex" gap={3}>
@@ -395,65 +401,62 @@ Thank you.`;
             {/* First group */}
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6} lg={3}>
-                <label
+                <Typography
                   style={{
                     marginBottom: "6px",
                     fontSize: "16px",
-                    fontWeight: "600",
+                    // fontWeight: "600",
                   }}
                 >
                   Source Document
-                </label>
-                <Typography>{singleDeliveryOrder.order_unique_id}</Typography>
+                </Typography>
+                <Typography color="#7A8A98">
+                  {singleDeliveryOrder.order_unique_id}
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={6} lg={3}>
-                <label
+                <Typography
                   style={{
                     marginBottom: "6px",
                     fontSize: "16px",
-                    fontWeight: "600",
+                    // fontWeight: "600",
                   }}
                 >
-                  {" "}
                   Source Location
-                </label>
-                <Typography>{formData.source_location}</Typography>
+                </Typography>
+                <Typography color="#7A8A98">
+                  {formData.source_location}
+                </Typography>
               </Grid>
               <Grid item xs={12} sm={6} lg={3}>
-                <label
+                <Typography
                   style={{
                     marginBottom: "6px",
                     fontSize: "16px",
-                    fontWeight: "600",
+                    // fontWeight: "600",
                   }}
                 >
                   Return Warehouse Location
-                </label>
-                <Typography>{formData.return_warehouse_location}</Typography>
+                </Typography>
+                <Typography color="#7A8A98">
+                  {formData.return_warehouse_location}
+                </Typography>
               </Grid>
             </Grid>
             <Divider />
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6} lg={3}>
-                <label
+                <Typography
                   style={{
                     marginBottom: "6px",
                     fontSize: "16px",
-                    fontWeight: "600",
+                    // fontWeight: "600",
+                    display: "inline-flex",
                   }}
                 >
                   Date of return
-                </label>
-                <span
-                  style={{
-                    color: "red",
-                    fontWeight: "600",
-                    fontSize: "20px",
-                    marginLeft: "8px",
-                  }}
-                >
-                  *
-                </span>
+                  <Asterisk />
+                </Typography>
                 <TextField
                   type="date"
                   name="date_of_return"
@@ -462,28 +465,21 @@ Thank you.`;
                   required
                   fullWidth
                   size="small"
+                  color="#7A8A98"
                 />
               </Grid>
               <Grid item xs={12} sm={6} lg={3}>
-                <label
+                <Typography
                   style={{
                     marginBottom: "6px",
                     fontSize: "16px",
-                    fontWeight: "600",
+                    // fontWeight: "600",
+                    display: "inline-flex",
                   }}
                 >
-                  Reason for Return
-                </label>
-                <span
-                  style={{
-                    color: "red",
-                    fontWeight: "600",
-                    fontSize: "20px",
-                    marginLeft: "8px",
-                  }}
-                >
-                  *
-                </span>
+                  Reason for Return <Asterisk />
+                </Typography>
+
                 <TextField
                   type="text"
                   name="reason_for_return"
@@ -493,6 +489,7 @@ Thank you.`;
                   placeholder="Enter return reason"
                   fullWidth
                   size="small"
+                  color="#7A8A98"
                 />
               </Grid>
             </Grid>
@@ -548,7 +545,7 @@ Thank you.`;
                           }
                           required
                           variant="standard"
-                          placeholder="Enter qty in figure"
+                          placeholder="0"
                           style={{
                             borderBlock: 0,
                             outline: "none",

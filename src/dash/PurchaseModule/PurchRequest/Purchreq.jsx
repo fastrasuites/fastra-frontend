@@ -5,7 +5,7 @@ import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import ListView from "./Listview";
 import PurchaseModuleWizard from "../../../components/PurchaseModuleWizard";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import draft from "../../../../src/image/icons/draft (1).png";
 import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
@@ -23,13 +23,10 @@ export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-  // const [selectedStatus, setSelectedStatus] = useState(null);
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const location = useLocation();
+
   const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
 
   const history = useHistory();
@@ -47,29 +44,26 @@ export default function Purchreq() {
         };
   });
 
-  // Sync wizard state to localStorage
+  // Sync wizard state to localStorage AND handle storage events
   useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === WIZARD_STORAGE_KEY && e.newValue) {
+        setWizardState(JSON.parse(e.newValue));
+      }
+    };
+
+    // Save to localStorage when state changes
     localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
+
+    // Listen for storage events (from other tabs/windows)
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [wizardState]);
 
-  // Handle wizard visibility
-  useEffect(() => {
-    if (location.state?.preserveWizard) {
-      // Don't modify wizard state if preservation requested
-      return;
-    }
-    if (location.state?.step) {
-      // Step navigation from other components
-      setWizardState((prev) => ({
-        ...prev,
-        currentStep: location.state.step,
-        hidden: false,
-      }));
-    } else if (!wizardState.skipped && !wizardState.completed) {
-      // Show wizard if not skipped/completed
-      setWizardState((prev) => ({ ...prev, hidden: false }));
-    }
-  }, [location.state]);
+  // REMOVED: The useEffect that depended on location.state
 
   const handleCloseModal = (action) => {
     if (action === "skip") {
@@ -79,11 +73,17 @@ export default function Purchreq() {
         skipped: true,
         completed: false,
       });
+    } else if (action === "complete") {
+      setWizardState({
+        hidden: true,
+        currentStep: 1,
+        skipped: false,
+        completed: true,
+      });
     } else {
       setWizardState((prev) => ({ ...prev, hidden: true }));
     }
   };
-
   useEffect(() => {
     const savedPR = localStorage.getItem("purchaseRequestData");
     if (savedPR) {
@@ -98,28 +98,6 @@ export default function Purchreq() {
       }
     });
   }, [fetchPurchaseRequests]);
-
-  // useEffect(() => {
-  //   if (location.state?.step) {
-  //     setCurrentStep(location.state.step);
-  //     setIsModalOpen(true);
-  //   } else {
-  //     const timer = setTimeout(() => {
-  //       const isWizardHidden = localStorage.getItem("hideWizard");
-  //       if (isWizardHidden === "true") {
-  //         setIsModalOpen(false);
-  //       } else {
-  //         setIsModalOpen(true);
-  //       }
-  //     }, 500);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [location.state]);
-
-  // const handleCloseModal = () => {
-  //   setIsModalOpen(false);
-  //   localStorage.setItem("hideWizard", "true");
-  // };
 
   const toggleViewMode = (mode) => {
     setViewMode(mode);
@@ -376,11 +354,6 @@ export default function Purchreq() {
         onClose={(action) => handleCloseModal(action)}
         step={wizardState.currentStep}
       />
-      {/* <PurchaseModuleWizard
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        step={currentStep}
-      /> */}
     </Box>
   );
 }

@@ -14,6 +14,7 @@ const LocationConfiguration = () => {
   } = useLocationConfig();
 
   const [isMultiLocationEnabled, setIsMultiLocationEnabled] = useState(false);
+  // const [isMultiLocationEnabled, setIsMultiLocationEnabled] = useState(true);
 
   useEffect(() => {
     getMultiLocation();

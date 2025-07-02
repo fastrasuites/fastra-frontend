@@ -67,13 +67,50 @@ const CreateAccessGroup = () => {
     if (newValue === "create") setCurrentPage(1);
   };
 
+  // const handleSubmit = async () => {
+  //   try {
+  //     const id = await createAccessGroup(formData);
+  //     console.log("Access group created with ID:", id);
+  //     // Show success message
+
+  //     if (id) {
+  //       await Swal.fire(
+  //         "Success",
+  //         "Access group updated successfully",
+  //         "success"
+  //       );
+  //     }
+  //     history.push(`/${tenant_schema_name}/settings/accessgroups/${id}`);
+  //   } catch (error) {
+  //     // Error handling is already done in context
+  //     console.log(error);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     try {
-      const id = await createAccessGroup(formData);
-      console.log("Access group created with ID:", id);
+      // Show loading state
+      Swal.fire({
+        title: "Creating Access Group",
+        text: "Please wait...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const access_code = await createAccessGroup(formData);
+
+      // Close loading and show success
+      Swal.close();
       Swal.fire("Success", "Access group created successfully", "success");
-      history.push(`/${tenant_schema_name}/settings/accessgroups/${id}`);
+
+      // Navigate to view page
+      history.push(
+        `/${tenant_schema_name}/settings/accessgroups/${access_code}`
+      );
     } catch (error) {
+      Swal.close();
       // Error handling is already done in context
       console.log(error);
     }
@@ -86,6 +123,8 @@ const CreateAccessGroup = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
+
+  console.log("accessRights", accessRights);
 
   return (
     <Box p={{ xs: 2, sm: 4, md: 6 }}>

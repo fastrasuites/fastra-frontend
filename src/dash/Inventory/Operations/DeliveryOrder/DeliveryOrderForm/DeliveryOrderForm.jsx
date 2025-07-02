@@ -15,8 +15,7 @@ import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useTenant } from "../../../../../context/TenantContext";
 import Swal from "sweetalert2";
 import { useHistory } from "react-router-dom";
-import { Asterisk, AsteriskIcon } from "lucide-react";
-import { FaAsterisk } from "react-icons/fa";
+import Asterisk from "../../../../../components/Asterisk";
 
 const defaultFormData = {
   customer_name: "",
@@ -53,20 +52,12 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
         <Box>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} lg={3}>
-              <label style={{ marginBottom: "6px", display: "block" }}>
-                Customer's name{" "}
-                <span
-                  style={{
-                    color: "red",
-                    marginLeft: "4px",
-                    fontWeight: "bold",
-                    fontSize: "10px",
-                    lineHeight: "1",
-                  }}
-                >
-                  *
-                </span>
-              </label>
+              <Typography
+                style={{ marginBottom: "6px", display: "inline-flex" }}
+              >
+                Customer's name
+                <Asterisk />
+              </Typography>
               <TextField
                 type="text"
                 variant="standard"
@@ -81,25 +72,14 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             </Grid>
             {locationList.length <= 1 ? (
               <Grid item xs={12} sm={6} lg={3}>
-                <label>
-                  Location{" "}
-                  <span
-                    style={{
-                      color: "red",
-                      marginLeft: "4px",
-                      fontWeight: "bold",
-                      fontSize: "10px",
-                      lineHeight: "1",
-                    }}
-                  >
-                    *
-                  </span>
-                </label>
+                <Typography>
+                  Location <Asterisk />
+                </Typography>
                 <Typography>{formData.location}</Typography>
               </Grid>
             ) : (
               <Grid item xs={12} sm={6} lg={3}>
-                <label
+                <Typography
                   style={{
                     marginBottom: "6px",
                     display: "flex",
@@ -107,18 +87,8 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
                   }}
                 >
                   Source Location
-                  <span
-                    style={{
-                      color: "red",
-                      marginLeft: "4px",
-                      fontWeight: "bold",
-                      fontSize: "10px",
-                      lineHeight: "1",
-                    }}
-                  >
-                    *
-                  </span>
-                </label>
+                  <Asterisk />
+                </Typography>
 
                 <Autocomplete
                   disablePortal
@@ -144,20 +114,11 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
 
             {/* Input delivery Address*/}
             <Grid item xs={12} sm={6} lg={3}>
-              <label style={{ marginBottom: "6px", display: "block" }}>
-                Delivery Address{" "}
-                <span
-                  style={{
-                    color: "red",
-                    marginLeft: "4px",
-                    fontWeight: "bold",
-                    fontSize: "10px",
-                    lineHeight: "1",
-                  }}
-                >
-                  *
-                </span>
-              </label>
+              <Typography
+                style={{ marginBottom: "6px", display: "inline-flex" }}
+              >
+                Delivery Address <Asterisk />
+              </Typography>
               <TextField
                 type="text"
                 variant="standard"
@@ -172,20 +133,12 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             </Grid>
             {/* Input delivery Date*/}
             <Grid item xs={12} sm={6} lg={3}>
-              <label style={{ marginBottom: "6px", display: "block" }}>
+              <Typography
+                style={{ marginBottom: "4px", display: "inline-flex" }}
+              >
                 Delivery Date
-                <span
-                  style={{
-                    color: "red",
-                    marginLeft: "4px",
-                    fontWeight: "bold",
-                    fontSize: "10px",
-                    lineHeight: "1",
-                  }}
-                >
-                  *
-                </span>
-              </label>
+                <Asterisk />
+              </Typography>
               <TextField
                 type="date"
                 variant="standard"
@@ -204,9 +157,9 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
           <Grid container spacing={2}>
             {/* Input Shipping Policy*/}
             <Grid item xs={12} sm={6} lg={3}>
-              <label style={{ marginBottom: "6px", display: "block" }}>
+              <Typography style={{ marginBottom: "6px", display: "block" }}>
                 Shipping Policy
-              </label>
+              </Typography>
               <TextField
                 type="text"
                 value={formData.shipping_policy}
@@ -220,9 +173,9 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             </Grid>
             {/* Input Return Policy*/}
             <Grid item xs={12} sm={6} lg={3}>
-              <label style={{ marginBottom: "6px", display: "block" }}>
+              <Typography style={{ marginBottom: "6px", display: "block" }}>
                 Return Policy
-              </label>
+              </Typography>
               <TextField
                 type="text"
                 size="small"
@@ -236,20 +189,12 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             </Grid>
             {/* Input Assigned To*/}
             <Grid item xs={12} sm={6} lg={3}>
-              <label style={{ marginBottom: "6px", display: "block" }}>
+              <Typography
+                style={{ marginBottom: "6px", display: "inline-flex" }}
+              >
                 Assigned To
-                <span
-                  style={{
-                    color: "red",
-                    marginLeft: "4px",
-                    fontWeight: "bold",
-                    fontSize: "10px",
-                    lineHeight: "1",
-                  }}
-                >
-                  *
-                </span>
-              </label>
+                <Asterisk />
+              </Typography>
               <TextField
                 type="text"
                 size="small"

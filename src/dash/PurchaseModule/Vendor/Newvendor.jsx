@@ -5,10 +5,11 @@ import autosave from "../../../image/autosave.svg";
 import "./Newvendor.css";
 import vendorLogo from "../../../image/vendor-logo.svg";
 import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
-import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { useTenant } from "../../../context/TenantContext";
 import Swal from "sweetalert2";
+
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
 export default function Newvendor({
   onClose,
@@ -82,11 +83,29 @@ export default function Newvendor({
     onClose();
 
     // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:4
+    // if (fromPurchaseModuleWizard) {
+    //   // history.push({
+    //   //   pathname: `/${tenant_schema_name}/purchase`,
+    //   //   state: { step: 4, preservedWizard: true },
+    //   // });
+
+    //   history.push(`/${tenant_schema_name}/purchase`, {
+    //     step: 4,
+    //     preservedWizard: true,
+    //   });
+    // }
+
     if (fromPurchaseModuleWizard) {
-      history.push({
-        pathname: `/${tenant_schema_name}/purchase`,
-        state: { step: 4, preserveWizard: true },
-      });
+      const wizardState = JSON.parse(
+        localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
+      );
+      const updatedState = {
+        ...wizardState,
+        currentStep: 4,
+        hidden: false,
+      };
+      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
+      history.push(`/${tenant_schema_name}/purchase`);
     }
   };
 
