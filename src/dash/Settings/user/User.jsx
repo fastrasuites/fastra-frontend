@@ -1,69 +1,9 @@
-import { useTheme, useMediaQuery } from "@mui/material";
-import Avatar from "../../../assets/images/avatars/userAvatar.png";
-
-const USERS = [
-  {
-    id: 1,
-    avatar: Avatar,
-    fullName: "Efemiaya Oghenetega",
-    email: "efemiayafavour@gmail.com",
-    phone: "+234 0801 234 5679",
-    role: "Software Engineer",
-  },
-  {
-    id: 2,
-    avatar: Avatar,
-    fullName: "Adebayo Michael",
-    email: "adebayo.michael@example.com",
-    phone: "+234 0812 345 6789",
-    role: "HR Manager",
-  },
-  {
-    id: 3,
-    avatar: Avatar,
-    fullName: "Chinonso Okoro",
-    email: "chinonso.okoro@example.com",
-    phone: "+234 0902 456 7890",
-    role: "Accountant",
-  },
-  {
-    id: 4,
-    avatar: Avatar,
-    fullName: "Fatima Yusuf",
-    email: "fatima.yusuf@example.com",
-    phone: "+234 0703 567 8901",
-    role: "Administrator",
-  },
-  {
-    id: 5,
-    avatar: Avatar,
-    fullName: "Ifeanyi Nwosu",
-    email: "ifeanyi.nwosu@example.com",
-    phone: "+234 0813 678 9012",
-    role: "Product Manager",
-  },
-  {
-    id: 6,
-    avatar: Avatar,
-    fullName: "Zainab Bello",
-    email: "zainab.bello@example.com",
-    phone: "+234 0904 789 0123",
-    role: "Marketing Specialist",
-  },
-  {
-    id: 7,
-    avatar: Avatar,
-    fullName: "Tunde Afolayan",
-    email: "tunde.afolayan@example.com",
-    phone: "+234 0805 890 1234",
-    role: "Operations Lead",
-  },
-];
-
-import { Box, Typography } from "@mui/material";
-
-import { memo, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import {
+  useTheme,
+  useMediaQuery,
+  Box,
+  Typography,
   Button,
   Card,
   Checkbox,
@@ -76,6 +16,8 @@ import {
   Grid,
   Skeleton,
 } from "@mui/material";
+import Avatar from "../../../assets/images/avatars/userAvatar.png";
+import { Link } from "react-router-dom";
 
 import { formatDate } from "../../../helper/helper";
 import { useList } from "../../../hooks/useList";
@@ -83,8 +25,15 @@ import { SearchField } from "../../../components/SearchField/SearchField";
 import { ViewToggle } from "../../../components/ViewToggle/ViewToggle";
 import { PaginationControls } from "../../../components/PaginationControls/PaginationControls";
 import { ListToolbar } from "../../../components/ListToolbar/ListToolbar";
-import { Link } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
+import { useUser } from "../../../context/Settings/UserContext";
+
+// Role lookup (adjust as needed)
+const ROLE_LABELS = {
+  1: "User",
+  2: "Admin",
+  // add other role mappings here
+};
 
 // -- CARD VIEW --
 const UserCard = memo(({ user }) => (
@@ -174,23 +123,19 @@ const UserRow = memo(
         <Box
           sx={{
             display: "flex",
-            justifyContent: `${showArchiveBtn ? "space-between" : "start"} `,
+            justifyContent: `${showArchiveBtn ? "space-between" : "start"}`,
             alignItems: "center",
             pr: 4,
           }}
         >
           {formatDate(Date.now())}
-
           {showArchiveBtn && (
             <Button
               disableElevation
               variant="contained"
               sx={{
                 backgroundColor: "#FF9500",
-                "&:hover": {
-                  opacity: 0.9,
-                  bgcolor: "#FF9500",
-                },
+                "&:hover": { opacity: 0.9, bgcolor: "#FF9500" },
               }}
             >
               Archive
@@ -203,11 +148,30 @@ const UserRow = memo(
 );
 
 const UserList = () => {
-  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
-
-  const [showArchiveBtn, setShowArchiveBtn] = useState(false);
+  const { tenantData } = useTenant();
+  const schema = tenantData?.tenant_schema_name;
+  const { getUserList, userList: rawUsers } = useUser();
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
+  const [showArchiveBtn, setShowArchiveBtn] = useState(false);
+
+  useEffect(() => {
+    getUserList();
+  }, [getUserList]);
+
+  // Map API data to UI model
+  const users = useMemo(
+    () =>
+      rawUsers.map((u) => ({
+        id: u.id,
+        avatar: Avatar,
+        fullName: `${u.first_name} ${u.last_name}`,
+        email: u.email,
+        phone: u.phone_number?.trim() || "–",
+        role: ROLE_LABELS[u.role] || `Role #${u.role}`,
+      })),
+    [rawUsers]
+  );
 
   const {
     page,
@@ -222,13 +186,13 @@ const UserList = () => {
     handleSelect,
     handleSelectAll,
     setGridView,
-  } = useList(USERS, {
+  } = useList(users, {
     pageSize: 5,
     filterFn: (user, term) =>
       user.fullName.toLowerCase().includes(term.toLowerCase()) ||
       user.role.toLowerCase().includes(term.toLowerCase()) ||
       user.email.toLowerCase().includes(term.toLowerCase()) ||
-      user.phone.toLowerCase().includes(term.toLowerCase()),
+      user.phone.includes(term),
   });
 
   const renderSkeletons = () =>
@@ -250,12 +214,11 @@ const UserList = () => {
         isXs={isXs}
         leftActions={
           <>
-            <Link to={`/${tenant_schema_name}/settings/user/new`}>
+            <Link to={`/${schema}/settings/user/new`}>
               <Button fullWidth={isXs} variant="contained">
                 New User
               </Button>
             </Link>
-
             <Button
               fullWidth={isXs}
               variant="outlined"
@@ -279,7 +242,6 @@ const UserList = () => {
         }
       />
 
-      {/* Content Area */}
       {gridView ? (
         <Grid container spacing={2}>
           {paginated.length > 0
@@ -332,11 +294,11 @@ const UserList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginated.map((user, index) => (
+              {paginated.map((user, idx) => (
                 <UserRow
                   key={user.id}
                   user={user}
-                  index={index}
+                  index={idx}
                   selected={selectedIds.includes(user.id)}
                   onSelect={handleSelect}
                   showArchiveBtn={showArchiveBtn}

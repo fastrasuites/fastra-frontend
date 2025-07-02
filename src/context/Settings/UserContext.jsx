@@ -46,8 +46,9 @@ const validateChangePasswordData = (data) => {
 export const UserProvider = ({ children }) => {
   const { tenantData } = useTenant();
   const [userList, setUserList] = useState([]);
-  const [accessGroups, setAccessGroups] = useState([]);
+  const [userGroups, setUserGroups] = useState([]);
   const [singleUser, setSingleUser] = useState(null);
+  const [accessGroups, setAccessGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -57,22 +58,6 @@ export const UserProvider = ({ children }) => {
     return getTenantClient(tenant_schema_name, access_token, refresh_token);
   }, [tenant_schema_name, access_token, refresh_token]);
 
-  const fetchResource = useCallback(
-    async (url) => {
-      if (!client || !url) return null;
-      try {
-        const secureUrl = url.replace(/^http:\/\//i, "https://");
-        const response = await client.get(secureUrl);
-        return response.data;
-      } catch (err) {
-        console.error("Error fetching resource:", url, err);
-        return null;
-      }
-    },
-    [client]
-  );
-
-  // User endpoints
   const getUserList = useCallback(
     async (search = "") => {
       if (!client) {
@@ -97,6 +82,24 @@ export const UserProvider = ({ children }) => {
     [client]
   );
 
+  const getGroups = useCallback(async () => {
+    if (!client) {
+      setError("API client not initialized.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { data: rawData } = await client.get(`/users/groups/`);
+      setUserGroups(rawData);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to load users");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   const getSingleUser = useCallback(
     async (id) => {
       if (!client) {
@@ -120,26 +123,46 @@ export const UserProvider = ({ children }) => {
     },
     [client]
   );
-
   const createUser = useCallback(
-    async (userData) => {
+    async (formData) => {
       if (!client) {
         throw new Error("API client not initialized.");
       }
-      const errors = validateUserData(userData);
-      if (Object.keys(errors).length > 0) {
-        throw { validation: errors };
-      }
+
       setIsLoading(true);
       try {
-        const { data } = await client.post(`/users/tenant-users/`, userData);
+        // Don't set Content-Type header - the browser will set it automatically
+        // with the proper multipart/form-data boundary
+        const { data } = await client.post(`/users/tenant-users/`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          transformRequest: [(data /*, headers*/) => data],
+        });
+
         setUserList((prev) => [...prev, data]);
         setError(null);
         return { success: true, data };
       } catch (err) {
-        console.error(err);
-        setError(err.message || "Failed to create user");
-        return { success: false, error: err.message };
+        console.error("User creation error:", err);
+        let errorMessage = "Failed to create user";
+
+        if (err.response) {
+          // Handle server validation errors
+          if (err.response.data) {
+            errorMessage = Object.entries(err.response.data)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join("\n");
+          } else {
+            errorMessage =
+              err.response.statusText || `HTTP error ${err.response.status}`;
+          }
+        } else if (err.request) {
+          errorMessage = "No response from server";
+        } else {
+          errorMessage = err.message;
+        }
+
+        setError(errorMessage);
+        return { success: false, error: errorMessage };
       } finally {
         setIsLoading(false);
       }
@@ -229,29 +252,31 @@ export const UserProvider = ({ children }) => {
     [client]
   );
 
-  const getAccessGroupRight = useCallback(async () => {
+  const getAccessGroups = useCallback(async () => {
     if (!client) {
-      throw new Error("API client not initialized.");
+      setError("API client not initialized.");
+      return;
     }
-
     setIsLoading(true);
     try {
-      const { data } = await client.post(`/users/access-group-right`);
-      setError(null);
+      const { data } = await client.get(
+        `/users/access-group-rights/access-groups/`
+      );
       setAccessGroups(data);
+      setError(null);
       return { success: true, data };
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to change password");
+      setError(err.message || "Failed to load access groups");
       return { success: false, error: err.message };
     } finally {
       setIsLoading(false);
     }
   }, [client]);
-
   const contextValue = useMemo(
     () => ({
       userList,
+      userGroups,
       singleUser,
       accessGroups,
       isLoading,
@@ -262,10 +287,12 @@ export const UserProvider = ({ children }) => {
       updateUser,
       patchUser,
       changePassword,
-      getAccessGroupRight,
+      getAccessGroups,
+      getGroups,
     }),
     [
       userList,
+      userGroups,
       singleUser,
       accessGroups,
       isLoading,
@@ -276,7 +303,8 @@ export const UserProvider = ({ children }) => {
       updateUser,
       patchUser,
       changePassword,
-      getAccessGroupRight,
+      getAccessGroups,
+      getGroups,
     ]
   );
 

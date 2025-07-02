@@ -120,7 +120,6 @@ export function AccessGroupsProvider({ children }) {
     try {
       dispatch({ type: "FETCH_START" });
       const response = await client.get(`/users/access-group-right/`);
-      console.log("Access Groups Response:", response.data);
 
       // Transform API response to match our UI structure
       const groupsMap = {};

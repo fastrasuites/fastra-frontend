@@ -71,7 +71,6 @@ const SIZE_OPTIONS = [
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const IMAGE_MAX_SIZE = 1 * 1024 * 1024; // 1 MB
-const REQUIRED_FIELDS = ["name", "email", "phone", "language"];
 
 // Action types
 const ActionTypes = {
@@ -81,6 +80,7 @@ const ActionTypes = {
   ADD_ROLE: "ADD_ROLE",
   REMOVE_ROLE: "REMOVE_ROLE",
   RESET: "RESET",
+  SET_STATE: "SET_STATE",
 };
 
 // Initial form state
@@ -127,6 +127,8 @@ function formReducer(state, action) {
       };
     case ActionTypes.RESET:
       return initialState;
+    case ActionTypes.SET_STATE:
+      return { ...state, ...action.payload };
     default:
       return state;
   }
@@ -161,6 +163,8 @@ const BasicSettingsTab = ({
     label: lga,
     value: lga,
   }));
+
+  console.log(state);
 
   return (
     <Box
@@ -239,7 +243,7 @@ const BasicSettingsTab = ({
                 label: "Phone Number",
                 inputType: "tel",
                 placeholder: "Enter your company phone number",
-                required: true,
+                required: false,
               }}
               value={state.phone}
               onChange={handleChange}
@@ -253,7 +257,7 @@ const BasicSettingsTab = ({
                 label: "Website",
                 inputType: "url",
                 placeholder: "Enter your company website here",
-                required: true,
+                required: false,
               }}
               value={state.website}
               onChange={handleChange}
@@ -267,7 +271,7 @@ const BasicSettingsTab = ({
               label: "Address",
               inputType: "text",
               placeholder: "Street & Number",
-              required: true,
+              required: false,
             }}
             value={state.address}
             onChange={handleChange}
@@ -280,7 +284,7 @@ const BasicSettingsTab = ({
               inputType: "select",
               options: localGovernmentOptions,
               placeholder: "Local Government",
-              required: true,
+              required: false,
             }}
             value={state.local_government}
             onChange={handleChange}
@@ -295,7 +299,7 @@ const BasicSettingsTab = ({
                 value: state,
               })),
               placeholder: "State",
-              required: true,
+              required: false,
             }}
             value={state.state}
             onChange={(e) => {
@@ -318,7 +322,7 @@ const BasicSettingsTab = ({
               label: "Registration Number",
               inputType: "text",
               placeholder: "Enter your company registration number",
-              required: true,
+              required: false,
             }}
             value={state.registration_number}
             onChange={handleChange}
@@ -330,7 +334,7 @@ const BasicSettingsTab = ({
               label: "Tax ID",
               inputType: "text",
               placeholder: "Enter your company Tax Identification Number",
-              required: true,
+              required: false,
             }}
             value={state.tax_id}
             onChange={handleChange}
@@ -351,7 +355,7 @@ const BasicSettingsTab = ({
               inputType: "select",
               options: INDUSTRY_OPTIONS,
               placeholder: "Select your company industry",
-              required: true,
+              required: false,
             }}
             value={state.industry}
             onChange={handleChange}
@@ -363,7 +367,7 @@ const BasicSettingsTab = ({
               inputType: "select",
               options: LANGUAGE_OPTIONS,
               placeholder: "Select language",
-              required: true,
+              required: false,
             }}
             value={state.language}
             onChange={handleChange}
@@ -375,7 +379,7 @@ const BasicSettingsTab = ({
               inputType: "select",
               options: SIZE_OPTIONS,
               placeholder: "Size",
-              required: true,
+              required: false,
             }}
             value={state.size}
             onChange={handleChange}
@@ -404,7 +408,6 @@ const BasicSettingsTab = ({
                   label: `Role ${idx + 1}`,
                   inputType: "text",
                   placeholder: "Enter role",
-                  required: true,
                 }}
                 value={role}
                 onChange={handleRoleChange(idx)}
@@ -460,10 +463,10 @@ const NewCompany = () => {
   const [allStatesAndLGA, setAllStatesAndLGA] = useState([]);
   const [allStates, setAllStates] = useState([]);
   const [selectedStatesLGA, setSelectedStatesLGA] = useState([]);
-  const sigPadRef = useRef(null);
   const { tenantData } = useTenant();
   const user = tenantData?.user || {};
-  const { updateCompany } = useCompany();
+  const { updateCompany, getCompany, company: companyDetails } = useCompany();
+  const initialCompanyDataRef = useRef(null);
 
   useEffect(() => {
     const fetchStatesAndLGA = async () => {
@@ -492,18 +495,40 @@ const NewCompany = () => {
       }
     };
 
+    getCompany();
     fetchStates();
     fetchStatesAndLGA();
+  }, []);
+  useEffect(() => {
+    if (companyDetails) {
+      const formData = {
+        name: companyDetails.name || tenantData?.tenant_company_name,
+        email: companyDetails.email || user?.email || "",
+        phone: companyDetails.phone || "",
+        website: companyDetails.website || "",
+        address: companyDetails.street_address || "",
+        local_government: companyDetails.city || "",
+        state: companyDetails.state || "",
+        registration_number: companyDetails.registration_number || "",
+        tax_id: companyDetails.tax_id || "",
+        industry: companyDetails.industry || "",
+        language: companyDetails.language || "",
+        size: companyDetails.company_size || "",
+        roles: companyDetails.roles?.length
+          ? companyDetails.roles.map((r) => r.name)
+          : [""],
+        imagePreview: companyDetails.logo_url || "",
+      };
 
-    dispatch({
-      type: ActionTypes.SET_FIELD,
-      payload: { name: "email", value: user?.email || "" },
-    });
-    dispatch({
-      type: ActionTypes.SET_FIELD,
-      payload: { name: "name", value: user?.email || "" },
-    });
-  }, [user?.email]);
+      dispatch({ type: ActionTypes.SET_STATE, payload: formData });
+      initialCompanyDataRef.current = formData;
+
+      // Set LGAs for company's state
+      if (companyDetails.state && allStatesAndLGA[companyDetails.state]) {
+        setSelectedStatesLGA(allStatesAndLGA[companyDetails.state]);
+      }
+    }
+  }, [companyDetails, allStatesAndLGA, user?.email]);
 
   const handleSelectedState = (stateName) => {
     dispatch({
@@ -514,13 +539,17 @@ const NewCompany = () => {
       type: ActionTypes.SET_FIELD,
       payload: { name: "local_government", value: "" },
     });
-    setSelectedStatesLGA(allStatesAndLGA[stateName] || []);
+
+    if (stateName && allStatesAndLGA[stateName]) {
+      setSelectedStatesLGA(allStatesAndLGA[stateName]);
+    } else {
+      setSelectedStatesLGA([]);
+    }
   };
 
   const handleImageUpload = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!IMAGE_TYPES.includes(file.type) || file.size > IMAGE_MAX_SIZE) {
       Swal.fire({
         icon: "error",
@@ -529,7 +558,6 @@ const NewCompany = () => {
       });
       return;
     }
-
     dispatch({
       type: ActionTypes.SET_IMAGE,
       payload: { file, preview: URL.createObjectURL(file) },
@@ -537,40 +565,25 @@ const NewCompany = () => {
   }, []);
 
   const resetForm = useCallback(() => {
-    dispatch({ type: ActionTypes.RESET });
-    dispatch({
-      type: ActionTypes.SET_FIELD,
-      payload: { name: "email", value: user?.email || "" },
-    });
-    dispatch({
-      type: ActionTypes.SET_FIELD,
-      payload: { name: "name", value: user?.email || "" },
-    });
-  }, [user?.email]);
+    if (initialCompanyDataRef.current) {
+      dispatch({
+        type: ActionTypes.SET_STATE,
+        payload: initialCompanyDataRef.current,
+      });
+    }
+  }, []);
 
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
 
-      // Validate required fields
-      const missingFields = REQUIRED_FIELDS.filter((key) => !state[key]);
-      if (missingFields.length) {
-        Swal.fire({
-          icon: "warning",
-          title: "Missing fields",
-          text: `Please fill out: ${missingFields.join(", ")}`,
-        });
-        return;
-      }
-
       const formData = new FormData();
-      if (state.imageFile) formData.append("logo", state.imageFile);
-      formData.append("name", state.name);
-      formData.append("email", state.email);
+      if (state.imageFile) formData.append("logo_image", state.imageFile);
       formData.append("phone", state.phone);
       formData.append("website", state.website);
-      formData.append("address", state.address);
+      formData.append("street_address", state.address);
       formData.append("city", state.local_government);
+      formData.append("country", state.country || "nigeria");
       formData.append("zip_code", "10001");
       formData.append("state", state.state);
       formData.append("registration_number", state.registration_number);
@@ -578,36 +591,33 @@ const NewCompany = () => {
       formData.append("industry", state.industry);
       formData.append("language", state.language);
       formData.append("time_zone", state.timezone);
-      formData.append("size", state.size);
+      formData.append("company_size", state.size);
 
-      state.roles.forEach((roleName, idx) => {
-        formData.append(`roles[${idx}][name]`, roleName);
-        // if you ever need to send an existing role id:
-        // formData.append(`roles[${idx}][id]`, existingId);
-      });
-
+      const rolesPayload = state.roles.map((name) => ({ name }));
+      formData.append("roles", JSON.stringify(rolesPayload));
       for (let [key, val] of formData.entries()) {
         console.log(key, "→", val);
       }
 
       try {
-        await updateCompany(formData);
-        Swal.fire({
-          icon: "success",
-          title: "Company Created",
-          text: `${state.name} has been successfully created.`,
-        });
-        resetForm();
-      } catch (error) {
-        console.error("Error creating company:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Creation Failed",
-          text: error.message || "Failed to create company",
-        });
+        const res = await updateCompany(formData);
+        if (res.success) {
+          dispatch({
+            type: ActionTypes.SET_IMAGE,
+            payload: { file: state.imageFile, preview: res.data.logo_url },
+          });
+          Swal.fire({
+            icon: "success",
+            title: "Updated",
+            text: "Company profile updated.",
+          });
+        } else throw new Error(res.error);
+      } catch (err) {
+        console.error(err);
+        Swal.fire({ icon: "error", title: "Error", text: err.message });
       }
     },
-    [state, updateCompany, resetForm]
+    [state, updateCompany]
   );
 
   return (

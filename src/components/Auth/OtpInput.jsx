@@ -1,52 +1,127 @@
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 import { TextField, Box } from "@mui/material";
 
-const OtpInput = ({ onChange }) => {
+const OtpInput = ({ length = 4, onChange }) => {
   const inputsRef = useRef([]);
 
-  const handleChange = (index, value) => {
-    if (!/^\d?$/.test(value)) return;
+  // Focus the first empty input or last filled input
+  const focusInput = useCallback(
+    (startIndex = 0) => {
+      const index = inputsRef.current.findIndex(
+        (input, i) =>
+          (i >= startIndex && input.value === "") || i === length - 1
+      );
+      if (index !== -1) {
+        inputsRef.current[index]?.focus();
+      }
+    },
+    [length]
+  );
 
-    inputsRef.current[index].value = value;
+  // Handle individual input changes
+  const handleChange = useCallback(
+    (index, value) => {
+      if (!/^\d?$/.test(value)) return;
 
-    if (value && index < 3) {
-      inputsRef.current[index + 1]?.focus();
-    }
+      inputsRef.current[index].value = value;
 
-    const otp = inputsRef.current.map((input) => input?.value || "").join("");
-    onChange(otp);
-  };
+      if (value) {
+        if (index < length - 1) {
+          inputsRef.current[index + 1]?.focus();
+        }
+      } else {
+        if (index > 0) {
+          inputsRef.current[index - 1]?.focus();
+        }
+      }
 
-  const handleKeyDown = (index, e) => {
-    if (
-      e.key === "Backspace" &&
-      !inputsRef.current[index]?.value &&
-      index > 0
-    ) {
-      inputsRef.current[index - 1]?.focus();
-    }
-  };
+      const otp = inputsRef.current.map((input) => input?.value || "").join("");
+      onChange(otp);
+    },
+    [length, onChange]
+  );
+
+  // Handle paste event
+  const handlePaste = useCallback(
+    (e) => {
+      e.preventDefault();
+      const pasteData = e.clipboardData
+        .getData("text/plain")
+        .replace(/\D/g, "")
+        .substring(0, length);
+
+      // Distribute digits to inputs
+      pasteData.split("").forEach((char, i) => {
+        if (i < length) {
+          inputsRef.current[i].value = char;
+        }
+      });
+
+      // Update OTP value
+      const otp = inputsRef.current.map((input) => input?.value || "").join("");
+      onChange(otp);
+
+      // Move focus to appropriate input
+      focusInput(pasteData.length);
+    },
+    [length, onChange, focusInput]
+  );
+
+  // Handle backspace and arrow keys
+  const handleKeyDown = useCallback(
+    (index, e) => {
+      if (e.key === "Backspace" && !e.target.value && index > 0) {
+        inputsRef.current[index - 1]?.focus();
+      }
+      // Allow arrow navigation
+      else if (e.key === "ArrowLeft" && index > 0) {
+        e.preventDefault();
+        inputsRef.current[index - 1]?.focus();
+      } else if (e.key === "ArrowRight" && index < length - 1) {
+        e.preventDefault();
+        inputsRef.current[index + 1]?.focus();
+      }
+    },
+    [length]
+  );
 
   return (
-    <Box display="flex" gap={2}>
-      {[0, 1, 2, 3].map((_, index) => (
+    <Box display="flex" gap={"24px"} width={"100%"}>
+      {Array.from({ length }).map((_, index) => (
         <TextField
-          type="number"
           key={index}
+          type="text"
+          sx={{
+            "& .MuiOutlinedInput-notchedOutline": {
+              border: "1px solid #3B7CED",
+            },
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              border: "1px solid #3B7CED",
+            },
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              border: "1px solid #3B7CED",
+            },
+            "& .MuiOutlinedInput-root": {
+              outline: "none",
+            },
+          }}
           inputProps={{
             maxLength: 1,
+            inputMode: "numeric",
+            pattern: "[0-9]*",
             style: {
               textAlign: "center",
               fontSize: "1.5rem",
               width: "84px",
               height: "76px",
               borderRadius: "8px",
-              border: "1px solid #3B7CED",
+              outline: "none",
             },
           }}
           inputRef={(el) => (inputsRef.current[index] = el)}
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
+          onPaste={handlePaste}
           variant="outlined"
           size="small"
         />
