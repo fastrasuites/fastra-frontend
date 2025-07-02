@@ -21,7 +21,7 @@ const UserInfo = () => {
   const { id } = useParams();
 
   useEffect(() => {
-    getSingleUser(id);
+    getSingleUser(4);
   }, [getSingleUser, id]);
 
   console.log(singleUser);

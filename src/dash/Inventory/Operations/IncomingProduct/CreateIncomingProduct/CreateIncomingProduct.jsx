@@ -118,7 +118,7 @@ const IncomingProductBasicInputs = ({
           />
         </div>
         <div className="formLabelAndValue">
-          <label>Source ID {REQUIRED_ASTERISK}</label>
+          <label>Source Location {REQUIRED_ASTERISK}</label>
           <p>{sourceLocObj?.id || formData.source_location}</p>
         </div>
         <div className="formLabelAndValue">

@@ -102,8 +102,8 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
 
         {/* Source ID (read-only) */}
         <div className="formLabelAndValue">
-          <label>Source ID {REQUIRED_ASTERISK}</label>
-          <p>{formData.sourceLocation || sourceLocationObj?.id}</p>
+          <label>Source Location {REQUIRED_ASTERISK}</label>
+          <p>{formData.sourceLocation || sourceLocationObj?.location_name}</p>
         </div>
 
         {/* Receipt Date (read-only) */}

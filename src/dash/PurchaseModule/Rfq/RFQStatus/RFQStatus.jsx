@@ -25,22 +25,21 @@ const statusColor = (status) => {
 };
 const RFQStatus = () => {
   const location = useLocation();
-  const {
-    status: selectedStatus,
-    quotationsData,
-  } = location.state || {};
+  const { status: selectedStatus, quotationsData } = location.state || {};
   console.log(location);
   const [quotations, setQuotations] = useState([]);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
   const [searchQuery, setSearchQuery] = useState("");
-  const {tenantData} = useTenant();
-    const tenant_schema_name = tenantData?.tenant_schema_name;
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
 
   const itemsPerPage = 10;
 
   const handleClick = (id) => {
-    history.push(`/${tenant_schema_name}/purchase/request-for-quotations/${id}`);
+    history.push(
+      `/${tenant_schema_name}/purchase/request-for-quotations/${id}`
+    );
   };
 
   useEffect(() => {
@@ -62,7 +61,6 @@ const RFQStatus = () => {
     const purchaseID = extractRFQID(item.purchase_request)?.toLowerCase() || "";
     const vendor =
       typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
-    const vendorCategory = item.vendor_category?.toLowerCase() || "";
     return (
       price.includes(lowercasedQuery) ||
       expiryDate.includes(lowercasedQuery) ||
@@ -99,7 +97,11 @@ const RFQStatus = () => {
   return (
     <div className="rfqStatus">
       <div className="rfqStatusCancel">
-        <Button variant="outlined" className="cancel" onClick={() => (window.history.back())}>
+        <Button
+          variant="outlined"
+          className="cancel"
+          onClick={() => window.history.back()}
+        >
           Cancel
         </Button>
       </div>
@@ -163,7 +165,6 @@ const RFQStatus = () => {
           />
         </div>
       )}
-
     </div>
   );
 };

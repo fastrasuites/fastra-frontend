@@ -144,22 +144,6 @@ const RfqBasicInfoFields = ({
             renderInput={(params) => <TextField {...params} />}
           />
         </div>
-
-        <div>
-          <label style={{ marginBottom: "6px", display: "block" }}>
-            Vendor Category
-            {REQUIRED_ASTERISK}
-          </label>
-          <TextField
-            type="text"
-            value={formData.vendor_category}
-            onChange={(e) =>
-              handleInputChange("vendor_category", e.target.value)
-            }
-            sx={{ width: "100%" }}
-            placeholder="Select Vendor Category"
-          />
-        </div>
       </div>
     </div>
   );

@@ -118,8 +118,12 @@ const LocationForm = () => {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+  console.log(multiLocationList);
+
   const handleAddLocation = async () => {
     if (loadingLocations || loadingConfig) return;
+
+    const shouldAddLocation = false;
 
     if (locationList.length > 0 && !multiLocationList?.is_activated) {
       const { isConfirmed } = await Swal.fire({

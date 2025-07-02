@@ -180,24 +180,6 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
             />
           )}
         </Box>
-
-        {/* Vendor Category (always editable) */}
-        <Box>
-          <label>
-            Vendor Category
-            {REQUIRED_ASTERISK}
-          </label>
-          <TextField
-            fullWidth
-            type="text"
-            value={formData.vendor_category || ""}
-            onChange={(e) =>
-              handleInputChange("vendor_category", e.target.value)
-            }
-            sx={{ mt: 0.5 }}
-            placeholder="Enter Vendor Category"
-          />
-        </Box>
       </div>
     </div>
   );

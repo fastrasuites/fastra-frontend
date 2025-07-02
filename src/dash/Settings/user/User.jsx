@@ -155,6 +155,8 @@ const UserList = () => {
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
   const [showArchiveBtn, setShowArchiveBtn] = useState(false);
 
+  console.log(rawUsers);
+
   useEffect(() => {
     getUserList();
   }, [getUserList]);
