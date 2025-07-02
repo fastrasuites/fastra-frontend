@@ -36,7 +36,7 @@ export const CompanyProvider = ({ children }) => {
       try {
         const { data } = await client.patch(
           `/company/update-company-profile/`,
-          companyData, // Send as JSON object
+          companyData,
           {
             headers: { "Content-Type": "multipart/form-data" },
             transformRequest: [(data /*, headers*/) => data],

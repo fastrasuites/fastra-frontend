@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useReducer, useRef } from "react";
+import React, { useCallback, useEffect, useReducer } from "react";
 import {
   Box,
   Button,
@@ -12,32 +12,12 @@ import InputField from "../../../../components/InputField/InputField";
 import ImageUpload from "../../../../components/ImageUpload/ImageUpload";
 import SignatureSection from "../../../../components/SignatureSection/SignatureSection";
 import { useUser } from "../../../../context/Settings/UserContext";
+import { useHistory } from "react-router-dom";
+import { useTenant } from "../../../../context/TenantContext";
+import { useCompany } from "../../../../context/Settings/CompanyContext";
 
 // Constants
-export const LANGUAGE_OPTIONS = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "Spanish", value: "es" },
-  { label: "Arabic", value: "ar" },
-  { label: "Portuguese", value: "pt" },
-  { label: "German", value: "de" },
-  { label: "Chinese", value: "zh" },
-  { label: "Hindi", value: "hi" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Russian", value: "ru" },
-  { label: "Swahili", value: "sw" },
-  { label: "Italian", value: "it" },
-  { label: "Dutch", value: "nl" },
-  { label: "Turkish", value: "tr" },
-  { label: "Vietnamese", value: "vi" },
-  { label: "Urdu", value: "ur" },
-  { label: "Bengali", value: "bn" },
-  { label: "Hausa", value: "ha" },
-  { label: "Yoruba", value: "yo" },
-  { label: "Igbo", value: "ig" },
-  { label: "Tiv", value: "tiv" },
-];
+const LANGUAGE_OPTIONS = [{ label: "English", value: "en" }];
 
 export const TIMEZONE_OPTIONS = [
   {
@@ -72,19 +52,6 @@ const ROLE_OPTIONS = [
   { label: "Employee", value: "employee" },
 ];
 
-const ACCESS_RIGHT_OPTIONS = [
-  { label: "Manager", value: "manager" },
-  { label: "Officer", value: "officer" },
-];
-
-const ACCESS_RIGHTS_FIELDS = [
-  { name: "purchaseRequestApproval", label: "Purchase Request Approval" },
-  { name: "inventory", label: "Inventory" },
-  { name: "sales", label: "Sales" },
-  { name: "humanResources", label: "Human Resources" },
-  { name: "accounting", label: "Accounting" },
-];
-
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const IMAGE_MAX_SIZE = 1 * 1024 * 1024; // 1 MB
 const REQUIRED_FIELDS = [
@@ -95,7 +62,6 @@ const REQUIRED_FIELDS = [
   "language",
   "timezone",
   "signature",
-  ...ACCESS_RIGHTS_FIELDS.map((field) => field.name),
 ];
 
 // Initial form state
@@ -112,7 +78,7 @@ const initialState = {
   inAppNotification: false,
   emailNotification: false,
   signature: "",
-  ...Object.fromEntries(ACCESS_RIGHTS_FIELDS.map((field) => [field.name, ""])),
+  accessGroups: [],
 };
 
 // Action types
@@ -120,6 +86,7 @@ const ActionTypes = {
   SET_FIELD: "SET_FIELD",
   SET_IMAGE: "SET_IMAGE",
   SET_TAB: "SET_TAB",
+  SET_ACCESS_GROUP: "SET_ACCESS_GROUP",
   SET_SIGNATURE: "SET_SIGNATURE",
   RESET: "RESET",
 };
@@ -137,6 +104,18 @@ function formReducer(state, action) {
       };
     case ActionTypes.SET_TAB:
       return { ...state, activeTab: action.payload };
+    case ActionTypes.SET_ACCESS_GROUP: {
+      const { accessCode } = action.payload;
+      let newGroups = [...state.accessGroups];
+
+      if (accessCode) {
+        if (!newGroups.includes(accessCode)) {
+          newGroups.push(accessCode);
+        }
+      }
+
+      return { ...state, accessGroups: newGroups };
+    }
     case ActionTypes.SET_SIGNATURE:
       return { ...state, signature: action.payload };
     case ActionTypes.RESET:
@@ -147,48 +126,72 @@ function formReducer(state, action) {
 }
 
 // Access Rights Section Component
-const AccessRightsSection = ({ state, handleChange }) => (
-  <Box backgroundColor="white">
-    <Box color="#A9B3BC" pb={8}>
-      <Button variant="outlined" size="large">
-        Access Rights
-      </Button>
-      <Button variant="outlined" color="inherit" size="large">
-        Sessions
-      </Button>
-      {/* ... other buttons */}
-    </Box>
+const AccessRightsSection = ({
+  state,
+  handleAccessGroupChange,
+  accessGroupRights,
+}) => {
+  return (
+    <Box backgroundColor="white">
+      <Box color="#A9B3BC" pb={8}>
+        <Button variant="outlined" size="large">
+          Access Rights
+        </Button>
+        <Button variant="outlined" color="inherit" size="large">
+          Sessions
+        </Button>
+        {/* ... other buttons */}
+      </Box>
 
-    <Typography color="#3B7CED" fontSize="20px">
-      Application
-    </Typography>
-    <Box>
-      {ACCESS_RIGHTS_FIELDS.map((field) => (
-        <Box
-          key={field.name}
-          display="flex"
-          alignItems="center"
-          gap={3}
-          mb={2}
-          maxWidth={1250}
-        >
-          <Typography variant="subtitle2" whiteSpace="nowrap" minWidth={180}>
-            {field.label}
-          </Typography>
-          <InputField
-            config={{
-              name: field.name,
-              inputType: "select",
-              options: ACCESS_RIGHT_OPTIONS,
-            }}
-            value={state[field.name]}
-            onChange={handleChange}
-          />
-        </Box>
-      ))}
+      <Typography color="#3B7CED" fontSize="20px">
+        Application
+      </Typography>
+      <Box>
+        {accessGroupRights.length > 0 ? (
+          accessGroupRights.map((appGroup) => {
+            return (
+              <Box
+                key={appGroup.application}
+                display="flex"
+                alignItems="center"
+                gap={3}
+                mb={2}
+                maxWidth={1250}
+              >
+                <Typography
+                  variant="subtitle2"
+                  whiteSpace="nowrap"
+                  minWidth={180}
+                  textTransform={"capitalize"}
+                >
+                  {appGroup?.application}
+                </Typography>
+                <InputField
+                  config={{
+                    name: appGroup,
+                    inputType: "select",
+                    options: appGroup.access_groups.map((group) => ({
+                      label: group.group_name,
+                      value: group.access_code,
+                    })),
+                  }}
+                  value={
+                    state.accessGroups.find((code) =>
+                      appGroup.access_groups.some((g) => g.access_code === code)
+                    ) || ""
+                  }
+                  onChange={(e) => handleAccessGroupChange(e.target.value)}
+                />
+              </Box>
+            );
+          })
+        ) : (
+          <Typography>No access groups available</Typography>
+        )}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 // Basic Settings Tab Component
 const BasicSettingsTab = ({
@@ -198,6 +201,7 @@ const BasicSettingsTab = ({
   handleClearSignature,
   handleEndSignature,
   handleUploadSignature,
+  roles = [],
 }) => (
   <Box
     display="flex"
@@ -257,7 +261,10 @@ const BasicSettingsTab = ({
                 name: "role",
                 label: "Role",
                 inputType: "select",
-                options: ROLE_OPTIONS,
+                options: roles.map((role) => ({
+                  label: role.name,
+                  value: role.id,
+                })),
                 required: true,
               }}
               value={state.role}
@@ -392,7 +399,14 @@ const BasicSettingsTab = ({
 );
 
 // Access Rights Tab Component
-const AccessRightsTab = ({ state, handleChange, handleImageUpload }) => (
+const AccessRightsTab = ({
+  state,
+  handleChange,
+  handleImageUpload,
+  handleAccessGroupChange,
+  accessGroupRights,
+  roles,
+}) => (
   <Box
     backgroundColor="white"
     p={3}
@@ -432,7 +446,10 @@ const AccessRightsTab = ({ state, handleChange, handleImageUpload }) => (
             name: "role",
             label: "Role",
             inputType: "select",
-            options: ROLE_OPTIONS,
+            options: roles.map((role) => ({
+              label: role.name,
+              value: role.id,
+            })),
             required: true,
           }}
           value={state.role}
@@ -441,20 +458,38 @@ const AccessRightsTab = ({ state, handleChange, handleImageUpload }) => (
       </Box>
     </Box>
 
-    <AccessRightsSection state={state} handleChange={handleChange} />
+    <AccessRightsSection
+      state={state}
+      handleAccessGroupChange={handleAccessGroupChange}
+      accessGroupRights={accessGroupRights}
+    />
   </Box>
 );
 
 // Main Component
 const CreateUser = () => {
   const [state, dispatch] = useReducer(formReducer, initialState);
-  const sigPadRef = useRef(null);
-  const { createUser, getAccessGroupRight, userGroups } = useUser();
+  const { tenant_schema_name } = useTenant().tenantData || {};
+  const history = useHistory();
+  const {
+    createUser,
+    getAccessGroups,
+    accessGroups: accessGroupRights,
+    getGroups,
+    userGroups,
+  } = useUser();
+  const { company, getCompany } = useCompany();
+
+  // const roles = company?.roles && company?.roles;
+  const roles = userGroups && userGroups;
 
   useEffect(() => {
-    getAccessGroupRight();
-  }, [getAccessGroupRight]);
+    getCompany();
+    getGroups();
+    getAccessGroups();
+  }, [getAccessGroups, getCompany]);
 
+  console.log(userGroups);
   // Handlers
   const handleTabChange = useCallback(
     (index) => dispatch({ type: ActionTypes.SET_TAB, payload: index }),
@@ -466,6 +501,13 @@ const CreateUser = () => {
     dispatch({
       type: ActionTypes.SET_FIELD,
       payload: { name, value: type === "checkbox" ? checked : value },
+    });
+  }, []);
+
+  const handleAccessGroupChange = useCallback((accessCode) => {
+    dispatch({
+      type: ActionTypes.SET_ACCESS_GROUP,
+      payload: { accessCode },
     });
   }, []);
 
@@ -500,19 +542,23 @@ const CreateUser = () => {
     });
   }, []);
 
+  function dataURLtoFile(dataurl, filename) {
+    const arr = dataurl.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
+  }
+
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
-
-      // Capture signature if exists
-      if (
-        sigPadRef.current &&
-        !sigPadRef.current.isEmpty() &&
-        !state.signature
-      ) {
-        const dataURL = sigPadRef.current.toDataURL("image/png");
-        dispatch({ type: ActionTypes.SET_SIGNATURE, payload: dataURL });
-      }
 
       // Validate required fields
       const missingFields = REQUIRED_FIELDS.filter((key) => !state[key]);
@@ -525,49 +571,74 @@ const CreateUser = () => {
         return;
       }
 
-      const accessRights = [
-        `purchase_${state.purchaseRequestApproval}`,
-        `inventory_${state.inventory}`,
-        `sales_${state.sales}`,
-        `human_resources_${state.humanResources}`,
-        ` accounting_${state.accounting}`,
-      ];
+      const formData = new FormData();
 
-      // Prepare payload
-      const payLoad = {
-        name: state.name,
-        role: state.role,
-        email: state.email,
-        phone_number: state.phone,
-        language: state.language,
-        timezone: state.timezone,
-        in_app_notification: state.inAppNotification,
-        email_notification: state.emailNotification,
-        signature: state.signature,
-        groups: accessRights,
-        image: state.ima,
-      };
+      // Append all user data
+      formData.append("name", state.name);
+      formData.append("email", state.email);
+      formData.append("role", state.role);
+      formData.append("phone_number", state.phone);
+      formData.append("language", state.language);
+      formData.append("timezone", state.timezone);
+      formData.append("in_app_notifications", state.inAppNotification);
+      formData.append("email_notifications", state.emailNotification);
 
+      // Handle signature (could be File or base64 string)
+      if (state.signature) {
+        if (typeof state.signature === "string") {
+          // Convert base64 signature to File
+          const signatureFile = dataURLtoFile(state.signature, "signature.png");
+          formData.append("signature_image", signatureFile);
+        } else if (
+          state.signature instanceof File ||
+          state.signature instanceof Blob
+        ) {
+          // Already a file, append directly
+          formData.append("signature_image", state.signature, "signature.png");
+        }
+      }
+
+      // Append each access code separately
+      state.accessGroups.forEach((code) => {
+        formData.append("access_codes", code);
+      });
+
+      if (state.imageFile) {
+        formData.append("image", state.imageFile);
+      }
+
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
       try {
-        await createUser(payLoad);
-        Swal.fire({
-          icon: "success",
-          title: "User Created",
-          text: `${state.name} has been successfully created.`,
-        });
-        dispatch({ type: ActionTypes.RESET });
+        const res = await createUser(formData);
+        console.log(res);
+        if (res.success === true) {
+          Swal.fire({
+            icon: "success",
+            title: "User Created",
+            text: `${state.name} User Created Successfully`,
+          });
+          dispatch({ type: ActionTypes.RESET });
+          history.push(
+            `/${tenant_schema_name}/settings/user/${res?.data?.user?.id}`
+          );
+        }
       } catch (error) {
+        console.error(error);
+        let errorMessage = "Failed to create user";
+        if (error.response && error.response.data) {
+          errorMessage = Object.values(error.response.data).flat().join("\n");
+        }
         Swal.fire({
           icon: "error",
           title: "Creation Failed",
-          text: error.message || "Failed to create user",
+          text: errorMessage,
         });
       }
     },
     [state, createUser]
   );
-
-  console.log("CreateUser state:", state);
 
   return (
     <Box p={6}>
@@ -604,12 +675,16 @@ const CreateUser = () => {
             handleClearSignature={handleClearSignature}
             handleEndSignature={handleEndSignature}
             handleUploadSignature={handleUploadSignature}
+            roles={roles}
           />
         ) : (
           <AccessRightsTab
             state={state}
             handleChange={handleChange}
             handleImageUpload={handleImageUpload}
+            handleAccessGroupChange={handleAccessGroupChange}
+            accessGroupRights={accessGroupRights}
+            roles={roles}
           />
         )}
 

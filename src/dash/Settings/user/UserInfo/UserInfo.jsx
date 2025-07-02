@@ -1,6 +1,8 @@
 import { Box, Button, Grid, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import InputField from "../../../../components/InputField/InputField";
+import { useUser } from "../../../../context/Settings/UserContext";
+import { useParams } from "react-router-dom";
 
 const ACCESS_RIGHT_OPTIONS = [
   { HR: "Human Resources" },
@@ -14,6 +16,15 @@ const UserInfo = () => {
   const [state, setState] = React.useState({
     activeTab: 1,
   });
+
+  const { getSingleUser, singleUser } = useUser();
+  const { id } = useParams();
+
+  useEffect(() => {
+    getSingleUser(id);
+  }, [getSingleUser, id]);
+
+  console.log(singleUser);
 
   const handleTabChange = (tabIndex) => {
     setState((prevState) => ({ ...prevState, activeTab: tabIndex }));

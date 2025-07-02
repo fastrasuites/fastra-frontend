@@ -28,11 +28,8 @@ const SignatureSection = ({ signature, onClear, onEnd, onUpload }) => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      onUpload(event.target.result);
-    };
-    reader.readAsDataURL(file);
+    // Instead of converting to base64, use the file directly
+    onUpload(file);
   };
 
   const handleMouseDown = () => {
@@ -60,6 +57,12 @@ const SignatureSection = ({ signature, onClear, onEnd, onUpload }) => {
     onClear();
   };
 
+  // Create a preview URL for the signature
+  const signaturePreview =
+    signature instanceof Blob || signature instanceof File
+      ? URL.createObjectURL(signature)
+      : signature;
+
   return (
     <Box pb={3}>
       <Typography color="#3B7CED" fontSize="20px" mb={3}>
@@ -68,7 +71,7 @@ const SignatureSection = ({ signature, onClear, onEnd, onUpload }) => {
       <Box display="flex" alignItems="end" gap={6}>
         {signature ? (
           <img
-            src={signature}
+            src={signaturePreview}
             alt="Signature"
             style={{
               border: "1px solid #ccc",
