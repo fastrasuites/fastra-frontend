@@ -18,6 +18,8 @@ import { useLocationConfig } from "../../../../context/Inventory/LocationConfigC
 import Asteriks from "../../../../components/Asterisk";
 import { useTenant } from "../../../../context/TenantContext";
 
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
+
 const STORAGE_KEY = "draftLocationForm";
 
 // Define available types here for easy extension
@@ -178,11 +180,40 @@ const LocationForm = () => {
       });
     }
     // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
+    // if (fromPurchaseModuleWizard) {
+    //   // console.log("About to navigate back to purchase with state:", {
+    //   //   step: 2,
+    //   //   preservedWizard: true,
+    //   // });
+
+    //   // history.push({
+    //   //   pathname: `/${tenant_schema_name}/purchase`,
+    //   //   state: { step: 2, preservedWizard: true },
+    //   // });
+    //   history.push(`/${tenant_schema_name}/purchase`, {
+    //     step: 2,
+    //     preservedWizard: true,
+    //   });
+    // }
+    // In LocationForm.jsx
     if (fromPurchaseModuleWizard) {
-      history.push({
-        pathname: `/${tenant_schema_name}/purchase`,
-        state: { step: 2, preservedWizard: true },
-      });
+      // Get current wizard state
+      const wizardState = JSON.parse(
+        localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
+      );
+
+      // Update to next step
+      const updatedState = {
+        ...wizardState,
+        currentStep: 2,
+        hidden: false,
+      };
+
+      // Save to localStorage
+      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
+
+      // Navigate without state
+      history.push(`/${tenant_schema_name}/purchase`);
     }
   };
 

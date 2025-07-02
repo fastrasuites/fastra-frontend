@@ -9,6 +9,8 @@ import PurchaseHeader from "../PurchaseHeader";
 import { getTenantClient } from "../../../services/apiService";
 import { useTenant } from "../../../context/TenantContext";
 
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
+
 export default function Newprod({
   onClose,
   onSaveAndSubmit,
@@ -80,11 +82,29 @@ export default function Newprod({
     onClose();
 
     // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:3
+    // if (fromPurchaseModuleWizard) {
+    //   // history.push({
+    //   //   pathname: `/${tenant_schema_name}/purchase`,
+    //   //   state: { step: 3, preservedWizard: true },
+    //   // });
+
+    //   history.push(`/${tenant_schema_name}/purchase`, {
+    //     step: 3,
+    //     preservedWizard: true,
+    //   });
+    // }
+
     if (fromPurchaseModuleWizard) {
-      history.push({
-        pathname: `/${tenant_schema_name}/purchase`,
-        state: { step: 3, preserveWizard: true },
-      });
+      const wizardState = JSON.parse(
+        localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
+      );
+      const updatedState = {
+        ...wizardState,
+        currentStep: 3,
+        hidden: false,
+      };
+      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
+      history.push(`/${tenant_schema_name}/purchase`);
     }
   };
 

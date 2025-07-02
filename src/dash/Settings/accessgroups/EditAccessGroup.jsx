@@ -111,8 +111,13 @@ const EditAccessGroup = () => {
     e.preventDefault();
     try {
       const success = await updateAccessGroup(access_code, formData);
+      console.log("Access group updated:", success);
       if (success) {
-        Swal.fire("Success", "Access group updated successfully", "success");
+        await Swal.fire(
+          "Success",
+          "Access group updated successfully",
+          "success"
+        );
         history.push(
           `/${tenant_schema_name}/settings/accessgroups/${access_code}`
         );

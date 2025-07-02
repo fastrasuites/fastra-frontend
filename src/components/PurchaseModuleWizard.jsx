@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import "./PurchaseModuleWizard.css";
 
 const PurchaseModuleWizard = ({ open, onClose, step }) => {
+  console.log("PurchaseModuleWizard rendered with step:", step);
   const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
 
@@ -17,6 +18,7 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
 
     if (step === 4) {
       onClose("complete"); // Completion action
+      return; // Exit early if step is 4
     }
     if (step === 1) {
       history.push(
