@@ -86,7 +86,7 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
 
   const history = useHistory();
 
-  const handleSubmit = (e) => {
+ /* const handleSubmit = (e) => {
     e.preventDefault();
     onSaveAndSubmit(formState);
     onClose();
@@ -95,7 +95,18 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
     if (fromStepModal) {
       history.push({ pathname: "/dashboard", state: { step: 2 } });
     }
-  };
+  };*/
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSaveAndSubmit(formState);
+    if (fromStepModal) {
+        localStorage.setItem("onboardingStep", "1"); // company completed
+        history.push("/dashboard");
+    } else {
+        onClose?.();
+    }
+};
 
   const handleEditClick = () => {
     setIsEditable(true); // Enable the fields on Edit button click

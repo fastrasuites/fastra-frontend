@@ -1,21 +1,23 @@
 import React from "react";
 import { Modal, Box, Typography, Button } from "@mui/material";
+import { useTenant } from "../context/TenantContext";
 import { useHistory } from "react-router-dom";
 import "./stepModal.css";
 
 const StepModal = ({ open, onClose, step, onNextStep }) => {
-  const history = useHistory();
+  /*const history = useHistory();
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
   const handleSetUpCompany = () => {
     onClose();
     if (step === 1) {
-      history.push("/company", { openForm: true });
+      history.push(`/${tenant_schema_name}/company`, { openForm: true, step });
     } else if (step === 2) {
-      history.push("/user", { openForm: true });
+      history.push("/user", { openForm: true, step });
     } else {
       alert(" Humm! The last stage is not ready. Please use the skip button.");
     }
-  };
+  };*/
 
   return (
     <Modal open={open} onClose={onClose} className="modal">
@@ -52,7 +54,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                 ? "Now at the last step, Enjoy seamless Experience Here."
                 : ""}
             </p>
-            <button onClick={handleSetUpCompany} className="btn-goto-steps">
+            <button onClick={onNextStep} className="btn-goto-steps">
               {step === 1
                 ? "Set up your Company!"
                 : step === 2
