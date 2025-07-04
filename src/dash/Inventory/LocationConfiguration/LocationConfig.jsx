@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
+import Swal from "sweetalert2";
 import "./LocationConfigure.css";
 import { useLocationConfig } from "../../../context/Inventory/LocationConfigContext";
-import { extractId } from "../../../helper/helper";
 
 const LocationConfiguration = () => {
   const {
@@ -10,39 +10,66 @@ const LocationConfiguration = () => {
     getMultiLocation,
     patchToggleMultiLocation,
     isLoading,
-    error,
   } = useLocationConfig();
 
   const [isMultiLocationEnabled, setIsMultiLocationEnabled] = useState(false);
-  // const [isMultiLocationEnabled, setIsMultiLocationEnabled] = useState(true);
+  const [isFetching, setIsFetching] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
+  // 1. Load current config on mount, with loading + error handling
   useEffect(() => {
-    getMultiLocation();
+    const fetchConfig = async () => {
+      setIsFetching(true);
+      setFetchError("");
+      try {
+        await getMultiLocation();
+      } catch (err) {
+        console.error("Load failed:", err);
+        const msg = err?.message || "Failed to load configuration.";
+        setFetchError(msg);
+        Swal.fire({
+          icon: "error",
+          title: "Load Error",
+          text: msg,
+        });
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchConfig();
   }, [getMultiLocation]);
 
+  // 2. Sync toggle state when data arrives
   useEffect(() => {
     if (multiLocationList) {
-      setIsMultiLocationEnabled(multiLocationList?.is_activated);
+      setIsMultiLocationEnabled(!!multiLocationList.is_activated);
     }
   }, [multiLocationList]);
 
-  // 3. Toggle handler
+  // 3. Toggle handler with success/error feedback
   const handleSwitchToggle = async () => {
-    if (isLoading || multiLocationList.length === 0) return;
+    if (isFetching || isLoading || !multiLocationList) return;
 
     const is_activated = !isMultiLocationEnabled;
-    // const id = extractId(multiLocationList[0].url);
-
     try {
       await patchToggleMultiLocation({ is_activated });
-
       setIsMultiLocationEnabled(is_activated);
+      Swal.fire({
+        icon: "success",
+        title: "Updated",
+        text: `Multi‑Location ${is_activated ? "enabled" : "disabled"}.`,
+      });
     } catch (err) {
       console.error("Toggle failed:", err);
+      const msg = err?.response?.data?.message || "Failed to update.";
+      Swal.fire({
+        icon: "error",
+        title: "Update Error",
+        text: msg,
+      });
     }
   };
 
-  console.log(isMultiLocationEnabled, "isMultiLocationEnabled");
   return (
     <div className="congiure-contain">
       <div className="configurations">
@@ -51,10 +78,10 @@ const LocationConfiguration = () => {
           <div className="pagination">
             <span>1-6 of 6</span>
             <div className="switch-btn">
-              <button className="prev" disabled={isLoading}>
+              <button className="prev" disabled={isFetching || isLoading}>
                 ◀
               </button>
-              <button className="next" disabled={isLoading}>
+              <button className="next" disabled={isFetching || isLoading}>
                 ▶
               </button>
             </div>
@@ -71,7 +98,9 @@ const LocationConfiguration = () => {
                 isMultiLocationEnabled ? "switch-on" : "switch-off"
               }`}
               onClick={handleSwitchToggle}
-              style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
+              style={{
+                cursor: isFetching || isLoading ? "not-allowed" : "pointer",
+              }}
             >
               <div
                 className={`switch-handle ${
@@ -80,8 +109,12 @@ const LocationConfiguration = () => {
               />
             </div>
           </div>
-          {/* {isLoading && <p className="loading">Updating…</p>}
-          {error && <p className="error">Error updating status</p>} */}
+          {(isFetching || isLoading) && (
+            <p className="loading">{isFetching ? "Loading…" : "Updating…"}</p>
+          )}
+          {fetchError && !isFetching && (
+            <p className="error">Error: {fetchError}</p>
+          )}
         </Box>
       </div>
     </div>

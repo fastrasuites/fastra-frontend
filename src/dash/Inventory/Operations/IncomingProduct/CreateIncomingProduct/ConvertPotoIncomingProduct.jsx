@@ -41,14 +41,17 @@ const REQUIRED_ASTERISK = (
 
 // ─── Basic Inputs Component ─────────────────────────────────────────────────────
 function IncomingProductBasicInputs({ formData, handleInputChange }) {
-  const { locationList } = useCustomLocation();
+  const { getSingleLocation, singleLocation } = useCustomLocation();
   const { purchaseOrderList, getApprovedPurchaseOrderList } =
     usePurchaseOrder();
+
+  const locationId = formData?.relatedPO?.destination_location;
 
   // Ensure RFQ list is loaded
   useEffect(() => {
     getApprovedPurchaseOrderList();
-  }, [getApprovedPurchaseOrderList]);
+    getSingleLocation(locationId);
+  }, [getApprovedPurchaseOrderList, getSingleLocation, locationId]);
 
   // Resolve selectedReceipt, selectedPO, selectedSupplier, selectedLocation
   const selectedReceipt = getSelectedOption(
@@ -69,16 +72,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
     "id"
   );
 
-  const selectedLocation = getSelectedOption(
-    formData.location,
-    locationList,
-    "id"
-  );
-
-  // Source location object (for display)
-  const sourceLocationObj = locationList.find(
-    (loc) => loc.location_code === "SUPP"
-  );
+  const selectedLocation = getSelectedOption(formData.location, "id");
 
   return (
     <>
@@ -102,8 +96,8 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
 
         {/* Source ID (read-only) */}
         <div className="formLabelAndValue">
-          <label>Source Location {REQUIRED_ASTERISK}</label>
-          <p>{formData.sourceLocation || sourceLocationObj?.location_name}</p>
+          <label>Source ID {REQUIRED_ASTERISK}</label>
+          <p>Supplier Location</p>
         </div>
 
         {/* Receipt Date (read-only) */}
@@ -159,31 +153,10 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
         </Box>
 
         {/* Destination Location: if already chosen, show read-only; otherwise let user pick */}
-        {formData.location && formData.location.id ? (
-          <Box className="formLabelAndValue" flex={1}>
-            <label>Destination Location {REQUIRED_ASTERISK}</label>
-            <p>{formData.location.id}</p>
-          </Box>
-        ) : (
-          <Box flex={1}>
-            <label style={{ marginBottom: 6, display: "block" }}>
-              Destination Location {REQUIRED_ASTERISK}
-            </label>
-            <Autocomplete
-              disablePortal
-              options={locationList || []}
-              value={selectedLocation}
-              getOptionLabel={(opt) => opt.id || ""}
-              isOptionEqualToValue={(opt, val) => opt.id === val?.id}
-              onChange={(e, newValue) =>
-                handleInputChange("location", newValue || null)
-              }
-              renderInput={(params) => (
-                <TextField {...params} placeholder="Select location" />
-              )}
-            />
-          </Box>
-        )}
+        <Box className="formLabelAndValue" flex={1}>
+          <label>Destination Location {REQUIRED_ASTERISK}</label>
+          <p>{singleLocation?.location_name}</p>
+        </Box>
       </Box>
     </>
   );
@@ -193,6 +166,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
 export default function ConvertPoToIncomingProduct() {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
+
   const location = useLocation();
 
   // Initialize formData with default values
@@ -209,30 +183,24 @@ export default function ConvertPoToIncomingProduct() {
     is_hidden: true,
   });
 
-  const { getLocationList, locationList } = useCustomLocation();
   const { products, fetchProducts, vendors, fetchVendors } = usePurchase();
   const { isLoading, createIncomingProduct } = useIncomingProduct();
   // eslint-disable-next-line no-unused-vars
   const { purchaseOrderList, getApprovedPurchaseOrderList } =
     usePurchaseOrder();
+  const { locationList, getLocationList } = useCustomLocation();
 
   // Fetch lookups and set default source_location
   useEffect(() => {
     fetchProducts();
     fetchVendors();
     getApprovedPurchaseOrderList();
-
-    getLocationList().then((res) => {
-      const src = res.data.find((loc) => loc.location_code === "SUPP");
-      if (src) {
-        setFormData((prev) => ({ ...prev, sourceLocation: src.id }));
-      }
-    });
+    getLocationList();
   }, [
     fetchProducts,
     fetchVendors,
     getApprovedPurchaseOrderList,
-    getLocationList,
+    getApprovedPurchaseOrderList,
   ]);
 
   // Populate `suppliers` once vendors load
@@ -242,15 +210,12 @@ export default function ConvertPoToIncomingProduct() {
     }
   }, [vendors]);
 
+  const sourceLocObj = locationList.find((loc) => loc.location_code === "SUPP");
+
   // If we navigated here with a `po` in state, auto‐fill relevant fields
   useEffect(() => {
     const incoming = location.state?.po;
-    if (
-      incoming &&
-      products.length > 0 &&
-      vendors.length > 0 &&
-      locationList.length > 0
-    ) {
+    if (incoming && products.length > 0 && vendors.length > 0) {
       // Map each PO item into the format our table expects:
       const mappedItems = incoming.items.map((it) => ({
         product: it.product, // assume this is the full product object
@@ -274,7 +239,7 @@ export default function ConvertPoToIncomingProduct() {
         items: mappedItems,
       }));
     }
-  }, [location.state, products, vendors, locationList]);
+  }, [location.state, products, vendors]);
 
   // Navigate to detail page after creation
   const navigateToDetail = (id) => {
@@ -291,9 +256,9 @@ export default function ConvertPoToIncomingProduct() {
   const handleSubmit = async () => {
     // Build the payload
     const payload = {
-      destination_location: formData.location?.id,
+      destination_location: formData?.relatedPO?.destination_location,
       receipt_type: formData.receiptType,
-      source_location: formData.sourceLocation,
+      source_location: sourceLocObj?.id,
       status: formData.status,
       is_hidden: false,
       related_po: formData?.relatedPO?.id,

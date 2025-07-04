@@ -3,8 +3,6 @@ import React from "react";
 import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 
-// Helper: resolves a formValue (object or string) into the corresponding object from `list`.
-// If formValue is already an object, return it. If string, find it by `item[key] === formValue`.
 const getSelectedOption = (formValue, list = [], key) => {
   if (typeof formValue === "object" && formValue !== null) {
     return formValue;
@@ -59,7 +57,9 @@ const RfqBasicInfoFields = ({
           )}
           <div className="refDate">
             <label>Date Opened</label>
-            <p>{formatDate(Date.now())}</p>
+            <Typography color={"#303030"}>
+              {formatDate(Date.now())}34
+            </Typography>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { memo, useEffect, useMemo, useState, useCallback } from "react";
 import {
   useTheme,
   useMediaQuery,
@@ -16,9 +16,9 @@ import {
   Grid,
   Skeleton,
 } from "@mui/material";
-import Avatar from "../../../assets/images/avatars/userAvatar.png";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
+import AvatarPlaceholder from "../../../assets/images/avatars/userAvatar.png";
 import { formatDate } from "../../../helper/helper";
 import { useList } from "../../../hooks/useList";
 import { SearchField } from "../../../components/SearchField/SearchField";
@@ -27,13 +27,6 @@ import { PaginationControls } from "../../../components/PaginationControls/Pagin
 import { ListToolbar } from "../../../components/ListToolbar/ListToolbar";
 import { useTenant } from "../../../context/TenantContext";
 import { useUser } from "../../../context/Settings/UserContext";
-
-// Role lookup (adjust as needed)
-const ROLE_LABELS = {
-  1: "User",
-  2: "Admin",
-  // add other role mappings here
-};
 
 // -- CARD VIEW --
 const UserCard = memo(({ user }) => (
@@ -53,15 +46,15 @@ const UserCard = memo(({ user }) => (
   >
     <Box
       component="img"
-      src={user.avatar}
-      alt="avatar"
+      src={user.avatar || AvatarPlaceholder}
+      alt={user.fullName}
       sx={{ borderRadius: "50%", width: 80, height: 80 }}
     />
     <Typography variant="subtitle1" color="text.primary" noWrap>
       {user.fullName}
     </Typography>
     <Typography variant="caption" textTransform="uppercase" noWrap>
-      {user.role}
+      {user.role || "—"}
     </Typography>
     <Typography variant="body2" noWrap>
       {user.email}
@@ -73,106 +66,101 @@ const UserCard = memo(({ user }) => (
 ));
 
 // -- ROW VIEW --
-const UserRow = memo(
-  ({ user, index, selected, onSelect, onClick, showArchiveBtn }) => (
-    <TableRow
-      hover
-      onClick={onClick}
-      sx={{
-        cursor: "pointer",
-        backgroundColor: index % 2 === 0 ? "#F2F2F2" : "#FFFFFF",
-        "& td, & th": { borderBottom: "none" },
-      }}
-    >
-      <TableCell padding="checkbox">
-        <Checkbox
-          checked={selected}
-          onChange={(e) => {
-            e.stopPropagation();
-            onSelect(user.id, e.target.checked);
-          }}
-          sx={{ color: "#C6CCD2" }}
-        />
-      </TableCell>
-      <TableCell sx={{ p: 2, display: "flex", alignItems: "center" }}>
-        <Box
-          component="img"
-          src={user.avatar}
-          alt={user.fullName}
-          sx={{ width: 40, height: 40, borderRadius: "50%" }}
-        />
+const UserRow = memo(({ user, selected, onSelect, onClick, showArchive }) => (
+  <TableRow
+    hover
+    onClick={onClick}
+    sx={{
+      cursor: "pointer",
+      backgroundColor: selected ? "action.selected" : "transparent",
+      "&:nth-of-type(odd)": { backgroundColor: "#F9F9F9" },
+      "& td, & th": { borderBottom: "none" },
+    }}
+  >
+    <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+      <Checkbox
+        checked={selected}
+        onChange={(e) => onSelect(user.id, e.target.checked)}
+        sx={{ color: "#C6CCD2" }}
+      />
+    </TableCell>
+    <TableCell sx={{ p: 2, display: "flex", alignItems: "center" }}>
+      <Box
+        component="img"
+        src={user.avatar || AvatarPlaceholder}
+        alt={user.fullName}
+        sx={{ width: 40, height: 40, borderRadius: "50%", mr: 1 }}
+      />
+      <Typography variant="body1" noWrap>
         {user.fullName}
-      </TableCell>
-      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }}>
-        {user.role}
-      </TableCell>
-      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
-        {user.email}
-      </TableCell>
-      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
-        {user.phone}
-      </TableCell>
-      <TableCell
+      </Typography>
+    </TableCell>
+    <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+      {user.role || "—"}
+    </TableCell>
+    <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+      {user.email}
+    </TableCell>
+    <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+      {user.phone}
+    </TableCell>
+    <TableCell
+      sx={{ p: 2, typography: "caption", color: "#7A8A98", minWidth: 200 }}
+      noWrap
+    >
+      <Box
         sx={{
-          p: 1,
-          typography: "caption",
-          textTransform: "uppercase",
-          color: "#7A8A98",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: `${showArchiveBtn ? "space-between" : "start"}`,
-            alignItems: "center",
-            pr: 4,
-          }}
-        >
-          {formatDate(Date.now())}
-          {showArchiveBtn && (
-            <Button
-              disableElevation
-              variant="contained"
-              sx={{
-                backgroundColor: "#FF9500",
-                "&:hover": { opacity: 0.9, bgcolor: "#FF9500" },
-              }}
-            >
-              Archive
-            </Button>
-          )}
-        </Box>
-      </TableCell>
-    </TableRow>
-  )
-);
+        {formatDate(user.last_login || user.date_created || Date.now())}
+        {showArchive && (
+          <Button
+            disableElevation
+            variant="contained"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              // handle archive action
+            }}
+            sx={{ backgroundColor: "#FF9500", "&:hover": { opacity: 0.9 } }}
+          >
+            Archive
+          </Button>
+        )}
+      </Box>
+    </TableCell>
+  </TableRow>
+));
 
 const UserList = () => {
+  const history = useHistory();
   const { tenantData } = useTenant();
   const schema = tenantData?.tenant_schema_name;
-  const { getUserList, userList: rawUsers } = useUser();
+  const { getUserList, userList = [], loading } = useUser();
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));
-  const [showArchiveBtn, setShowArchiveBtn] = useState(false);
-
-  console.log(rawUsers);
+  const [showArchive, setShowArchive] = useState(false);
 
   useEffect(() => {
     getUserList();
   }, [getUserList]);
 
-  // Map API data to UI model
   const users = useMemo(
     () =>
-      rawUsers.map((u) => ({
+      userList.map((u) => ({
         id: u.id,
-        avatar: Avatar,
+        avatar: AvatarPlaceholder,
         fullName: `${u.first_name} ${u.last_name}`,
         email: u.email,
-        phone: u.phone_number?.trim() || "–",
-        role: ROLE_LABELS[u.role] || `Role #${u.role}`,
+        phone: u.phone_number?.trim() || "—",
+        role: u.company_role_details?.name || "—",
+        last_login: u.last_login,
+        date_created: u.date_created,
       })),
-    [rawUsers]
+    [userList]
   );
 
   const {
@@ -189,16 +177,20 @@ const UserList = () => {
     handleSelectAll,
     setGridView,
   } = useList(users, {
-    pageSize: 5,
+    pageSize: 10,
     filterFn: (user, term) =>
-      user.fullName.toLowerCase().includes(term.toLowerCase()) ||
-      user.role.toLowerCase().includes(term.toLowerCase()) ||
-      user.email.toLowerCase().includes(term.toLowerCase()) ||
-      user.phone.includes(term),
+      [user.fullName, user.role, user.email, user.phone].some((field) =>
+        field.toLowerCase().includes(term.toLowerCase())
+      ),
   });
 
+  const handleRowClick = useCallback(
+    (id) => history.push(`/${schema}/settings/user/${id}`),
+    [history, schema]
+  );
+
   const renderSkeletons = () =>
-    Array.from({ length: 5 }).map((_, i) => (
+    Array.from({ length: 6 }).map((_, i) => (
       <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
         <Card variant="outlined" sx={{ p: 2 }}>
           <Skeleton variant="circular" width={80} height={80} />
@@ -210,23 +202,27 @@ const UserList = () => {
       </Grid>
     ));
 
+  console.log(userList);
   return (
     <Box p={{ xs: 2, sm: 4, md: 6 }}>
       <ListToolbar
         isXs={isXs}
         leftActions={
           <>
-            <Link to={`/${schema}/settings/user/new`}>
-              <Button fullWidth={isXs} variant="contained">
-                New User
-              </Button>
-            </Link>
+            <Button
+              fullWidth={isXs}
+              variant="contained"
+              component={Link}
+              to={`/${schema}/settings/user/new`}
+            >
+              New User
+            </Button>
             <Button
               fullWidth={isXs}
               variant="outlined"
-              onClick={() => setShowArchiveBtn((prev) => !prev)}
+              onClick={() => setShowArchive((prev) => !prev)}
             >
-              Archive User
+              {showArchive ? "Hide Archive" : "Archive User"}
             </Button>
             <SearchField onSearch={handleSearch} />
           </>
@@ -244,15 +240,17 @@ const UserList = () => {
         }
       />
 
-      {gridView ? (
+      {loading && gridView ? (
         <Grid container spacing={2}>
-          {paginated.length > 0
-            ? paginated.map((user) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={user.id}>
-                  <UserCard user={user} />
-                </Grid>
-              ))
-            : renderSkeletons()}
+          {renderSkeletons()}
+        </Grid>
+      ) : gridView ? (
+        <Grid container spacing={2}>
+          {paginated.map((user) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={user.id}>
+              <UserCard user={user} />
+            </Grid>
+          ))}
         </Grid>
       ) : (
         <TableContainer sx={{ border: "1px solid #E2E6E9" }}>
@@ -266,44 +264,22 @@ const UserList = () => {
                     sx={{ color: "#C6CCD2" }}
                   />
                 </TableCell>
-                <TableCell sx={{ p: 3, color: "#7A8A98" }}>Full Name</TableCell>
-                <TableCell sx={{ p: 3, typography: "body2", color: "#7A8A98" }}>
-                  Role
-                </TableCell>
-                <TableCell
-                  sx={{ p: 3, typography: "body2", color: "#7A8A98" }}
-                  noWrap
-                >
-                  Email
-                </TableCell>
-                <TableCell
-                  sx={{ p: 1, typography: "body2", color: "#7A8A98" }}
-                  noWrap
-                >
-                  Phone
-                </TableCell>
-                <TableCell
-                  sx={{
-                    p: 1,
-                    typography: "caption",
-                    textTransform: "uppercase",
-                    color: "#7A8A98",
-                    minWidth: "300px",
-                  }}
-                >
-                  Last Logic Date
-                </TableCell>
+                <TableCell>Full Name</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Last Login</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginated.map((user, idx) => (
+              {paginated.map((user) => (
                 <UserRow
                   key={user.id}
                   user={user}
-                  index={idx}
                   selected={selectedIds.includes(user.id)}
                   onSelect={handleSelect}
-                  showArchiveBtn={showArchiveBtn}
+                  onClick={() => handleRowClick(user.id)}
+                  showArchive={showArchive}
                 />
               ))}
             </TableBody>

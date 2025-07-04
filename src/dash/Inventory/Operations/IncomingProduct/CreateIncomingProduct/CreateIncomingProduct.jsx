@@ -119,7 +119,7 @@ const IncomingProductBasicInputs = ({
         </div>
         <div className="formLabelAndValue">
           <label>Source Location {REQUIRED_ASTERISK}</label>
-          <p>{sourceLocObj?.id || formData.source_location}</p>
+          <p>{sourceLocObj?.location_name || formData.source_location}</p>
         </div>
         <div className="formLabelAndValue">
           <label>Receipt Date {REQUIRED_ASTERISK}</label>
@@ -275,7 +275,6 @@ const CreateIncomingProduct = () => {
       //  is_validated: true,
       can_edit: true,
     };
-    console.log(payload);
     try {
       const res = await createIncomingProduct(payload);
       Swal.fire({
@@ -283,7 +282,7 @@ const CreateIncomingProduct = () => {
         title: "Success",
         text: "Incoming product created successfully",
       });
-      navigateToDetail(res.data.id);
+      navigateToDetail(res.data.incoming_product_id);
     } catch (err) {
       console.error(err);
       if (err.validation) {
@@ -313,7 +312,7 @@ const CreateIncomingProduct = () => {
       status: "validated",
       is_hidden: false,
       supplier: filledFormData.suppliersName?.id || null,
-      items: filledFormData.items.map((item) => ({
+      incoming_product_items: filledFormData.items.map((item) => ({
         product: item.product.id,
         expected_quantity: Number(item.available_product_quantity),
         quantity_received: Number(item.qty_received),
@@ -327,7 +326,8 @@ const CreateIncomingProduct = () => {
         title: "Success",
         text: "Incoming product validated and created successfully",
       });
-      navigateToDetail(res.data.id);
+      console.log(res);
+      navigateToDetail(res.data.incoming_product_id);
     } catch (err) {
       console.error(err);
       if (err.validation) {

@@ -28,7 +28,7 @@ import { useCustomLocation } from "../../../../context/Inventory/LocationContext
 // Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
-  color: "#7a8a98",
+  color: "#353536",
   fontSize: 12,
   padding: "24px",
 });
@@ -73,8 +73,6 @@ const PurchaseOrderInfo = () => {
       state: { po: item },
     });
   };
-
-  // console.log(item);
 
   // Load Purchase Order data
   const loadPO = useCallback(async () => {
@@ -244,7 +242,7 @@ const PurchaseOrderInfo = () => {
       </Box>
     );
   }
-
+  console.log(item);
   return (
     <div className="rfqStatus">
       <div className="rfqHeader">
@@ -323,11 +321,15 @@ const PurchaseOrderInfo = () => {
             >
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>RFQ ID</TableCell>
-                  <TableCell>Destination Location</TableCell>
-                  <TableCell>Date Created</TableCell>
-                  <TableCell>Created By</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>RFQ ID</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Destination Location
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Date Created
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Created By</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -335,7 +337,7 @@ const PurchaseOrderInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                     }}
                   >
@@ -344,7 +346,7 @@ const PurchaseOrderInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                     }}
                   >
@@ -353,16 +355,16 @@ const PurchaseOrderInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                     }}
                   >
-                    {extractRFQID(item?.destination_location) || "N/A"}
+                    {singleLocation?.location_name || "N/A"}
                   </TableCell>
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                     }}
                   >
@@ -371,7 +373,7 @@ const PurchaseOrderInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                     }}
                   >
@@ -387,9 +389,11 @@ const PurchaseOrderInfo = () => {
 
         <div className="poStatusVendor">
           <Box display={"grid"} gap={1}>
-            <p>Vendor</p>
+            <Typography fontWeight={"bold"} mb={1}>
+              Vendor
+            </Typography>
 
-            <Typography variant="p" color={"#8C9AA6"}>
+            <Typography variant="p" color={"#353536"}>
               {item.vendor?.company_name || ""}
             </Typography>
           </Box>
@@ -398,14 +402,18 @@ const PurchaseOrderInfo = () => {
         <div className="rfqRequestInfo">
           <div className="poStatusVendor">
             <div>
-              <p>Vendor Address</p>
-              <Typography variant="p" color={"#8C9AA6"}>
+              <Typography fontWeight={"bold"} mb={1}>
+                Vendor Address
+              </Typography>
+              <Typography variant="p" color={"#353536"}>
                 {item.vendor?.address || "N/A"}
               </Typography>
             </div>
             <div>
-              <p>Vendor Email</p>
-              <Typography variant="p" color={"#8C9AA6"}>
+              <Typography fontWeight={"bold"} mb={1}>
+                Vendor Email
+              </Typography>
+              <Typography variant="p" color={"#353536"}>
                 {item.vendor?.email || "N/A"}
               </Typography>
             </div>
@@ -413,28 +421,37 @@ const PurchaseOrderInfo = () => {
 
           <div className="poStatusInfo" style={{ marginTop: 25 }}>
             <div>
-              <p>Currency Type</p>
-              <Typography variant="p" color={"#8C9AA6"}>
+              <Typography fontWeight={"bold"} mb={1}>
+                Currency Type
+              </Typography>
+              <Typography variant="p" color={"#353536"}>
                 {item.currency
                   ? `${item.currency.currency_name} - ${item.currency.currency_symbol}`
                   : "N/A"}
               </Typography>
             </div>
             <div>
-              <p>Payment Terms</p>
-              <Typography variant="p" color={"#8C9AA6"}>
+              <Typography fontWeight={"bold"} mb={1}>
+                Payment Terms
+              </Typography>
+              <Typography variant="p" color={"#353536"}>
                 {item.payment_terms || "N/A"}
               </Typography>
             </div>
             <div>
-              <p>Purchase Policy</p>
-              <Typography variant="p" color={"#8C9AA6"}>
+              <Typography fontWeight={"bold"} mb={1}>
+                Purchase Policy
+              </Typography>
+              <Typography variant="p" color={"#353536"}>
                 {item.purchase_policy || "N/A"}
               </Typography>
             </div>
             <div>
-              <p>Delivery Terms</p>
-              <Typography variant="p" color={"#8C9AA6"}>
+              <Typography fontWeight={"bold"} mb={1}>
+                {" "}
+                Delivery Terms
+              </Typography>
+              <Typography variant="p" color={"#353536"}>
                 {item.delivery_terms || "N/A"}
               </Typography>
             </div>
@@ -461,7 +478,10 @@ const PurchaseOrderInfo = () => {
                   "Estimated Unit Price",
                   "Total Price",
                 ].map((head) => (
-                  <TableCell key={head} sx={{ padding: "24px" }}>
+                  <TableCell
+                    key={head}
+                    sx={{ padding: "24px", fontWeight: "bold" }}
+                  >
                     {head}
                   </TableCell>
                 ))}

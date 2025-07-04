@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useReducer } from "react";
+import React, { useCallback, useEffect, useReducer, useState } from "react";
 import {
   Box,
   Button,
@@ -6,6 +6,7 @@ import {
   Typography,
   FormControlLabel,
   Checkbox,
+  CircularProgress,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import InputField from "../../../../components/InputField/InputField";
@@ -17,9 +18,7 @@ import { useTenant } from "../../../../context/TenantContext";
 import { useCompany } from "../../../../context/Settings/CompanyContext";
 
 // Constants
-const LANGUAGE_OPTIONS = [{ label: "English", value: "en" }];
-
-export const TIMEZONE_OPTIONS = [
+const TIMEZONE_OPTIONS = [
   {
     label: "(UTC-08:00) Pacific Time (US & Canada)",
     value: "America/Los_Angeles",
@@ -43,15 +42,7 @@ export const TIMEZONE_OPTIONS = [
   { label: "(UTC+12:00) Auckland", value: "Pacific/Auckland" },
   { label: "(UTC+14:00) Line Islands", value: "Pacific/Kiritimati" },
 ];
-
-const ROLE_OPTIONS = [
-  { label: "Accountant", value: "accountant" },
-  { label: "Manager", value: "manager" },
-  { label: "HR", value: "hr" },
-  { label: "Sales", value: "sales" },
-  { label: "Employee", value: "employee" },
-];
-
+const LANGUAGE_OPTIONS = [{ label: "English", value: "en" }];
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 const IMAGE_MAX_SIZE = 1 * 1024 * 1024; // 1 MB
 const REQUIRED_FIELDS = [
@@ -78,7 +69,7 @@ const initialState = {
   inAppNotification: false,
   emailNotification: false,
   signature: "",
-  accessGroups: [],
+  accessGroups: {},
 };
 
 // Action types
@@ -105,16 +96,14 @@ function formReducer(state, action) {
     case ActionTypes.SET_TAB:
       return { ...state, activeTab: action.payload };
     case ActionTypes.SET_ACCESS_GROUP: {
-      const { accessCode } = action.payload;
-      let newGroups = [...state.accessGroups];
-
-      if (accessCode) {
-        if (!newGroups.includes(accessCode)) {
-          newGroups.push(accessCode);
-        }
-      }
-
-      return { ...state, accessGroups: newGroups };
+      const { application, accessCode } = action.payload;
+      return {
+        ...state,
+        accessGroups: {
+          ...state.accessGroups,
+          [application]: accessCode,
+        },
+      };
     }
     case ActionTypes.SET_SIGNATURE:
       return { ...state, signature: action.payload };
@@ -140,7 +129,6 @@ const AccessRightsSection = ({
         <Button variant="outlined" color="inherit" size="large">
           Sessions
         </Button>
-        {/* ... other buttons */}
       </Box>
 
       <Typography color="#3B7CED" fontSize="20px">
@@ -148,43 +136,39 @@ const AccessRightsSection = ({
       </Typography>
       <Box>
         {accessGroupRights.length > 0 ? (
-          accessGroupRights.map((appGroup) => {
-            return (
-              <Box
-                key={appGroup.application}
-                display="flex"
-                alignItems="center"
-                gap={3}
-                mb={2}
-                maxWidth={1250}
+          accessGroupRights.map((appGroup) => (
+            <Box
+              key={appGroup.application}
+              display="flex"
+              alignItems="center"
+              gap={3}
+              mb={2}
+              maxWidth={1250}
+            >
+              <Typography
+                variant="subtitle2"
+                whiteSpace="nowrap"
+                minWidth={180}
+                textTransform={"capitalize"}
               >
-                <Typography
-                  variant="subtitle2"
-                  whiteSpace="nowrap"
-                  minWidth={180}
-                  textTransform={"capitalize"}
-                >
-                  {appGroup?.application}
-                </Typography>
-                <InputField
-                  config={{
-                    name: appGroup,
-                    inputType: "select",
-                    options: appGroup.access_groups.map((group) => ({
-                      label: group.group_name,
-                      value: group.access_code,
-                    })),
-                  }}
-                  value={
-                    state.accessGroups.find((code) =>
-                      appGroup.access_groups.some((g) => g.access_code === code)
-                    ) || ""
-                  }
-                  onChange={(e) => handleAccessGroupChange(e.target.value)}
-                />
-              </Box>
-            );
-          })
+                {appGroup?.application}
+              </Typography>
+              <InputField
+                config={{
+                  name: appGroup.application,
+                  inputType: "select",
+                  options: appGroup.access_groups.map((group) => ({
+                    label: group.group_name,
+                    value: group.access_code,
+                  })),
+                }}
+                value={state.accessGroups[appGroup.application] || ""}
+                onChange={(e) =>
+                  handleAccessGroupChange(appGroup.application, e.target.value)
+                }
+              />
+            </Box>
+          ))
         ) : (
           <Typography>No access groups available</Typography>
         )}
@@ -222,14 +206,6 @@ const BasicSettingsTab = ({
         <Typography color="#3B7CED" fontSize="20px">
           Basic Information
         </Typography>
-        <Box>
-          <Button variant="text" sx={{ mr: 3 }}>
-            Cancel
-          </Button>
-          <Button variant="contained" size="large">
-            Save
-          </Button>
-        </Box>
       </Box>
 
       <Grid container gap="40px">
@@ -469,27 +445,37 @@ const AccessRightsTab = ({
 // Main Component
 const CreateUser = () => {
   const [state, dispatch] = useReducer(formReducer, initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const {
     createUser,
     getAccessGroups,
     accessGroups: accessGroupRights,
-    getGroups,
-    userGroups,
   } = useUser();
   const { company, getCompany } = useCompany();
 
-  // const roles = company?.roles && company?.roles;
-  const roles = userGroups && userGroups;
+  const roles = company?.roles || [];
 
   useEffect(() => {
-    getCompany();
-    getGroups();
-    getAccessGroups();
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        await Promise.all([getCompany(), getAccessGroups()]);
+      } catch (err) {
+        setError("Failed to load initial data");
+        console.error("Initialization error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [getAccessGroups, getCompany]);
 
-  console.log(userGroups);
   // Handlers
   const handleTabChange = useCallback(
     (index) => dispatch({ type: ActionTypes.SET_TAB, payload: index }),
@@ -504,10 +490,10 @@ const CreateUser = () => {
     });
   }, []);
 
-  const handleAccessGroupChange = useCallback((accessCode) => {
+  const handleAccessGroupChange = useCallback((application, accessCode) => {
     dispatch({
       type: ActionTypes.SET_ACCESS_GROUP,
-      payload: { accessCode },
+      payload: { application, accessCode },
     });
   }, []);
 
@@ -527,11 +513,20 @@ const CreateUser = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!IMAGE_TYPES.includes(file.type) || file.size > IMAGE_MAX_SIZE) {
+    if (!IMAGE_TYPES.includes(file.type)) {
       Swal.fire({
         icon: "error",
-        title: "Invalid Image",
-        text: "Please upload a JPEG/PNG under 1 MB.",
+        title: "Invalid File Type",
+        text: "Please upload a JPEG, PNG, or JPG image.",
+      });
+      return;
+    }
+
+    if (file.size > IMAGE_MAX_SIZE) {
+      Swal.fire({
+        icon: "error",
+        title: "File Too Large",
+        text: "Please upload an image smaller than 1MB.",
       });
       return;
     }
@@ -543,31 +538,43 @@ const CreateUser = () => {
   }, []);
 
   function dataURLtoFile(dataurl, filename) {
-    const arr = dataurl.split(",");
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
+    try {
+      const arr = dataurl.split(",");
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      const u8arr = new Uint8Array(bstr.length);
 
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
+      for (let i = 0; i < bstr.length; i++) {
+        u8arr[i] = bstr.charCodeAt(i);
+      }
+
+      return new File([u8arr], filename, { type: mime });
+    } catch (error) {
+      console.error("Error converting signature:", error);
+      return null;
     }
-
-    return new File([u8arr], filename, { type: mime });
   }
 
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
+      setIsSubmitting(true);
 
       // Validate required fields
-      const missingFields = REQUIRED_FIELDS.filter((key) => !state[key]);
-      if (missingFields.length) {
+      const missingFields = REQUIRED_FIELDS.filter(
+        (key) =>
+          !state[key] || (Array.isArray(state[key]) && state[key].length === 0)
+      );
+
+      if (missingFields.length > 0) {
         Swal.fire({
           icon: "warning",
-          title: "Missing fields",
-          text: `Please fill out: ${missingFields.join(", ")}`,
+          title: "Missing Information",
+          text: `Please fill in all required fields: ${missingFields.join(
+            ", "
+          )}`,
         });
+        setIsSubmitting(false);
         return;
       }
 
@@ -576,69 +583,94 @@ const CreateUser = () => {
       // Append all user data
       formData.append("name", state.name);
       formData.append("email", state.email);
-      formData.append("role", state.role);
+      formData.append("company_role", state.role);
       formData.append("phone_number", state.phone);
       formData.append("language", state.language);
       formData.append("timezone", state.timezone);
       formData.append("in_app_notifications", state.inAppNotification);
       formData.append("email_notifications", state.emailNotification);
 
-      // Handle signature (could be File or base64 string)
+      // Handle signature
       if (state.signature) {
-        if (typeof state.signature === "string") {
-          // Convert base64 signature to File
-          const signatureFile = dataURLtoFile(state.signature, "signature.png");
+        const signatureFile = dataURLtoFile(state.signature, "signature.png");
+        if (signatureFile) {
           formData.append("signature_image", signatureFile);
-        } else if (
-          state.signature instanceof File ||
-          state.signature instanceof Blob
-        ) {
-          // Already a file, append directly
-          formData.append("signature_image", state.signature, "signature.png");
         }
       }
 
-      // Append each access code separately
-      state.accessGroups.forEach((code) => {
-        formData.append("access_codes", code);
+      // Append access codes
+      Object.values(state.accessGroups).forEach((code) => {
+        if (code) formData.append("access_codes", code);
       });
 
+      // Append profile image
       if (state.imageFile) {
         formData.append("image", state.imageFile);
       }
 
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
       try {
         const res = await createUser(formData);
-        console.log(res);
-        if (res.success === true) {
+        if (res?.success) {
           Swal.fire({
             icon: "success",
             title: "User Created",
-            text: `${state.name} User Created Successfully`,
+            text: `${state.name} was created successfully`,
+            showConfirmButton: false,
+            timer: 2000,
           });
-          dispatch({ type: ActionTypes.RESET });
-          history.push(
-            `/${tenant_schema_name}/settings/user/${res?.data?.user?.id}`
-          );
+          setTimeout(() => {
+            history.push(
+              `/${tenant_schema_name}/settings/user/${res?.data?.user?.id}`
+            );
+          }, 2000);
+        } else {
+          console.log(res);
+          throw new Error(res?.error || "Failed to create user");
         }
       } catch (error) {
-        console.error(error);
-        let errorMessage = "Failed to create user";
-        if (error.response && error.response.data) {
-          errorMessage = Object.values(error.response.data).flat().join("\n");
-        }
+        console.error("User creation error:", error);
         Swal.fire({
           icon: "error",
           title: "Creation Failed",
-          text: errorMessage,
+          text:
+            error.message || "An unexpected error occurred. Please try again.",
         });
+      } finally {
+        setIsSubmitting(false);
       }
     },
-    [state, createUser]
+    [state, createUser, history, tenant_schema_name]
   );
+
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="80vh"
+      >
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p={6} textAlign="center">
+        <Typography variant="h6" color="error" gutterBottom>
+          {error}
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box p={6}>
@@ -688,9 +720,28 @@ const CreateUser = () => {
           />
         )}
 
-        <Box mt={4}>
-          <Button type="submit" variant="contained" color="primary">
-            Save User
+        <Box mt={4} display="flex" justifyContent="flex-end" gap={2}>
+          <Button
+            variant="outlined"
+            onClick={() => history.goBack()}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={24} sx={{ mr: 1 }} />
+                Saving...
+              </>
+            ) : (
+              "Save User"
+            )}
           </Button>
         </Box>
       </form>

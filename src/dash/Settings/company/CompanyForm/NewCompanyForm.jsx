@@ -5,7 +5,14 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Box, Button, Grid, Typography, IconButton } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Typography,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
 import Swal from "sweetalert2";
 import InputField from "../../../../components/InputField/InputField";
 import ImageUpload from "../../../../components/ImageUpload/ImageUpload";
@@ -15,13 +22,13 @@ import { useTenant } from "../../../../context/TenantContext";
 import { useCompany } from "../../../../context/Settings/CompanyContext";
 
 // Constants
-export const LANGUAGE_OPTIONS = [
+const LANGUAGE_OPTIONS = [
   { label: "English", value: "en" },
   { label: "French", value: "fr" },
   { label: "Spanish", value: "es" },
 ];
 
-export const TIMEZONE_OPTIONS = [
+const TIMEZONE_OPTIONS = [
   {
     label: "(UTC-08:00) Pacific Time (US & Canada)",
     value: "America/Los_Angeles",
@@ -30,20 +37,15 @@ export const TIMEZONE_OPTIONS = [
     label: "(UTC-05:00) Eastern Time (US & Canada)",
     value: "America/New_York",
   },
-  { label: "(UTC-03:00) Brasilia", value: "America/Sao_Paulo" },
   { label: "(UTC+00:00) London, Dublin", value: "Europe/London" },
-  { label: "(UTC+01:00) Lagos, West Central Africa", value: "Africa/Lagos" },
   { label: "(UTC+01:00) Berlin, Rome, Paris", value: "Europe/Paris" },
   { label: "(UTC+02:00) Cairo", value: "Africa/Cairo" },
   { label: "(UTC+03:00) Moscow", value: "Europe/Moscow" },
   { label: "(UTC+04:00) Dubai", value: "Asia/Dubai" },
   { label: "(UTC+05:30) New Delhi", value: "Asia/Kolkata" },
-  { label: "(UTC+07:00) Bangkok", value: "Asia/Bangkok" },
   { label: "(UTC+08:00) Beijing, Singapore", value: "Asia/Shanghai" },
   { label: "(UTC+09:00) Tokyo", value: "Asia/Tokyo" },
   { label: "(UTC+10:00) Sydney", value: "Australia/Sydney" },
-  { label: "(UTC+12:00) Auckland", value: "Pacific/Auckland" },
-  { label: "(UTC+14:00) Line Islands", value: "Pacific/Kiritimati" },
 ];
 
 const INDUSTRY_OPTIONS = [
@@ -54,9 +56,6 @@ const INDUSTRY_OPTIONS = [
   { label: "Education", value: "education" },
   { label: "Manufacturing", value: "manufacturing" },
   { label: "Transportation", value: "transportation" },
-  { label: "Energy", value: "energy" },
-  { label: "Hospitality", value: "hospitality" },
-  { label: "Entertainment", value: "entertainment" },
 ];
 
 const SIZE_OPTIONS = [
@@ -79,8 +78,8 @@ const ActionTypes = {
   SET_ROLE: "SET_ROLE",
   ADD_ROLE: "ADD_ROLE",
   REMOVE_ROLE: "REMOVE_ROLE",
-  RESET: "RESET",
   SET_STATE: "SET_STATE",
+  RESET: "RESET",
 };
 
 // Initial form state
@@ -125,10 +124,10 @@ function formReducer(state, action) {
         ...state,
         roles: state.roles.filter((_, i) => i !== action.payload),
       };
-    case ActionTypes.RESET:
-      return initialState;
     case ActionTypes.SET_STATE:
       return { ...state, ...action.payload };
+    case ActionTypes.RESET:
+      return initialState;
     default:
       return state;
   }
@@ -139,10 +138,10 @@ const BasicSettingsTab = ({
   state,
   dispatch,
   handleImageUpload,
-  resetForm,
   allStates,
   selectedStatesLGA,
   handleSelectedState,
+  isSubmitting,
 }) => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -163,8 +162,6 @@ const BasicSettingsTab = ({
     label: lga,
     value: lga,
   }));
-
-  console.log(state);
 
   return (
     <Box
@@ -187,11 +184,21 @@ const BasicSettingsTab = ({
             Basic Information
           </Typography>
           <Box>
-            <Button variant="text" sx={{ mr: 3 }} onClick={resetForm}>
+            <Button
+              variant="text"
+              sx={{ mr: 3 }}
+              onClick={() => window.history.back()}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit" variant="contained" size="large">
-              Save
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? <CircularProgress size={24} /> : "Save"}
             </Button>
           </Box>
         </Box>
@@ -201,6 +208,7 @@ const BasicSettingsTab = ({
             <ImageUpload
               imagePreview={state.imagePreview}
               onImageUpload={handleImageUpload}
+              disabled={isSubmitting}
             />
           </Grid>
           <Grid container item xs={10} gap="40px">
@@ -247,6 +255,7 @@ const BasicSettingsTab = ({
               }}
               value={state.phone}
               onChange={handleChange}
+              disabled={isSubmitting}
             />
           </Box>
 
@@ -261,6 +270,7 @@ const BasicSettingsTab = ({
               }}
               value={state.website}
               onChange={handleChange}
+              disabled={isSubmitting}
             />
           </Box>
         </Box>
@@ -275,6 +285,7 @@ const BasicSettingsTab = ({
             }}
             value={state.address}
             onChange={handleChange}
+            disabled={isSubmitting}
           />
 
           <InputField
@@ -285,6 +296,7 @@ const BasicSettingsTab = ({
               options: localGovernmentOptions,
               placeholder: "Local Government",
               required: false,
+              disabled: isSubmitting || !localGovernmentOptions.length,
             }}
             value={state.local_government}
             onChange={handleChange}
@@ -300,6 +312,7 @@ const BasicSettingsTab = ({
               })),
               placeholder: "State",
               required: false,
+              disabled: isSubmitting,
             }}
             value={state.state}
             onChange={(e) => {
@@ -326,6 +339,7 @@ const BasicSettingsTab = ({
             }}
             value={state.registration_number}
             onChange={handleChange}
+            disabled={isSubmitting}
           />
 
           <InputField
@@ -338,6 +352,7 @@ const BasicSettingsTab = ({
             }}
             value={state.tax_id}
             onChange={handleChange}
+            disabled={isSubmitting}
           />
         </Box>
       </Box>
@@ -359,6 +374,7 @@ const BasicSettingsTab = ({
             }}
             value={state.industry}
             onChange={handleChange}
+            disabled={isSubmitting}
           />
           <InputField
             config={{
@@ -371,6 +387,7 @@ const BasicSettingsTab = ({
             }}
             value={state.language}
             onChange={handleChange}
+            disabled={isSubmitting}
           />
           <InputField
             config={{
@@ -383,6 +400,7 @@ const BasicSettingsTab = ({
             }}
             value={state.size}
             onChange={handleChange}
+            disabled={isSubmitting}
           />
         </Box>
       </Box>
@@ -411,13 +429,14 @@ const BasicSettingsTab = ({
                 }}
                 value={role}
                 onChange={handleRoleChange(idx)}
+                disabled={isSubmitting}
               />
               <IconButton
                 size="small"
                 onClick={() =>
                   dispatch({ type: ActionTypes.REMOVE_ROLE, payload: idx })
                 }
-                disabled={state.roles.length === 1}
+                disabled={state.roles.length === 1 || isSubmitting}
                 sx={{ marginTop: "15px" }}
               >
                 <X size={16} color="red" />
@@ -428,6 +447,7 @@ const BasicSettingsTab = ({
             <Button
               onClick={() => dispatch({ type: ActionTypes.ADD_ROLE })}
               variant="outlined"
+              disabled={isSubmitting}
               sx={{
                 height: "40px",
                 width: "40px",
@@ -458,51 +478,74 @@ const BasicSettingsTab = ({
 };
 
 // Main Component
-const NewCompany = () => {
+const CompanyForm = () => {
   const [state, dispatch] = useReducer(formReducer, initialState);
-  const [allStatesAndLGA, setAllStatesAndLGA] = useState([]);
+  const [allStatesAndLGA, setAllStatesAndLGA] = useState({});
   const [allStates, setAllStates] = useState([]);
   const [selectedStatesLGA, setSelectedStatesLGA] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
   const { tenantData } = useTenant();
   const user = tenantData?.user || {};
   const { updateCompany, getCompany, company: companyDetails } = useCompany();
   const initialCompanyDataRef = useRef(null);
 
+  // Fetch initial data
   useEffect(() => {
-    const fetchStatesAndLGA = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(
-          "https://temikeezy.github.io/nigeria-geojson-data/data/lgas.json"
-        );
-        if (!response.ok) throw new Error("Failed to fetch states and LGAs");
-        const data = await response.json();
-        setAllStatesAndLGA(data);
-      } catch (error) {
-        console.error("Error fetching states and LGAs:", error);
+        setIsLoading(true);
+        setError(null);
+
+        // Fetch states and LGAs in parallel
+        const [statesRes, lgasRes] = await Promise.all([
+          fetch(
+            "https://temikeezy.github.io/nigeria-geojson-data/data/states.json"
+          ),
+          fetch(
+            "https://temikeezy.github.io/nigeria-geojson-data/data/lgas.json"
+          ),
+        ]);
+
+        if (!statesRes.ok || !lgasRes.ok) {
+          throw new Error("Failed to fetch geographical data");
+        }
+
+        const [statesData, lgasData] = await Promise.all([
+          statesRes.json(),
+          lgasRes.json(),
+        ]);
+
+        setAllStates(statesData);
+        setAllStatesAndLGA(lgasData);
+
+        // Fetch company data
+        await getCompany();
+      } catch (err) {
+        setError(err.message);
+        Swal.fire({
+          icon: "error",
+          title: "Initialization Error",
+          text: `Failed to load initial data: ${err.message}`,
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const fetchStates = async () => {
-      try {
-        const response = await fetch(
-          "https://temikeezy.github.io/nigeria-geojson-data/data/states.json"
-        );
-        if (!response.ok) throw new Error("Failed to fetch states");
-        const data = await response.json();
-        setAllStates(data);
-      } catch (error) {
-        console.error("Error fetching states:", error);
-      }
-    };
+    fetchInitialData();
+  }, [getCompany]);
 
-    getCompany();
-    fetchStates();
-    fetchStatesAndLGA();
-  }, []);
+  // Initialize form with company data
   useEffect(() => {
-    if (companyDetails) {
+    if (!companyDetails || isLoading) return;
+
+    const prefilledLogo = `data:image/png;base64,${companyDetails.logo}`;
+    try {
       const formData = {
-        name: companyDetails.name || tenantData?.tenant_company_name,
+        name: companyDetails.name || tenantData?.tenant_company_name || "",
         email: companyDetails.email || user?.email || "",
         phone: companyDetails.phone || "",
         website: companyDetails.website || "",
@@ -517,7 +560,7 @@ const NewCompany = () => {
         roles: companyDetails.roles?.length
           ? companyDetails.roles.map((r) => r.name)
           : [""],
-        imagePreview: companyDetails.logo_url || "",
+        imagePreview: prefilledLogo || "",
       };
 
       dispatch({ type: ActionTypes.SET_STATE, payload: formData });
@@ -527,8 +570,11 @@ const NewCompany = () => {
       if (companyDetails.state && allStatesAndLGA[companyDetails.state]) {
         setSelectedStatesLGA(allStatesAndLGA[companyDetails.state]);
       }
+    } catch (err) {
+      setError("Failed to initialize form data");
+      console.error("Form initialization error:", err);
     }
-  }, [companyDetails, allStatesAndLGA, user?.email]);
+  }, [companyDetails, allStatesAndLGA, isLoading]);
 
   const handleSelectedState = (stateName) => {
     dispatch({
@@ -550,80 +596,148 @@ const NewCompany = () => {
   const handleImageUpload = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!IMAGE_TYPES.includes(file.type) || file.size > IMAGE_MAX_SIZE) {
+
+    if (!IMAGE_TYPES.includes(file.type)) {
       Swal.fire({
         icon: "error",
-        title: "Invalid Image",
-        text: "Please upload a JPEG/PNG under 1 MB.",
+        title: "Invalid Image Type",
+        text: "Please upload a JPEG, PNG, or JPG image.",
       });
       return;
     }
+
+    if (file.size > IMAGE_MAX_SIZE) {
+      Swal.fire({
+        icon: "error",
+        title: "Image Too Large",
+        text: "Please upload an image smaller than 1 MB.",
+      });
+      return;
+    }
+
     dispatch({
       type: ActionTypes.SET_IMAGE,
       payload: { file, preview: URL.createObjectURL(file) },
     });
   }, []);
 
-  const resetForm = useCallback(() => {
-    if (initialCompanyDataRef.current) {
-      dispatch({
-        type: ActionTypes.SET_STATE,
-        payload: initialCompanyDataRef.current,
-      });
-    }
-  }, []);
-
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
-
-      const formData = new FormData();
-      if (state.imageFile) formData.append("logo_image", state.imageFile);
-      formData.append("phone", state.phone);
-      formData.append("website", state.website);
-      formData.append("street_address", state.address);
-      formData.append("city", state.local_government);
-      formData.append("country", state.country || "nigeria");
-      formData.append("zip_code", "10001");
-      formData.append("state", state.state);
-      formData.append("registration_number", state.registration_number);
-      formData.append("tax_id", state.tax_id);
-      formData.append("industry", state.industry);
-      formData.append("language", state.language);
-      formData.append("time_zone", state.timezone);
-      formData.append("company_size", state.size);
-
-      const rolesPayload = state.roles.map((name) => ({ name }));
-      formData.append("roles", JSON.stringify(rolesPayload));
-      for (let [key, val] of formData.entries()) {
-        console.log(key, "→", val);
-      }
+      setIsSubmitting(true);
 
       try {
+        const formData = new FormData();
+        if (state.imageFile) formData.append("logo_image", state.imageFile);
+
+        // Append form fields
+        const fields = {
+          phone: state.phone,
+          website: state.website,
+          street_address: state.address,
+          city: state.local_government,
+          country: "nigeria",
+          state: state.state,
+          registration_number: state.registration_number,
+          tax_id: state.tax_id,
+          industry: state.industry,
+          language: state.language,
+          time_zone: state.timezone,
+          company_size: state.size,
+        };
+
+        Object.entries(fields).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+
+        const rolesPayload = state.roles.map((name) => ({ name }));
+        formData.append("roles", JSON.stringify(rolesPayload));
+
         const res = await updateCompany(formData);
         if (res.success) {
-          dispatch({
-            type: ActionTypes.SET_IMAGE,
-            payload: { file: state.imageFile, preview: res.data.logo_url },
-          });
+          // Update image preview with new URL if available
+          if (res.data?.logo_url) {
+            dispatch({
+              type: ActionTypes.SET_IMAGE,
+              payload: {
+                file: state.imageFile,
+                preview: res.data.logo_url,
+              },
+            });
+          }
+
           Swal.fire({
             icon: "success",
-            title: "Updated",
-            text: "Company profile updated.",
+            title: "Success",
+            text: "Company profile updated successfully!",
+            timer: 2000,
+            showConfirmButton: false,
           });
-        } else throw new Error(res.error);
+        } else {
+          throw new Error(res.error || "Failed to update company");
+        }
       } catch (err) {
-        console.error(err);
-        Swal.fire({ icon: "error", title: "Error", text: err.message });
+        console.error("Submission error:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: err.message || "An error occurred while updating the company",
+        });
+      } finally {
+        setIsSubmitting(false);
       }
     },
     [state, updateCompany]
   );
 
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="80vh"
+      >
+        <CircularProgress size={60} />
+        <Typography variant="h6" ml={2}>
+          Loading company data...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        height="80vh"
+        textAlign="center"
+        p={3}
+      >
+        <Typography variant="h5" color="error" gutterBottom>
+          Initialization Error
+        </Typography>
+        <Typography variant="body1" mb={3}>
+          {error}
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <Box p={6}>
       <Typography variant="h5" mb={2}>
-        New Company
+        Company Profile
       </Typography>
 
       <form onSubmit={handleSubmit} encType="multipart/form-data">
@@ -631,15 +745,25 @@ const NewCompany = () => {
           state={state}
           dispatch={dispatch}
           handleImageUpload={handleImageUpload}
-          resetForm={resetForm}
           allStates={allStates}
           selectedStatesLGA={selectedStatesLGA}
           handleSelectedState={handleSelectedState}
+          isSubmitting={isSubmitting}
         />
 
-        <Box mt={4}>
-          <Button type="submit" variant="contained" color="primary">
-            Save Company
+        <Box mt={4} display="flex" justifyContent="flex-end">
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={isSubmitting}
+            sx={{ minWidth: 120 }}
+          >
+            {isSubmitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </Box>
       </form>
@@ -647,4 +771,4 @@ const NewCompany = () => {
   );
 };
 
-export default NewCompany;
+export default CompanyForm;
