@@ -21,28 +21,20 @@
   background: linear-gradient(225deg, #3bb1d2 0%, #158193 100%);
 }
 .numbered-circle {
-  position: absolute;
-  left: 22px;
-
   width: 60px;
+  font-weight: 600;
+  font-size: 48px;
   background-color: #e2e6e9;
   color: #158193;
   /* background: linear-gradient(225deg, #3BB1D2 0%, #158193 100%); */
 
-  font-weight: 600;
-  font-size: 48px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   border-block: 16px solid white;
 }
-.numbered-circle-one {
-  top: 90px;
-}
-.numbered-circle-two {
-  bottom: 10px;
-}
+
 .btn-skip {
   position: absolute;
   top: 30px;
@@ -116,9 +108,6 @@
 }
 
 @media screen and (max-width: 53em) {
-  .numbered-circle-two {
-    bottom: 5px;
-  }
   .modal-main-content {
     margin-left: 20%;
   }
@@ -148,6 +137,11 @@
     line-height: 20px;
     margin-bottom: 40px;
   }
+  .numbered-circle {
+    font-size: 32px !important;
+    border-radius: 50%;
+    border-block: 16px solid white;
+  }
 }
 
 @media screen and (max-width: 680px) {
@@ -158,14 +152,8 @@
   .vertical-line {
     left: 20px;
     top: 0;
-    height: calc(100% - 80px);
   }
-  .numbered-circle-one {
-    top: 70px;
-  }
-  .numbered-circle-two {
-    bottom: 20px;
-  }
+  
   .btn-skip {
     top: 8px;
     right: 8px;
@@ -187,11 +175,12 @@
   .modal-main-content {
     margin-left: 50px;
     padding-top: 50px;
+    padding-bottom: 20px;
   }
   .numbered-circle {
     left: 8px;
     width: 30px;
-    font-size: 24px;
+    font-size: 18px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -204,4 +193,5 @@
     max-height: 340px;
     overflow-y: auto;
   }
+  
 }

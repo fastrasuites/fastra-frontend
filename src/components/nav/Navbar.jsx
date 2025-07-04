@@ -18,7 +18,7 @@ export default function Navbar() {
   return (
     <div className="reg-navbar">
       <div className={`reg-navbar-wrap ${click ? "active" : ""}`}>
-        <a href="https://fastrasuite.com">
+        <a href="https://www.fastrasuite.com">
           {" "}
           <img src={Logo} alt="Fastra Suite" className="reg-logo" />{" "}
         </a>

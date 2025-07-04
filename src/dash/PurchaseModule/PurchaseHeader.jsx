@@ -7,8 +7,8 @@ const PurchaseHeader = () => {
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const menuItems = [
     { label: "Purchase Requests", link: `/${tenant_schema_name}/purchase` },
-    { label: "RFQs", link: `/${tenant_schema_name}/rfq` },
-    { label: "Purchase Orders", link: `/${tenant_schema_name}/purchase-order` },
+    { label: "RFQs", link: `/${tenant_schema_name}/purchase/request-for-quotations` },
+    { label: "Purchase Orders", link: `/${tenant_schema_name}/purchase/purchase-order` },
     {
       label: "Vendors",
       link: `/${tenant_schema_name}/vendor`,
@@ -35,7 +35,7 @@ const PurchaseHeader = () => {
   ];
 
   return (
-    <div style={{width: "100%", background: "#fff"}}>
+    <div style={{ width: "100%", background: "#fff" }}>
       {/* Header Component */}
       <DashboardHeader title="Purchase" menuItems={menuItems} />
     </div>

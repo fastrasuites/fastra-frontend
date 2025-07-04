@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
-import productLogo from "../../../image/product-logo.svg";
 import "./Newprod.css";
 import { useHistory } from "react-router-dom";
 import { Grid, TextField } from "@mui/material";
@@ -10,7 +8,8 @@ import styled from "styled-components";
 import PurchaseHeader from "../PurchaseHeader";
 import { getTenantClient } from "../../../services/apiService";
 import { useTenant } from "../../../context/TenantContext";
-// import Select from "react-select";
+
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
 export default function Newprod({
   onClose,
@@ -18,19 +17,6 @@ export default function Newprod({
   fromPurchaseModuleWizard,
 }) {
   const history = useHistory();
-  // const generateNewID = () => {
-  //   const lastID = localStorage.getItem("lastGeneratedID");
-  //   let newID = "PR00001";
-
-  //   if (lastID) {
-  //     const idNumber = parseInt(lastID.slice(2), 10) + 1;
-  //     newID = "PR" + idNumber.toString().padStart(5, "0");
-  //   }
-
-  //   localStorage.setItem("lastGeneratedID", newID);
-  //   return newID;
-  // };
-
   const [formState, setFormState] = useState({
     // id: generateNewID(),
     name: "",
@@ -41,8 +27,8 @@ export default function Newprod({
     // cp: "",
     image: null, // New state for image
     productDesc: "",
-    availableProductQty: "",
-    totalQtyPurchased: "",
+    availableProductQty: 0,
+    totalQtyPurchased: 0,
   });
 
   const [showForm] = useState(true);
@@ -50,7 +36,6 @@ export default function Newprod({
   const { tenantData } = useTenant();
   const { tenant_schema_name, access_token } = tenantData || {};
   const client = getTenantClient(tenant_schema_name, access_token);
-
 
   const handleChange = (e) => {
     const { name, value, productDesc, availableProductQty, totalQtyPurchased } =
@@ -65,28 +50,8 @@ export default function Newprod({
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setFormState((prev) => ({
-        ...prev,
-        image: imageUrl,
-      }));
-    }
-  };
-
-  const formatCurrency = (value) => {
-    if (!value) return "";
-    return `₦${value}`;
-  };
-
   const handleSaveAndSubmit = (formData) => {
     try {
-      // const existingProducts =
-      //   JSON.parse(localStorage.getItem("products")) || [];
-      // existingProducts.push(formData);
-      // localStorage.setItem("products", JSON.stringify(existingProducts));
       onSaveAndSubmit(formData);
     } catch (e) {
       if (e.name === "QuotaExceededError") {
@@ -99,7 +64,7 @@ export default function Newprod({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formState)
+    console.log(formState);
     const formData = new FormData();
     formData.append("product_name", formState.name);
     formData.append("unit_of_measure", formState.unt);
@@ -113,22 +78,33 @@ export default function Newprod({
       formState.availableProductQty
     );
     formData.append("total_quantity_Purchased", formState.totalQtyPurchased);
-    // if (formState.image) {
-    //   formData.append("image", formState.image);
-    // }
-
-    // const formDataWithFormattedPrices = {
-    //   ...formState,
-    //   sp: formatCurrency(formState.sp),
-    //   cp: formatCurrency(formState.cp),
-    //   date: formState.date ? formState.date.toString() : new Date().toString(),
-    // };
     handleSaveAndSubmit(formData);
     onClose();
 
-    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:2
+    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:3
+    // if (fromPurchaseModuleWizard) {
+    //   // history.push({
+    //   //   pathname: `/${tenant_schema_name}/purchase`,
+    //   //   state: { step: 3, preservedWizard: true },
+    //   // });
+
+    //   history.push(`/${tenant_schema_name}/purchase`, {
+    //     step: 3,
+    //     preservedWizard: true,
+    //   });
+    // }
+
     if (fromPurchaseModuleWizard) {
-      history.push({ pathname: "/purchase", state: { step: 2 } });
+      const wizardState = JSON.parse(
+        localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
+      );
+      const updatedState = {
+        ...wizardState,
+        currentStep: 3,
+        hidden: false,
+      };
+      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
+      history.push(`/${tenant_schema_name}/purchase`);
     }
   };
 
@@ -146,24 +122,23 @@ export default function Newprod({
       } catch (err) {
         console.error("Error fetching unit-measure:", err);
       }
-  
+
       if (units?.length === 0) {
         console.warn("No units found in database.");
       }
       setSavedUnits(units);
     }
-  
+
     fetchData();
   }, [tenantData]); // Only run this effect once, on component mount
-  
 
   const handleUnitChange = (newUnit) => {
     // Simplified the event parameter
-    
+
     setSelectedUnit(newUnit);
     setFormState((prev) => ({
       ...prev,
-      unt: newUnit ? newUnit.url  : "", // Assuming you want to update the unit in form state
+      unt: newUnit ? newUnit.url : "", // Assuming you want to update the unit in form state
     }));
 
     // Log the selected unit
@@ -217,13 +192,6 @@ export default function Newprod({
                 <img src={autosave} alt="Autosaved" />
               </div>
             </div>
-            {/* <div className="newp2b">
-            <div className="newpbnav">
-              <FaCaretLeft className="nr" />
-              <div className="sep"></div>
-              <FaCaretRight className="nr" />
-            </div>
-          </div> */}
           </div>
           {/* form for create/add new products starts here */}
           <div className="newp3">
@@ -238,35 +206,6 @@ export default function Newprod({
                 >
                   Cancel
                 </button>
-              </div>
-
-              {/* Upload product logo */}
-              <div className="newuser3ba" style={{ marginBlock: "24px" }}>
-                <div
-                  className="image-upload"
-                  onClick={() => document.getElementById("imageInput").click()}
-                >
-                  <input
-                    type="file"
-                    accept=".png, .jpg, .jpeg"
-                    onChange={handleImageChange}
-                    id="imageInput"
-                    name="image"
-                    style={{ display: "none" }}
-                  />
-                  {formState.image ? (
-                    <img
-                      src={formState.image}
-                      alt="Preview"
-                      className="image-preview"
-                    />
-                  ) : (
-                    <div className="image-upload-text">
-                      <img src={productLogo} alt="Upload" />
-                      {/* <span style={{ fontSize: "10px" }}>Click to upload</span> */}
-                    </div>
-                  )}
-                </div>
               </div>
 
               <Grid container spacing={3}>
@@ -312,6 +251,7 @@ export default function Newprod({
                     placeholder="0"
                     value={formState.availableProductQty}
                     onChange={handleChange}
+                    disabled
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -325,6 +265,7 @@ export default function Newprod({
                     placeholder="0"
                     value={formState.totalQtyPurchased}
                     onChange={handleChange}
+                    disabled
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -366,21 +307,6 @@ export default function Newprod({
                       />
                     )}
                   />
-                  {/* <Select
-                  placeholder="Select your Unit of Measure"
-                  options={unitOptions}
-                  name="unt"
-                  styles={customStyles}
-                  value={unitOptions.find(
-                    (option) => option.value === formState.unt
-                  )}
-                  onChange={(selectedOption) =>
-                    setFormState((prev) => ({
-                      ...prev,
-                      unt: selectedOption ? selectedOption.value : "",
-                    }))
-                  }
-                /> */}
                 </Grid>
               </Grid>
               <hr
@@ -388,58 +314,9 @@ export default function Newprod({
               />
 
               {/* Tobe deleted later */}
-              {/* <div className="newp3ba">
-                <label>Type</label>
-                <input
-                  type="text"
-                  name="type"
-                  placeholder="Goods"
-                  className="newp3cb"
-                  value={formState.type}
-                  onChange={handleChange}
-                />
-              </div> */}
-              {/* </div> */}
-              {/* <div className="newp3c"> */}
 
-              {/* To be deactivated: form bottom for cost and selling price  */}
-              {/* <div className="newp3a2">
-              <p style={{ fontSize: "20px" }}>Pricing</p>
-            </div>
-            <div className="newp3d">
-              <div className="newp3da">
-                <label>Cost Price</label>
-                <input
-                  type="text"
-                  name="cp"
-                  placeholder="₦0000"
-                  className="newp3cb no-spin"
-                  value={formState.cp}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="newp3da">
-                <label>Selling Price</label>
-                <input
-                  type="text"
-                  name="sp"
-                  placeholder="₦0000"
-                  className="newp3cb no-spin"
-                  value={formState.sp}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>*/}
               <Button type="submit">Create Product</Button>
-              {/* <div className="newp3e">
-              <button
-                type="submit"
-                className="newp3btn"
-                style={{ display: "flex", justifyContent: "center" }}
-              >
-                Create Product
-              </button>
-            </div> */}
+
               {error && <p className="error-message">{error}</p>}
             </form>
           </div>

@@ -1,297 +1,315 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import SearchIcon from "../../../image/search.svg";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
+import { Search } from "lucide-react";
+import { Button } from "@mui/material";
 import Orderlistview from "./Orderlistview";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import IconButton from "@mui/material/IconButton";
-import POrderform from "./POrderform";
-import Orapr from "./Orapr";
 import draft from "../../../../src/image/icons/draft (1).png";
 import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import "./PurchaseOrder.css";
-import PurchaseHeader from "../PurchaseHeader";
+import { usePurchaseOrder } from "../../../context/PurchaseOrderContext.";
+import "./PurchaseOrder.css";
+import { toast } from "react-toastify";
+import { useTenant } from "../../../context/TenantContext";
+import { Link, useHistory } from "react-router-dom";
 
 export default function PurchaseOrder() {
+  // Local state
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-  const [items, setItems] = useState(() => {
-    const savedItems = localStorage.getItem("purchaseOrders");
-    return savedItems ? JSON.parse(savedItems) : [];
-  });
-  const [isFormVisible, setIsFormVisible] = useState(false);
-  const [filteredItems, setFilteredItems] = useState(items);
-  const [initialFormData, setInitialFormData] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [purchaseOrderData, setPurchaseOrderData] = useState([]);
+  const [page, setPage] = useState(1);
 
-  const location = useLocation();
-  const locationFormData = location.state?.formData;
+  const history = useHistory();
 
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+
+  const itemsPerPage = 10;
+  const { getPurchaseOrderList } = usePurchaseOrder();
+
+  // Load purchase orders from localStorage on mount
   useEffect(() => {
-    setFilteredItems(items);
-    localStorage.setItem("purchaseOrders", JSON.stringify(items));
-  }, [items]);
-
-  useEffect(() => {
-    if (locationFormData) {
-      setInitialFormData(locationFormData);
-      setIsFormVisible(true);
+    const savedData = localStorage.getItem("purchaseOrderData");
+    if (savedData) {
+      setPurchaseOrderData(JSON.parse(savedData));
     }
-  }, [locationFormData]);
+  }, []);
+
+  // Fetch purchase orders when the refresh flag changes
+  const fetchPurchaseOrders = useCallback(async () => {
+    try {
+      const { success, data } = await getPurchaseOrderList();
+      if (success) {
+        setPurchaseOrderData(data);
+        localStorage.setItem("purchaseOrderData", JSON.stringify(data));
+      }
+      // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      toast.error("Failed to load purchase orders.");
+    }
+  }, [getPurchaseOrderList]);
 
   useEffect(() => {
-    handleSearch();
+    const toastId = "purchaseOrdersPromise";
+
+    if (!toast.isActive(toastId)) {
+      const purchaseOrdersPromise = fetchPurchaseOrders();
+      toast.promise(
+        purchaseOrdersPromise,
+        {
+          pending: "Loading purchase orders...",
+          success: "Purchase orders loaded successfully",
+          error: "Failed to load purchase orders.",
+        },
+        { toastId }
+      );
+    }
+  }, [fetchPurchaseOrders]);
+
+  // Reset to first page on search query change
+  useEffect(() => {
+    setPage(1);
   }, [searchQuery]);
 
-  const handleSaveAndSubmit = (data) => {
-    const updatedItems = [...items, data];
-    setItems(updatedItems);
-    setIsFormVisible(false);
-  };
-
-  const handleFormClose = () => {
-    setIsFormVisible(false);
-    setInitialFormData(null);
-  };
-
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-  };
-
-  const handleNewPurchaseOrder = () => {
-    setIsFormVisible(true);
-  };
-
-  const handleCardClick = (item) => {
-    setSelectedItem(item);
-  };
-
-  const handleSearch = () => {
-    if (searchQuery === "") {
-      setFilteredItems(items);
-    } else {
+  // Filter purchase orders based on search query
+  const filteredPurchaseOrders = useMemo(() => {
+    return purchaseOrderData.filter((item) => {
+      if (!searchQuery) return true;
       const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = items.filter(
-        (item) =>
-          item.productName.toLowerCase().includes(lowercasedQuery) ||
-          item.date.includes(lowercasedQuery) ||
-          item.status.toLowerCase().includes(lowercasedQuery) ||
-          item.id.toLowerCase().includes(lowercasedQuery) ||
-          item.vendor.toLowerCase().includes(lowercasedQuery)
-      );
-      setFilteredItems(filtered);
-    }
-  };
 
+      const dateCreated = new Date(item.date_created)
+        .toLocaleString()
+        .toLowerCase();
+      const status = item.status ? item.status.toLowerCase() : "";
+      const currencyName = item.currency_name
+        ? item.currency_name.toLowerCase()
+        : "";
+      const purchaseOrderID =
+        typeof item.id === "string" ? item.id.toLowerCase() : "";
+      const vendorName =
+        item.vendor && item.vendor.company_name
+          ? item.vendor.company_name.toLowerCase()
+          : "";
+
+      return (
+        dateCreated.includes(lowercasedQuery) ||
+        status.includes(lowercasedQuery) ||
+        currencyName.includes(lowercasedQuery) ||
+        purchaseOrderID.includes(lowercasedQuery) ||
+        vendorName.includes(lowercasedQuery)
+      );
+    });
+  }, [searchQuery, purchaseOrderData]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPurchaseOrders.length / itemsPerPage);
+  const paginatedPurchaseOrders = useMemo(() => {
+    return filteredPurchaseOrders.slice(
+      (page - 1) * itemsPerPage,
+      page * itemsPerPage
+    );
+  }, [page, itemsPerPage, filteredPurchaseOrders]);
+
+  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString(); // Formats date nicely
+    return date.toLocaleString();
   };
 
-  const getStatusCount = (status) => {
-    return items.filter((item) => item.status === status).length;
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Approved":
+  // Return a color based on the status string
+  const getStatusColor = useCallback((status) => {
+    const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1);
+    switch (formattedStatus) {
+      case "Completed":
         return "#2ba24c";
-      case "Pending":
+      case "Awaiting":
         return "#f0b501";
-      case "Rejected":
       case "Cancelled":
         return "#e43e2b";
-      case "Draft":
-        return "#3b7ded";
       default:
-        return "#7a8a98";
+        return "#3B7CED";
     }
+  }, []);
+
+  // Define status types for filtering and display
+  const statuses = useMemo(
+    () => [
+      { key: "draft", label: "Draft", img: draft },
+      { key: "approved", label: "Approved", img: approved },
+      { key: "pending", label: "Pending", img: pending },
+      { key: "rejected", label: "Rejected", img: rejected },
+    ],
+    []
+  );
+  // Group purchase orders by status for the header display
+  const groupedByStatus = useMemo(() => {
+    const statusMap = {
+      cancelled: "rejected",
+      awaiting: "pending",
+      completed: "approved",
+    };
+    return purchaseOrderData.reduce((acc, order) => {
+      const { status } = order;
+      const newStatus = statusMap[status] || status;
+       // Use the mapped status or default to the original
+      if (!acc[newStatus]) {
+        acc[newStatus] = [];
+      }
+      acc[newStatus].push(order.url);
+      return acc;
+    }, {});
+  }, [purchaseOrderData]);
+
+  // Event handlers
+  const handleRfqStatusClick = (urlList, status) => {
+    history.push({
+      pathname: `/${tenant_schema_name}/purchase/purchase-order/status/${status}`,
+      state: { urlList, status, purchaseOrderData },
+    });
   };
 
+
+  const toggleViewMode = useCallback((mode) => {
+    setViewMode(mode);
+  }, []);
+
+  const handleCardClick = useCallback((id) => {
+    history.push(`/${tenant_schema_name}/purchase/purchase-order/${id}`);
+  }, []);
+
+  const handlePageChange = useCallback(
+    (newPage) => {
+      if (newPage > 0 && newPage <= totalPages) {
+        setPage(newPage);
+      }
+    },
+    [totalPages]
+  );
+
+
+
+  console.log(purchaseOrderData, "purchaseOrderData in PurchaseOrder.jsx");
+
   return (
-    
-    <div className="purchase-order" id="purchase">
-      {/* Header */}
-      <PurchaseHeader />
-      <div className="purchase-order-heading">
-        <div className="purchase-order-content">
-          <p style={{ fontSize: "17px" }}>Purchase Order</p>
-          <div className="purchase-order-status">
-            {/* Status fields for draft, approved, pending, rejected */}
-            <div className="status-field purchase-draft">
-              <img src={draft} alt="draft" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Draft") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Draft")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Draft</p>
-            </div>
-            <div className="status-field purchase-approved">
-              <img src={approved} alt="approved" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Approved") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Approved")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Approved</p>
-            </div>
-            <div className="status-field purchase-pending">
-              <img src={pending} alt="pending" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Pending") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Pending")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Pending</p>
-            </div>
-            <div className="status-field purchase-rejected">
-              <img src={rejected} alt="rejected" className="status-img" />
-              <p
-                className={`purchase-list-count ${
-                  getStatusCount("Rejected") === 0 ? "zero" : ""
-                }`}
-              >
-                {getStatusCount("Rejected")}
-              </p>
-              <p className="status-desc">Purchase Order</p>
-              <p style={{ fontSize: "20px" }}>Rejected</p>
-            </div>
+    <div className="rfq" id="rfq">
+      <div className="rfq1">
+        <div className="rfq2">
+          <p style={{ fontSize: "17px" }}>Purchase Orders</p>
+          <div className="rfq-status">
+            {statuses.map(({ key, label, img }) => {
+              const count = groupedByStatus[key]?.length || 0;
+              return (
+                <div
+                  className={`status-field rfq-${key}`}
+                  key={key}
+                  style={{ cursor: "pointer" }}
+                  onClick={() =>
+                    handleRfqStatusClick(groupedByStatus[key], key)
+                  }
+                >
+                  <img
+                    src={img}
+                    alt={label.toLowerCase()}
+                    className="status-img"
+                  />
+                  <p className={`plnum ${count === 0 ? "zero" : ""}`}>
+                    {count}
+                  </p>
+                  <p style={{ lineHeight: "1rem" }} className="status-desc">
+                    Purchase Order
+                  </p>
+                  <p style={{ fontSize: "20px" }}>{label}</p>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="purchaseOrder">
-            <div className="purchaseOrder1">
-              <div className="purchaseOrder2">
-                <div className="purchaseOrder3">
-                  <div className="r3a">
-                    <button
-                      className="r3abtn"
-                      onClick={handleNewPurchaseOrder}
-                      style={{ fontSize: "17px" }}
-                    >
-                      New Purchase Order
-                    </button>
-                    <div className="purchaseOrdersash">
-                      <label htmlFor="searchInput" className="search-box">
-                        <img
-                          src={SearchIcon}
-                          alt="Search"
-                          className="search-icon"
-                        />
-                        <input
-                          id="searchInput"
-                          type="text"
-                          placeholder="Search..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="search-input"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                  <div className="r3b">
-                    <p className="r3bpage">
-                      {filteredItems.length} of {items.length}
-                    </p>
-                    <div className="r3bnav">
-                      <FaCaretLeft className="lr" />
-                      <div className="stroke"></div>
-                      <FaCaretRight className="lr" />
-                    </div>
-                    <div className="r3bview">
-                      <IoGrid
-                        className={`toggle ${
-                          viewMode === "grid" ? "active" : ""
-                        }`}
-                        onClick={() => toggleViewMode("grid")}
-                      />
-                      <div className="stroke"></div>
-                      <FaBars
-                        className={`toggle ${
-                          viewMode === "list" ? "active" : ""
-                        }`}
-                        onClick={() => toggleViewMode("list")}
-                      />
-                    </div>
-                  </div>
-                </div>
-                {isFormVisible ? (
-                  <div className="overlay">
-                    <POrderform
-                      onSaveAndSubmit={handleSaveAndSubmit}
-                      onClose={handleFormClose}
-                      initialData={initialFormData}
-                    />
-                  </div>
-                ) : selectedItem ? (
-                  <div className="overlay">
-                    <Orapr
-                      formData={selectedItem}
-                      onClose={() => setSelectedItem(null)}
-                    />
-                  </div>
-                ) : viewMode === "grid" ? (
-                  <div className="purchaseOrder4">
-                    {filteredItems.map((item) => (
-                      <div
-                        className="purchaseOrder4gv"
-                        key={item.id}
-                        onClick={() => handleCardClick(item)}
-                      >
-                        <p className="cardid">{item.id}</p>
-                        {/* <div className="vendname">
-                          {item.status === "Pending" ? (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "blue",
-                              }}
-                            >
-                              <span style={{ color: "blue" }}>
-                                Select Vendor
-                              </span>
-                              <IconButton style={{ color: "blue" }}>
-                                <ArrowDropDownIcon />
-                              </IconButton>
-                            </div>
-                          ) : (
-                            <p>{item.vendor}</p>
-                          )}
-                        </div> */}
-                        <p className="vendname">{item.vendor}</p>
-                        <p>{formatDate(item.date)}</p>
-                        <p
-                          className="status"
-                          style={{ color: getStatusColor(item.status) }}
-                        >
-                          {item.status}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <Orderlistview
-                    items={filteredItems}
-                    onItemClick={handleCardClick}
-                  />
-                )}
+          <div className="rfq3">
+            <div className="r3a">
+              <Link to="purchase-order/new">
+                <Button
+                  variant="contained"
+                  disableElevation
+                  style={{ fontSize: "17px", whiteSpace: "nowrap" }}
+                >
+                  New Purchase Order
+                </Button>
+              </Link>
+              <div className="rfqsash">
+                <Search
+                  style={{ color: "#C6CCD2" }}
+                  className="rfqsearch-icon"
+                />
+                <input
+                  id="searchInput"
+                  type="search"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="searchInput"
+                />
+              </div>
+            </div>
+            <div className="r3b">
+              <p className="r3bpage" style={{ whiteSpace: "nowrap" }}>
+                {page} of {totalPages}
+              </p>
+              <div className="r3bnav">
+                <FaCaretLeft
+                  className="lr"
+                  onClick={() => handlePageChange(page - 1)}
+                />
+                <div className="stroke"></div>
+                <FaCaretRight
+                  className="lr"
+                  onClick={() => handlePageChange(page + 1)}
+                />
+              </div>
+              <div className="r3bview">
+                <IoGrid
+                  className={`toggle ${viewMode === "grid" ? "active" : ""}`}
+                  onClick={() => toggleViewMode("grid")}
+                />
+                <div className="stroke"></div>
+                <FaBars
+                  className={`toggle ${viewMode === "list" ? "active" : ""}`}
+                  onClick={() => toggleViewMode("list")}
+                />
               </div>
             </div>
           </div>
+          { viewMode === "grid" ? (
+            <div className="rfqStatusCards" style={{ marginTop: "20px" }}>
+              {paginatedPurchaseOrders.map((item) => (
+                <div
+                  className="rfqStatusCard"
+                  key={item.id}
+                  onClick={() => handleCardClick(item)}
+                >
+                  <p className="cardid">{item.id}</p>
+                  <p className="cardate">{formatDate(item.date_created)}</p>
+                  <p className="vendname">
+                    {item.vendor && item.vendor.company_name}
+                  </p>
+                  <p
+                    className="status"
+                    style={{ color: getStatusColor(item.status) }}
+                  >
+                    {item.status}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <Orderlistview
+              items={paginatedPurchaseOrders}
+              onCardClick={handleCardClick}
+              getStatusColor={getStatusColor}
+            />
+          )}
         </div>
       </div>
     </div>

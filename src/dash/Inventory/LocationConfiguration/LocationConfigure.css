@@ -136,7 +136,9 @@
   }
   
   .switch-on {
-    background-color: #007bff; /* Blue background when enabled */
+    background-color: #007bff;
+    padding: 5px;
+     /* Blue background when enabled */
   }
   
   .switch-handle {

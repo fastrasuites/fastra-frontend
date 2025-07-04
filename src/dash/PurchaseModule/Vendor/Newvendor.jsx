@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import autosave from "../../../image/autosave.svg";
 import "./Newvendor.css";
 import vendorLogo from "../../../image/vendor-logo.svg";
 import { Grid, TextField, Box, Divider, Typography } from "@mui/material";
-import PurchaseHeader from "../PurchaseHeader";
 import { usePurchase } from "../../../context/PurchaseContext";
+import { useTenant } from "../../../context/TenantContext";
+import Swal from "sweetalert2";
 
-export default function Newvendor({ onClose, onSaveAndSubmit }) {
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
+
+export default function Newvendor({
+  onClose,
+  fromPurchaseModuleWizard,
+  onSaveAndSubmit,
+}) {
+  const history = useHistory();
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const { createVendor } = usePurchase();
   const [showForm] = useState(true);
   const [formState, setFormState] = useState({
@@ -21,7 +31,32 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    console.log(file);
     if (file) {
+      // Check if the file is an image
+      const validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+      if (!validImageTypes.includes(file.type)) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid file type",
+          text: "Please upload a valid image (JPEG, PNG).",
+        });
+        return;
+      }
+      if (file.size > 1 * 1024 * 1024) {
+        Swal.fire({
+          icon: "error",
+          title: "File size exceeds 1MB",
+          text: "Please upload a smaller image.",
+        });
+        setFormState((prev) => ({
+          ...prev,
+          imageFile: null, // Reset file
+          imagePreview: "", // Reset preview
+        }));
+        return;
+      }
+
       setFormState((prev) => ({
         ...prev,
         imageFile: file, // Store file
@@ -46,11 +81,37 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
 
     createVendor(formData);
     onClose();
+
+    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:4
+    // if (fromPurchaseModuleWizard) {
+    //   // history.push({
+    //   //   pathname: `/${tenant_schema_name}/purchase`,
+    //   //   state: { step: 4, preservedWizard: true },
+    //   // });
+
+    //   history.push(`/${tenant_schema_name}/purchase`, {
+    //     step: 4,
+    //     preservedWizard: true,
+    //   });
+    // }
+
+    if (fromPurchaseModuleWizard) {
+      const wizardState = JSON.parse(
+        localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
+      );
+      const updatedState = {
+        ...wizardState,
+        currentStep: 4,
+        hidden: false,
+      };
+      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
+      history.push(`/${tenant_schema_name}/purchase`);
+    }
   };
 
   return (
     <div className="nvr-contain">
-      <PurchaseHeader />
+      {/* <PurchaseHeader /> */}
       <div id="nvr" className={`nvr ${showForm ? "fade-in" : "fade-out"}`}>
         <div className="nvr1">
           <div className="nvr2">
@@ -166,6 +227,7 @@ export default function Newvendor({ onClose, onSaveAndSubmit }) {
                         </Box>
                       )}
                     </Box>
+                    <Typography>Maximum: 1Mb </Typography>
                   </Grid>
                 </Grid>
 

@@ -1,3 +1,6 @@
+@import "tailwindcss";
+
+
 @font-face {
   font-family: "Product Sans";
   src: url("./font/ProductSansRegular.ttf");

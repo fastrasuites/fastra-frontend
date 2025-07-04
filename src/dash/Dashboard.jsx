@@ -19,71 +19,30 @@ export default function Dashboard() {
 
   // ---------------------------------------------------------------
   // Open and close pop modal on  following user logged in to set company account
- // const [isModalOpen, setIsModalOpen] = useState(false);
-  //const [currentStep, setCurrentStep] = useState(1);
-  //const location = useLocation();
-  
- /*  useEffect(() => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
+  useEffect(() => {
+    // Check if the modal has been closed before
+    const modalClosed = localStorage.getItem("modalClosed");
     if (location.state?.step) {
       setCurrentStep(location.state.step);
       setIsModalOpen(true);
     } else {
-      const timer = setTimeout(() => {
-        setIsModalOpen(true);
-      }, 500);
-      return () => clearTimeout(timer);
+      if (modalClosed) {
+        setIsModalOpen(false);
+      } else {
+        const timer = setTimeout(() => {
+          setIsModalOpen(true);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
   }, [location.state]);*/
 
-  // const handleNextStep = () => {
-  //   if (currentStep === 1) {
-  //     setCurrentStep(2);
-  //   } else if (currentStep === 2) {
-  //     setCurrentStep(3);
-  //   } else if (currentStep === 3) {
-  //     setCurrentStep("");
-  //   }
-  // };
-
-  const [showModal, setShowModal] = useState(false);
-    const [step, setStep] = useState(1);
-    const history = useHistory();
-
-    useEffect(() => {
-        const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
-        const currentStep = parseInt(localStorage.getItem('onboardingStep') || '0');
-
-        if (!onboardingCompleted) {
-            setStep(currentStep + 1); // 0=>1, 1=>2, 2=>3
-            setShowModal(true);
-        }
-    }, []);
-
-
-    const handleNextStep = () => {
-      setShowModal(false);
-      if (step === 1) {
-          localStorage.setItem('onboardingStep', '1');
-          history.push(`/${tenant_schema_name}/company`, { fromStepModal: true });
-      } else if (step === 2) {
-          localStorage.setItem('onboardingStep', '2');
-          history.push(`/${tenant_schema_name}/user`, { fromStepModal: true });
-      } else if (step === 3) {
-          localStorage.setItem('onboardingStep', '3');
-          localStorage.setItem('onboardingCompleted', 'true');
-          history.push(`/${tenant_schema_name}/project`, { fromStepModal: true });
-      }
-  };
-
-    const handleSkip = () => {
-        setShowModal(false);
-        localStorage.setItem('onboardingStep', '3');
-        localStorage.setItem('onboardingCompleted', 'true');
-    };
-
-
   const handleCloseModal = () => {
-    setIsModalOpen(prevState => !prevState);
+    setIsModalOpen((prevState) => !prevState);
+    localStorage.setItem("modalClosed", "true");
   };
 
   //End ---------------------------------------------------------------------------
@@ -94,13 +53,12 @@ export default function Dashboard() {
   };
 
   const toggleMenu = () => {
-    setShowMenu(prevState => !prevState)
+    setShowMenu((prevState) => !prevState);
   };
 
   const closeSidebar = () => {
-    setShowMenu(prevState => !prevState);
+    setShowMenu((prevState) => !prevState);
   };
-
 
   return (
     <div id="dashboard" className="dash">
@@ -151,7 +109,9 @@ export default function Dashboard() {
           </li> */}
         </ul>
       </div>
-      {showMenu && <Sidebar sidebarOpen={showMenu} handleCloseSidebar={closeSidebar} />}
+      {showMenu && (
+        <Sidebar sidebarOpen={showMenu} handleCloseSidebar={closeSidebar} />
+      )}
       {/*  */}
 
       <div className="dashbody">
@@ -165,15 +125,7 @@ export default function Dashboard() {
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}
-        // onNextStep={handleNextStep}
-      />*/}
-
-      <StepModal
-                      open={showModal}
-                      onClose={handleSkip}
-                      step={step}
-                      onNextStep={handleNextStep}
-                  />
-          </div>
+      />
+    </div>
   );
 }

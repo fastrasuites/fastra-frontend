@@ -1,91 +1,150 @@
 import React from "react";
+import { useTenant } from "../context/TenantContext";
 import { Modal, Box } from "@mui/material";
 import { useHistory } from "react-router-dom";
 import "./PurchaseModuleWizard.css";
 
 const PurchaseModuleWizard = ({ open, onClose, step }) => {
+  console.log("PurchaseModuleWizard rendered with step:", step);
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
   const history = useHistory();
 
-  const handleAddProductandVendor = () => {
-    onClose();
+  const handleSkip = () => {
+    onClose("skip"); // Special skip action
+  };
+
+  const handleStepAction = () => {
+    // onClose();
+
+    if (step === 4) {
+      onClose("complete"); // Completion action
+      return; // Exit early if step is 4
+    }
     if (step === 1) {
-      history.push("/product", { openForm: true });
+      history.push(
+        `/${tenant_schema_name}/inventory/location/create-inventory-location`,
+        { openForm: true }
+      );
     } else if (step === 2) {
-      history.push("/vendor", { openForm: true });
+      history.push(`/${tenant_schema_name}/product`, { openForm: true });
+    } else if (step === 3) {
+      history.push(`/${tenant_schema_name}/vendor`, { openForm: true });
     } else {
-      alert(" Humm! The last stage is not ready. Please use the skip button.");
+      onClose();
     }
   };
+
+  // Step titles and descriptions
+  const stepTitles = [
+    "Step 1: Create Location",
+    "Step 2: Add Products",
+    "Step 3: Add Vendors",
+    "Step 4: Create Purchase Request!",
+    "Successful!",
+  ];
+  const stepDescriptions = [
+    "Create a location to organize your inventory and purchases.",
+    "Add products to ease your journey using this platform.",
+    "Awesome! Just a few steps to start having an Amazing purchase Module Experience.",
+    "Now at the last step, Enjoy seamless Experience Here.",
+    "You have successfully completed the wizard!",
+  ];
+  const stepButtons = [
+    "Create Location",
+    "Add Products",
+    "Add Vendors",
+    "You are done",
+    "",
+  ];
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={() => {}} // Disable backdrop closing
       className="modal purchase-module-wizard"
     >
       <Box className="modal-content-wrapper">
-        <button className="btn-skip" onClick={onClose}>
+        <button className="btn-skip" onClick={handleSkip}>
           Skip
         </button>
         <Box sx={{ position: "relative", height: "100%" }}>
           <div className="vertical-line"></div>
 
-          <div className="numbered-circle numbered-circle-one">{step}</div>
-
-          <div className="numbered-circle numbered-circle-two">
-            {step + 1 <= 2 ? step + 1 : ""}
-          </div>
-          {/* Step 1  -------------------------------- */}
           <div className="modal-main-content">
-            <p className="para-headline">3 SIMPLE STEPS</p>
-            <p className="heading-text">
-              {step === 1
-                ? "Step 1: Add Products"
-                : step === 2
-                ? "Step 2: Add Vendors"
-                : ""}
-            </p>
-            <p className="para-description">
-              {step === 1
-                ? "Add product will ease your journey using this platform."
-                : step === 2
-                ? "Awesome! just few step to start having an Amazing purchase Module Experience"
-                : ""}
-            </p>
-            <button
-              onClick={handleAddProductandVendor}
-              className="btn-goto-steps"
-            >
-              {step === 1
-                ? "Add Products"
-                : step === 2
-                ? "Add Vendors"
-                : step === 3
-                ? "Start Project Creation!"
-                : "You are done"}
-            </button>
+            <p className="para-headline"> SIMPLE STEPS</p>
+            {/* Step 1 */}
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <div className="numbered-circle numbered-circle-one">{step}</div>
+              <div>
+                <p className="heading-text">{stepTitles[step - 1]}</p>
+                <p className="para-description">{stepDescriptions[step - 1]}</p>
+                <button onClick={handleStepAction} className="btn-goto-steps">
+                  {stepButtons[step - 1]}
+                </button>
+              </div>
+            </Box>
 
-            {/* End Step 1 ------------------------------ */}
+            {/* Step 2 */}
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <div className="numbered-circle numbered-circle-2">
+                {step === 1 ? 2 : step === 2 ? 3 : step === 3 ? 4 : ""}
+              </div>
+              <div>
+                <p className="heading-text">
+                  {step === 1
+                    ? stepTitles[1]
+                    : step === 2
+                    ? stepTitles[2]
+                    : step === 3
+                    ? stepTitles[3]
+                    : ""}
+                </p>
+                <p className="para-description">
+                  {step === 1
+                    ? stepDescriptions[1]
+                    : step === 2
+                    ? stepDescriptions[2]
+                    : step === 3
+                    ? stepDescriptions[3]
+                    : ""}
+                </p>
+              </div>
+            </Box>
 
-            {/* Step 2 ---------------------------------- */}
+            {/* Step 3 */}
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <div className="numbered-circle numbered-circle-three">
+                {step === 1 ? 3 : step === 2 ? 4 : ""}
+              </div>
+              <div>
+                <p className="heading-text">
+                  {step === 1 ? stepTitles[2] : step === 2 ? stepTitles[3] : ""}
+                </p>
+                <p className="para-description">
+                  {step === 1
+                    ? stepDescriptions[2]
+                    : step === 2
+                    ? stepDescriptions[3]
+                    : ""}
+                </p>
+              </div>
+            </Box>
 
-            {/* <p className="para-headline">3 SIMPLE STEPS</p> */}
-            <p className="heading-text">
-              {step === 1
-                ? "Step 2: Add Vendors"
-                : step === 2
-                ? "Registration Successful"
-                : ""}
-            </p>
-            <p className="para-description">
-              {step === 1
-                ? "Awesome! Just a few steps to start having an Amazing Fastra Experience"
-                : step === 2
-                ? ""
-                : ""}
-            </p>
+            {/* Step 4 */}
+            <Box sx={{ display: "flex", gap: "20px" }}>
+              <div className="numbered-circle numbered-circle-four">
+                {step === 1 ? 4 : ""}
+              </div>
+              <div>
+                <p className="heading-text">
+                  {step === 1 ? stepTitles[3] : ""}
+                </p>
+                <p className="para-description">
+                  {step === 1 ? stepDescriptions[3] : ""}
+                </p>
+              </div>
+            </Box>
           </div>
-          {/* End step 2 ------------------------------ */}
         </Box>
       </Box>
     </Modal>
