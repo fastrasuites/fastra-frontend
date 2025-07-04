@@ -76,7 +76,8 @@ export default function Newvendor({
 
     // Ensure imageFile is a File before appending
     if (formState.imageFile instanceof File) {
-      formData.append("profile_picture", formState.imageFile);
+      // formData.append("profile_picture", formState.imageFile);
+      formData.append("profile_picture_image", formState.imageFile);
     }
 
     createVendor(formData);
