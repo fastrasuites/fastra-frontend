@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, Box, TextField } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import "./NewStockAdjustment.css";
@@ -47,7 +47,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   // console.log("Location List", locationList);
 
   return (
-    <div className="stockbasicInformationInputs">
+    <Box display={"flex"} gap={10}>
       {/* <div className="formLabelAndValue">
         <label>ID</label>
         <p>{formData.id}</p>
@@ -75,7 +75,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
           <p>{selectedLoaction?.id || "N/A"}</p>
         </div>
       ) : (
-        <div className="">
+        <div>
           <label style={{ marginBottom: "6px", display: "flex" }}>
             Location
             <Asterisk />
@@ -91,7 +91,11 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
             onChange={handleLocationChange}
             sx={{ width: "100%", mb: 2 }}
             renderInput={(params) => (
-              <TextField {...params} placeholder="Receipt Type" />
+              <TextField
+                {...params}
+                placeholder="Receipt Type"
+                sx={{ width: "300px", border: "red" }}
+              />
             )}
           />
         </div>
@@ -110,7 +114,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
           placeholder="Input your notes here"
         />
       </div>
-    </div>
+    </Box>
   );
 };
 

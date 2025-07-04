@@ -10,6 +10,7 @@ export const TenantProvider = ({ children }) => {
 
   const login = (data) => {
     localStorage.setItem("tenantData", JSON.stringify(data));
+    console.log(data);
     setTenantData(data);
   };
 

@@ -465,7 +465,7 @@ Thank you.`;
                   required
                   fullWidth
                   size="small"
-                  color="#7A8A98"
+                  sx={{ color: "#7A8A98" }}
                 />
               </Grid>
               <Grid item xs={12} sm={6} lg={3}>
@@ -489,7 +489,7 @@ Thank you.`;
                   placeholder="Enter return reason"
                   fullWidth
                   size="small"
-                  color="#7A8A98"
+                  sx={{ color: "#7A8A98" }}
                 />
               </Grid>
             </Grid>

@@ -1,22 +1,10 @@
+import React, { useEffect, useState } from "react";
 import { Box, Button, Grid, Typography } from "@mui/material";
-import React, { useEffect } from "react";
-import InputField from "../../../../components/InputField/InputField";
 import { useUser } from "../../../../context/Settings/UserContext";
 import { useParams } from "react-router-dom";
 
-const ACCESS_RIGHT_OPTIONS = [
-  { HR: "Human Resources" },
-  { Sales: "Sales" },
-  { Purchase: "Purchase" },
-  { Inventory: "Inventory" },
-  { Accounting: "Accounting" },
-];
-
 const UserInfo = () => {
-  const [state, setState] = React.useState({
-    activeTab: 1,
-  });
-
+  const [state, setState] = useState({ activeTab: 1 });
   const { getSingleUser, singleUser } = useUser();
   const { id } = useParams();
 
@@ -24,14 +12,15 @@ const UserInfo = () => {
     getSingleUser(id);
   }, [getSingleUser, id]);
 
-  console.log(singleUser);
-
   const handleTabChange = (tabIndex) => {
     setState((prevState) => ({ ...prevState, activeTab: tabIndex }));
   };
+
+  console.log(singleUser);
+
   return (
     <Box p={4}>
-      <Typography variant="h5" fontSize={"24px"} mb={2}>
+      <Typography variant="h5" fontSize="24px" mb={2}>
         New User
       </Typography>
 
@@ -53,6 +42,7 @@ const UserInfo = () => {
           Access Rights
         </Button>
       </Box>
+
       <Box
         sx={{
           border: "1px solid #E0E0E0",
@@ -65,7 +55,6 @@ const UserInfo = () => {
           <Typography color="#3B7CED" fontSize="20px" pb={2}>
             Access Rights
           </Typography>
-
           <Box>
             <Button>Cancel</Button>
             <Button variant="contained" disableElevation>
@@ -73,11 +62,12 @@ const UserInfo = () => {
             </Button>
           </Box>
         </Box>
+
         <Box display="flex" width="100%" alignItems="center" gap={6} my={4}>
           <Grid item xs={1}>
             <img
               src="https://i.pinimg.com/736x/6b/08/ab/6b08ab9dc9f305652657a5aead75742e.jpg"
-              alt="imga"
+              alt="profile"
               style={{
                 width: "164px",
                 height: "146px",
@@ -93,20 +83,23 @@ const UserInfo = () => {
             sx={{ display: "flex", flexDirection: "column", gap: 4 }}
           >
             <Box>
-              <Typography variant="h6" fontSize={"16px"} color={"#B3B3B3"}>
+              <Typography variant="h6" fontSize="16px" color="#B3B3B3">
                 Name
               </Typography>
-              <Typography color="#1A1A1A">Efemiaya Oghenetega</Typography>
+              <Typography color="#1A1A1A">
+                {singleUser?.first_name} {singleUser?.last_name}
+              </Typography>
             </Box>
 
             <Box>
-              <Typography variant="h6" fontSize={"16px"} color={"#B3B3B3"}>
+              <Typography variant="h6" fontSize="16px" color="#B3B3B3">
                 Email
               </Typography>
-              <Typography color="#1A1A1A">efemiayafavour@gmail.com</Typography>
+              <Typography color="#1A1A1A">{singleUser?.email}</Typography>
             </Box>
           </Box>
         </Box>
+
         <Box backgroundColor="white">
           <Box color="#A9B3BC" pb={4}>
             <Button variant="outlined" size="large">
@@ -124,42 +117,37 @@ const UserInfo = () => {
             <Button variant="outlined" color="inherit" size="large">
               Sales Preferences
             </Button>
-
-            {/* ... other buttons */}
           </Box>
 
           <Typography color="#3B7CED" fontSize="20px" pb={2}>
-            Application Accessses
+            Application Accesses
           </Typography>
 
-          {ACCESS_RIGHT_OPTIONS.map((item, index) => {
-            const key = Object.keys(item)[0];
-            const value = item[key];
-
-            return (
-              <Box
-                key={index}
-                display="flex"
-                alignItems="center"
-                gap={3}
-                mb={2}
-                maxWidth={1250}
+          {singleUser?.application_accesses?.map((access, index) => (
+            <Box
+              key={index}
+              display="flex"
+              alignItems="center"
+              gap={3}
+              mb={2}
+              maxWidth={1250}
+            >
+              <Typography
+                variant="subtitle2"
+                whiteSpace="nowrap"
+                fontSize="16px"
+                minWidth={200}
               >
-                <Typography
-                  variant="subtitle2"
-                  whiteSpace="nowrap"
-                  fontSize={"16px"}
-                  minWidth={200}
-                >
-                  {key}
-                </Typography>
-
-                <Typography whiteSpace="nowrap" minWidth={180}>
-                  {value}
-                </Typography>
-              </Box>
-            );
-          })}
+                {access.application}
+              </Typography>
+              <Typography whiteSpace="nowrap" minWidth={180}>
+                {access.group_name}
+              </Typography>
+              <Typography whiteSpace="nowrap" minWidth={250}>
+                Access Code: {access.access_code}
+              </Typography>
+            </Box>
+          ))}
         </Box>
       </Box>
     </Box>

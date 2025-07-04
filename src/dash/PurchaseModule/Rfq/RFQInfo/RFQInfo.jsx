@@ -23,7 +23,7 @@ import { useRFQ } from "../../../../context/RequestForQuotation";
 // Style constants
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
-  color: "#7a8a98",
+  color: "#353536",
   fontSize: 12,
 });
 const statusColorMap = {
@@ -311,7 +311,7 @@ const RFQInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                       borderBottom: "none", // reinforce no border
                     }}
@@ -321,7 +321,7 @@ const RFQInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                       borderBottom: "none",
                     }}
@@ -331,7 +331,7 @@ const RFQInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                       borderBottom: "none",
                     }}
@@ -343,7 +343,7 @@ const RFQInfo = () => {
                   <TableCell
                     sx={{
                       backgroundColor: "#fff",
-                      color: "#7a8a98",
+                      color: "#353536",
                       fontSize: 12,
                       borderBottom: "none",
                     }}

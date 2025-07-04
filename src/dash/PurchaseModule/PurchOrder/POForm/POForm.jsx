@@ -51,20 +51,14 @@ const POForm = () => {
     purchaseRequests,
   } = usePurchase();
   const { approvedGetRFQList, rfqList, isLoading: isRfqLoading } = useRFQ();
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
   const { createPurchaseOrder, updatePurchaseOrder } = usePurchaseOrder();
 
   const formUse = edit ? "Edit Purchase Order" : "Create Purchase Order";
   const isEdit = formUse === "Edit Purchase Order";
 
-  // ─── 1. Determine whether conversionRFQ actually has data ─────────────────
-  // We check if conversionRFQ has at least one own property.
   const hasConversion = conversionRFQ && Object.keys(conversionRFQ).length > 0;
 
-  // ─── 2. Build initial form state based on priority:
-  //  a) If conversionRFQ is non-empty, use that (always status="draft")
-  //  b) Else if editing (isEdit), use `po`
-  //  c) Otherwise, use DEFAULT_FORM
   const computeInitialForm = () => {
     if (hasConversion) {
       return { ...DEFAULT_FORM, ...conversionRFQ, status: "draft" };
@@ -75,39 +69,33 @@ const POForm = () => {
     }
   };
 
-  // ─── 3. State: formData and purchase‐request ID list ───────────────────────
   const [formData, setFormData] = useState(computeInitialForm());
   const [prIDList, setPrIDList] = useState([]);
 
-  // ─── 4. Fetch dependencies on mount ────────────────────────────────────────
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
     fetchProducts();
     fetchPurchaseRequests();
     approvedGetRFQList();
-    getLocationList();
+    getActiveLocationList();
   }, [
     fetchVendors,
     fetchCurrencies,
     fetchProducts,
     fetchPurchaseRequests,
     approvedGetRFQList,
-    getLocationList,
+    getActiveLocationList,
   ]);
 
-  // ─── 5. Update PR ID list whenever purchaseRequests change ────────────────
   useEffect(() => {
     setPrIDList(normalizedRFQ(purchaseRequests));
   }, [purchaseRequests]);
 
-  // ─── 6. If `po` or `conversionRFQ` changes (e.g. after navigation), reset formData ───
-  // For example, if user navigates with a new state, we want formData to reflect that.
   useEffect(() => {
     setFormData(computeInitialForm());
-  }, []); // re‐run whenever the source objects change
+  }, []);
 
-  // ─── 7. Handlers for field changes ─────────────────────────────────────────
   const handleInputChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
@@ -124,29 +112,8 @@ const POForm = () => {
     });
   }, []);
 
-  // const handleAddRow = useCallback(() => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     items: [
-  //       ...prev.items,
-  //       {
-  //         id: `new-${prev.items.length + 1}`,
-  //         product: null,
-  //         description: "",
-  //         qty: "",
-  //         unit_of_measure: "",
-  //         estimated_unit_price: "",
-  //       },
-  //     ],
-  //   }));
-  // }, []);
-
-  // ─── 8. Determine which set of items to use for payload ―──
-  // If conversion is happening, we use conversionRFQ.items; otherwise `po.rfq.items`.
-  // For simplicity, we just use formData.rfq.items if present, else empty array.
   const poItems = formData?.rfq?.items || [];
 
-  // ─── 9. Prepare payload to send to API (map objects → URLs or IDs) ───────
   const cleanData = (status) => ({
     ...formData,
     status,
@@ -175,14 +142,12 @@ const POForm = () => {
     can_edit: true,
   });
 
-  // ─── 10. Navigate to detail page after create/update ─────────────────────
   const navigateToDetail = (id) => {
     setTimeout(() => {
       history.push(`/${tenant_schema_name}/purchase/purchase-order/${id}`);
     }, 1500);
   };
 
-  // ─── 11. Submit: save as draft or update ─────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = cleanData("draft");
@@ -208,7 +173,6 @@ const POForm = () => {
     }
   };
 
-  // ─── 12. “Save & Send” handler ―──────────────────────────────────────────
   const saveAndSend = async () => {
     const payload = cleanData("awaiting");
     try {
@@ -235,12 +199,8 @@ const POForm = () => {
     history.goBack();
   };
 
-  // Debug: see final formData at each render
-  // console.log("POForm formData:", formData);
-
-  // ─── 13. Render ───────────────────────────────────────────────────────────
-
   // console.log(formData);
+
   return (
     <div className="RfqForm">
       <div className="rfqAutoSave">
@@ -272,7 +232,7 @@ const POForm = () => {
               purchaseIdList={prIDList}
               poID={po?.url}
               rfqList={rfqList}
-              locationList={locationList}
+              locationList={activeLocationList}
               isRfqLoading={isRfqLoading}
               isConvertToPO={isConvertToPO}
             />
@@ -286,7 +246,7 @@ const POForm = () => {
               purchaseIdList={prIDList}
               poID={po?.url}
               rfqList={rfqList}
-              locationList={locationList}
+              locationList={activeLocationList}
               isRfqLoading={isRfqLoading}
             />
           )}
@@ -305,9 +265,6 @@ const POForm = () => {
               alignItems: "center",
             }}
           >
-            {/* <Button variant="outlined" onClick={handleAddRow}>
-              Add Item
-            </Button> */}
             <div style={{ display: "flex", gap: 16 }}>
               <Button variant="outlined" type="submit">
                 {isEdit ? "Save Changes" : "Save Draft"}

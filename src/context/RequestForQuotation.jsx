@@ -33,7 +33,6 @@ export const RFQProvider = ({ children }) => {
     const {
       expiry_date,
       vendor,
-      vendor_category,
       purchase_request,
       currency,
       status,
@@ -45,7 +44,6 @@ export const RFQProvider = ({ children }) => {
     if (
       !expiry_date ||
       !vendor ||
-      !vendor_category ||
       !purchase_request ||
       !currency ||
       !status ||

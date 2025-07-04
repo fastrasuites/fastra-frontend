@@ -8,6 +8,7 @@ import styled from "styled-components";
 import PurchaseHeader from "../PurchaseHeader";
 import { getTenantClient } from "../../../services/apiService";
 import { useTenant } from "../../../context/TenantContext";
+import Swal from "sweetalert2";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
@@ -18,132 +19,111 @@ export default function Newprod({
 }) {
   const history = useHistory();
   const [formState, setFormState] = useState({
-    // id: generateNewID(),
     name: "",
     unt: "",
     type: "",
     category: "",
-    // sp: "",
-    // cp: "",
-    image: null, // New state for image
+    image: null,
     productDesc: "",
     availableProductQty: 0,
     totalQtyPurchased: 0,
   });
-
   const [showForm] = useState(true);
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { tenantData } = useTenant();
   const { tenant_schema_name, access_token } = tenantData || {};
   const client = getTenantClient(tenant_schema_name, access_token);
 
-  const handleChange = (e) => {
-    const { name, value, productDesc, availableProductQty, totalQtyPurchased } =
-      e.target;
-
-    setFormState((prev) => ({
-      ...prev,
-      [name]: value,
-      [productDesc]: value,
-      [availableProductQty]: value,
-      [totalQtyPurchased]: value,
-    }));
-  };
-
-  const handleSaveAndSubmit = (formData) => {
-    try {
-      onSaveAndSubmit(formData);
-    } catch (e) {
-      if (e.name === "QuotaExceededError") {
-        setError("Failed to save product. Storage limit exceeded.");
-      } else {
-        setError("An unexpected error occurred.");
-      }
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formState);
-    const formData = new FormData();
-    formData.append("product_name", formState.name);
-    formData.append("unit_of_measure", formState.unt);
-    // formData.append("type", formState.type);
-    formData.append("product_category", formState.category);
-    // formData.append("sp", formState.sp);
-    // formData.append("cp", formState.cp);
-    formData.append("product_description", formState.productDesc);
-    formData.append(
-      "available_product_quantity",
-      formState.availableProductQty
-    );
-    formData.append("total_quantity_Purchased", formState.totalQtyPurchased);
-    handleSaveAndSubmit(formData);
-    onClose();
-
-    // detect if true a user came from PurchaseModuleWizard, then navigate back for the next step:3
-    // if (fromPurchaseModuleWizard) {
-    //   // history.push({
-    //   //   pathname: `/${tenant_schema_name}/purchase`,
-    //   //   state: { step: 3, preservedWizard: true },
-    //   // });
-
-    //   history.push(`/${tenant_schema_name}/purchase`, {
-    //     step: 3,
-    //     preservedWizard: true,
-    //   });
-    // }
-
-    if (fromPurchaseModuleWizard) {
-      const wizardState = JSON.parse(
-        localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
-      );
-      const updatedState = {
-        ...wizardState,
-        currentStep: 3,
-        hidden: false,
-      };
-      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
-      history.push(`/${tenant_schema_name}/purchase`);
-    }
-  };
-
-  // Load saved units from localStorage
-  const [selectedUnit, setSelectedUnit] = useState(null); // Changed variable name for clarity
   const [savedUnits, setSavedUnits] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(null);
 
+  // Fetch saved units
   useEffect(() => {
     async function fetchData() {
-      let units;
       try {
         const response = await client.get(`/purchase/unit-of-measure/`);
-        console.log(response.data);
-        units = response.data;
+        const units = response.data || [];
+        setSavedUnits(units);
       } catch (err) {
         console.error("Error fetching unit-measure:", err);
       }
-
-      if (units?.length === 0) {
-        console.warn("No units found in database.");
-      }
-      setSavedUnits(units);
     }
-
     fetchData();
-  }, [tenantData]); // Only run this effect once, on component mount
+  }, [tenantData]);
 
-  const handleUnitChange = (newUnit) => {
-    // Simplified the event parameter
-
-    setSelectedUnit(newUnit);
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
     setFormState((prev) => ({
       ...prev,
-      unt: newUnit ? newUnit.url : "", // Assuming you want to update the unit in form state
+      [name]: type === "number" ? Number(value) : value,
     }));
+  };
 
-    // Log the selected unit
-    if (newUnit) {
-      console.log("Selected unit:", newUnit);
+  const handleUnitChange = (newUnit) => {
+    setSelectedUnit(newUnit);
+    setFormState((prev) => ({ ...prev, unt: newUnit ? newUnit.url : "" }));
+    if (newUnit) console.log("Selected unit:", newUnit);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0] || null;
+    setFormState((prev) => ({ ...prev, image: file }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (!formState.name || !formState.category || !formState.unt) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: "Please fill in Product Name, Category, and Unit of Measure.",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const payload = new FormData();
+      payload.append("product_name", formState.name);
+      payload.append("unit_of_measure", formState.unt);
+      payload.append("product_category", formState.category);
+      payload.append("product_description", formState.productDesc);
+      payload.append(
+        "available_product_quantity",
+        formState.availableProductQty
+      );
+      payload.append("total_quantity_Purchased", formState.totalQtyPurchased);
+      if (formState.image) payload.append("image", formState.image);
+
+      await onSaveAndSubmit(payload);
+
+      Swal.fire({
+        icon: "success",
+        title: "Product Created",
+        text: "Your new product has been saved successfully.",
+      });
+      onClose();
+
+      if (fromPurchaseModuleWizard) {
+        const saved =
+          JSON.parse(localStorage.getItem(WIZARD_STORAGE_KEY)) || {};
+        saved.currentStep = 3;
+        saved.hidden = false;
+        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(saved));
+        history.push(`/${tenant_schema_name}/purchase`);
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Save Failed",
+        text: err.message || "An unexpected error occurred while saving.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -156,7 +136,6 @@ export default function Newprod({
   const customStyles = {
     control: (provided) => ({
       ...provided,
-      // width: "95%",
       marginTop: "0.1rem",
       cursor: "pointer",
       outline: "none",
@@ -165,14 +144,8 @@ export default function Newprod({
       padding: "5px",
       marginBottom: "1rem",
     }),
-    menu: (provided) => ({
-      ...provided,
-      // width: "95%",
-    }),
-    menuList: (provided) => ({
-      ...provided,
-      // width: "95%",
-    }),
+    menu: (provided) => ({ ...provided }),
+    menuList: (provided) => ({ ...provided }),
     option: (provided) => ({
       ...provided,
       cursor: "pointer",
@@ -193,7 +166,6 @@ export default function Newprod({
               </div>
             </div>
           </div>
-          {/* form for create/add new products starts here */}
           <div className="newp3">
             <form className="newpform" onSubmit={handleSubmit}>
               <div className="newp3a">
@@ -209,11 +181,7 @@ export default function Newprod({
               </div>
 
               <Grid container spacing={3}>
-                {" "}
-                {/* spacing adds equidistant gaps */}
                 <Grid item xs={12} sm={6} md={4}>
-                  {" "}
-                  {/* Full width on xs, 2 cols on sm, 3 cols on md */}
                   <div style={{ marginBottom: "8px" }}>
                     <label>Product Name</label>
                   </div>
@@ -243,7 +211,6 @@ export default function Newprod({
                   <div style={{ marginBottom: "8px" }}>
                     <label>Available Product Quantity</label>
                   </div>
-
                   <TextField
                     fullWidth
                     type="number"
@@ -278,12 +245,12 @@ export default function Newprod({
                     name="category"
                     styles={customStyles}
                     value={categoryOptions.find(
-                      (option) => option.value === formState.category
+                      (opt) => opt.value === formState.category
                     )}
-                    onChange={(selectedOption) =>
+                    onChange={(opt) =>
                       setFormState((prev) => ({
                         ...prev,
-                        category: selectedOption ? selectedOption.value : "",
+                        category: opt ? opt.value : "",
                       }))
                     }
                   />
@@ -295,17 +262,22 @@ export default function Newprod({
                   <Select
                     value={selectedUnit}
                     onChange={handleUnitChange}
-                    options={savedUnits} // Populate options from localStorage
-                    getOptionLabel={(option) =>
-                      `${option.unit_name} - ${option.unit_category}`
+                    options={savedUnits}
+                    getOptionLabel={(opt) =>
+                      `${opt.unit_name} - ${opt.unit_category}`
                     }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Select Currency"
-                        className="newpod3cb"
-                      />
-                    )}
+                    styles={customStyles}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                  <div style={{ marginBottom: "8px" }}>
+                    <label>Product Image</label>
+                  </div>
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    onChange={handleFileChange}
                   />
                 </Grid>
               </Grid>
@@ -313,9 +285,9 @@ export default function Newprod({
                 style={{ border: "1.2px solid #E2E6E9", marginTop: "32px" }}
               />
 
-              {/* Tobe deleted later */}
-
-              <Button type="submit">Create Product</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                Create Product
+              </Button>
 
               {error && <p className="error-message">{error}</p>}
             </form>

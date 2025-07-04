@@ -28,7 +28,7 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     updatePurchaseRequest,
   } = usePurchase();
 
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
   const { tenantData } = useTenant();
   const { tenant_schema_name: tenantSchemaName } = tenantData;
   const history = useHistory();
@@ -68,14 +68,16 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     fetchCurrencies();
     fetchProducts();
     fetchPurchaseRequests();
-    getLocationList();
+    getActiveLocationList();
   }, [
     fetchVendors,
     fetchCurrencies,
     fetchProducts,
     fetchPurchaseRequests,
-    getLocationList,
+    getActiveLocationList,
   ]);
+
+  console.log(activeLocationList);
 
   useEffect(() => {
     setPrID(normalizedRFQ(purchaseRequests));
@@ -279,7 +281,7 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
             vendors={vendors}
             requester={pr.requester_name}
             rfqID={url}
-            locationList={locationList}
+            locationList={activeLocationList}
           />
           <PRItemsTable
             items={formData.items}

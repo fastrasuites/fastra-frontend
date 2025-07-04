@@ -157,8 +157,12 @@ const CommonForm = ({
                 
               )} */}
               {onSubmitAsDone && (
-                <Button variant="outlined" onClick={handleSubmitAsDone}>
-                  {submitBtnText}
+                <Button
+                  variant="contained"
+                  disableElevation
+                  onClick={handleSubmitAsDone}
+                >
+                  {/* {submitBtnText} */} Done
                 </Button>
               )}
 

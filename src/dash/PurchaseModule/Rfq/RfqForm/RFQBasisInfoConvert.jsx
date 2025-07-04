@@ -21,7 +21,7 @@ const REQUIRED_ASTERISK = (
 );
 
 const GrayText = ({ children }) => (
-  <Typography color="text.secondary">{children}</Typography>
+  <Typography color="#303030">{children}</Typography>
 );
 
 const RfqBasicInfoFieldsConvertToRFQ = ({
@@ -75,14 +75,14 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
               <GrayText>{extractRFQID(rfqID)}</GrayText>
             </Box>
           )}
-          <Box className="refDate">
+          <Box display={"grid"} gap={2}>
             <label>Date Opened</label>
             <GrayText>{formatDate(Date.now())}</GrayText>
           </Box>
         </div>
 
         {/* ──────────────────────── Input PR ID ──────────────────────── */}
-        <Box className="rfqBasicInfoFields1SelectFields">
+        <Box display={"grid"} gap={2}>
           <label>
             Input PR ID
             {isConvertToRFQ && REQUIRED_ASTERISK}
@@ -106,7 +106,7 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
         </Box>
 
         {/* ──────────────────────── Select Currency ──────────────────────── */}
-        <Box className="rfqBasicInfoFields1SelectFields">
+        <Box display={"grid"} gap={2}>
           <label>
             Select Currency
             {isConvertToRFQ && REQUIRED_ASTERISK}
@@ -158,45 +158,12 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
         </Box>
 
         {/* Vendor */}
-        <Box>
+        <Box display={"grid"}>
           <label>
             Vendor
             {isConvertToRFQ && REQUIRED_ASTERISK}
           </label>
-          {isConvertToRFQ ? (
-            <GrayText>{selectedVendor?.company_name || "N/A"}</GrayText>
-          ) : (
-            <Autocomplete
-              disablePortal
-              options={vendors}
-              value={selectedVendor}
-              getOptionLabel={(option) => option.company_name || ""}
-              isOptionEqualToValue={(opt, val) => opt.url === val?.url}
-              onChange={(event, newValue) => {
-                handleInputChange("vendor", newValue ? newValue : "");
-              }}
-              sx={{ width: "100%", mt: 0.5 }}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          )}
-        </Box>
-
-        {/* Vendor Category (always editable) */}
-        <Box>
-          <label>
-            Vendor Category
-            {REQUIRED_ASTERISK}
-          </label>
-          <TextField
-            fullWidth
-            type="text"
-            value={formData.vendor_category || ""}
-            onChange={(e) =>
-              handleInputChange("vendor_category", e.target.value)
-            }
-            sx={{ mt: 0.5 }}
-            placeholder="Enter Vendor Category"
-          />
+          <GrayText>{selectedVendor?.company_name || "N/A"}</GrayText>
         </Box>
       </div>
     </div>

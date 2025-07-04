@@ -31,12 +31,11 @@ const POBasicInfoFieldsConverToPO = ({
 }) => {
   const { tenantData } = useTenant();
   const tenantName = tenantData?.tenant_schema_name || "";
-
   // Resolve selected objects
   const selectedRfq =
     rfqList.find((r) => r.url === formData.rfq?.url) || formData.rfq || null;
   const selectedLocation =
-    locationList.find((l) => l.url === formData.destination_location?.url) ||
+    locationList.find((l) => l.id === formData.destination_location?.id) ||
     formData.destination_location ||
     null;
   const selectedCurrency =
@@ -44,6 +43,8 @@ const POBasicInfoFieldsConverToPO = ({
     formData.rfq.currency ||
     null;
   const selectedVendor = formData.rfq?.vendor || purchaseOrder?.vendor || null;
+
+  // console.log(formData);
 
   return (
     <div className="rfqBasicInfoField">
@@ -61,15 +62,17 @@ const POBasicInfoFieldsConverToPO = ({
               </Typography>
             </div>
           )}
-          <div className="refDate" style={{ marginRight: 32 }}>
+          <Box style={{ marginRight: 32 }} display={"grid"} gap={2}>
             <label style={labelStyle}>Date</label>
-            <Typography>
+            <Typography color={"#353536"}>
               {formatDate(purchaseOrder?.date_created || new Date())}
             </Typography>
-          </div>
+          </Box>
           <div className="refDate">
             <label style={labelStyle}>Created By</label>
-            <Typography style={{ textTransform: "capitalize" }}>
+            <Typography
+              style={{ textTransform: "capitalize", color: "#353536" }}
+            >
               {tenantName}
             </Typography>
           </div>
@@ -134,7 +137,7 @@ const POBasicInfoFieldsConverToPO = ({
             options={locationList}
             value={selectedLocation}
             getOptionLabel={(option) => option.location_name || ""}
-            isOptionEqualToValue={(option, value) => option.url === value?.url}
+            isOptionEqualToValue={(option, value) => option.id === value?.id}
             onChange={(_, value) =>
               handleInputChange("destination_location", value)
             }
@@ -151,14 +154,18 @@ const POBasicInfoFieldsConverToPO = ({
         className="rfqBasicInfoFields2"
         style={{ gap: 32, marginBottom: 24 }}
       >
-        <div className="refID">
+        <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Address</label>
-          <Typography>{selectedVendor?.address || "N/A"}</Typography>
-        </div>
-        <div className="refDate">
+          <Typography color="#353536">
+            {selectedVendor?.address || "N/A"}
+          </Typography>
+        </Box>
+        <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Email</label>
-          <Typography>{selectedVendor?.email || "N/A"}</Typography>
-        </div>
+          <Typography color="#353536">
+            {selectedVendor?.email || "N/A"}
+          </Typography>
+        </Box>
       </div>
 
       {/* Row 4: Currency, Payment Terms, Purchase Policy */}
