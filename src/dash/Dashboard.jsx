@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import { FaBars, FaTimes, FaBell } from "react-icons/fa";
 import SearchIcon from "../image/search.svg";
 import "./Dashboard.css";
@@ -6,6 +7,7 @@ import admin from "../image/admin.svg";
 import DashCard from "./DashCard";
 import Sidebar from ".././components/Sidebar";
 import StepModal from "../components/StepModal";
+import { useTenant } from "../context/TenantContext";
 import { useLocation } from "react-router-dom";
 import ProfileMenuDropdown from "../components/ProfileMenuDropdown";
 
@@ -13,6 +15,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
   // ---------------------------------------------------------------
   // Open and close pop modal on  following user logged in to set company account
@@ -35,7 +38,7 @@ export default function Dashboard() {
         return () => clearTimeout(timer);
       }
     }
-  }, [location.state]);
+  }, [location.state]);*/
 
   const handleCloseModal = () => {
     setIsModalOpen((prevState) => !prevState);
@@ -118,7 +121,7 @@ export default function Dashboard() {
       </div>
 
       {/* controls the Step modal following user logged in to set up company account */}
-      <StepModal
+      {/*<StepModal
         open={isModalOpen}
         onClose={handleCloseModal}
         step={currentStep}

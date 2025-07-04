@@ -41,6 +41,7 @@ export default function RegistrationForm() {
 
     setIsLoading(true);
 
+    console.log('i am here')
     try {
       const response = await axios.post(
         "https://www.fastrasuiteapi.com.ng/register/",
