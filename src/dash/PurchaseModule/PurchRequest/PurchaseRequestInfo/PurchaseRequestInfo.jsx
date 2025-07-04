@@ -154,7 +154,6 @@ const PurchaseRequestInfo = () => {
       purchase_request: { id: item.id, items: item.items },
       currency: item.currency,
       vendor: item.vendor,
-      vendor_category: "",
       items: item.items,
       status: "draft",
       is_hidden: false,

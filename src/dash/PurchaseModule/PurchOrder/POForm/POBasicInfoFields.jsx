@@ -24,7 +24,7 @@ const POBasicInfoFields = ({
   const selectedRfq =
     rfqList.find((r) => r.url === formData.rfq?.url) || formData.rfq || null;
   const selectedLocation =
-    locationList.find((l) => l.url === formData.destination_location?.url) ||
+    locationList.find((l) => l.id === formData.destination_location?.id) ||
     formData.destination_location ||
     null;
   const selectedCurrency =
@@ -100,7 +100,7 @@ const POBasicInfoFields = ({
             options={locationList}
             value={selectedLocation}
             getOptionLabel={(option) => option.location_name || ""}
-            isOptionEqualToValue={(option, value) => option.url === value?.url}
+            isOptionEqualToValue={(option, value) => option.id === value?.id}
             onChange={(_, value) =>
               handleInputChange("destination_location", value)
             }

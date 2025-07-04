@@ -54,10 +54,8 @@ export default function Vend() {
   // });
   // const [vendors, setVendors] = useState([]);
   const { vendors, createVendor, error } = usePurchase();
-  console.log("vendors from database", vendors);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(vendors);
-  console.log(filteredItems);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -100,7 +98,6 @@ export default function Vend() {
   }, []);
 
   const handleSaveAndSubmit = (data) => {
-    console.log(data);
     setFormData(data);
     createVendor(data);
     setIsSubmitted(true);
@@ -131,7 +128,6 @@ export default function Vend() {
   const handleFormClose = () => {
     setIsFormVisible(false);
     setIsSubmitted(false);
-    console.log("handle form close");
   };
 
   const handleSearch = () => {

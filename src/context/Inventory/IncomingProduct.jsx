@@ -19,12 +19,7 @@ const validateIncomingProductData = (data) => {
     errors.source_location = "Source location is required";
   if (!data.destination_location)
     errors.destination_location = "Destination location is required";
-  if (
-    !Array.isArray(data.incoming_product_items) ||
-    data.incoming_product_items.length === 0
-  ) {
-    errors.items = "At least one product item is required";
-  }
+
   return errors;
 };
 
@@ -102,6 +97,8 @@ export const IncomingProductProvider = ({ children }) => {
       if (Object.keys(errors).length) {
         throw { validation: errors };
       }
+
+      console.log(formData);
 
       setIsLoading(true);
       try {

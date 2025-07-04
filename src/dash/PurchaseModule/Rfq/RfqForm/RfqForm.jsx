@@ -34,7 +34,7 @@ const RfqForm = () => {
   const formUse = edit ? "Edit RFQ" : "Create RFQ";
   const quotation = rfq || {};
   const conversionRFQ = rfq || {};
-  console.log(isConvertToRFQ);
+  console.log(rfq);
   const isEdit = formUse === "Edit RFQ";
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
@@ -45,7 +45,6 @@ const RfqForm = () => {
     expiry_date: "",
     currency: "",
     vendor: "",
-    vendor_category: "",
     items: [],
     status: "draft",
     is_hidden: true,
@@ -96,22 +95,7 @@ const RfqForm = () => {
     });
   }, []);
 
-  // const handleAddRow = useCallback(() => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     items: [
-  //       ...prev.items,
-  //       {
-  //         id: `new-${prev.items.length + 1}`,
-  //         product: null,
-  //         description: "",
-  //         qty: "",
-  //         unit_of_measure: "",
-  //         estimated_unit_price: "",
-  //       },
-  //     ],
-  //   }));
-  // }, []);
+  console.log(formData);
 
   // ─── Determine which items array to display ───────────────────────────────
   const rfqItems =

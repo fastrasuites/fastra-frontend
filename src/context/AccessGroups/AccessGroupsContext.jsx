@@ -81,7 +81,6 @@ export function AccessGroupsProvider({ children }) {
       const response = await client.get(`/application/`, {
         baseURL: "https://fastrasuiteapi.com.ng",
       });
-      console.log("Applications Response:", response.data);
 
       const applications = response.data.applications.map(
         (app) => Object.keys(app)[0]
@@ -137,9 +136,6 @@ export function AccessGroupsProvider({ children }) {
         if (!groupsMap[item.access_code].permissions[item.application_module]) {
           groupsMap[item.access_code].permissions[item.application_module] = {};
         }
-        console.log("state", state);
-        console.log("accessRights", state.accessRights);
-        console.log("item.access_right", item.access_right);
         const right = state.accessRights.find(
           (r) => r.id === item.access_right
         );
@@ -208,7 +204,6 @@ export function AccessGroupsProvider({ children }) {
       };
 
       const response = await client.post(`/users/access-group-right/`, payload);
-      console.log("Create Access Group Response:", response.data);
 
       // Extract access_code from the response
       const access_code = response.data.access_code;

@@ -108,6 +108,7 @@ export const UserProvider = ({ children }) => {
         return Promise.reject(new Error(msg));
       }
       setIsLoading(true);
+      console.log(id);
       try {
         const { data } = await client.get(`/users/tenant-users/${id}/`);
         setSingleUser(data);

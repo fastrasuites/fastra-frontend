@@ -24,7 +24,7 @@ const ProdListview = ({ items, onItemClick }) => {
   React.useEffect(() => {
     console.log("Product items:", items);
   }, [items]);
-  
+
   const handleSelect = (event, id) => {
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -85,8 +85,8 @@ const ProdListview = ({ items, onItemClick }) => {
             <TableCell>Product Name</TableCell>
             <TableCell>Category</TableCell>
             <TableCell>Quantity</TableCell>
-            {/*<TableCell>Unit of Measure</TableCell>*/} 
-            <TableCell>Product Description</TableCell> 
+            {/*<TableCell>Unit of Measure</TableCell>*/}
+            <TableCell>Product Description</TableCell>
             <TableCell>Quantity Purchased</TableCell>
             {/* <TableCell>Type</TableCell> */}
           </TableRow>
@@ -121,9 +121,10 @@ const ProdListview = ({ items, onItemClick }) => {
               <TableCell>{item.product_category}</TableCell>
               <TableCell>{item.available_product_quantity}</TableCell>
               {/*<TableCell sx={{ color: "#3b7ced" }}>{item.unit_ of_measure}</TableCell>*/}
-              <TableCell sx={{ color: "#3b7ced" }}>{item.product_description}</TableCell>
-              <TableCell>{item.total_quantity_purchased
-              }</TableCell>
+              <TableCell sx={{ color: "#3b7ced" }}>
+                {item.product_description}
+              </TableCell>
+              <TableCell>{item.total_quantity_purchased}</TableCell>
             </TableRow>
           ))}
         </TableBody>

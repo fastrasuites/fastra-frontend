@@ -27,6 +27,7 @@ const validateLocationData = (data) => {
 export const LocationProvider = ({ children }) => {
   const { tenantData } = useTenant();
   const [locationList, setLocationList] = useState([]);
+  const [activeLocationList, setActiveLocationList] = useState([]);
   const [singleLocation, setSingleLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -162,6 +163,35 @@ export const LocationProvider = ({ children }) => {
     }
   }, [client]);
 
+  const getActiveLocationList = useCallback(async () => {
+    if (!client) {
+      const errMsg =
+        "API client not available. Please check tenant configuration.";
+      console.error(errMsg);
+      setError(errMsg);
+      return Promise.reject(new Error(errMsg));
+    }
+
+    setIsLoading(true);
+    console.log("Axios base URL", client.defaults.baseURL);
+
+    try {
+      const response = await client.get(
+        "/inventory/location/get_active_locations/"
+      );
+      const data = response.data;
+      setActiveLocationList(data);
+      setError(null);
+      return { success: true, data };
+    } catch (err) {
+      console.error("Error fetching location list:", err);
+      setError(err.message || "Failed to fetch active locations");
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   const getSingleLocation = useCallback(
     async (id) => {
       if (!client) {
@@ -193,18 +223,22 @@ export const LocationProvider = ({ children }) => {
   const contextValue = useMemo(
     () => ({
       locationList,
+      activeLocationList,
       singleLocation,
       setSingleLocation,
       getLocationList,
+      getActiveLocationList,
       getSingleLocation,
       createLocation,
       isLoading,
       error,
     }),
     [
+      activeLocationList,
       locationList,
       singleLocation,
       getLocationList,
+      getActiveLocationList,
       getSingleLocation,
       createLocation,
       isLoading,
