@@ -52,7 +52,7 @@ export default function Dashboard() {
       localStorage.setItem("fromStepModal", "true");
     } else if (step === 2) {
       localStorage.setItem('onboardingStep', '2');
-      history.push(`/${tenant_schema_name}/settings/accessgroups`, { fromStepModal: true });
+      history.push(`/${tenant_schema_name}/settings/accessgroups/new`, { fromStepModal: true });
       localStorage.setItem("fromStepModal", "true");
     } else if (step === 3) {
       localStorage.setItem('onboardingStep', '3');

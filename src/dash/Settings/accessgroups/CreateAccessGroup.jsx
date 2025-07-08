@@ -116,7 +116,7 @@ const CreateAccessGroup = () => {
      
 
       if (fromStepModal) { 
-        console.log("I got here - navigating to dashboard for onboarding step 3");
+        localStorage.removeItem("fromStepModal");
         history.push(`/${tenant_schema_name}/dashboard`, { fromStepModal: true });
       } else {
         // Navigate to view page only if not in onboarding flow

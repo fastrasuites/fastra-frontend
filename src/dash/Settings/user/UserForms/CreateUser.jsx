@@ -624,6 +624,7 @@ const CreateUser = () => {
 
           if (fromStepModal) { 
             console.log("I got here - navigating to dashboard for onboarding step 3");
+            localStorage.removeItem("fromStepModal");
             history.push(`/${tenant_schema_name}/dashboard`, { fromStepModal: false});
           } else {
           setTimeout(() => {

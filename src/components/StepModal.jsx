@@ -41,9 +41,9 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                   {step === 1
                     ? "Step 1: Company Setting"
                     : step === 2
-                    ? "Step 2: User Creation"
+                    ? "Step 2: Access Right Creation"
                     : step === 3
-                    ? "step 3: Project Creation"
+                    ? "step 3: User Creation"
                     : "Registration Successful"}
                 </p>
                 <p className="para-description">
@@ -59,9 +59,9 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
                   {step === 1
                     ? "Set up your Company!"
                     : step === 2
-                    ? "Start User Creation!"
+                    ? "Start Access Right Creation!"
                     : step === 3
-                    ? "Start Project Creation!"
+                    ? "Start User Creation!"
                     : "You are done"}
                 </button>
               </div>
@@ -77,9 +77,9 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               <div>
                 <p className="heading-text">
                   {step === 1
-                    ? "Step 2: User Creation"
+                    ? "Step 2: Access Right Creation"
                     : step === 2
-                    ? "step 3: Project Creation"
+                    ? "Step 3: User Creation"
                     : "Registration Successful"}
                 </p>
                 <p className="para-description">
@@ -101,7 +101,7 @@ const StepModal = ({ open, onClose, step, onNextStep }) => {
               <div>
                 <p className="heading-text">
                   {step === 1
-                    ? "Step 3: Start Project Creation!"
+                    ? "Step 3: Start User Creation!"
                     : step === 2
                     ? ""
                     : ""}
