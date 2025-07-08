@@ -28,10 +28,12 @@ import PurchaseLayout from "./dash/PurchaseModule/Purchase";
 import SettingsLayout from "./dash/Settings/SettingLayout";
 import Register from "./Auth/Register/Register";
 import Login from "./Auth/Login/Login";
+import IdleManager from "./components/IdleManager/IdleManager";
 
 function App() {
   return (
     <div className="App" style={{ width: "100vw", minHeight: "100vh" }}>
+      <IdleManager />
       <Router>
         <Switch>
           {/* Global (non-tenant-specific) routes */}
