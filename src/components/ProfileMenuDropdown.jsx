@@ -47,12 +47,20 @@ const ProfileMenuDropdown = () => {
   // Profile menu list for configurations
   const configs = [
     {
-      url: `/${tenant_schema_name}/company`,
+      url: `/${tenant_schema_name}/settings/company`,
       desc: "Company Profile",
       icon: userIcon,
     },
-    { url: `/${tenant_schema_name}/apk`, desc: "Settings", icon: settingIcon },
-    { url: `/${tenant_schema_name}/user`, desc: "Users", icon: usergroupIcon },
+    {
+      url: `/${tenant_schema_name}/settings/apk`,
+      desc: "Settings",
+      icon: settingIcon,
+    },
+    {
+      url: `/${tenant_schema_name}/settings/user`,
+      desc: "Users",
+      icon: usergroupIcon,
+    },
   ];
 
   const handleClickOpen = () => {
