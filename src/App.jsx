@@ -29,6 +29,7 @@ import SettingsLayout from "./dash/Settings/SettingLayout";
 import Register from "./Auth/Register/Register";
 import Login from "./Auth/Login/Login";
 import IdleManager from "./components/IdleManager/IdleManager";
+import Change from "./Auth/ChangePassword/change";
 
 function App() {
   return (
@@ -113,6 +114,13 @@ function App() {
               <ProtectedRoute
                 path="/:tenant/inventory"
                 component={InventoryLayout}
+              />
+
+              {/* change all user password */}
+
+              <ProtectedRoute
+                path="/:tenant/changePassword"
+                component={Change}
               />
 
               {/* Additional tenant routes can be defined here */}

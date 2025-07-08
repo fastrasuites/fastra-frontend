@@ -3,10 +3,11 @@ import { FaBars, FaTimes, FaBell } from "react-icons/fa";
 import SearchIcon from "../image/search.svg";
 import "./Dashboard.css";
 import admin from "../image/admin.svg";
+import { useTenant } from "../context/TenantContext";
 import DashCard from "./DashCard";
-import Sidebar from ".././components/Sidebar";
+import Sidebar from "../components/Sidebar";
 import StepModal from "../components/StepModal";
-import { useLocation } from "react-router-dom";
+import { useHistory} from "react-router-dom";
 import ProfileMenuDropdown from "../components/ProfileMenuDropdown";
 
 export default function Dashboard() {
@@ -14,47 +15,66 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
 
-  // ---------------------------------------------------------------
-  // Open and close pop modal on  following user logged in to set company account
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const location = useLocation();
-  useEffect(() => {
-    // Check if the modal has been closed before
-    const modalClosed = localStorage.getItem("modalClosed");
-    if (location.state?.step) {
-      setCurrentStep(location.state.step);
-      setIsModalOpen(true);
-    } else {
-      if (modalClosed) {
-        setIsModalOpen(false);
-      } else {
-        const timer = setTimeout(() => {
-          setIsModalOpen(true);
-        }, 500);
-        return () => clearTimeout(timer);
+  
+
+
+
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+
+  const history = useHistory();
+
+  const [showModal, setShowModal] = useState(false);
+  const [step, setStep] = useState(1);
+
+    useEffect(() => {
+      // Ensure the value is initialized to 'false' if not set
+      if (localStorage.getItem('onboardingCompleted') === null) {
+          localStorage.setItem('onboardingCompleted', 'false');
       }
+
+      const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
+      const currentStep = parseInt(localStorage.getItem('onboardingStep') || '0');
+
+      if (!onboardingCompleted) {
+          localStorage.setItem("fromStepModal", "true");
+          setStep(currentStep + 1); // ensures step = 1 if onboardingStep = 0
+          setShowModal(true);
+      }
+  }, []);
+
+
+  const handleNextStep = () => {
+    setShowModal(false);
+    if (step === 1) {
+      localStorage.setItem('onboardingStep', '1');
+      history.push(`/${tenant_schema_name}/settings/company/new`, { fromStepModal: true });
+      localStorage.setItem("fromStepModal", "true");
+    } else if (step === 2) {
+      localStorage.setItem('onboardingStep', '2');
+      history.push(`/${tenant_schema_name}/settings/accessgroups`, { fromStepModal: true });
+      localStorage.setItem("fromStepModal", "true");
+    } else if (step === 3) {
+      localStorage.setItem('onboardingStep', '3');
+      localStorage.setItem('onboardingCompleted', 'true');
+      history.push(`/${tenant_schema_name}/settings/user/new`, { fromStepModal: true });
     }
-  }, [location.state]);
-
-  const handleCloseModal = () => {
-    setIsModalOpen((prevState) => !prevState);
-    localStorage.setItem("modalClosed", "true");
   };
 
-  //End ---------------------------------------------------------------------------
-
-  const handleSearch = () => {
-    // You can perform search operations here based on the search query
-    // For example, you can filter a list of items based on the search query
+  const handleSkip = () => {
+    setShowModal(false);
+    localStorage.setItem('onboardingStep', '3');
+    localStorage.setItem('onboardingCompleted', 'true');
   };
+
+  const handleSearch = () => {};
 
   const toggleMenu = () => {
-    setShowMenu((prevState) => !prevState);
+    setShowMenu((prev) => !prev);
   };
 
   const closeSidebar = () => {
-    setShowMenu((prevState) => !prevState);
+    setShowMenu((prev) => !prev);
   };
 
   return (
@@ -71,11 +91,7 @@ export default function Dashboard() {
           </li>
           <li className="sash">
             <div className="sashtag">
-              <label
-                htmlFor="searchInput"
-                className="sarch"
-                onClick={handleSearch}
-              >
+              <label htmlFor="searchInput" className="sarch" onClick={handleSearch}>
                 <img src={SearchIcon} alt="Search" className="sashnav" />
                 <input
                   id="searchInput"
@@ -97,19 +113,10 @@ export default function Dashboard() {
             </div>
           </li>
           <ProfileMenuDropdown />
-          {/* <li className="admin">
-            <img src={admin} alt="admin" className="adminimg" />
-            <div className="adminname">
-              <p className="ad1">Administrator</p>
-              <p className="ad2">info@companyname.com</p>
-            </div>
-          </li> */}
         </ul>
       </div>
-      {showMenu && (
-        <Sidebar sidebarOpen={showMenu} handleCloseSidebar={closeSidebar} />
-      )}
-      {/*  */}
+
+      {showMenu && <Sidebar sidebarOpen={showMenu} handleCloseSidebar={closeSidebar} />}
 
       <div className="dashbody">
         <div className="bocard">
@@ -117,11 +124,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* controls the Step modal following user logged in to set up company account */}
       <StepModal
-        open={isModalOpen}
-        onClose={handleCloseModal}
-        step={currentStep}
+        open={showModal}
+        onClose={handleSkip}
+        step={step}
+        onNextStep={handleNextStep}
       />
     </div>
   );

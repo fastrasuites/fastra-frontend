@@ -52,8 +52,8 @@ const ProfileMenuDropdown = () => {
       icon: userIcon,
     },
     {
-      url: `/${tenant_schema_name}/settings/apk`,
-      desc: "Settings",
+      url: `/${tenant_schema_name}/changePassword`,
+      desc: "Change Password",
       icon: settingIcon,
     },
     {
