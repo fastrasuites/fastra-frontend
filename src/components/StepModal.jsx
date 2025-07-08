@@ -5,15 +5,13 @@ import { Modal, Box, Typography, Button } from "@mui/material";
 // import "./stepModal.css";
 import "./PurchaseModuleWizard.css";
 
-const StepModal = ({ open, onClose, step }) => {
+const StepModal = ({ open, onClose, step, onNextStep }) => {
   // const history = useHistory();
   // const tenant_schema_name = useTenant().tenantData?.tenant_schema_name;
 
-  const handleSetUpCompany = () => {
-    alert(
-      "SETTINGS MODULE is not ready, use the SKIP button and proceed to PURCHASE MODULE"
-    );
-    return;
+  //const handleSetUpCompany = () => {
+
+   // return;
     // onClose();
     // if (step === 1) {
     //   history.push(`/${tenant_schema_name}/company`, { openForm: true });
@@ -22,7 +20,7 @@ const StepModal = ({ open, onClose, step }) => {
     // } else {
     //   alert(" Humm! The last stage is not ready. Please use the skip button.");
     // }
-  };
+  //};
 
   return (
     <Modal open={open} onClose={onClose} className="modal">
@@ -57,7 +55,7 @@ const StepModal = ({ open, onClose, step }) => {
                     ? "Now at the last step, Enjoy seamless Experience Here."
                     : "You have successfully completed the wizard!"}
                 </p>
-                <button onClick={handleSetUpCompany} className="btn-goto-steps">
+                <button onClick={onNextStep} className="btn-goto-steps">
                   {step === 1
                     ? "Set up your Company!"
                     : step === 2

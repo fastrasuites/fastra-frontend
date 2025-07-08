@@ -51,7 +51,7 @@ const ProfileMenuDropdown = () => {
       desc: "Company Profile",
       icon: userIcon,
     },
-    { url: `/${tenant_schema_name}/apk`, desc: "Settings", icon: settingIcon },
+    { url: `/${tenant_schema_name}/changePassword`, desc: "Change Password", icon: settingIcon },
     { url: `/${tenant_schema_name}/user`, desc: "Users", icon: usergroupIcon },
   ];
 

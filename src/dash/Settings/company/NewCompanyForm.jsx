@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import uploadIcon from "../../../image/uploadIcon.svg";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { boxSizing } from "@mui/system";
 
-export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) {
+export default function NewCompany({ onClose, onSaveAndSubmit }) {
   const [formState, setFormState] = useState({
     companyName: "",
     email: "",
@@ -23,6 +23,9 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
     size: "",
     image: "",
   });
+
+ 
+
   const [isEditable, setIsEditable] = useState(false); // State to control if fields are editable
   const [roles, setRoles] = useState([]); // State to manage the list of roles
   const [currentRole, setCurrentRole] = useState(""); // State to manage the current input for the role
@@ -100,13 +103,21 @@ export default function NewCompany({ onClose, onSaveAndSubmit, fromStepModal }) 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSaveAndSubmit(formState);
+
+    console.log("i am her")
+
     if (fromStepModal) {
-        localStorage.setItem("onboardingStep", "1"); // company completed
-        history.push("/dashboard");
-    } else {
-        onClose?.();
-    }
-};
+      console.log("i am in here")
+      const currentStep = parseInt(localStorage.getItem("onboardingStep") || "0");
+      const nextStep = currentStep + 1;
+      console.log(nextStep)
+      localStorage.setItem("onboardingStep", String(nextStep));
+      history.push("/dashboard");
+  } else {
+      onClose?.();
+  }
+}
+
 
   const handleEditClick = () => {
     setIsEditable(true); // Enable the fields on Edit button click

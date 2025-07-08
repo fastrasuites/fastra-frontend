@@ -13,7 +13,7 @@ import InputField from "../../../../components/InputField/InputField";
 import ImageUpload from "../../../../components/ImageUpload/ImageUpload";
 import SignatureSection from "../../../../components/SignatureSection/SignatureSection";
 import { useUser } from "../../../../context/Settings/UserContext";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useTenant } from "../../../../context/TenantContext";
 import { useCompany } from "../../../../context/Settings/CompanyContext";
 
@@ -451,6 +451,9 @@ const CreateUser = () => {
 
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
+  const location = useLocation();
+  const fromStepModal = location.state?.fromStepModal || localStorage.getItem("fromStepModal") === "true";
+  console.log("step",fromStepModal)
   const {
     createUser,
     getAccessGroups,
@@ -618,11 +621,16 @@ const CreateUser = () => {
             showConfirmButton: false,
             timer: 2000,
           });
+
+          if (fromStepModal) { 
+            console.log("I got here - navigating to dashboard for onboarding step 3");
+            history.push(`/${tenant_schema_name}/dashboard`, { fromStepModal: false});
+          } else {
           setTimeout(() => {
             history.push(
               `/${tenant_schema_name}/settings/user/${res?.data?.user?.id}`
             );
-          }, 2000);
+          }, 2000);}
         } else {
           console.log(res);
           throw new Error(res?.error || "Failed to create user");
@@ -639,7 +647,7 @@ const CreateUser = () => {
         setIsSubmitting(false);
       }
     },
-    [state, createUser, history, tenant_schema_name]
+    [state, createUser, history, tenant_schema_name,fromStepModal]
   );
 
   if (isLoading) {
