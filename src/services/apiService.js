@@ -36,7 +36,8 @@ const createTenantAwareClient = (tenant, access_token, refresh_token) => {
           try {
             // Refresh token request
             const response = await axios.post(
-              "https://fastrasuiteapi.com.ng/company/token/refresh/",
+              `https://${tenant}.fastrasuiteapi.com.ng/company/token/refresh/`,
+              // "https://fastrasuiteapi.com.ng/company/token/refresh/",
               { refresh: refresh_token }
             );
 

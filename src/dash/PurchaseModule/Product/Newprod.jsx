@@ -130,7 +130,7 @@ export default function Newprod({
   const categoryOptions = [
     { value: "consumable", label: "Consumable" },
     { value: "stockable", label: "Stockable" },
-    { value: "service Product", label: "Service Product" },
+    { value: "service-product", label: "Service Product" },
   ];
 
   const customStyles = {
