@@ -1,5 +1,5 @@
 // services/IdleTimerService.js
-let idleTimeout = 3 * 60 * 1000; // 1 hour
+let idleTimeout = 60 * 60 * 1000; // 1 hour
 let warningDuration = 60 * 1000; // 1 minute warning
 let lastActivityKey = "last_activity_time";
 let countdownCallback = null;

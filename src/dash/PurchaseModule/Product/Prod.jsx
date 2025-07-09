@@ -54,14 +54,6 @@ export default function Prod() {
     return () => clearTimeout(timer);
   }, [location.state?.openForm]);
 
-  // useEffect(() => {
-  //   const savedProducts = localStorage.getItem("products");
-  //   if (savedProducts) {
-  //     const parsedProducts = JSON.parse(savedProducts);
-  //     setProducts(parsedProducts);
-  //     setFilteredProducts(parsedProducts);
-  //   }
-  // }, []);
   useEffect(() => {
     setFilteredProducts(products);
     // localStorage.setItem("products", JSON.stringify(products));
@@ -79,12 +71,6 @@ export default function Prod() {
   };
 
   const handleSaveAndSubmit = (formData) => {
-    // Handle product save logic if needed
-
-    // const updatedProducts = [...products, formData];
-    // setProducts(updatedProducts);
-    // setFilteredProducts(updatedProducts);
-    // localStorage.setItem("products", JSON.stringify(updatedProducts));
     createProduct(formData);
     setShowNewProd(false);
   };
@@ -123,14 +109,6 @@ export default function Prod() {
   };
 
   const handleSaveProductDetails = (updatedProduct) => {
-    // Handle product update logic if needed
-
-    // const updatedProducts = products.map((product) =>
-    //   product.id === updatedProduct.id ? updatedProduct : product
-    // );
-    // setProducts(updatedProducts);
-    // setFilteredProducts(updatedProducts);
-    // localStorage.setItem("products", JSON.stringify(updatedProducts));
     setSelectedProduct(updatedProduct);
   };
 

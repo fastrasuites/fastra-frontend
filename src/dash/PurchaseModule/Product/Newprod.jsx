@@ -219,6 +219,18 @@ export default function Newprod({
                     value={formState.availableProductQty}
                     onChange={handleChange}
                     disabled
+                    variant="standard"
+                    InputProps={{
+                      disableUnderline: true,
+                      sx: {
+                        backgroundColor: "transparent",
+                        color: "text.primary",
+                        cursor: "default",
+                      },
+                    }}
+                    sx={{
+                      p: 1,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -233,6 +245,18 @@ export default function Newprod({
                     value={formState.totalQtyPurchased}
                     onChange={handleChange}
                     disabled
+                    variant="standard"
+                    InputProps={{
+                      disableUnderline: true,
+                      sx: {
+                        backgroundColor: "transparent",
+                        color: "text.primary",
+                        cursor: "default",
+                      },
+                    }}
+                    sx={{
+                      p: 1,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -267,17 +291,6 @@ export default function Newprod({
                       `${opt.unit_name} - ${opt.unit_category}`
                     }
                     styles={customStyles}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <div style={{ marginBottom: "8px" }}>
-                    <label>Product Image</label>
-                  </div>
-                  <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    onChange={handleFileChange}
                   />
                 </Grid>
               </Grid>
