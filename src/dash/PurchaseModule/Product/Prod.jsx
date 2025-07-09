@@ -30,7 +30,7 @@ import PurchaseHeader from "../PurchaseHeader";
 export default function Prod() {
   const [showNewProd, setShowNewProd] = useState(false);
   // const [products, setProducts] = useState([]);
-  const { products, createProduct } = usePurchase();
+  const { products, createProduct, fetchProducts } = usePurchase();
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
@@ -42,6 +42,10 @@ export default function Prod() {
 
   const toggleLeftDrawer = (open) => () => setOpenLeft(open);
   const toggleRightDrawer = (open) => () => setOpenRight(open);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   console.log("Product list", products);
 
@@ -56,7 +60,6 @@ export default function Prod() {
 
   useEffect(() => {
     setFilteredProducts(products);
-    // localStorage.setItem("products", JSON.stringify(products));
   }, [products]);
 
   const handleNewProduct = () => {
