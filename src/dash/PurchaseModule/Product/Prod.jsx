@@ -30,7 +30,7 @@ import PurchaseHeader from "../PurchaseHeader";
 export default function Prod() {
   const [showNewProd, setShowNewProd] = useState(false);
   // const [products, setProducts] = useState([]);
-  const { products, createProduct, fetchProducts } = usePurchase();
+  const { products, createProduct, fetchProducts, updateProduct } = usePurchase();
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
@@ -112,6 +112,7 @@ export default function Prod() {
   };
 
   const handleSaveProductDetails = (updatedProduct) => {
+    updateProduct(updatedProduct.id, updatedProduct);
     setSelectedProduct(updatedProduct);
   };
 

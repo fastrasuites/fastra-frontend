@@ -23,7 +23,6 @@ export default function Newprod({
     unt: "",
     type: "",
     category: "",
-    image: null,
     productDesc: "",
     availableProductQty: 0,
     totalQtyPurchased: 0,
@@ -66,11 +65,6 @@ export default function Newprod({
     if (newUnit) console.log("Selected unit:", newUnit);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0] || null;
-    setFormState((prev) => ({ ...prev, image: file }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -96,7 +90,12 @@ export default function Newprod({
         formState.availableProductQty
       );
       payload.append("total_quantity_Purchased", formState.totalQtyPurchased);
-      if (formState.image) payload.append("image", formState.image);
+
+      // console.log("Submitting payload:", payload);
+      // for(const [key, value] of payload.entries()){
+      //   console.log(`${key}: ${value}`)
+      // }
+      setError(null);
 
       await onSaveAndSubmit(payload);
 
