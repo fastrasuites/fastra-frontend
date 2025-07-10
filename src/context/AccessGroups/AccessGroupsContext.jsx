@@ -107,7 +107,8 @@ export function AccessGroupsProvider({ children }) {
       };
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
-      Swal.fire("Error", "Failed to fetch applications", "error");
+      // Swal.fire("Error", "Failed to fetch applications", "error");
+      console.error("Error fetching applications:", error);
       throw error;
     }
   }, [client]);
