@@ -299,7 +299,7 @@ const DeliveryOrderInfo = () => {
 
             <Grid item xs={12} sm={6} lg={3}>
               <FormGroup label="Source Location">
-                <Typography>{singleLocation?.location_name}</Typography>
+                {singleLocation?.location_name || "Loading..."}
               </FormGroup>
             </Grid>
           </Grid>
