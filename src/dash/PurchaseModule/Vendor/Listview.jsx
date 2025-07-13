@@ -12,7 +12,6 @@ import {
 
 const ListView = ({ items, onItemClick }) => {
   const [selected, setSelected] = React.useState([]);
-  console.log(" checking items :", items);
   // item contains url and not id - this will be considered later.
   const handleSelectAll = (event) => {
     if (event.target.checked) {

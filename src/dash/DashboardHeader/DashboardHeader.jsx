@@ -1,22 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { FaBell } from "react-icons/fa6";
 import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import Sidebar from "../../components/Sidebar";
 import ProfileMenuDropdown from "../../components/ProfileMenuDropdown";
 import "./DashboardHeader.css";
+import { useLocation } from "react-router-dom";
 
 const DashboardHeader = ({ title, menuItems }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setActiveDropdown(null);
+  }, [location.pathname]);
 
   const handleDropdownToggle = (index) => {
     setActiveDropdown(activeDropdown === index ? null : index);
   };
 
   const toggleSidebar = () => {
-    console.log("i was opened");
     setIsSidebarOpen((prevState) => !prevState);
   };
 

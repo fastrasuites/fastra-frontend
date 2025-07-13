@@ -7,6 +7,7 @@ import { useTenant } from "../../../../context/TenantContext";
 import { useDeliveryOrder } from "../../../../context/Inventory/DeliveryOrderContext";
 import { formatDate } from "../../../../helper/helper";
 import { highlightMatch } from "../../../../helper/highlightMatch";
+import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 
 // Status color mapping extracted once
 const getStatusColor = (status) => {
@@ -24,6 +25,11 @@ const DeliveryOrder = () => {
   const tenantSchema = tenantData?.tenant_schema_name ?? "";
   const { deliveryOrderList, getDeliveryOrderList, isLoading, error } =
     useDeliveryOrder();
+  const { locationList, getLocationList } = useCustomLocation();
+
+  useEffect(() => {
+    getLocationList();
+  }, [getLocationList]);
 
   useEffect(() => {
     getDeliveryOrderList();
@@ -64,6 +70,11 @@ const DeliveryOrder = () => {
         render: (row) => highlightMatch(row.dateCreated, searchQuery),
       },
       {
+        id: "amount",
+        label: "Amount",
+        render: (row) => highlightMatch(row.amount, searchQuery),
+      },
+      {
         id: "status",
         label: "Status",
         render: (row) => (
@@ -87,15 +98,22 @@ const DeliveryOrder = () => {
     [searchQuery]
   );
 
+  const orderLocationDetails = (sourceLocation) =>
+    locationList.find((loc) => loc?.id === sourceLocation);
+
   const transformedData = useMemo(
     () =>
       deliveryOrderList.map((order) => ({
         id: order.id,
         requestId: order.order_unique_id,
         partner: order.customer_name,
-        sourceLocation: order.source_location,
+        sourceLocation: orderLocationDetails(order.source_location)
+          ?.location_name,
         destinationLocation: order.delivery_address,
         dateCreated: formatDate(order.date_created),
+        amount: order.delivery_order_items
+          .reduce((acc, cur) => acc + parseFloat(cur.total_price || "0"), 0)
+          .toFixed(2),
         status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
       })),
     [deliveryOrderList]
@@ -201,6 +219,9 @@ const DeliveryOrder = () => {
             </Typography>
             <Typography variant="body2" color="textSecondary" fontSize={12}>
               {item.partner}
+            </Typography>
+            <Typography variant="body2" color="textSecondary" fontSize={12}>
+              {item.amount}
             </Typography>
             <Box display="flex" alignItems="center" gap={1}>
               <Box

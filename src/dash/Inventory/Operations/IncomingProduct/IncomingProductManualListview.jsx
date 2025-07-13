@@ -124,7 +124,7 @@ const IncomingProductManualListview = () => {
       </Box>
     </Box>
   );
-  console.log("Incoming Product List", incomingProductList);
+
   return (
     <Box>
       <CommonTable

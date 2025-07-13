@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import Swal from "sweetalert2";
+import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 
 const tableColumns = ["Product Name", "Quantity to Deliver", "Unit of Measure"];
 
@@ -58,6 +59,14 @@ const DeliveryOrderInfo = () => {
     isLoading,
     deleteDeliveryOrder,
   } = useDeliveryOrder();
+
+  const { getSingleLocation, singleLocation } = useCustomLocation();
+
+  useEffect(() => {
+    if (singleDeliveryOrder?.source_location) {
+      getSingleLocation(singleDeliveryOrder.source_location);
+    }
+  }, [singleDeliveryOrder?.source_location, getSingleLocation]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +121,6 @@ const DeliveryOrderInfo = () => {
     );
   }
 
-  console.log("Single Delivery Order:", singleDeliveryOrder);
   const status = singleDeliveryOrder?.status || "draft";
 
   const handleDelete = async () => {
@@ -291,7 +299,7 @@ const DeliveryOrderInfo = () => {
 
             <Grid item xs={12} sm={6} lg={3}>
               <FormGroup label="Source Location">
-                {singleDeliveryOrder.source_location}
+                <Typography>{singleLocation?.location_name}</Typography>
               </FormGroup>
             </Grid>
           </Grid>
