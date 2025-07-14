@@ -257,10 +257,6 @@ const EditDeliveryOrderForm = () => {
     if (initialDataLoaded && singleDeliveryOrder) {
       // Transform items
       const items = singleDeliveryOrder.delivery_order_items.map((item) => {
-        // const product =
-        //   transformedProducts.find((p) => p.id === item.product_item?.id) ||
-        //   item.product_item;
-
         return {
           ...item,
           id: item.id,
@@ -370,13 +366,13 @@ const EditDeliveryOrderForm = () => {
         return_policy: filledFormData.return_policy,
         assigned_to: filledFormData.assigned_to,
         items: filledFormData.items.map((item) => ({
+          id: item.id,
           unit_of_measure:
             item.unit_of_measure?.unit_category || item.unit_of_measure,
           product: item.product?.id || item.product,
           quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
         })),
       };
-      console.log("Submitted Data to context:", cleanData);
       const result = await updateDeliveryOrder(orderId, cleanData);
 
       if (result && result.success) {
@@ -449,12 +445,6 @@ const EditDeliveryOrderForm = () => {
           "Save changes"
         )
       }
-      // autofillRow={[
-      //   "product_name",
-      //   "product_description",
-      //   "unit_of_measure",
-      //   "available_product_quantity",
-      // ]}
     />
   );
 };
