@@ -20,7 +20,13 @@ import { formatDate } from "../../../../../helper/helper";
 import Swal from "sweetalert2";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 
-const tableColumns = ["Product Name", "Quantity to Deliver", "Unit of Measure"];
+const tableColumns = [
+  "Product Name",
+  "Quantity to Deliver",
+  "Unit Price",
+  "Unit of Measure",
+  "Total",
+];
 
 const STATUS_COLOR = {
   done: "#2ba24c",
@@ -367,10 +373,12 @@ const DeliveryOrderInfo = () => {
                       {row.product_details.product_name || "Product name"}
                     </TableCell>
                     <TableCell>{row.quantity_to_deliver}</TableCell>
+                    <TableCell>{row.unit_price}</TableCell>
                     <TableCell>
                       {row.product_details.unit_of_measure_details
                         .unit_category || "Unit of measure"}
                     </TableCell>
+                    <TableCell>{row.total_price}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
