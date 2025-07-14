@@ -257,7 +257,40 @@ const DeliveryOrderForm = () => {
       disabled: true,
       transform: (value) => value?.unit_category || "",
     },
+    {
+      label: "Unit Price",
+      field: "unit_price",
+      type: "number",
+      transform: (value) => value || "",
+    },
+    {
+      label: "Total",
+      field: "total_price",
+      type: "number",
+      disabled: true,
+      transform: (value) => value || "",
+    },
   ];
+
+  useEffect(() => {
+    const shouldUpdate = formData.items.some((item) => {
+      const quantity = parseInt(item.quantity_to_deliver, 10) || 0;
+      const unitPrice = parseFloat(item.unit_price) || 0;
+      const calculatedTotal = quantity * unitPrice;
+      return item.total_price !== calculatedTotal;
+    });
+
+    if (shouldUpdate) {
+      const newItems = formData.items.map((item) => {
+        const quantity = parseInt(item.quantity_to_deliver, 10) || 0;
+        const unitPrice = parseFloat(item.unit_price) || 0;
+        return { ...item, total_price: quantity * unitPrice };
+      });
+      setFormData((prev) => ({ ...prev, items: newItems }));
+    }
+  }, [formData.items]);
+
+  console.log("formData", formData);
 
   // Callback to process the final filled form data
   const handleSubmit = async (filledFormData) => {
@@ -332,12 +365,6 @@ const DeliveryOrderForm = () => {
       primaryButtonVariant="contained"
       onSubmit={handleSubmit}
       submitBtnText={isLoading ? "Submitting..." : "Save"}
-      autofillRow={[
-        "product_name",
-        "product_description",
-        "unit_of_measure",
-        "available_product_quantity",
-      ]}
     />
   );
 };
