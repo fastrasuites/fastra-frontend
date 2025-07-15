@@ -6,10 +6,32 @@ import Swal from "sweetalert2";
 const IMAGE_MAX_SIZE = 1 * 1024 * 1024; // 1 MB
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 
+/**
+ * SignatureSection Component
+ *
+ * Props:
+ * - signature: string (base64) or File/Blob
+ * - onClear: () => void
+ * - onEnd: (dataURL: string) => void
+ * - onUpload: (file: File) => void
+ * - enablePrefill: boolean (unused but reserved)
+ */
 const SignatureSection = ({ signature, onClear, onEnd, onUpload }) => {
   const sigPadRef = useRef(null);
   const fileInputRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
+
+  // Determine preview URL or data URL for signature
+  const isFile = signature instanceof Blob || signature instanceof File;
+  const isCanvasDataUrl =
+    typeof signature === "string" && signature.startsWith("data:image/");
+  const signaturePreview = isFile
+    ? URL.createObjectURL(signature)
+    : isCanvasDataUrl
+    ? signature
+    : signature
+    ? `data:image/png;base64,${signature}`
+    : null;
 
   const handleUploadClick = () => {
     fileInputRef.current.click();
@@ -28,7 +50,6 @@ const SignatureSection = ({ signature, onClear, onEnd, onUpload }) => {
       return;
     }
 
-    // Instead of converting to base64, use the file directly
     onUpload(file);
   };
 
@@ -57,19 +78,13 @@ const SignatureSection = ({ signature, onClear, onEnd, onUpload }) => {
     onClear();
   };
 
-  // Create a preview URL for the signature
-  const signaturePreview =
-    signature instanceof Blob || signature instanceof File
-      ? URL.createObjectURL(signature)
-      : signature;
-
   return (
     <Box pb={3}>
       <Typography color="#3B7CED" fontSize="20px" mb={3}>
         Signature
       </Typography>
       <Box display="flex" alignItems="end" gap={6}>
-        {signature ? (
+        {signaturePreview ? (
           <img
             src={signaturePreview}
             alt="Signature"

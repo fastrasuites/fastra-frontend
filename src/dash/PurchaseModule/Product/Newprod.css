@@ -1,21 +1,21 @@
 .newp-contain {
   width: 100%;
   height: 100%;
-  font-family: Product Sans;
+  font-family: "Product Sans", sans-serif;
   display: block;
 }
+
 .newp {
   width: 100%;
   height: 100%;
-  font-family: Product Sans;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
   background-image: url("../../../assets/background.png");
-  background-color: white;
+  background-color: #fff;
   overflow: auto;
   margin-top: -4rem;
+  z-index: 999;
 }
 
 .fade-in {
@@ -51,7 +51,6 @@
   align-items: center;
   gap: 2rem;
   width: 50%;
-  height: 100%;
 }
 
 .newphed {
@@ -65,61 +64,15 @@
   gap: 0.5rem;
 }
 
-.newp2b {
-  display: flex;
-  gap: 1.5rem;
-  height: 100%;
-  width: 20%;
-  align-items: center;
-  justify-content: end;
-}
-
-.newpbpg {
-  color: #a9b3bc;
-}
-
-.newpbnav {
-  border: 1.2px solid #e2e6e9;
-  width: 25%;
-  height: 40%;
-  display: flex;
-  align-items: center;
-  background-color: white;
-  border-radius: 4px;
-}
-
-.nr {
-  width: 80%;
-  height: 80%;
-  color: gray;
-}
-
-.sep {
-  width: 2%;
-  /* height: 100%; */
-  border-left: 1px solid #e2e6e9;
-}
-
 .newp3 {
   width: 100%;
-  /* height: 79%; */
   padding: 24px;
   border-radius: 4px;
   border: 1px solid #e2e6e9;
-  background-color: white;
-  /* display: flex; */
-  /* justify-content: center; */
-  /* margin-bottom: 300px; */
+  background-color: #fff;
 }
 
-/* .newpform {
-  width: 95%;
-  height: 100%;
-} */
-
 .newp3a {
-  width: 100%;
-  height: 5%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -132,104 +85,12 @@
   border: none;
   padding: 10px;
   background: transparent;
-}
-
-.newp3b {
-  width: 100%;
-  height: 16.5%;
-  display: flex;
-  gap: 3rem;
-  border-bottom: 1px solid #e2e6e9;
-  margin: 1.5rem 0;
-}
-
-.newp3ba {
-  width: 25%;
-  height: 90%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 1.5rem;
-}
-
-.newp3c {
-  width: 100%;
-  height: 16.5%;
-  display: flex;
-  gap: 3rem;
-  border-bottom: 1px solid #e2e6e9;
-  margin: 1.5rem 0;
-}
-
-.newp3ca {
-  width: 25%;
-  height: 90%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 1.5rem;
-}
-
-.newp3cb {
-  width: 95%;
-  margin-top: 0.1rem;
   cursor: pointer;
-  outline: none;
-  border: 2px solid #e2e6e9;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 0.1rem;
 }
 
-.newp3a2 {
-  width: 100%;
-  height: 5%;
-  color: #3b7ced;
-  margin: 2rem 0;
-}
-
-.newp3d {
-  width: 100%;
-  height: 16.5%;
-  display: flex;
-  gap: 3rem;
-  border-bottom: 1px solid #e2e6e9;
-  margin: 1.5rem 0;
-}
-
-.newp3da {
-  width: 25%;
-  height: 90%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  line-height: 1.5rem;
-}
-
-.newp3e {
-  width: 100%;
-  height: 8%;
-  margin-top: -0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.newp3btn {
-  background-color: #3b7ced;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-/* Remove the spinner buttons from number input fields */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
-  appearance: none;
   margin: 0;
 }
 
@@ -250,4 +111,24 @@ input[type="number"] {
   overflow: hidden;
   background-color: #e2e6e9;
   cursor: pointer;
+}
+
+/* Add spacing for consistent form appearance */
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+hr {
+  border: 1.2px solid #e2e6e9;
+  margin-top: 32px;
+}
+
+.error-message {
+  color: red;
+  margin-top: 1rem;
+  font-size: 14px;
 }

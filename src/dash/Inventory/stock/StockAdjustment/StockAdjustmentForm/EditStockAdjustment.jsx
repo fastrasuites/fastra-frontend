@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, Box, TextField } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjustment";
@@ -75,7 +75,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
           <p>{selectedLocation?.id || "N/A"}</p>
         </div>
       ) : (
-        <div>
+        <Box minWidth={"300px"}>
           <label style={{ marginBottom: "6px", display: "block" }}>
             Location
           </label>
@@ -83,7 +83,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
             disablePortal
             options={locationList}
             value={selectedLocation}
-            getOptionLabel={(option) => option?.id || ""}
+            getOptionLabel={(option) => option?.location_name || ""}
             isOptionEqualToValue={(option, value) => option?.id === value?.id}
             onChange={handleReceiptChange}
             sx={{ width: "100%", mb: 2 }}
@@ -91,7 +91,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
               <TextField {...params} placeholder="Select Location" />
             )}
           />
-        </div>
+        </Box>
       )}
 
       <div className="supplierName">

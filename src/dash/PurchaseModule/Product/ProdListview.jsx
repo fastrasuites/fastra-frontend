@@ -9,9 +9,13 @@ import {
   Paper,
   Checkbox,
 } from "@mui/material";
+import { useTenant } from "../../../context/TenantContext";
+import { useHistory } from "react-router-dom";
 
 const ProdListview = ({ items, onItemClick }) => {
   const [selected, setSelected] = React.useState([]);
+  const tenant = useTenant().tenantData.tenant_schema_name;
+  const history = useHistory();
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
@@ -95,7 +99,9 @@ const ProdListview = ({ items, onItemClick }) => {
           {items.map((item) => (
             <TableRow
               key={item.id}
-              onClick={() => onItemClick(item)}
+              onClick={() =>
+                history.push(`/${tenant}/purchase/product/${item.id}`)
+              }
               sx={{
                 cursor: "pointer",
                 "&:hover": { backgroundColor: "#f5f5f5" },

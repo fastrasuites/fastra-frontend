@@ -9,14 +9,11 @@ import PurchaseHeader from "../PurchaseHeader";
 import { getTenantClient } from "../../../services/apiService";
 import { useTenant } from "../../../context/TenantContext";
 import Swal from "sweetalert2";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
-export default function Newprod({
-  onClose,
-  onSaveAndSubmit,
-  fromPurchaseModuleWizard,
-}) {
+export default function Newprod({ fromPurchaseModuleWizard }) {
   const history = useHistory();
   const [formState, setFormState] = useState({
     name: "",
@@ -37,6 +34,7 @@ export default function Newprod({
 
   const [savedUnits, setSavedUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const { createProduct } = usePurchase();
 
   // Fetch saved units
   useEffect(() => {
@@ -98,14 +96,13 @@ export default function Newprod({
       payload.append("total_quantity_Purchased", formState.totalQtyPurchased);
       if (formState.image) payload.append("image", formState.image);
 
-      await onSaveAndSubmit(payload);
+      await createProduct(payload);
 
       Swal.fire({
         icon: "success",
         title: "Product Created",
         text: "Your new product has been saved successfully.",
       });
-      onClose();
 
       if (fromPurchaseModuleWizard) {
         const saved =
@@ -154,7 +151,6 @@ export default function Newprod({
 
   return (
     <div className="newp-contain ">
-      <PurchaseHeader />
       <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
         <div className="newp1">
           <div className="newp2">
@@ -173,7 +169,7 @@ export default function Newprod({
                 <button
                   type="button"
                   className="newp3but"
-                  onClick={onClose}
+                  onClick={() => window.history.back()}
                   style={{ marginTop: "1rem" }}
                 >
                   Cancel

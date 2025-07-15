@@ -57,9 +57,7 @@ const RfqBasicInfoFields = ({
           )}
           <div className="refDate">
             <label>Date Opened</label>
-            <Typography color={"#303030"}>
-              {formatDate(Date.now())}34
-            </Typography>
+            <Typography color={"#303030"}>{formatDate(Date.now())}</Typography>
           </div>
         </div>
 

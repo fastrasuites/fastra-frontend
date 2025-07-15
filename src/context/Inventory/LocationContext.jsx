@@ -40,53 +40,6 @@ export const LocationProvider = ({ children }) => {
       : null;
   }, [tenant_schema_name, access_token, refresh_token]);
 
-  const fetchResource = useCallback(
-    async (url) => {
-      if (!client || !url) return null;
-      try {
-        const secureUrl = url.replace(/^http:\/\//i, "https://");
-        const response = await client.get(secureUrl);
-        return response.data;
-      } catch (err) {
-        console.error(`Error fetching resource from ${url}:`, err);
-        return null;
-      }
-    },
-    [client]
-  );
-
-  const normalizeRFQList = useCallback(
-    async (rfq) => {
-      const currencyDetail = await fetchResource(rfq.currency);
-      const vendorDetail = await fetchResource(rfq.vendor);
-
-      const normalizedItems = await Promise.all(
-        rfq.items.map(async (item) => {
-          const productDetail = item.product
-            ? await fetchResource(item.product)
-            : null;
-          const unitDetail = item.unit_of_measure
-            ? await fetchResource(item.unit_of_measure)
-            : null;
-
-          return {
-            ...item,
-            product: productDetail,
-            unit_of_measure: unitDetail,
-          };
-        })
-      );
-
-      return {
-        ...rfq,
-        currency: currencyDetail,
-        vendor: vendorDetail,
-        items: normalizedItems,
-      };
-    },
-    [fetchResource]
-  );
-
   // Update this block to avoid unnecessary destructuring
   const createLocation = useCallback(
     async (locationData) => {
@@ -136,32 +89,40 @@ export const LocationProvider = ({ children }) => {
     [client]
   );
 
-  const getLocationList = useCallback(async () => {
-    if (!client) {
-      const errMsg =
-        "API client not available. Please check tenant configuration.";
-      console.error(errMsg);
-      setError(errMsg);
-      return Promise.reject(new Error(errMsg));
-    }
+  const getLocationList = useCallback(
+    async (searchTerm = "") => {
+      if (!client) {
+        const errMsg =
+          "API client not available. Please check tenant configuration.";
+        console.error(errMsg);
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
 
-    setIsLoading(true);
-    console.log("Axios base URL", client.defaults.baseURL);
-
-    try {
-      const response = await client.get("/inventory/location/");
-      const data = response.data;
-      setLocationList(data);
+      setIsLoading(true);
       setError(null);
-      return { success: true, data };
-    } catch (err) {
-      console.error("Error fetching location list:", err);
-      setError(err.message || "Failed to fetch locations");
-      return Promise.reject(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [client]);
+      console.log("Axios base URL", client.defaults.baseURL);
+
+      try {
+        const params = searchTerm ? { search: searchTerm } : {};
+
+        const response = await client.get("/inventory/location/", {
+          params,
+        });
+        const data = response.data;
+        setLocationList(data);
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        console.error("Error fetching location list:", err);
+        setError(err.message || "Failed to fetch locations");
+        return Promise.reject(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
 
   const getActiveLocationList = useCallback(async () => {
     if (!client) {

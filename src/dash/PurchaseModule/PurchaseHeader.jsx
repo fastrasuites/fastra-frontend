@@ -7,14 +7,20 @@ const PurchaseHeader = () => {
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const menuItems = [
     { label: "Purchase Requests", link: `/${tenant_schema_name}/purchase` },
-    { label: "RFQs", link: `/${tenant_schema_name}/purchase/request-for-quotations` },
-    { label: "Purchase Orders", link: `/${tenant_schema_name}/purchase/purchase-order` },
+    {
+      label: "RFQs",
+      link: `/${tenant_schema_name}/purchase/request-for-quotations`,
+    },
+    {
+      label: "Purchase Orders",
+      link: `/${tenant_schema_name}/purchase/purchase-order`,
+    },
     {
       label: "Vendors",
       link: `/${tenant_schema_name}/vendor`,
       subItems: [
         { label: "Vendors Bills", link: `/${tenant_schema_name}/vendor-bill` },
-        { label: "Vendors", link: `/${tenant_schema_name}/vendor` },
+        { label: "Vendors", link: `/${tenant_schema_name}/purchase/vendor` },
       ],
     },
     {
@@ -25,7 +31,7 @@ const PurchaseHeader = () => {
           label: "Incoming Products",
           link: `/${tenant_schema_name}/incoming-product`,
         },
-        { label: "Products", link: `/${tenant_schema_name}/product` },
+        { label: "Products", link: `/${tenant_schema_name}/purchase/product` },
       ],
     },
     {

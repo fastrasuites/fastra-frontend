@@ -44,8 +44,6 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
     handleInputChange("location", newLoc);
   };
 
-  // console.log("Location List", locationList);
-
   return (
     <Box display={"flex"} gap={10}>
       {/* <div className="formLabelAndValue">
@@ -84,7 +82,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
             disablePortal
             options={locationList}
             value={selectedLoaction}
-            getOptionLabel={(option) => option?.id || ""}
+            getOptionLabel={(option) => option?.location_name || ""}
             isOptionEqualToValue={(option, value) =>
               option?.receiptType === value?.id
             }

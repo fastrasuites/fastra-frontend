@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import {
   Grid,
@@ -19,9 +19,9 @@ import { useCustomLocation } from "../../../../context/Inventory/LocationContext
 import { useLocationConfig } from "../../../../context/Inventory/LocationConfigContext";
 import { useTenant } from "../../../../context/TenantContext";
 import Asteriks from "../../../../components/Asterisk";
+import { useUser } from "../../../../context/Settings/UserContext";
 
 const STORAGE_KEY = "draftLocationForm";
-
 const LOCATION_TYPES = [
   { value: "internal", label: "Internal" },
   { value: "partner", label: "Partner" },
@@ -40,11 +40,12 @@ const initialFormState = {
 
 const LocationForm = () => {
   const history = useHistory();
-  const routerLocation = useLocation();
+  const { state } = useLocation();
+  const fromWizard = state?.openForm === true;
+
   const { tenantData } = useTenant();
   const tenantSchema = tenantData?.tenant_schema_name;
-
-  const fromWizard = routerLocation.state?.openForm === true;
+  const { getUserList, userList } = useUser();
 
   const {
     locationList,
@@ -61,53 +62,52 @@ const LocationForm = () => {
 
   const [formData, setFormData] = useState(initialFormState);
 
-  // Fetch locations and config on mount
+  // FETCH on mount
   useEffect(() => {
     getLocationList();
     getMultiLocation();
-  }, [getLocationList, getMultiLocation]);
+    getUserList();
+  }, [getLocationList, getMultiLocation, getUserList]);
 
-  // Auto-generate location code
+  // Generate code suffix once locations loaded
   useEffect(() => {
-    if (
-      !loadingLocations &&
-      Array.isArray(locationList) &&
-      !formData.locationCode
-    ) {
+    if (!loadingLocations && locationList.length && !formData.locationCode) {
       const suffix = String(locationList.length + 1).padStart(4, "0");
-      setFormData((prev) => ({ ...prev, locationCode: suffix }));
+      setFormData((f) => ({ ...f, locationCode: suffix }));
     }
   }, [loadingLocations, locationList, formData.locationCode]);
 
-  // Restore from draft
+  // Restore draft
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         setFormData(JSON.parse(saved));
-      } catch {
-        // Invalid JSON - ignore
-      }
+      } catch {}
     }
   }, []);
 
-  // Auto-save on data change
+  // Auto-save
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
 
   const handleChange = useCallback(
-    (field) => (e) =>
-      setFormData((prev) => ({ ...prev, [field]: e.target.value })),
+    (field) => (e) => {
+      const value =
+        e.target.type === "checkbox" ? e.target.checked : e.target.value;
+      setFormData((f) => ({ ...f, [field]: value }));
+    },
     []
   );
 
+  // Ensure code ends in number suffix
   const handleCodeBlur = () => {
     if (formData.locationCode && !/\d+$/.test(formData.locationCode)) {
-      const suffix = String((locationList?.length || 0) + 1).padStart(4, "0");
-      setFormData((prev) => ({
-        ...prev,
-        locationCode: prev.locationCode.toUpperCase() + suffix,
+      const suffix = String(locationList.length + 1).padStart(4, "0");
+      setFormData((f) => ({
+        ...f,
+        locationCode: f.locationCode.toUpperCase() + suffix,
       }));
     }
   };
@@ -120,26 +120,21 @@ const LocationForm = () => {
   const handleAddLocation = async () => {
     if (loadingLocations || loadingConfig) return;
 
-    let canAdd = true;
-
-    if (locationList.length >= 3 && multiLocationList?.is_activated === false) {
-      canAdd = false;
+    // If multi-location disabled and already 3 exist
+    if (locationList.length >= 3 && !multiLocationList?.is_activated) {
       const { isConfirmed } = await Swal.fire({
         title: "Multi-Location Disabled",
-        text: "To create multiple locations, please enable it in Configuration.",
+        text: "Enable multi-location in Configuration to add more.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Enable Now",
       });
-
-      if (isConfirmed) {
-        return history.push(
-          `/${tenantSchema}/inventory/location-configuration`
-        );
-      }
+      if (isConfirmed)
+        history.push(`/${tenantSchema}/inventory/location-configuration`);
+      return;
     }
 
-    // Validate required fields
+    // Required fields
     for (const [key, val] of Object.entries(formData)) {
       if (key !== "isHidden" && !val) {
         return Swal.fire({
@@ -150,37 +145,27 @@ const LocationForm = () => {
       }
     }
 
-    const newLocation = { id: Date.now(), ...formData };
-
-    if (canAdd) {
-      try {
-        const result = await createLocation(newLocation);
-        if (result.success) {
-          await Swal.fire({
-            icon: "success",
-            title: "Location Added",
-            text: "The location was added successfully.",
-          });
-          resetForm();
-          getLocationList();
-
-          if (fromWizard) {
-            history.push({
-              pathname: `/${tenantSchema}/purchase`,
-              state: { step: 2, preservedWizard: true },
-            });
-          }
-        }
-      } catch (err) {
-        const messages = Object.values(err || {}).filter(Boolean);
-        return Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: messages.length
-            ? messages.join(", ")
-            : err?.message || "An error occurred.",
+    try {
+      const result = await createLocation({ ...formData });
+      if (result.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "Location Added",
+          text: "The location was added successfully.",
         });
+        resetForm();
+        getLocationList();
+        if (fromWizard) {
+          history.push({
+            pathname: `/${tenantSchema}/purchase`,
+            state: { step: 2, preservedWizard: true },
+          });
+        }
       }
+    } catch (err) {
+      const msg =
+        err.message || Object.values(err).join(", ") || "An error occurred.";
+      Swal.fire({ icon: "error", title: "Error", text: msg });
     }
   };
 
@@ -200,15 +185,20 @@ const LocationForm = () => {
 
           <div className="location-form-content">
             <form className="location-form-fields" noValidate>
-              <div className="location-form-info">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <Typography variant="h6">Location Information</Typography>
-                <Button onClick={history.goBack} sx={{ mt: 2 }}>
+                <Button onClick={() => history.goBack()} sx={{ mt: 2 }}>
                   Close
                 </Button>
-              </div>
+              </Box>
 
               <Box mt={3}>
                 <Grid container spacing={3}>
+                  {/* Code */}
                   <Grid item xs={12} sm={6} md={4}>
                     <Typography gutterBottom display="flex">
                       Location Code <Asteriks />
@@ -221,7 +211,7 @@ const LocationForm = () => {
                       placeholder="Enter Location Code"
                     />
                   </Grid>
-
+                  {/* Name */}
                   <Grid item xs={12} sm={6} md={4}>
                     <Typography gutterBottom display="flex">
                       Location Name <Asteriks />
@@ -233,7 +223,7 @@ const LocationForm = () => {
                       placeholder="Enter Location Name"
                     />
                   </Grid>
-
+                  {/* Type */}
                   <Grid item xs={12} sm={6} md={4}>
                     <Typography gutterBottom display="flex">
                       Location Type <Asteriks />
@@ -252,10 +242,10 @@ const LocationForm = () => {
                     </TextField>
                   </Grid>
                 </Grid>
-
                 <Divider sx={{ my: 4 }} />
               </Box>
 
+              {/* Address, Manager, Keeper */}
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6} md={4}>
                   <Typography gutterBottom display="flex">
@@ -268,7 +258,6 @@ const LocationForm = () => {
                     placeholder="Enter Location Address"
                   />
                 </Grid>
-
                 <Grid item xs={12} sm={6} md={4}>
                   <Typography gutterBottom display="flex">
                     Location Manager <Asteriks />
@@ -279,11 +268,13 @@ const LocationForm = () => {
                     value={formData.locationManager}
                     onChange={handleChange("locationManager")}
                   >
-                    <MenuItem value="Alice Johnson">Alice Johnson</MenuItem>
-                    <MenuItem value="Michael Brown">Michael Brown</MenuItem>
+                    {userList.map((u) => (
+                      <MenuItem key={u.user_id} value={u.user_id}>
+                        {u.first_name} {u.last_name}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
-
                 <Grid item xs={12} sm={6} md={4}>
                   <Typography gutterBottom display="flex">
                     Store Keeper <Asteriks />
@@ -294,12 +285,16 @@ const LocationForm = () => {
                     value={formData.storeKeeper}
                     onChange={handleChange("storeKeeper")}
                   >
-                    <MenuItem value="Adams">Adams</MenuItem>
-                    <MenuItem value="Susan Keys">Susan Keys</MenuItem>
+                    {userList.map((u) => (
+                      <MenuItem key={u.user_id} value={u.user_id}>
+                        {u.first_name} {u.last_name}
+                      </MenuItem>
+                    ))}
                   </TextField>
                 </Grid>
               </Grid>
 
+              {/* Contact */}
               <Grid container spacing={3} mt={1}>
                 <Grid item xs={12} sm={6} md={4}>
                   <Typography gutterBottom display="flex">
@@ -307,13 +302,15 @@ const LocationForm = () => {
                   </Typography>
                   <TextField
                     fullWidth
+                    type="email"
                     value={formData.contactInfo}
                     onChange={handleChange("contactInfo")}
-                    placeholder="Enter Contact Information"
+                    placeholder="Enter email address"
                   />
                 </Grid>
               </Grid>
 
+              {/* Submit */}
               <Box mt={4}>
                 <Button
                   variant="contained"
@@ -321,11 +318,10 @@ const LocationForm = () => {
                   disabled={loadingLocations || loadingConfig}
                   sx={{ fontSize: 16, px: 3, py: 1.5 }}
                 >
-                  {loadingLocations ? (
+                  {(loadingLocations || loadingConfig) && (
                     <CircularProgress size={20} />
-                  ) : (
-                    "Add Location"
                   )}
+                  {!(loadingLocations || loadingConfig) && "Add Location"}
                 </Button>
               </Box>
             </form>

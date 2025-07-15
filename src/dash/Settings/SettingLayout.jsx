@@ -14,6 +14,8 @@ import EditAccessGroup from "./accessgroups/EditAccessGroup";
 import CreateAccessGroup from "./accessgroups/CreateAccessGroup";
 import UserInfo from "./user/UserInfo/UserInfo";
 import NewCompany from "./company/CompanyForm/NewCompanyForm";
+import UpdateUser from "./user/UserForms/Updateuser";
+import CompanyInfo from "./CompanyInfo/CompanyInfo";
 
 const SettingsLayout = () => {
   const { path } = useRouteMatch();
@@ -29,12 +31,18 @@ const SettingsLayout = () => {
         {/* Settings sections */}
         <Route exact path={`${path}/apk`} component={Apk} />
         <Route exact path={`${path}/company`} component={Company} />
+        <Route
+          exact
+          path={`${path}/company/company-details`}
+          component={CompanyInfo}
+        />
         <Route exact path={`${path}/company/new`} component={NewCompany} />
 
         {/* User sub–routes */}
         <Route exact path={`${path}/user`} component={User} />
         <Route exact path={`${path}/user/new`} component={CreateUser} />
         <Route exact path={`${path}/user/:id`} component={UserInfo} />
+        <Route exact path={`${path}/user/:id/edit`} component={UpdateUser} />
 
         {/* Access-groups */}
         <Route exact path={`${path}/accessgroups`} component={AccessGroups} />

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useReducer, useState } from "react";
+import { useParams, useHistory } from "react-router-dom";
 import {
   Box,
   Button,
@@ -13,7 +14,6 @@ import InputField from "../../../../components/InputField/InputField";
 import ImageUpload from "../../../../components/ImageUpload/ImageUpload";
 import SignatureSection from "../../../../components/SignatureSection/SignatureSection";
 import { useUser } from "../../../../context/Settings/UserContext";
-import { useHistory } from "react-router-dom";
 import { useTenant } from "../../../../context/TenantContext";
 import { useCompany } from "../../../../context/Settings/CompanyContext";
 
@@ -80,6 +80,7 @@ const ActionTypes = {
   SET_ACCESS_GROUP: "SET_ACCESS_GROUP",
   SET_SIGNATURE: "SET_SIGNATURE",
   RESET: "RESET",
+  INITIALIZE_FORM: "INITIALIZE_FORM",
 };
 
 // Reducer
@@ -107,6 +108,8 @@ function formReducer(state, action) {
     }
     case ActionTypes.SET_SIGNATURE:
       return { ...state, signature: action.payload };
+    case ActionTypes.INITIALIZE_FORM:
+      return { ...state, ...action.payload };
     case ActionTypes.RESET:
       return initialState;
     default:
@@ -292,7 +295,7 @@ const BasicSettingsTab = ({
       <Typography color="#3B7CED" fontSize="20px" mb={3}>
         Company Name
       </Typography>
-      <Typography c fontSize="16px" mb={3}>
+      <Typography fontSize="16px" mb={3}>
         {companyName}
       </Typography>
     </Box>
@@ -373,6 +376,7 @@ const BasicSettingsTab = ({
       onClear={handleClearSignature}
       onEnd={handleEndSignature}
       onUpload={handleUploadSignature}
+      enablePrefill={true}
     />
   </Box>
 );
@@ -446,16 +450,19 @@ const AccessRightsTab = ({
 );
 
 // Main Component
-const CreateUser = () => {
+const UpdateUser = () => {
   const [state, dispatch] = useReducer(formReducer, initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const { id } = useParams();
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const {
-    createUser,
+    getSingleUser,
+    singleUser,
+    patchUser,
     getAccessGroups,
     accessGroups: accessGroupRights,
   } = useUser();
@@ -467,9 +474,13 @@ const CreateUser = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        await Promise.all([getCompany(), getAccessGroups()]);
+        await Promise.all([
+          getCompany(),
+          getAccessGroups(),
+          getSingleUser(id), // Fetch specific user data
+        ]);
       } catch (err) {
-        setError("Failed to load initial data");
+        setError("Failed to load user data");
         console.error("Initialization error:", err);
       } finally {
         setIsLoading(false);
@@ -477,10 +488,44 @@ const CreateUser = () => {
     };
 
     fetchData();
-  }, [getAccessGroups, getCompany]);
+  }, [id, getSingleUser, getAccessGroups, getCompany]);
 
-  console.log(accessGroupRights);
+  // Initialize form when user data is available
+  useEffect(() => {
+    if (singleUser && singleUser.id === parseInt(id)) {
+      const accessGroupsMap = {};
 
+      // Map access groups
+      singleUser.application_accesses.forEach((access) => {
+        accessGroupsMap[access.application] = access.access_code;
+      });
+
+      // Split name into first and last name if needed
+      const fullName =
+        singleUser.first_name && singleUser.last_name
+          ? `${singleUser.first_name} ${singleUser.last_name}`
+          : singleUser.name || "";
+
+      dispatch({
+        type: ActionTypes.INITIALIZE_FORM,
+        payload: {
+          name: fullName,
+          role: singleUser.company_role,
+          email: singleUser.email,
+          phone: singleUser.phone_number,
+          language: singleUser.language,
+          timezone: singleUser.timezone,
+          inAppNotification: singleUser.in_app_notifications,
+          emailNotification: singleUser.email_notifications,
+          signature: singleUser.signature || "",
+          imagePreview: singleUser.user_image || "",
+          accessGroups: accessGroupsMap,
+        },
+      });
+    }
+  }, [singleUser, id]);
+
+  console.log(state);
   // Handlers
   const handleTabChange = useCallback(
     (index) => dispatch({ type: ActionTypes.SET_TAB, payload: index }),
@@ -585,7 +630,7 @@ const CreateUser = () => {
 
       const formData = new FormData();
 
-      // Append all user data
+      // Append updated fields
       formData.append("name", state.name);
       formData.append("email", state.email);
       formData.append("company_role", state.role);
@@ -595,12 +640,17 @@ const CreateUser = () => {
       formData.append("in_app_notifications", state.inAppNotification);
       formData.append("email_notifications", state.emailNotification);
 
-      // Handle signature
-      if (state.signature) {
+      // Handle signature only if it's changed
+      if (state.signature && state.signature !== singleUser?.signature) {
         const signatureFile = dataURLtoFile(state.signature, "signature.png");
         if (signatureFile) {
           formData.append("signature_image", signatureFile);
         }
+      }
+
+      // Handle profile image only if changed
+      if (state.imageFile) {
+        formData.append("image", state.imageFile);
       }
 
       // Append access codes
@@ -608,33 +658,29 @@ const CreateUser = () => {
         if (code) formData.append("access_codes", code);
       });
 
-      // Append profile image
-      if (state.imageFile) {
-        formData.append("image", state.imageFile);
-      }
-
       try {
-        const res = await createUser(formData);
+        const res = await patchUser(id, formData);
         if (res?.success) {
           Swal.fire({
             icon: "success",
-            title: "User Created",
-            text: `${state.name} was created successfully`,
+            title: "User Updated",
+            text: `${state.name} was updated successfully`,
             showConfirmButton: false,
             timer: 2000,
           });
+          console.log(res);
+          // Redirect to users list after update
           setTimeout(() => {
-            window.history.back();
+            history.push(`/${tenant_schema_name}/settings/user/${res.data.id}`);
           }, 2000);
         } else {
-          console.log(res);
-          throw new Error(res?.error || "Failed to create user");
+          throw new Error(res?.error || "Failed to update user");
         }
       } catch (error) {
-        console.error("User creation error:", error);
+        console.error("User update error:", error);
         Swal.fire({
           icon: "error",
-          title: "Creation Failed",
+          title: "Update Failed",
           text:
             error.message || "An unexpected error occurred. Please try again.",
         });
@@ -642,7 +688,7 @@ const CreateUser = () => {
         setIsSubmitting(false);
       }
     },
-    [state, createUser, history, tenant_schema_name]
+    [state, id, patchUser, history, tenant_schema_name, singleUser]
   );
 
   if (isLoading) {
@@ -678,7 +724,7 @@ const CreateUser = () => {
   return (
     <Box p={6}>
       <Typography variant="h5" mb={2}>
-        New User
+        Edit User
       </Typography>
 
       {/* Tab Buttons */}
@@ -744,7 +790,7 @@ const CreateUser = () => {
                 Saving...
               </>
             ) : (
-              "Save User"
+              "Update User"
             )}
           </Button>
         </Box>
@@ -753,4 +799,4 @@ const CreateUser = () => {
   );
 };
 
-export default CreateUser;
+export default UpdateUser;

@@ -16,7 +16,7 @@ import VendorDetails from "./VendorDetails";
 
 import CloudDownload from "../../../image/cloud-download.svg";
 import ExcelFile from "../../../vendorExcelFile.xlsx";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -57,7 +57,6 @@ export default function Vend() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(vendors);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formData, setFormData] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [categories, setCategories] = useState([]);
@@ -96,34 +95,6 @@ export default function Vend() {
     // setVendors(storedVendors);
     setCategories(["IT Hardware Sales", "Printing & Branding"]);
   }, []);
-
-  const handleSaveAndSubmit = (data) => {
-    setFormData(data);
-    createVendor(data);
-    setIsSubmitted(true);
-    // submit logic here
-
-    // const newItem = {
-    //   ...data,
-    //   id: (vendors.length + 1).toString(),
-    //   category: data.vendorCategory,
-    //   image: data.image || VendorImage,
-    // };
-    // setItems([...vendors, newItem]);
-    setIsFormVisible(false);
-  };
-
-  const handleFormDataChange = (data) => {
-    setFormData(data);
-  };
-
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-  };
-
-  const handleNewVendor = () => {
-    setIsFormVisible(true);
-  };
 
   const handleFormClose = () => {
     setIsFormVisible(false);
@@ -195,7 +166,6 @@ export default function Vend() {
   return (
     <div className="container-bod">
       <div className="vend" id="vend">
-        <PurchaseHeader />
         <div className="prq1">
           <div className="prq2">
             {/* New secondary navbar */}
@@ -223,18 +193,19 @@ export default function Vend() {
                   alignItems: "center",
                 }}
               >
-                <Button
-                  onClick={() => setIsFormVisible(true)}
-                  variant="contained"
-                  sx={{
-                    height: "100%",
-                    backgroundColor: "#3B7CED",
-                    color: "white",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  New Vendord
-                </Button>
+                <Link to="vendor/new">
+                  <Button
+                    variant="contained"
+                    sx={{
+                      height: "100%",
+                      backgroundColor: "#3B7CED",
+                      color: "white",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    New Vendor
+                  </Button>
+                </Link>
 
                 <Box
                   sx={{
@@ -362,72 +333,6 @@ export default function Vend() {
                   </IconButton>
                 </Box>
               </Grid>
-
-              {/* Drawer for Left side on small screens */}
-              <Drawer
-                anchor="left"
-                open={openLeft}
-                onClose={toggleLeftDrawer(false)}
-              >
-                <Box sx={{ p: 2, width: 250 }}>
-                  {/* Same content as the left side on large screens */}
-                  <Button
-                    onClick={() => setIsFormVisible(true)}
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      backgroundColor: "#3B7CED",
-                      color: "white",
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    New Vendor
-                  </Button>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      mt: 2,
-                      border: "1px solid #ccc",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    <img
-                      src={SearchIcon}
-                      alt="Search"
-                      style={{
-                        height: "20px",
-                        paddingLeft: "8px",
-                      }}
-                    />
-                    <InputBase
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search"
-                      sx={{
-                        ml: 1,
-                        height: "100%",
-                        padding: "0 8px",
-                      }}
-                    />
-                  </Box>
-
-                  {/* <a
-                    href={ExcelFile}
-                    download={ExcelFile}
-                    style={{ marginTop: "10px", display: "block" }}
-                  > */}
-                  <IconButton onClick={() => setShowUploadMedia(true)}>
-                    <img
-                      src={CloudDownload}
-                      alt="Download Excel"
-                      style={{ height: "20px" }}
-                    />
-                  </IconButton>
-                  {/* </a> */}
-                </Box>
-              </Drawer>
 
               {/* Drawer for Right side on small screens */}
               <Drawer
