@@ -26,10 +26,13 @@ import PurchaseLayout from "./dash/PurchaseModule/Purchase";
 import SettingsLayout from "./dash/Settings/SettingLayout";
 import Register from "./Auth/Register/Register";
 import Login from "./Auth/Login/Login";
+import IdleManager from "./components/IdleManager/IdleManager";
+import Change from "./Auth/ChangePassword/change";
 
 function App() {
   return (
     <div className="App" style={{ width: "100vw", minHeight: "100vh" }}>
+      <IdleManager />
       <Router>
         <Switch>
           {/* Global (non-tenant-specific) routes */}
@@ -107,6 +110,13 @@ function App() {
               <ProtectedRoute
                 path="/:tenant/inventory"
                 component={InventoryLayout}
+              />
+
+              {/* change all user password */}
+
+              <ProtectedRoute
+                path="/:tenant/changePassword"
+                component={Change}
               />
 
               {/* Additional tenant routes can be defined here */}

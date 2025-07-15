@@ -9,6 +9,18 @@ const createTenantAwareClient = (tenant, access_token, refresh_token) => {
     },
   });
 
+  // Add a Request Interceptor to always use fresh token
+  client.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
   client.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -24,11 +36,12 @@ const createTenantAwareClient = (tenant, access_token, refresh_token) => {
           try {
             // Refresh token request
             const response = await axios.post(
-              "https://fastrasuiteapi.com.ng/company/token/refresh/",
-              { refresh: refresh_token } // Changed to match standard JWT field name
+              `https://${tenant}.fastrasuiteapi.com.ng/company/token/refresh/`,
+              // "https://fastrasuiteapi.com.ng/company/token/refresh/",
+              { refresh: refresh_token }
             );
 
-            const newAccessToken = response.data.access; // Changed to match standard response
+            const newAccessToken = response.data.access;
 
             // Update tokens in storage
             localStorage.setItem("access_token", newAccessToken);
@@ -37,7 +50,10 @@ const createTenantAwareClient = (tenant, access_token, refresh_token) => {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
             // Update client instance for future requests
-            client.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+            // client.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+            client.defaults.headers.common[
+              "Authorization"
+            ] = `Bearer ${newAccessToken}`;
 
             return client(originalRequest);
           } catch (refreshError) {

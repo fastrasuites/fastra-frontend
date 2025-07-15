@@ -20,7 +20,6 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
     unt: "",
     type: "",
     category: "",
-    image: null,
     productDesc: "",
     availableProductQty: 0,
     totalQtyPurchased: 0,
@@ -64,11 +63,6 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
     if (newUnit) console.log("Selected unit:", newUnit);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0] || null;
-    setFormState((prev) => ({ ...prev, image: file }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -94,7 +88,12 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
         formState.availableProductQty
       );
       payload.append("total_quantity_Purchased", formState.totalQtyPurchased);
-      if (formState.image) payload.append("image", formState.image);
+
+      // console.log("Submitting payload:", payload);
+      // for(const [key, value] of payload.entries()){
+      //   console.log(`${key}: ${value}`)
+      // }
+      setError(null);
 
       await createProduct(payload);
 
@@ -127,7 +126,7 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
   const categoryOptions = [
     { value: "consumable", label: "Consumable" },
     { value: "stockable", label: "Stockable" },
-    { value: "service Product", label: "Service Product" },
+    { value: "service-product", label: "Service Product" },
   ];
 
   const customStyles = {
@@ -215,6 +214,18 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
                     value={formState.availableProductQty}
                     onChange={handleChange}
                     disabled
+                    variant="standard"
+                    InputProps={{
+                      disableUnderline: true,
+                      sx: {
+                        backgroundColor: "transparent",
+                        color: "text.primary",
+                        cursor: "default",
+                      },
+                    }}
+                    sx={{
+                      p: 1,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -229,6 +240,18 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
                     value={formState.totalQtyPurchased}
                     onChange={handleChange}
                     disabled
+                    variant="standard"
+                    InputProps={{
+                      disableUnderline: true,
+                      sx: {
+                        backgroundColor: "transparent",
+                        color: "text.primary",
+                        cursor: "default",
+                      },
+                    }}
+                    sx={{
+                      p: 1,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={4}>
@@ -263,17 +286,6 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
                       `${opt.unit_name} - ${opt.unit_category}`
                     }
                     styles={customStyles}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <div style={{ marginBottom: "8px" }}>
-                    <label>Product Image</label>
-                  </div>
-                  <input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    onChange={handleFileChange}
                   />
                 </Grid>
               </Grid>

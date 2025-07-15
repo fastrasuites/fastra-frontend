@@ -221,6 +221,27 @@ export const PurchaseProvider = ({ children }) => {
     [client]
   );
 
+  const updateProduct = useCallback(
+    async (id, updatedData) => {
+      try {
+        const response = await client.patch(
+          `/purchase/products/${id}/`,
+          updatedData
+        );
+        setProducts((prev) =>
+          prev.map((product) => (product.id === id ? response.data : product))
+        );
+        setSingleProducts(response.data); // Update single product state
+        console.log("Product updated:", response.data);
+        return { success: true, data: response.data };
+      } catch (err) {
+        setError(err);
+        console.error("Error updating product:", err);
+      }
+    },
+    [client]
+  );
+
   // ------------------ Purchase Requests ------------------
   // Normalize purchase request by fetching related resources.
   const normalizePurchaseRequest = useCallback(
@@ -497,6 +518,7 @@ export const PurchaseProvider = ({ children }) => {
       approvePurchaseRequest,
       pendingPurchaseRequest,
       rejectPurchaseRequest,
+      updateProduct,
     }),
     [
       currencies,
@@ -525,6 +547,7 @@ export const PurchaseProvider = ({ children }) => {
       approvePurchaseRequest,
       pendingPurchaseRequest,
       rejectPurchaseRequest,
+      updateProduct,
     ]
   );
 

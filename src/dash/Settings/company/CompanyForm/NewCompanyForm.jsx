@@ -20,6 +20,7 @@ import { useUser } from "../../../../context/Settings/UserContext";
 import { Plus, X } from "lucide-react";
 import { useTenant } from "../../../../context/TenantContext";
 import { useCompany } from "../../../../context/Settings/CompanyContext";
+import { useLocation, useHistory } from "react-router-dom";
 
 // Constants
 const LANGUAGE_OPTIONS = [
@@ -491,6 +492,11 @@ const CompanyForm = () => {
   const user = tenantData?.user || {};
   const { updateCompany, getCompany, company: companyDetails } = useCompany();
   const initialCompanyDataRef = useRef(null);
+  const location = useLocation();
+  const fromStepModal = location.state?.fromStepModal || localStorage.getItem("fromStepModal") === "true";
+
+  const history = useHistory();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
 
   // Fetch initial data
   useEffect(() => {
@@ -622,11 +628,13 @@ const CompanyForm = () => {
   }, []);
 
   const handleSubmit = useCallback(
+    
     async (e) => {
       e.preventDefault();
       setIsSubmitting(true);
 
       try {
+        console.log("i got here")
         const formData = new FormData();
         if (state.imageFile) formData.append("logo_image", state.imageFile);
 
@@ -673,6 +681,11 @@ const CompanyForm = () => {
             timer: 2000,
             showConfirmButton: false,
           });
+
+          if (fromStepModal) { 
+            localStorage.removeItem("fromStepModal");
+              history.push(`/${tenant_schema_name}/dashboard`);
+          }
         } else {
           throw new Error(res.error || "Failed to update company");
         }
@@ -683,6 +696,7 @@ const CompanyForm = () => {
           title: "Update Failed",
           text: err.message || "An error occurred while updating the company",
         });
+
       } finally {
         setIsSubmitting(false);
       }

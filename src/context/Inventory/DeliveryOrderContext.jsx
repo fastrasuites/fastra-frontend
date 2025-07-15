@@ -123,6 +123,8 @@ export const DeliveryOrderProvider = ({ children }) => {
           delivery_order_items: deliveryOrderData.items.map((item) => ({
             product_item: item.product.id,
             quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
+            unit_price: parseFloat(item.unit_price) || 0,
+            total_price: parseFloat(item.total_price) || 0,
           })),
         };
         const { data } = await client.post(
@@ -164,6 +166,8 @@ export const DeliveryOrderProvider = ({ children }) => {
             id: item.id, // Include for existing items
             product_item: item.product,
             quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
+            unit_price: parseFloat(item.unit_price) || 0,
+            total_price: parseFloat(item.total_price) || 0,
           }));
           delete payload.items;
         }
@@ -181,11 +185,13 @@ export const DeliveryOrderProvider = ({ children }) => {
         );
 
         // Update state
-        setDeliveryOrderList((prev) =>
-          prev.map((order) => (order.id === id ? data : order))
-        );
+        setDeliveryOrderList((prev) => {
+          prev.map((order) => (order.id === id ? data : order));
+          console.log("1st time update for deli");
+        });
         if (singleDeliveryOrder?.id === id) {
           setSingleDeliveryOrder(data);
+          console.log("2nd time update from singleDelOrder if block");
         }
 
         setError(null);

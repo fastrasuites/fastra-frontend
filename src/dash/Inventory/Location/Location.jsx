@@ -94,7 +94,7 @@ function Location() {
       prev.length === locationList.length ? [] : locationList.map((r) => r.id)
     );
   };
-  console.log(locationList);
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header Section */}

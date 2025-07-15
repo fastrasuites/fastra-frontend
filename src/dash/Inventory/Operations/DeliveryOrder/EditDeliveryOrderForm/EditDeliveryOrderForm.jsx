@@ -15,7 +15,8 @@ import { useCustomLocation } from "../../../../../context/Inventory/LocationCont
 import Swal from "sweetalert2";
 import { useDeliveryOrder } from "../../../../../context/Inventory/DeliveryOrderContext";
 import { usePurchase } from "../../../../../context/PurchaseContext";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
+import { useTenant } from "../../../../../context/TenantContext";
 
 const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
   const { locationList, getLocationList } = useCustomLocation();
@@ -198,6 +199,9 @@ const EditDeliveryOrderForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const { locationList, getLocationList } = useCustomLocation();
+  const history = useHistory();
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
 
   useEffect(() => {
     getLocationList();
@@ -253,10 +257,6 @@ const EditDeliveryOrderForm = () => {
     if (initialDataLoaded && singleDeliveryOrder) {
       // Transform items
       const items = singleDeliveryOrder.delivery_order_items.map((item) => {
-        // const product =
-        //   transformedProducts.find((p) => p.id === item.product_item?.id) ||
-        //   item.product_item;
-
         return {
           ...item,
           id: item.id,
@@ -274,6 +274,8 @@ const EditDeliveryOrderForm = () => {
               item?.product_details?.unit_of_measure_details?.unit_category,
           },
           quantity_to_deliver: item.quantity_to_deliver,
+          unit_price: item.unit_price,
+          total_price: item.total_price,
         };
       });
 
@@ -313,13 +315,44 @@ const EditDeliveryOrderForm = () => {
       transform: (value) => value || "",
     },
     {
+      label: "Unit Price",
+      field: "unit_price",
+      type: "number",
+      transform: (value) => value || "",
+    },
+    {
       label: "Unit of Measure",
       field: "unit_of_measure",
       type: "text",
       disabled: true,
       transform: (value) => value?.unit_category || "",
     },
+    {
+      label: "Total",
+      field: "total_price",
+      type: "number",
+      disabled: true,
+      transform: (value) => value || "",
+    },
   ];
+
+  useEffect(() => {
+    const shouldUpdate = formData.items.some((item) => {
+      const quantity = parseInt(item.quantity_to_deliver, 10) || 0;
+      const unitPrice = parseFloat(item.unit_price) || 0;
+      const calculatedTotal = quantity * unitPrice;
+      return item.total_price !== calculatedTotal;
+    });
+
+    if (shouldUpdate) {
+      const newItems = formData.items.map((item) => {
+        const quantity = parseInt(item.quantity_to_deliver, 10) || 0;
+        const unitPrice = parseFloat(item.unit_price) || 0;
+        return { ...item, total_price: quantity * unitPrice };
+      });
+      setFormData((prev) => ({ ...prev, items: newItems }));
+    }
+  }, [formData.items]);
 
   const handleSubmit = async (filledFormData) => {
     setIsSubmitting(true);
@@ -333,13 +366,13 @@ const EditDeliveryOrderForm = () => {
         return_policy: filledFormData.return_policy,
         assigned_to: filledFormData.assigned_to,
         items: filledFormData.items.map((item) => ({
+          id: item.id,
           unit_of_measure:
             item.unit_of_measure?.unit_category || item.unit_of_measure,
           product: item.product?.id || item.product,
           quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
         })),
       };
-      console.log("Submitted Data to context:", cleanData);
       const result = await updateDeliveryOrder(orderId, cleanData);
 
       if (result && result.success) {
@@ -348,6 +381,9 @@ const EditDeliveryOrderForm = () => {
           title: "Success",
           text: "Delivery order updated successfully",
         });
+        history.push(
+          `/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}`
+        );
       } else {
         throw new Error("Update failed without error message");
       }
@@ -409,12 +445,6 @@ const EditDeliveryOrderForm = () => {
           "Save changes"
         )
       }
-      autofillRow={[
-        "product_name",
-        "product_description",
-        "unit_of_measure",
-        "available_product_quantity",
-      ]}
     />
   );
 };

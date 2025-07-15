@@ -20,7 +20,7 @@ import {
   Tab,
   Grid,
 } from "@mui/material";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAccessGroups } from "../../../context/AccessGroups/AccessGroupsContext";
 import { useTenant } from "../../../context/TenantContext";
 import { PaginationControls } from "../../../components/PaginationControls/PaginationControls";
@@ -37,6 +37,12 @@ const CreateAccessGroup = () => {
   const [activeTab, setActiveTab] = useState("create");
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 2;
+
+  const location = useLocation();
+  const fromStepModal = location.state?.fromStepModal || localStorage.getItem("fromStepModal") === "true";
+  console.log("step",fromStepModal)
+
+
 
   const [formData, setFormData] = useState({
     groupName: "",
@@ -105,10 +111,19 @@ const CreateAccessGroup = () => {
       Swal.close();
       Swal.fire("Success", "Access group created successfully", "success");
 
-      // Navigate to view page
-      history.push(
-        `/${tenant_schema_name}/settings/accessgroups/${access_code}`
-      );
+      console.log("Almost at submit")
+      // Move to the thurd step for first time users
+     
+
+      if (fromStepModal) { 
+        localStorage.removeItem("fromStepModal");
+        history.push(`/${tenant_schema_name}/dashboard`, { fromStepModal: true });
+      } else {
+        // Navigate to view page only if not in onboarding flow
+        history.push(
+          `/${tenant_schema_name}/settings/accessgroups/${access_code}`
+        );
+      }
     } catch (error) {
       Swal.close();
       // Error handling is already done in context
