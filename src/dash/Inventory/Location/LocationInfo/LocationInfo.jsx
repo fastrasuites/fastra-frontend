@@ -1,20 +1,51 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Box, Button, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  CircularProgress,
+  Divider,
+  Chip,
+} from "@mui/material";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
+import CloseIcon from "@mui/icons-material/Close";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 const LocationInfo = () => {
-  const { id } = new useParams();
-  const { getSingleLocation, singleLocation } = useCustomLocation();
+  const { id } = useParams();
+  const {
+    getSingleLocation,
+    singleLocation,
+    getLocationProducts,
+    locationProducts,
+    productsLoading,
+    productsError,
+  } = useCustomLocation();
+  const [openProducts, setOpenProducts] = useState(false);
 
   useEffect(() => {
-    getSingleLocation(id);
-  });
+    if (id) {
+      getSingleLocation(id);
+    }
+  }, [id, getSingleLocation]);
+
+  // Fetch products when drawer opens
+  useEffect(() => {
+    if (openProducts) {
+      getLocationProducts(id);
+    }
+  }, [openProducts, id, getLocationProducts]);
 
   const handleDone = () => {
     window.history.back();
-  }
-
+  };
+  console.log("locationProducts", locationProducts);
   return (
     <Box padding={"30px"} display={"grid"} gap="32px">
       <Typography variant="h6" fontSize={24} fontWeight={600}>
@@ -91,11 +122,95 @@ const LocationInfo = () => {
         </Box>
 
         <Box>
-          <Button variant="contained" size="lg" disableElevation onClick={handleDone}>
+          <Button
+            variant="contained"
+            size="lg"
+            disableElevation
+            onClick={handleDone}
+          >
             Done
+          </Button>
+
+          <Button
+            variant="outlined"
+            size="lg"
+            disableElevation
+            onClick={() => setOpenProducts(true)}
+            startIcon={<InventoryIcon />}
+            sx={{ marginLeft: "16px" }}
+          >
+            View Inventory
           </Button>
         </Box>
       </Box>
+
+      {/* Products Drawer */}
+      <Drawer
+        anchor="right"
+        open={openProducts}
+        onClose={() => setOpenProducts(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: "100%", sm: "60%", md: "45%" },
+            padding: "20px",
+          },
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6" fontWeight={600}>
+            {singleLocation?.location_name} Inventory
+          </Typography>
+          <IconButton onClick={() => setOpenProducts(false)}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        {productsLoading ? (
+          <Box display="flex" justifyContent="center" mt={4}>
+            <CircularProgress />
+          </Box>
+        ) : productsError ? (
+          <Box color="error.main" p={2}>
+            <Typography>Error: {productsError}</Typography>
+            <Button
+              variant="outlined"
+              onClick={() => getLocationProducts(id)}
+              sx={{ mt: 1 }}
+            >
+              Retry
+            </Button>
+          </Box>
+        ) : locationProducts.length === 0 ? (
+          <Box textAlign="center" p={4}>
+            <InventoryIcon
+              sx={{ fontSize: 60, color: "text.secondary", mb: 1 }}
+            />
+            <Typography variant="body1" color="text.secondary">
+              No inventory found for this location
+            </Typography>
+          </Box>
+        ) : (
+          <List sx={{ overflow: "auto", maxHeight: "80vh" }}>
+            {locationProducts.map((product) => (
+              <ListItem key={product.product_id} divider sx={{ py: 2 }}>
+                <ListItemText
+                  primary={product.product_name}
+                  secondary={`SKU: ${product.sku || "N/A"}`}
+                  primaryTypographyProps={{ fontWeight: 500 }}
+                />
+                <Chip
+                  label={`${product.quantity} units`}
+                  color={product.quantity > 0 ? "primary" : "error"}
+                  variant="outlined"
+                  sx={{ minWidth: 100 }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Drawer>
     </Box>
   );
 };

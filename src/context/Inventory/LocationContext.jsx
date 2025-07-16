@@ -31,6 +31,9 @@ export const LocationProvider = ({ children }) => {
   const [singleLocation, setSingleLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [locationProducts, setLocationProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState(null);
 
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
@@ -181,6 +184,34 @@ export const LocationProvider = ({ children }) => {
     [client]
   );
 
+  // Fetch products for a location
+  const getLocationProducts = useCallback(
+    async (locationId) => {
+      if (!client) {
+        setProductsError("API client not available");
+        return;
+      }
+
+      setProductsLoading(true);
+      setProductsError(null);
+
+      try {
+        const response = await client.get(
+          `/inventory/location/${locationId}/location_stock_levels/`
+        );
+        setLocationProducts(response.data);
+        return { success: true, data: response.data };
+      } catch (err) {
+        console.error("Error fetching location products:", err);
+        setProductsError(err.message || "Failed to fetch products");
+        return Promise.reject(err);
+      } finally {
+        setProductsLoading(false);
+      }
+    },
+    [client]
+  );
+
   const contextValue = useMemo(
     () => ({
       locationList,
@@ -193,6 +224,10 @@ export const LocationProvider = ({ children }) => {
       createLocation,
       isLoading,
       error,
+      locationProducts,
+      productsLoading,
+      productsError,
+      getLocationProducts,
     }),
     [
       activeLocationList,
@@ -204,6 +239,10 @@ export const LocationProvider = ({ children }) => {
       createLocation,
       isLoading,
       error,
+      locationProducts,
+      productsLoading,
+      productsError,
+      getLocationProducts,
     ]
   );
 
