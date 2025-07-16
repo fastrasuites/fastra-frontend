@@ -21,6 +21,7 @@ import PurchaseOrderInfo from "./PurchOrder/PurchaseOrderInfo/PurchaseOrderInfo"
 import Newprod from "./Product/Newprod";
 import ProductDetails from "./Product/ProductDetails";
 import Newvendor from "./Vendor/Newvendor";
+import VendorDetails from "./Vendor/VendorDetails";
 // import Newprod from "./Product/Newprod";
 
 export default function PurchaseLayout() {
@@ -104,6 +105,8 @@ export default function PurchaseLayout() {
           <Route exact path={`${path}/rfq`} component={Rfq} />
           <Route exact path={`${path}/vendor`} component={Vend} />
           <Route exact path={`${path}/vendor/new`} component={Newvendor} />
+
+          <Route exact path={`${path}/vendor/:id`} component={VendorDetails} />
 
           <Route exact path={`${path}/product`} component={Prod} />
           <Route exact path={`${path}/product/new`} component={Newprod} />

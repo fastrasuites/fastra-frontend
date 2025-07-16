@@ -8,11 +8,12 @@ import {
   TableRow,
   Paper,
   Checkbox,
+  Skeleton,
 } from "@mui/material";
 import { useTenant } from "../../../context/TenantContext";
 import { useHistory } from "react-router-dom";
 
-const ProdListview = ({ items, onItemClick }) => {
+const ProdListview = ({ items, loading = false }) => {
   const [selected, setSelected] = React.useState([]);
   const tenant = useTenant().tenantData.tenant_schema_name;
   const history = useHistory();
@@ -49,7 +50,32 @@ const ProdListview = ({ items, onItemClick }) => {
     setSelected(newSelected);
   };
 
-  if (items.length === 0) {
+  const renderSkeletonRows = () => {
+    return Array.from({ length: 5 }).map((_, index) => (
+      <TableRow key={index}>
+        <TableCell padding="checkbox">
+          <Skeleton variant="rectangular" width={24} height={24} />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width="80%" />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width="60%" />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width="40%" />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width="70%" />
+        </TableCell>
+        <TableCell>
+          <Skeleton variant="text" width="30%" />
+        </TableCell>
+      </TableRow>
+    ));
+  };
+
+  if (!loading && items.length === 0) {
     return <p>No products available. Please fill the form to add products.</p>;
   }
 
@@ -96,43 +122,44 @@ const ProdListview = ({ items, onItemClick }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {items.map((item) => (
-            <TableRow
-              key={item.id}
-              onClick={() =>
-                history.push(`/${tenant}/purchase/product/${item.id}`)
-              }
-              sx={{
-                cursor: "pointer",
-                "&:hover": { backgroundColor: "#f5f5f5" },
-              }}
-            >
-              <TableCell padding="checkbox">
-                <Checkbox
-                  color="primary"
-                  checked={selected.indexOf(item.id) !== -1}
-                  onChange={(event) => handleSelect(event, item.id)}
-                  inputProps={{
-                    "aria-labelledby": `product-list-label-${item.id}`,
+          {loading
+            ? renderSkeletonRows()
+            : items.map((item) => (
+                <TableRow
+                  key={item.id}
+                  onClick={() =>
+                    history.push(`/${tenant}/purchase/product/${item.id}`)
+                  }
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": { backgroundColor: "#f5f5f5" },
                   }}
-                />
-              </TableCell>
-              <TableCell
-                component="th"
-                scope="row"
-                id={`product-list-label-${item.id}`}
-              >
-                {item.product_name}
-              </TableCell>
-              <TableCell>{item.product_category}</TableCell>
-              <TableCell>{item.available_product_quantity}</TableCell>
-              {/*<TableCell sx={{ color: "#3b7ced" }}>{item.unit_ of_measure}</TableCell>*/}
-              <TableCell sx={{ color: "#3b7ced" }}>
-                {item.product_description}
-              </TableCell>
-              <TableCell>{item.total_quantity_purchased}</TableCell>
-            </TableRow>
-          ))}
+                >
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      color="primary"
+                      checked={selected.indexOf(item.id) !== -1}
+                      onChange={(event) => handleSelect(event, item.id)}
+                      inputProps={{
+                        "aria-labelledby": `product-list-label-${item.id}`,
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    id={`product-list-label-${item.id}`}
+                  >
+                    {item.product_name}
+                  </TableCell>
+                  <TableCell>{item.product_category}</TableCell>
+                  <TableCell>{item.available_product_quantity}</TableCell>
+                  <TableCell sx={{ color: "#3b7ced" }}>
+                    {item.product_description}
+                  </TableCell>
+                  <TableCell>{item.total_quantity_purchased}</TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
     </TableContainer>

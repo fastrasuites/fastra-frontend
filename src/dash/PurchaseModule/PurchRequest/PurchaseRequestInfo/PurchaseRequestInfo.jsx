@@ -18,6 +18,7 @@ import approvedIcon from "../../../../../src/image/icons/approved-rfq.svg";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
+import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 
 // Style constants
 const cellStyle = (index) => ({
@@ -51,6 +52,8 @@ const PurchaseRequestInfo = () => {
     updatePurchaseRequest,
   } = usePurchase();
 
+  const { getSingleLocation, singleLocation } = useCustomLocation();
+
   const tenantSchema = tenantData?.tenant_schema_name;
   const { id } = useParams();
   const history = useHistory();
@@ -75,7 +78,6 @@ const PurchaseRequestInfo = () => {
     setLoading(true);
     try {
       const res = await fetchSinglePurchaseRequest(id);
-      console.log(res, "res");
       if (res.success) {
         setItem(res.data);
       } else {
@@ -92,6 +94,12 @@ const PurchaseRequestInfo = () => {
   useEffect(() => {
     loadPurchaseRequest();
   }, [loadPurchaseRequest]);
+
+  useEffect(() => {
+    if (item.requesting_location) {
+      getSingleLocation(item.requesting_location);
+    }
+  }, [getSingleLocation, item.requesting_location]);
 
   // Unified status-change handler
   const handleStatusChange = useCallback(
@@ -283,6 +291,7 @@ const PurchaseRequestInfo = () => {
       </Box>
     );
   }
+
   return (
     <div className="rfqStatus">
       {/* Header */}
@@ -364,7 +373,7 @@ const PurchaseRequestInfo = () => {
                     fontSize: 12,
                   }}
                 >
-                  {item?.requesting_location}
+                  {singleLocation?.location_name}
                 </TableCell>
                 <TableCell
                   sx={{

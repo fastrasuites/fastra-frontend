@@ -8,11 +8,12 @@ import {
   TableRow,
   Paper,
   Checkbox,
+  Skeleton,
 } from "@mui/material";
 
-const ListView = ({ items, onItemClick }) => {
+const ListView = ({ items, onItemClick, loading }) => {
   const [selected, setSelected] = React.useState([]);
-  // item contains url and not id - this will be considered later.
+
   const handleSelectAll = (event) => {
     if (event.target.checked) {
       const newSelected = items.map((item) => item.id);
@@ -42,9 +43,7 @@ const ListView = ({ items, onItemClick }) => {
     setSelected(newSelected);
   };
 
-  if (items.length === 0) {
-    return <p>No vendors available. Please fill the form to add vendors.</p>;
-  }
+  const skeletonRows = Array.from({ length: 5 });
 
   return (
     <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
@@ -80,33 +79,61 @@ const ListView = ({ items, onItemClick }) => {
             <TableCell>Email</TableCell>
             <TableCell>Phone</TableCell>
             <TableCell>Address</TableCell>
-            {/* <TableCell>Category</TableCell> */}
           </TableRow>
         </TableHead>
         <TableBody>
-          {items.map((item, index) => (
-            <TableRow
-              key={item.company_name}
-              onClick={() => onItemClick(item)}
-              sx={{
-                backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
-                "&:last-child td, &:last-child th": { border: 0 },
-              }}
-            >
-              <TableCell padding="checkbox">
-                <Checkbox
-                  color="primary"
-                  checked={selected.indexOf(item.id) !== -1}
-                  onChange={(event) => handleSelect(event, item.id)}
-                />
-              </TableCell>
-              <TableCell>{item.company_name}</TableCell>
-              <TableCell>{item.email}</TableCell>
-              <TableCell>{item.phone_number}</TableCell>
-              <TableCell>{item.address}</TableCell>
-              {/* <TableCell>{item.category}</TableCell> */}
-            </TableRow>
-          ))}
+          {loading
+            ? skeletonRows.map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell padding="checkbox">
+                    <Skeleton variant="rectangular" width={20} height={20} />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton variant="text" width="80%" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton variant="text" width="70%" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton variant="text" width="60%" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton variant="text" width="90%" />
+                  </TableCell>
+                </TableRow>
+              ))
+            : items.length > 0
+            ? items.map((item, index) => (
+                <TableRow
+                  key={item.id}
+                  onClick={() => onItemClick(item)}
+                  sx={{
+                    backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
+                    "&:last-child td, &:last-child th": { border: 0 },
+                    cursor: "pointer",
+                    "&:hover": { backgroundColor: "#f5f5f5" },
+                  }}
+                >
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      color="primary"
+                      checked={selected.indexOf(item.id) !== -1}
+                      onChange={(event) => handleSelect(event, item.id)}
+                    />
+                  </TableCell>
+                  <TableCell>{item.company_name}</TableCell>
+                  <TableCell>{item.email}</TableCell>
+                  <TableCell>{item.phone_number}</TableCell>
+                  <TableCell>{item.address}</TableCell>
+                </TableRow>
+              ))
+            : !loading && (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    No vendors available. Please fill the form to add vendors.
+                  </TableCell>
+                </TableRow>
+              )}
         </TableBody>
       </Table>
     </TableContainer>

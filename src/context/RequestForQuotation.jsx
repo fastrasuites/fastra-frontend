@@ -137,34 +137,51 @@ export const RFQProvider = ({ children }) => {
   );
 
   // Retrieve the RFQ list.
-  const getRFQList = useCallback(async () => {
-    if (!client) {
-      const errMsg =
-        "API client is not available. Please check tenant configuration.";
-      setError(errMsg);
-      return Promise.reject(new Error(errMsg));
-    }
-    try {
-      setIsLoading(true);
-      const response = await client.get("/purchase/request-for-quotation/");
-      const rawData = response.data;
+  const getRFQList = useCallback(
+    async (search) => {
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
 
-      // Normalize each purchase request
-      const normalizedData = await Promise.all(
-        rawData.map(async (pr) => await normalizeRFQList(pr))
-      );
+      try {
+        setIsLoading(true);
 
-      setError(null);
-      setRfqList(normalizedData);
-      return { success: true, data: normalizedData };
-    } catch (err) {
-      setError(err);
-      console.error("Error fetching RFQ list:", err);
-      return Promise.reject(err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [client]);
+        // Construct query parameters
+        const params = search ? { search } : undefined;
+
+        // Make GET request with optional search
+        const response = await client.get("/purchase/request-for-quotation/", {
+          params,
+        });
+
+        const rawData = response.data;
+
+        // Normalize each RFQ item
+        const normalizedData = await Promise.all(
+          rawData.map(async (rfq) => await normalizeRFQList(rfq))
+        );
+
+        setRfqList(normalizedData);
+        setError(null);
+
+        return { success: true, data: normalizedData };
+      } catch (err) {
+        console.error("Error fetching RFQ list:", err);
+        const message =
+          err?.response?.data?.detail ||
+          err.message ||
+          "An unexpected error occurred while fetching RFQs.";
+        setError(message);
+        return Promise.reject(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
 
   // Retrieve the RFQ list.
   const approvedGetRFQList = useCallback(async () => {

@@ -19,11 +19,21 @@ import { Link } from "react-router-dom";
 
 export default function Prod() {
   const tenant = useTenant().tenantData.tenant_schema_name;
-  const { products } = usePurchase();
+  const { products, fetchProducts } = usePurchase();
 
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await fetchProducts();
+      setLoading(false);
+    };
+    fetchData();
+  }, [fetchProducts]);
 
   useEffect(() => {
     setFilteredProducts(products);
@@ -53,8 +63,13 @@ export default function Prod() {
   return (
     <Box p={4}>
       {/* Top Control Bar */}
-      <Grid container spacing={2} alignItems="center" mb={4}>
-        <Grid item>
+      <Box
+        display={"flex"}
+        alignItems="center"
+        mb={4}
+        justifyContent={"space-between"}
+      >
+        <Box display={"flex"} gap={4}>
           <Link to={"product/new"}>
             <Button
               variant="contained"
@@ -67,9 +82,6 @@ export default function Prod() {
               New Product
             </Button>
           </Link>
-        </Grid>
-
-        <Grid item>
           <Box
             sx={{
               display: "flex",
@@ -88,7 +100,7 @@ export default function Prod() {
               sx={{ ml: 1, height: "100%", padding: "0 8px" }}
             />
           </Box>
-        </Grid>
+        </Box>
 
         <Grid item>
           <IconButton onClick={() => setViewMode("grid")}>
@@ -106,7 +118,7 @@ export default function Prod() {
             />
           </IconButton>
         </Grid>
-      </Grid>
+      </Box>
 
       {/* Product Grid or List */}
       {viewMode === "grid" ? (
@@ -142,7 +154,7 @@ export default function Prod() {
           ))}
         </Grid>
       ) : (
-        <ProdListview items={filteredProducts} onItemClick={() => {}} />
+        <ProdListview items={filteredProducts} loading={loading} />
       )}
     </Box>
   );

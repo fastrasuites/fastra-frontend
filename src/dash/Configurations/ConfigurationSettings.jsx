@@ -1,38 +1,27 @@
 import React, { useState, useEffect } from "react";
-import {
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Button,
-  TextField,
-  Box,
-} from "@mui/material";
+import { MenuItem, Button, TextField, Box } from "@mui/material";
 import "./ConfigurationForm.css";
 import PurchaseHeader from "../PurchaseModule/PurchaseHeader";
 import { getTenantClient } from "../../services/apiService";
 import { useTenant } from "../../context/TenantContext";
 import { usePurchase } from "../../context/PurchaseContext";
+import Swal from "sweetalert2";
 
 const ConfigurationSettings = () => {
-  // const [selectedCurrency, setSelectedCurrency] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState({
     currency_name: "",
     currency_symbol: "",
   });
-  const [selectedSymbol, setSelectedSymbol] = useState("");
   const [unitName, setUnitName] = useState("");
   const [unitCategory, setUnitCategory] = useState("");
-  const [savedCurrencies, setSavedCurrencies] = useState([]);
   const [savedUnits, setSavedUnits] = useState([]);
 
   const { tenantData } = useTenant();
   const { tenant_schema_name, access_token } = tenantData || {};
   const client = getTenantClient(tenant_schema_name, access_token);
 
-  const { createCurrency, currencie } = usePurchase();
+  const { createCurrency } = usePurchase();
 
-  // Complete list of currencies with symbols
   const currencyOptions = [
     { currency_name: "NGN", currency_symbol: "₦" },
     { currency_name: "USD", currency_symbol: "$" },
@@ -42,68 +31,77 @@ const ConfigurationSettings = () => {
   ];
 
   useEffect(() => {
-    // const savedCurrencies =
-    //   JSON.parse(localStorage.getItem("savedCurrencies")) || [];
-    // setSavedCurrencies(savedCurrencies);
-    const savedUnits = JSON.parse(localStorage.getItem("savedUnits")) || [];
-    setSavedUnits(savedUnits);
+    const saved = JSON.parse(localStorage.getItem("savedUnits")) || [];
+    setSavedUnits(saved);
   }, []);
 
-  // Handle the selection or typing of the currency name
-  const handleCurrencyChange = (event) => {
-    const currency = event.target.value;
-    setSelectedCurrency(currency);
-
-    // Try to find the currency symbol from the options
-    const foundCurrency = currencyOptions.find(
-      (cur) => cur.name.toLowerCase() === currency.toLowerCase()
-    );
-    if (foundCurrency) {
-      setSelectedSymbol(foundCurrency.symbol);
-    } else {
-      setSelectedSymbol("");
-    }
-  };
-
-  // Handle currency symbol change when manually selected
-  const handleSymbolChange = (event) => {
-    setSelectedSymbol(event.target.value);
-  };
-
-  // Handle submission for creating a currency
   const handleCurrencySubmit = async (event) => {
     event.preventDefault();
 
-    if (!selectedCurrency.currency_name || !selectedCurrency.currency_symbol) {
-      alert("Please select or type a valid currency name and symbol.");
-      return;
+    const { currency_name, currency_symbol } = selectedCurrency;
+
+    if (!currency_name || !currency_symbol) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Incomplete Fields",
+        text: "Please select or type a valid currency name and symbol.",
+      });
     }
 
     try {
       await createCurrency(selectedCurrency);
       setSelectedCurrency({ currency_name: "", currency_symbol: "" });
-      alert("Currency created successfully!");
+
+      Swal.fire({
+        icon: "success",
+        title: "Currency Created",
+        text: "Currency created successfully!",
+      });
     } catch (err) {
-      alert("Error creating currency");
+      Swal.fire({
+        icon: "error",
+        title: "Creation Failed",
+        text: "Error creating currency. Please try again.",
+      });
     }
   };
 
-  // Handle submission for creating a unit of measure
   const handleUnitSubmit = async (event) => {
     event.preventDefault();
 
-    const newUnit = { unit_name: unitName, unit_category: unitCategory };
+    if (!unitName.trim() || !unitCategory.trim()) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Missing Fields",
+        text: "Please fill in both Unit Name and Unit Category.",
+      });
+    }
+
+    const newUnit = {
+      unit_name: unitName.trim(),
+      unit_category: unitCategory.trim(),
+    };
     const updatedUnits = [...savedUnits, newUnit];
+
     localStorage.setItem("savedUnits", JSON.stringify(updatedUnits));
     setSavedUnits(updatedUnits);
 
-    // Reset unit form fields
-    console.log(newUnit);
     try {
       const response = await client.post(`/purchase/unit-of-measure/`, newUnit);
       console.log(response.data);
+
+      Swal.fire({
+        icon: "success",
+        title: "Unit Created",
+        text: "Unit of measure created successfully!",
+      });
     } catch (err) {
       console.error("Error saving unit-measure:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Save Failed",
+        text: "Failed to save unit of measure. Please try again.",
+      });
     }
 
     setUnitName("");
@@ -111,18 +109,11 @@ const ConfigurationSettings = () => {
   };
 
   return (
-    <div className="congiure-contain">
+    <Box>
       <PurchaseHeader />
-      <div className="configurations">
+      <Box pr={6} py={4}>
         <div className="configuration-header">
           <h1>Configuration</h1>
-          <div className="pagination">
-            <span>1-6 of 6</span>
-            <button className="switch-btn">
-              <button className="prev">◀</button>
-              <button className="next">▶</button>
-            </button>
-          </div>
         </div>
 
         <Box
@@ -134,7 +125,6 @@ const ConfigurationSettings = () => {
           <hr /> <br /> <br />
           <div className="configuration-card">
             <div className="form-section currency-form-group">
-              {/* Currency Name with dropdown and ability to type */}
               <TextField
                 label="Currency Name"
                 value={selectedCurrency.currency_name}
@@ -145,20 +135,7 @@ const ConfigurationSettings = () => {
                   })
                 }
                 fullWidth
-                // select
-                // SelectProps={{
-                //   native: true,
-                // }}
-              >
-                {currencyOptions.map((currency) => (
-                  <MenuItem
-                    key={currency.currency_name}
-                    value={currency.currency_name}
-                  >
-                    {currency.currency_name}
-                  </MenuItem>
-                ))}
-              </TextField>
+              />
 
               <TextField
                 select
@@ -221,8 +198,8 @@ const ConfigurationSettings = () => {
             </div>
           </div>
         </Box>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

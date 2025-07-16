@@ -94,16 +94,20 @@ export const PurchaseProvider = ({ children }) => {
   );
 
   // ------------------ Vendors ------------------
-  const fetchVendors = useCallback(async () => {
-    try {
-      const response = await client.get("/purchase/vendors/");
-      setVendors(response.data);
-      return response.data;
-    } catch (err) {
-      setError(err);
-      console.error("Error fetching vendors:", err);
-    }
-  }, [client]);
+  const fetchVendors = useCallback(
+    async (searchTerm = "") => {
+      try {
+        const params = searchTerm ? { search: searchTerm } : {};
+        const response = await client.get("/purchase/vendors/", { params });
+        setVendors(response.data);
+        return response.data;
+      } catch (err) {
+        setError(err);
+        console.error("Error fetching vendors:", err);
+      }
+    },
+    [client]
+  );
 
   const createVendor = useCallback(
     async (newVendor) => {
@@ -477,17 +481,6 @@ export const PurchaseProvider = ({ children }) => {
     },
     [client]
   );
-
-  // ------------------ Effects ------------------
-  useEffect(() => {
-    if (tenantData) {
-      fetchCurrencies();
-      fetchVendors();
-      fetchProducts();
-      // Uncomment the next line if you wish to auto-fetch purchase requests:
-      // fetchPurchaseRequests();
-    }
-  }, [tenantData, fetchCurrencies, fetchVendors, fetchProducts]);
 
   // Memoize provider value to prevent unnecessary renders.
   const providerValue = useMemo(
