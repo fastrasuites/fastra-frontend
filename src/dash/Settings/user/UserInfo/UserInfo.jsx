@@ -12,11 +12,13 @@ import { useUser } from "../../../../context/Settings/UserContext";
 import { useParams, useHistory } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import { useTenant } from "../../../../context/TenantContext";
+import { SettingsIcon } from "lucide-react";
 
 const UserInfo = () => {
   const history = useHistory();
   const [state, setState] = useState({ activeTab: 0 });
-  const { getSingleUser, singleUser, isLoading, error } = useUser();
+  const { getSingleUser, singleUser, isLoading, error, resetPassword } =
+    useUser();
   const { tenantData } = useTenant();
   const { id } = useParams();
 
@@ -36,6 +38,40 @@ const UserInfo = () => {
     fetchUserData();
   }, [getSingleUser, id]);
 
+  const handleResetPassword = async () => {
+    if (!singleUser?.email) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No email associated with this user.",
+      });
+      return;
+    }
+
+    try {
+      const result = await resetPassword(singleUser.email);
+      if (result.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Password Reset",
+          text: "Password reset instructions have been sent to the user's email.",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Reset Failed",
+          text: result.error || "Failed to reset password",
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "An error occurred while resetting the password.",
+      });
+    }
+  };
+
   const handleTabChange = (tabIndex) => {
     setState((prevState) => ({ ...prevState, activeTab: tabIndex }));
   };
@@ -52,6 +88,7 @@ const UserInfo = () => {
     if (lang === "en") return "English";
     return lang ? lang.charAt(0).toUpperCase() + lang.slice(1) : "Not provided";
   };
+  console.log("singleUser", singleUser);
 
   if (isLoading) {
     return (
@@ -135,30 +172,44 @@ const UserInfo = () => {
         </Button>
       </Box>
 
-      {/* Tab Buttons */}
-      <Box color="#A9B3BC">
-        <Button
-          variant="outlined"
-          color={state.activeTab === 0 ? "primary" : "inherit"}
-          onClick={() => handleTabChange(0)}
-          sx={{
-            borderRadius: "4px 4px 0 0",
-            borderBottom: state.activeTab === 0 ? "2px solid #3B7CED" : "none",
-          }}
-        >
-          Basic Settings
-        </Button>
-        <Button
-          variant="outlined"
-          color={state.activeTab === 1 ? "primary" : "inherit"}
-          onClick={() => handleTabChange(1)}
-          sx={{
-            borderRadius: "4px 4px 0 0",
-            borderBottom: state.activeTab === 1 ? "2px solid #3B7CED" : "none",
-          }}
-        >
-          Access Rights
-        </Button>
+      <Box display="flex" justifyContent="space-between">
+        <Box color="#A9B3BC">
+          {/* Tab Buttons */}
+          <Button
+            variant="outlined"
+            color={state.activeTab === 0 ? "primary" : "inherit"}
+            onClick={() => handleTabChange(0)}
+            sx={{
+              borderRadius: "4px 4px 0 0",
+              borderBottom:
+                state.activeTab === 0 ? "2px solid #3B7CED" : "none",
+            }}
+          >
+            Basic Settings
+          </Button>
+          <Button
+            variant="outlined"
+            color={state.activeTab === 1 ? "primary" : "inherit"}
+            onClick={() => handleTabChange(1)}
+            sx={{
+              borderRadius: "4px 4px 0 0",
+              borderBottom:
+                state.activeTab === 1 ? "2px solid #3B7CED" : "none",
+            }}
+          >
+            Access Rights
+          </Button>
+        </Box>
+        <Box>
+          <Button
+            variant="text"
+            startIcon={<SettingsIcon size={16} />}
+            label="Reset Password"
+            onClick={handleResetPassword}
+          >
+            Reset password
+          </Button>
+        </Box>
       </Box>
 
       <Box

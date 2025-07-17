@@ -253,6 +253,30 @@ export const UserProvider = ({ children }) => {
     [client]
   );
 
+  const resetPassword = useCallback(
+    async (email) => {
+      if (!client) {
+        throw new Error("API client not initialized.");
+      }
+      setIsLoading(true);
+      try {
+        const { data } = await client.post(
+          `/users/tenant-users/reset-password`,
+          { email }
+        );
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Failed to reset password");
+        return { success: false, error: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
   const getAccessGroups = useCallback(async () => {
     if (!client) {
       setError("API client not initialized.");
@@ -288,6 +312,7 @@ export const UserProvider = ({ children }) => {
       updateUser,
       patchUser,
       changePassword,
+      resetPassword,
       getAccessGroups,
       getGroups,
     }),
@@ -304,6 +329,7 @@ export const UserProvider = ({ children }) => {
       updateUser,
       patchUser,
       changePassword,
+      resetPassword,
       getAccessGroups,
       getGroups,
     ]

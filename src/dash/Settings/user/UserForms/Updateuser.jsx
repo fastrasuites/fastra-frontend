@@ -494,11 +494,12 @@ const UpdateUser = () => {
   useEffect(() => {
     if (singleUser && singleUser.id === parseInt(id)) {
       const accessGroupsMap = {};
-
+      console.log("SingleUser", singleUser);
+      // @FAVOUR: this singleUser does not have application_accesses
       // Map access groups
-      singleUser.application_accesses.forEach((access) => {
-        accessGroupsMap[access.application] = access.access_code;
-      });
+      // singleUser?.application_accesses.forEach((access) => {
+      //   accessGroupsMap[access.application] = access.access_code;
+      // });
 
       // Split name into first and last name if needed
       const fullName =
