@@ -161,7 +161,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
             <Autocomplete
               options={locationList}
               value={selectedLocation}
-              getOptionLabel={(opt) => opt.id}
+              getOptionLabel={(opt) => opt.location_name}
               onChange={handleLocationChange}
               renderInput={(params) => (
                 <TextField {...params} placeholder="Select location" />
@@ -210,6 +210,7 @@ export default function EditIncomingProduct() {
     );
   }, []);
 
+  console.log(location.state);
   // Auto-fill incoming state
   useEffect(() => {
     const incoming = location.state?.incoming;
@@ -219,7 +220,9 @@ export default function EditIncomingProduct() {
         product: it.product,
         available_product_quantity: it.expected_quantity,
         qty_received: it.quantity_received,
-        unit_of_measure: { unit_category: it.product.unit_of_measure[1] },
+        unit_of_measure: {
+          unit_category: it.product?.unit_of_measure_details.unit_category,
+        },
       }));
       const sup = vendors.find((v) => v.id === incoming.supplier) || null;
       const loc =
@@ -275,13 +278,14 @@ export default function EditIncomingProduct() {
   };
 
   const transformProducts = (list) =>
-    list.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
-      return {
-        ...prod,
-        unit_of_measure: { url, unit_category, unit_name: unit_category },
-      };
-    });
+    list.map((prod) => ({
+      ...prod,
+      unit_of_measure: {
+        url: prod.unit_of_measure,
+        unit_category: prod?.unit_of_measure_details?.unit_category,
+        unit_name: prod?.unit_of_measure_details?.unit_category,
+      },
+    }));
 
   const rowConfig = [
     {

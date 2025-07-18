@@ -11,10 +11,9 @@ import { useTenant } from "../../../../../context/TenantContext";
 import { useHistory } from "react-router-dom";
 import Asterisk from "../../../../../components/Asterisk";
 
-// Default form data
+// ---------- DEFAULT FORM DATA ----------
 const defaultFormData = {
   adjustmentType: "Stock Level Update",
-  // id: Date.now(),
   date: formatDate(Date.now()),
   location: "",
   items: [],
@@ -23,9 +22,9 @@ const defaultFormData = {
   notes: "",
 };
 
-// Renders your “basic info” block exactly as before
+// ---------- COMPONENT: Basic Form Inputs ----------
 const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
-  const [selectedLoaction, setSelectedLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const { locationList, getLocationList } = useCustomLocation();
 
   useEffect(() => {
@@ -45,67 +44,50 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   };
 
   return (
-    <Box display={"flex"} gap={10}>
-      {/* <div className="formLabelAndValue">
-        <label>ID</label>
-        <p>{formData.id}</p>
-      </div> */}
+    <Box display="flex" gap={10}>
       <div className="formLabelAndValue">
         <label style={{ marginBottom: 6, display: "flex" }}>
-          Adjustment Type
-          <Asterisk />
+          Adjustment Type <Asterisk />
         </label>
         <p>{formData.adjustmentType}</p>
       </div>
       <div className="formLabelAndValue">
         <label style={{ marginBottom: 6, display: "flex" }}>
-          Date
-          <Asterisk />
+          Date <Asterisk />
         </label>
         <p>{formData.date}</p>
       </div>
       {locationList.length <= 3 ? (
         <div className="formLabelAndValue">
-          <label style={{ marginBottom: "6px", display: "flex" }}>
-            Location
-            <Asterisk />
+          <label style={{ marginBottom: 6, display: "flex" }}>
+            Location <Asterisk />
           </label>
-          <p>{selectedLoaction?.id || "N/A"}</p>
+          <p>{selectedLocation?.id || "N/A"}</p>
         </div>
       ) : (
         <div>
-          <label style={{ marginBottom: "6px", display: "flex" }}>
-            Location
-            <Asterisk />
+          <label style={{ marginBottom: 6, display: "flex" }}>
+            Location <Asterisk />
           </label>
           <Autocomplete
             disablePortal
             options={locationList}
-            value={selectedLoaction}
+            value={selectedLocation}
             getOptionLabel={(option) => option?.location_name || ""}
-            isOptionEqualToValue={(option, value) =>
-              option?.receiptType === value?.id
-            }
+            isOptionEqualToValue={(option, value) => option?.id === value?.id}
             onChange={handleLocationChange}
-            sx={{ width: "100%", mb: 2 }}
+            sx={{ width: 300, mb: 2 }}
             renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Receipt Type"
-                sx={{ width: "300px", border: "red" }}
-              />
+              <TextField {...params} placeholder="Select Location" />
             )}
           />
         </div>
       )}
-
       <div className="supplierName">
-        <label style={{ marginBottom: "6px", display: "flex" }}>
-          Notes
-          <Asterisk />
+        <label style={{ marginBottom: 6, display: "flex" }}>
+          Notes <Asterisk />
         </label>
         <TextField
-          type="text"
           value={formData.notes}
           onChange={(e) => handleInputChange("notes", e.target.value)}
           sx={{ width: "100%" }}
@@ -116,46 +98,33 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   );
 };
 
+// ---------- COMPONENT: Main ----------
 const NewStockAdjustment = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
 
-  // Purchase context
   const { products, fetchProducts } = usePurchase();
+  const { isLoading: stockLoading, createStockAdjustment } =
+    useStockAdjustment();
 
-  // Stock adjustment context (renamed flags to avoid collision)
-  const {
-    isLoading: stockLoading,
-    // error: stockError,
-    createStockAdjustment,
-  } = useStockAdjustment();
-
-  // Location context (renamed flags)
-
-  // Fetch once on mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Centralized state updater
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Turn [url, unit_code] into an object
-  const transformProducts = (products) =>
-    products.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
-      return {
-        ...prod,
-        unit_of_measure: {
-          url,
-          unit_category,
-          unit_name: unit_category,
-        },
-      };
-    });
+  const transformProducts = (list) =>
+    list.map((prod) => ({
+      ...prod,
+      unit_of_measure: {
+        url: prod.unit_of_measure,
+        unit_category: prod?.unit_of_measure_details?.unit_category,
+        unit_name: prod?.unit_of_measure_details?.unit_category,
+      },
+    }));
 
   const rowConfig = [
     {
@@ -192,11 +161,25 @@ const NewStockAdjustment = () => {
       );
     }, 1500);
   };
-  const handleSubmit = async (filledData) => {
+
+  const showValidationErrors = (errorData) => {
+    const messages = Object.values(errorData)
+      .flat()
+      .map((msg) => `<p>${msg}</p>`)
+      .join("");
+
+    Swal.fire({
+      icon: "error",
+      title: "Validation Error",
+      html: messages || "An unknown error occurred.",
+    });
+  };
+
+  const handleSubmitBase = async (filledData, status = "draft") => {
     const cleanData = {
-      warehouse_location: filledData.location.url,
+      warehouse_location: filledData.location.id,
       notes: filledData.notes,
-      status: filledData.status,
+      status,
       is_hidden: false,
       items: filledData.items.map((item) => ({
         product: item.product.url,
@@ -206,71 +189,25 @@ const NewStockAdjustment = () => {
 
     try {
       const created = await createStockAdjustment(cleanData);
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Stock adjustment created successfully",
-      });
-      navigateToDetail(created.data.id);
-    } catch (err) {
-      if (err.validation) {
+
+      if (created?.success) {
         Swal.fire({
-          icon: "error",
-          title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
+          icon: "success",
+          title: "Success",
+          text:
+            status === "done"
+              ? "Stock adjustment marked as done"
+              : "Stock adjustment created successfully",
         });
+        navigateToDetail(created.data.id);
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.message,
-        });
+        showValidationErrors(created?.error?.response?.data || {});
       }
+    } catch (err) {
+      console.error(err);
+      showValidationErrors(err?.response?.data || { general: [err.message] });
     }
   };
-
-  const handleSubmitAsDone = async (filledData) => {
-    const cleanData = {
-      ...filledData,
-      status: "done",
-      warehouse_location: filledData.location.url,
-      notes: filledData.notes,
-      items: filledData.items.map((item) => ({
-        product: item.product.url,
-        adjusted_quantity: item.qty_received,
-      })),
-    };
-
-    try {
-      const created = await createStockAdjustment(cleanData);
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Stock adjustment marked as done",
-      });
-      navigateToDetail(created.data.id);
-    } catch (err) {
-      if (err.validation) {
-        Swal.fire({
-          icon: "error",
-          title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.message,
-        });
-      }
-    }
-  };
-
-  console.log(formData.items);
 
   return (
     <CommonForm
@@ -282,8 +219,8 @@ const NewStockAdjustment = () => {
       handleInputChange={handleInputChange}
       rowConfig={rowConfig}
       isEdit={false}
-      onSubmit={handleSubmit}
-      onSubmitAsDone={handleSubmitAsDone}
+      onSubmit={(data) => handleSubmitBase(data, "draft")}
+      onSubmitAsDone={(data) => handleSubmitBase(data, "done")}
       submitBtnText={stockLoading ? "Submitting..." : "Validate"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
     />

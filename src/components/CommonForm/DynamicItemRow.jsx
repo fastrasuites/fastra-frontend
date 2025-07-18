@@ -17,15 +17,12 @@ const DynamicItemRow = ({
   handleRemoveRow,
   rowConfig,
 }) => {
-
   // console.log("Row Config", rowConfig)
   // Render a table cell based on field type defined in rowConfig
+
   const renderCell = (cfg) => {
     const { field, type, options, getOptionLabel, disabled, transform } = cfg;
     const value = row[field];
-
-
-    
 
     switch (type) {
       case "autocomplete":
@@ -50,7 +47,9 @@ const DynamicItemRow = ({
                 variant="standard"
                 sx={{
                   width: "100%",
-                  "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+                  "& .MuiInput-underline:before": {
+                    borderBottomColor: "#C6CCD2",
+                  },
                   "& .MuiInputBase-input": { color: "#A9B3BC" },
                 }}
               />
@@ -87,12 +86,15 @@ const DynamicItemRow = ({
       {rowConfig.map((cfg, i) => {
         return (
           <TableCell key={i} sx={cellStyle(index)}>
-          {renderCell(cfg)}
-        </TableCell>
-        )
+            {renderCell(cfg)}
+          </TableCell>
+        );
       })}
       <TableCell sx={cellStyle(index)}>
-        <X onClick={() => handleRemoveRow(index)} style={{ cursor: "pointer" }} />
+        <X
+          onClick={() => handleRemoveRow(index)}
+          style={{ cursor: "pointer" }}
+        />
       </TableCell>
     </TableRow>
   );

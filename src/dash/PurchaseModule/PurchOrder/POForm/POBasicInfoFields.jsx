@@ -1,5 +1,11 @@
 import React from "react";
-import { Autocomplete, TextField, Box, Skeleton } from "@mui/material";
+import {
+  Autocomplete,
+  TextField,
+  Box,
+  Skeleton,
+  Typography,
+} from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 
@@ -80,16 +86,9 @@ const POBasicInfoFields = ({
         {/* Vendor Autocomplete */}
         <div style={{ flex: 1 }}>
           <label style={labelStyle}>Vendor</label>
-          <TextField
-            fullWidth
-            value={
-              formData.rfq?.vendor?.company_name ||
-              purchaseOrder?.payment_terms ||
-              ""
-            }
-            onChange={(e) => handleInputChange("payment_terms", e.target.value)}
-            placeholder="Vendor"
-          />
+          <Typography marginTop={2}>
+            {formData?.rfq?.vendor_details?.company_name || "N/A"}
+          </Typography>
         </div>
 
         {/* Destination Location Autocomplete */}
@@ -117,14 +116,18 @@ const POBasicInfoFields = ({
         className="rfqBasicInfoFields2"
         style={{ gap: 32, marginBottom: 24 }}
       >
-        <div className="refID">
+        <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Address</label>
-          <p>{formData?.rfq?.vendor?.address || "N/A"}</p>
-        </div>
-        <div className="refDate">
+          <Typography color="#353536">
+            {formData?.rfq?.vendor_details?.address || "N/A"}
+          </Typography>
+        </Box>
+        <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Email</label>
-          <p>{formData?.rfq?.vendor?.email || "N/A"}</p>
-        </div>
+          <Typography color="#353536">
+            {formData?.rfq?.vendor_details?.email || "N/A"}
+          </Typography>
+        </Box>
       </div>
 
       {/* Row 4: Currency, Payment Terms, Purchase Policy */}
@@ -134,20 +137,11 @@ const POBasicInfoFields = ({
       >
         <div className="currency-select" style={{ flex: 1 }}>
           <label style={labelStyle}>Currency</label>
-          <Autocomplete
-            disablePortal
-            options={currencies}
-            value={selectedCurrency}
-            getOptionLabel={(option) =>
-              `${option.currency_name} - ${option.currency_symbol}`
-            }
-            isOptionEqualToValue={(option, value) => option.url === value?.url}
-            onChange={(_, value) => handleInputChange("currency", value)}
-            renderInput={(params) => (
-              <TextField {...params} placeholder="Select Currency" />
-            )}
-            sx={{ width: "100%" }}
-          />
+          <Typography marginTop={2}>
+            {formData?.rfq?.currency_details
+              ? `${formData?.rfq?.currency_details?.currency_name} - ${formData?.rfq?.currency_details?.currency_symbol}`
+              : "N/A"}
+          </Typography>
         </div>
 
         <div style={{ flex: 1 }}>

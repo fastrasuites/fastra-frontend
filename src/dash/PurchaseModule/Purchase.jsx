@@ -22,6 +22,7 @@ import Newprod from "./Product/Newprod";
 import ProductDetails from "./Product/ProductDetails";
 import Newvendor from "./Vendor/Newvendor";
 import VendorDetails from "./Vendor/VendorDetails";
+import EditRfqForm from "./Rfq/RfqForm/EditRFQForm";
 // import Newprod from "./Product/Newprod";
 
 export default function PurchaseLayout() {
@@ -67,7 +68,7 @@ export default function PurchaseLayout() {
           <Route
             exact
             path={`${path}/request-for-quotations/:id/edit`}
-            component={RfqForm}
+            component={EditRfqForm}
           />
           <Route
             exact

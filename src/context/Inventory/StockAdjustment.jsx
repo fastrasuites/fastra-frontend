@@ -166,9 +166,9 @@ export const StockAdjustmentProvider = ({ children }) => {
         setError(null);
         return { success: true, data };
       } catch (err) {
-        console.log(err.message);
-        setError(err.message || "Failed to create stock adjustment");
-        return { success: false, error: err.message };
+        console.error(err);
+        setError(err || "Failed to create stock adjustment");
+        return { success: false, error: err };
       } finally {
         setIsLoading(false);
       }

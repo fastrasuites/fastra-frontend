@@ -17,10 +17,8 @@ export const PurchaseOrderProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Destructure tenant configuration safely.
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
-  // Create a memoized API client when tenant data is available.
   const client = useMemo(() => {
     if (tenant_schema_name && access_token && refresh_token) {
       return getTenantClient(tenant_schema_name, access_token, refresh_token);
@@ -28,7 +26,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     return null;
   }, [tenant_schema_name, access_token, refresh_token]);
 
-  // Validation function for purchase order fields.
   const validatePurchaseOrderFields = (info) => {
     const {
       status,
@@ -42,7 +39,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       is_hidden,
     } = info;
 
-    // Basic validations; feel free to extend or refine these rules.
     return (
       !!payment_terms &&
       !!vendor &&
@@ -56,49 +52,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     );
   };
 
-  // Helper function to fetch a resource ensuring HTTPS.
-  const fetchResource = async (url) => {
-    if (!url) return null;
-    try {
-      const secureUrl = url.replace(/^http:\/\//i, "https://");
-      const response = await client.get(secureUrl);
-      return response.data;
-    } catch (err) {
-      console.error("Error fetching resource from", url, err);
-      return null;
-    }
-  };
-
-  // Normalize a purchase order by fetching details for related resources.
-  const normalizePurchaseOrder = async (order) => {
-    const currencyDetail = await fetchResource(order.currency);
-    const vendorDetail = await fetchResource(order.vendor);
-
-    const normalizedItems = await Promise.all(
-      order.items.map(async (item) => {
-        const productDetail = item.product
-          ? await fetchResource(item.product)
-          : null;
-        const unitDetail = item.unit_of_measure
-          ? await fetchResource(item.unit_of_measure)
-          : null;
-        return {
-          ...item,
-          product: productDetail,
-          unit_of_measure: unitDetail,
-        };
-      })
-    );
-
-    return {
-      ...order,
-      currency: currencyDetail,
-      vendor: vendorDetail,
-      items: normalizedItems,
-    };
-  };
-
-  // Create a Purchase Order.
   const createPurchaseOrder = useCallback(
     async (info) => {
       const validationError = "All fields are required and must be valid.";
@@ -115,7 +68,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        console.log(info, "info in createPurchaseOrder");
         const response = await client.post("/purchase/purchase-order/", info);
         setError(null);
         setPurchaseOrderList((prevOrders) => [...prevOrders, response.data]);
@@ -131,7 +83,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     [client]
   );
 
-  // Update a Purchase Order.
   const updatePurchaseOrder = useCallback(
     async (info, id) => {
       if (!client) {
@@ -142,7 +93,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        // Update using a POST endpoint; adjust method if necessary.
         const response = await client.patch(
           `/purchase/purchase-order/${id}/`,
           info
@@ -165,7 +115,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     [client]
   );
 
-  // Update a Purchase Order Status to pending.
   const updatePurchasePending = useCallback(
     async (info, id) => {
       if (!client) {
@@ -176,7 +125,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        // Update using a POST endpoint; adjust method if necessary.
         const response = await client.put(
           `/purchase/purchase-order/${id}/submit/`,
           info
@@ -199,7 +147,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     [client]
   );
 
-  // Update a Purchase Order Status to pending.
   const updatePurchaseReject = useCallback(
     async (info, id) => {
       if (!client) {
@@ -210,7 +157,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        // Update using a POST endpoint; adjust method if necessary.
         const response = await client.put(
           `/purchase/purchase-order/${id}/cancel/`,
           info
@@ -243,7 +189,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        // Update using a POST endpoint; adjust method if necessary.
         const response = await client.put(
           `/purchase/purchase-order/${id}/complete/`,
           info
@@ -266,7 +211,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     [client]
   );
 
-  // Retrieve the Purchase Order list.
   const getPurchaseOrderList = useCallback(async () => {
     if (!client) {
       const clientError =
@@ -278,12 +222,9 @@ export const PurchaseOrderProvider = ({ children }) => {
       setIsLoading(true);
       const response = await client.get("/purchase/purchase-order/");
       const rawData = response.data;
-      const normalizedData = await Promise.all(
-        rawData.map(normalizePurchaseOrder)
-      );
       setError(null);
-      setPurchaseOrderList(normalizedData);
-      return { success: true, data: normalizedData };
+      setPurchaseOrderList(rawData);
+      return { success: true, data: rawData };
     } catch (err) {
       console.error("Error fetching purchase order list:", err);
       setError(err);
@@ -306,12 +247,9 @@ export const PurchaseOrderProvider = ({ children }) => {
         "/purchase/purchase-order/completed_list/"
       );
       const rawData = response.data;
-      const normalizedData = await Promise.all(
-        rawData.map(normalizePurchaseOrder)
-      );
       setError(null);
-      setPurchaseOrderList(normalizedData);
-      return { success: true, data: normalizedData };
+      setPurchaseOrderList(rawData);
+      return { success: true, data: rawData };
     } catch (err) {
       console.error("Error fetching purchase order list:", err);
       setError(err);
@@ -321,7 +259,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     }
   }, [client]);
 
-  // Retrieve single Purchase Order.
   const getPurchaseOrderById = useCallback(
     async (id) => {
       if (!client) {
@@ -334,10 +271,9 @@ export const PurchaseOrderProvider = ({ children }) => {
         setIsLoading(true);
         const response = await client.get(`/purchase/purchase-order/${id}/`);
         const rawData = response.data;
-        const normalizedData = await normalizePurchaseOrder(rawData);
         setError(null);
-        setSinglePurchaseOrder(normalizedData);
-        return { success: true, data: normalizedData };
+        setSinglePurchaseOrder(rawData);
+        return { success: true, data: rawData };
       } catch (err) {
         console.error("Error fetching single purchase order:", err);
         setError(err);
@@ -349,7 +285,6 @@ export const PurchaseOrderProvider = ({ children }) => {
     [client]
   );
 
-  // Memoize the context value.
   const contextValue = useMemo(
     () => ({
       error,

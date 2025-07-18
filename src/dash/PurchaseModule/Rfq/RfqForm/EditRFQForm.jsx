@@ -9,12 +9,12 @@ import { usePurchase } from "../../../../context/PurchaseContext";
 import RfqBasicInfoFields from "./RfqBasicInfoFields";
 import RfqItemsTable from "./RfqItemsTable";
 import { useRFQ } from "../../../../context/RequestForQuotation";
-import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
+import { normalizedRFQ } from "../../../../helper/helper";
 import { useHistory, useLocation } from "react-router-dom";
 import { useTenant } from "../../../../context/TenantContext";
 import RfqBasicInfoFieldsConvertToRFQ from "./RFQBasisInfoConvert";
 
-const RfqForm = () => {
+const EditRfqForm = () => {
   const {
     products,
     fetchProducts,
@@ -26,14 +26,13 @@ const RfqForm = () => {
     purchaseRequests,
   } = usePurchase();
 
-  const { createRFQ, updateRFQ } = useRFQ();
+  const { updateRFQ } = useRFQ();
   const { state } = useLocation();
   const { rfq = {}, edit = false, isConvertToRFQ } = state || {};
 
   const formUse = edit ? "Edit RFQ" : "Create RFQ";
   const quotation = rfq || {};
   const conversionRFQ = rfq || {};
-  console.log(rfq);
   const isEdit = formUse === "Edit RFQ";
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
@@ -111,10 +110,17 @@ const RfqForm = () => {
 
     return {
       ...formData,
+      expiry_date: formData?.expiry_date,
+      id: formData?.id,
       status,
       vendor: formData?.purchase_request?.vendor || formData?.vendor,
       currency: formData?.purchase_request.currency || formData?.currency,
-      purchase_request: formData.purchase_request?.id || formData?.id,
+      purchase_request:
+        typeof formData.purchase_request === "object" &&
+        formData.purchase_request !== null &&
+        !Array.isArray(formData.purchase_request)
+          ? formData.purchase_request.id
+          : formData.purchase_request,
       items,
       is_submitted: true,
       can_edit: true,
@@ -136,54 +142,14 @@ const RfqForm = () => {
     const payload = cleanData("draft");
     console.log(payload, "payload");
     try {
-      if (isEdit) {
-        const id = quotation.id;
-        console.log(id);
-        const res = await updateRFQ(payload, id);
-        console.log(res);
+      const id = quotation.id;
+      console.log(id);
+      const res = await updateRFQ(payload, id);
+      console.log(res);
 
-        if (res.success) Swal.fire("Updated!", "RFQ updated.", "success");
-        else Swal.fire("Error", res.message, "error");
-        navigateToDetail(id);
-      } else {
-        const res = await createRFQ(payload);
-        if (res.success) {
-          Swal.fire("Created!", "RFQ saved as draft.", "success");
-          navigateToDetail(extractRFQID(res.data.url));
-        } else {
-          Swal.fire("Error", res.message, "error");
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      let errMsg = "Unexpected error occurred.";
-
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        if (data.non_field_errors?.length) {
-          errMsg = data.non_field_errors.join(" ");
-        } else if (typeof data === "string") {
-          errMsg = data;
-        } else {
-          errMsg = JSON.stringify(data);
-        }
-      }
-
-      Swal.fire("Error", errMsg, "error");
-    }
-  };
-
-  // ─── Handle Save & Send (only in Create mode) ──────────────────────────────
-  const saveAndShare = async () => {
-    const payload = cleanData("pending");
-    try {
-      const res = await createRFQ(payload);
-      if (res.success) {
-        Swal.fire("Shared!", "RFQ created and shared.", "success");
-        navigateToDetail(extractRFQID(res.data.url));
-      } else {
-        Swal.fire("Error", res.message, "error");
-      }
+      if (res.success) Swal.fire("Updated!", "RFQ updated.", "success");
+      else Swal.fire("Error", res.message, "error");
+      navigateToDetail(id);
     } catch (err) {
       console.error(err);
       let errMsg = "Unexpected error occurred.";
@@ -224,43 +190,23 @@ const RfqForm = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="rfqformEditAndCreate">
-          {isConvertToRFQ ? (
-            <RfqBasicInfoFieldsConvertToRFQ
-              formData={formData}
-              handleInputChange={handleInputChange}
-              formUse={formUse}
-              currencies={currencies}
-              vendors={vendors}
-              purchaseIdList={purchaseRequests}
-              rfqID={quotation?.url}
-              isConvertToRFQ={!!conversionRFQ}
-            />
-          ) : (
-            <RfqBasicInfoFields
-              formData={formData}
-              handleInputChange={handleInputChange}
-              formUse={formUse}
-              currencies={currencies}
-              vendors={vendors}
-              purchaseIdList={purchaseRequests}
-              rfqID={quotation?.url}
-            />
-          )}
+          <RfqBasicInfoFields
+            formData={formData}
+            handleInputChange={handleInputChange}
+            formUse={formUse}
+            currencies={currencies}
+            vendors={vendors}
+            purchaseIdList={purchaseRequests}
+            rfqID={quotation?.url}
+          />
 
           {/** Show existing RFQ items in Edit mode, or associated PR items in Create mode */}
-          {formUse === "Edit RFQ" ? (
-            <RfqItemsTable
-              items={formData?.items}
-              handleRowChange={handleRowChange}
-              products={products}
-            />
-          ) : (
-            <RfqItemsTable
-              items={formData?.purchase_request?.items || formData?.items}
-              handleRowChange={handleRowChange}
-              products={products}
-            />
-          )}
+
+          <RfqItemsTable
+            items={formData?.purchase_request?.items || formData?.items}
+            handleRowChange={handleRowChange}
+            products={products}
+          />
 
           <div
             style={{
@@ -276,11 +222,6 @@ const RfqForm = () => {
               <Button variant="outlined" type="submit">
                 {isEdit ? "Save Changes" : "Save Draft"}
               </Button>
-              {!isEdit && (
-                <Button variant="contained" onClick={saveAndShare}>
-                  Save & Send
-                </Button>
-              )}
             </div>
           </div>
         </form>
@@ -289,4 +230,4 @@ const RfqForm = () => {
   );
 };
 
-export default RfqForm;
+export default EditRfqForm;

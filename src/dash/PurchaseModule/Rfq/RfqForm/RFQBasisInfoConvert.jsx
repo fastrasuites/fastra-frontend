@@ -1,18 +1,6 @@
 // src/dash/PurchaseModule/Rfq/RfqBasicInfoFields.jsx
-import React, { useEffect, useState } from "react";
 import { Autocomplete, TextField, Typography, Box } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
-
-// Helper: resolves a formValue (object or string) into the corresponding object from `list`.
-const getSelectedOption = (formValue, list = [], key) => {
-  if (typeof formValue === "object" && formValue !== null) {
-    return formValue;
-  }
-  if (typeof formValue === "string") {
-    return list.find((item) => item[key] === formValue) || null;
-  }
-  return null;
-};
 
 const REQUIRED_ASTERISK = (
   <Typography component="span" color="#D32F2F" ml={0.5} fontSize="20px">
@@ -28,39 +16,11 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
   formData,
   handleInputChange,
   formUse,
-  currencies = [],
-  vendors = [],
-  purchaseIdList = [],
   rfqID,
   isConvertToRFQ,
   // eslint-disable-next-line no-unused-vars
   locationList = [],
 }) => {
-  console.log(formUse);
-  // Local state for selected objects
-  const [selectedPurchaseRequest, setSelectedPurchaseRequest] = useState(null);
-  const [selectedCurrency, setSelectedCurrency] = useState(null);
-  const [selectedVendor, setSelectedVendor] = useState(null);
-
-  // Sync selectedPurchaseRequest
-  useEffect(() => {
-    setSelectedPurchaseRequest(
-      getSelectedOption(formData.purchase_request, purchaseIdList, "id")
-    );
-  }, [formData.purchase_request, purchaseIdList]);
-
-  // Sync selectedCurrency
-  useEffect(() => {
-    setSelectedCurrency(
-      getSelectedOption(formData.currency, currencies, "url")
-    );
-  }, [formData.currency, currencies]);
-
-  // Sync selectedVendor
-  useEffect(() => {
-    setSelectedVendor(getSelectedOption(formData.vendor, vendors, "url"));
-  }, [formData.vendor, vendors]);
-
   return (
     <div className="rfqBasicInfoField">
       {/* ──────────────────────────── Row 1: ID/Date ───────────────────────────── */}
@@ -87,22 +47,7 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
             Input PR ID
             {isConvertToRFQ && REQUIRED_ASTERISK}
           </label>
-          {isConvertToRFQ ? (
-            <GrayText>{selectedPurchaseRequest?.id || "N/A"}</GrayText>
-          ) : (
-            <Autocomplete
-              disablePortal
-              options={purchaseIdList}
-              value={selectedPurchaseRequest}
-              getOptionLabel={(option) => option.id}
-              isOptionEqualToValue={(opt, val) => opt.id === val.id}
-              onChange={(event, newValue) => {
-                handleInputChange("purchase_request", newValue ? newValue : "");
-              }}
-              sx={{ width: "100%", mt: 0.5 }}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          )}
+          <GrayText>{formData?.id || "N/A"}</GrayText>
         </Box>
 
         {/* ──────────────────────── Select Currency ──────────────────────── */}
@@ -111,28 +56,11 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
             Select Currency
             {isConvertToRFQ && REQUIRED_ASTERISK}
           </label>
-          {isConvertToRFQ ? (
-            <GrayText>
-              {selectedCurrency
-                ? `${selectedCurrency.currency_name} - ${selectedCurrency.currency_symbol}`
-                : "N/A"}
-            </GrayText>
-          ) : (
-            <Autocomplete
-              disablePortal
-              options={currencies}
-              value={selectedCurrency}
-              getOptionLabel={(option) =>
-                `${option.currency_name} - ${option.currency_symbol}`
-              }
-              isOptionEqualToValue={(opt, val) => opt.url === val?.url}
-              onChange={(event, newValue) => {
-                handleInputChange("currency", newValue ? newValue : "");
-              }}
-              sx={{ width: "100%", mt: 0.5 }}
-              renderInput={(params) => <TextField {...params} />}
-            />
-          )}
+          <GrayText>
+            {formData.currency_details.currency_name
+              ? `${formData.currency_details.currency_name} - ${formData.currency_details.currency_symbol}`
+              : "N/A"}
+          </GrayText>
         </Box>
       </div>
 
@@ -163,7 +91,11 @@ const RfqBasicInfoFieldsConvertToRFQ = ({
             Vendor
             {isConvertToRFQ && REQUIRED_ASTERISK}
           </label>
-          <GrayText>{selectedVendor?.company_name || "N/A"}</GrayText>
+          <GrayText>
+            {formData?.vendor_details?.company_name
+              ? `${formData?.vendor_details?.company_name}`
+              : "N/A"}
+          </GrayText>
         </Box>
       </div>
     </div>

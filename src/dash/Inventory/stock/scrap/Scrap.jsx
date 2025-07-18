@@ -73,7 +73,7 @@ function Scrap() {
     warehouse_location: item.warehouse_location?.location_name ?? "—",
   }));
 
-  console.log("arrangeScrap", arrangeScrap);
+  // console.log("arrangeScrap", arrangeScrap);
   const renderGridItem = (item) => (
     <Box
       key={item.requestId}

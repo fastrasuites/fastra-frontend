@@ -146,7 +146,7 @@ const UserInfo = () => {
       </Box>
     );
   }
-
+  console.log(singleUser);
   return (
     <Box p={6}>
       <Box
