@@ -9,10 +9,10 @@ const REQUIRED_ASTERISK = (
 );
 
 // Helper: resolve a formValue (string URL/ID or object) into the matching object
-const getSelectedOption = (formValue, list = [], key) => {
+const getSelectedOption = (formValue, list = [], key = "id") => {
   if (formValue && typeof formValue === "object") return formValue;
-  if (typeof formValue === "string") {
-    return list.find((item) => item[key] === formValue) || null;
+  if (typeof formValue === "string" || typeof formValue === "number") {
+    return list.find((item) => String(item[key]) === String(formValue)) || null;
   }
   return null;
 };
@@ -31,19 +31,16 @@ const PRBasicInfoFields = ({
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
 
-  // Sync currency when formData.currency or currencies change
   useEffect(() => {
-    setSelectedCurrency(
-      getSelectedOption(formData.currency, currencies, "url")
-    );
+    setSelectedCurrency(getSelectedOption(formData.currency, currencies, "id"));
   }, [formData.currency, currencies]);
 
-  // Sync vendor when formData.vendor or vendors change
+  // Vendor
   useEffect(() => {
-    setSelectedVendor(getSelectedOption(formData.vendor, vendors, "url"));
+    setSelectedVendor(getSelectedOption(formData.vendor, vendors, "id"));
   }, [formData.vendor, vendors]);
 
-  // Sync location when formData.requesting_location or locationList change
+  // Location already uses id, so no change
   useEffect(() => {
     setSelectedLocation(
       getSelectedOption(formData.requesting_location, locationList, "id")
@@ -87,7 +84,7 @@ const PRBasicInfoFields = ({
             isOptionEqualToValue={(opt, val) => opt.url === val?.url}
             onChange={(e, value) => {
               setSelectedCurrency(value);
-              handleInputChange("currency", value?.url || "");
+              handleInputChange("currency", value?.id || "");
             }}
             renderInput={(params) => <TextField {...params} />}
           />
@@ -138,7 +135,7 @@ const PRBasicInfoFields = ({
             isOptionEqualToValue={(opt, val) => opt.url === val?.url}
             onChange={(e, value) => {
               setSelectedVendor(value);
-              handleInputChange("vendor", value?.url || "");
+              handleInputChange("vendor", value?.id || "");
             }}
             renderInput={(params) => <TextField {...params} />}
           />

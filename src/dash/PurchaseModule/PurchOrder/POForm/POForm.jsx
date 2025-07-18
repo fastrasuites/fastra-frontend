@@ -38,6 +38,7 @@ const POForm = () => {
     isConvertToPO = false,
   } = state || {};
   const { tenant_schema_name } = useTenant().tenantData || {};
+  const { tenantData } = useTenant();
   const { id } = useParams();
 
   const {
@@ -137,10 +138,12 @@ const POForm = () => {
       estimated_unit_price: i.estimated_unit_price,
     })),
     is_hidden: false,
-    created_by: tenant_schema_name,
+    created_by: tenantData.tenant_id,
     is_submitted: true,
     can_edit: true,
   });
+
+  console.log(tenantData);
 
   const navigateToDetail = (id) => {
     setTimeout(() => {

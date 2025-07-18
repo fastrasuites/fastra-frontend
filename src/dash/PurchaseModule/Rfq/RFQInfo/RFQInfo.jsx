@@ -120,14 +120,15 @@ const RFQInfo = () => {
         ? item.items.map((row, idx) => (
             <TableRow key={row.url || idx}>
               <TableCell sx={cellStyle(idx)}>
-                {row.product?.product_name || "N/A"}
+                {row.product_details?.product_name || "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>
                 {row.description || "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>{row.qty || "N/A"}</TableCell>
               <TableCell sx={cellStyle(idx)}>
-                {row.unit_of_measure?.unit_category || "N/A"}
+                {row.product_details.unit_of_measure_details?.unit_category ||
+                  "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>
                 {row.estimated_unit_price || "N/A"}
@@ -337,7 +338,7 @@ const RFQInfo = () => {
                     }}
                   >
                     {item.currency
-                      ? `${item.currency.currency_name} (${item.currency.currency_symbol})`
+                      ? `${item?.currency_details?.currency_name} (${item?.currency_details?.currency_symbol})`
                       : "N/A"}
                   </TableCell>
                   <TableCell

@@ -91,6 +91,7 @@ const PurchaseRequestInfo = () => {
     }
   }, [fetchSinglePurchaseRequest, id, showError]);
 
+  console.log(item);
   useEffect(() => {
     loadPurchaseRequest();
   }, [loadPurchaseRequest]);
@@ -158,17 +159,9 @@ const PurchaseRequestInfo = () => {
 
   // Convert to RFQ
   const handleConvertToRFQ = useCallback(() => {
-    const prToConvert = {
-      purchase_request: { id: item.id, items: item.items },
-      currency: item.currency,
-      vendor: item.vendor,
-      items: item.items,
-      status: "draft",
-      is_hidden: false,
-    };
     history.push({
       pathname: `/${tenantSchema}/purchase/request-for-quotations/new`,
-      state: { rfq: prToConvert, isConvertToRFQ: true },
+      state: { rfq: item, isConvertToRFQ: true },
     });
   }, [history, tenantSchema, item]);
 
@@ -186,14 +179,15 @@ const PurchaseRequestInfo = () => {
         ? item.items.map((row, idx) => (
             <TableRow key={row.url || idx}>
               <TableCell sx={cellStyle(idx)}>
-                {row.product?.product_name || "N/A"}
+                {row.product_details?.product_name || "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>
                 {row.description || "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>{row.qty ?? "N/A"}</TableCell>
               <TableCell sx={cellStyle(idx)}>
-                {row.unit_of_measure?.unit_category || "N/A"}
+                {row.product_details.unit_of_measure_details.unit_category ||
+                  "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>
                 {row.estimated_unit_price || "N/A"}
@@ -422,7 +416,7 @@ const PurchaseRequestInfo = () => {
                     fontSize: 12,
                   }}
                 >
-                  {item.vendor?.company_name || "N/A"}
+                  {item.vendor_details?.company_name || "N/A"}
                 </TableCell>
               </TableRow>
             </TableBody>

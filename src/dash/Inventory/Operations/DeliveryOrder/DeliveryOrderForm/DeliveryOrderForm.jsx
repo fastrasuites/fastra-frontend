@@ -228,13 +228,14 @@ const DeliveryOrderForm = () => {
   }, [fetchProducts]);
 
   const transformProducts = (list) =>
-    list.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
-      return {
-        ...prod,
-        unit_of_measure: { url, unit_category, unit_name: unit_category },
-      };
-    });
+    list.map((prod) => ({
+      ...prod,
+      unit_of_measure: {
+        url: prod.unit_of_measure,
+        unit_category: prod?.unit_of_measure_details?.unit_category,
+        unit_name: prod?.unit_of_measure_details?.unit_category,
+      },
+    }));
 
   const rowConfig = [
     {

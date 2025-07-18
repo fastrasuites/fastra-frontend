@@ -21,7 +21,6 @@ const POBasicInfoFieldsConverToPO = ({
   formData,
   handleInputChange,
   formUse,
-  currencies = [],
   purchaseOrder,
   rfqID,
   rfqList = [],
@@ -29,6 +28,7 @@ const POBasicInfoFieldsConverToPO = ({
   isRfqLoading,
   isConvertToPO,
 }) => {
+  console.log(formData);
   const { tenantData } = useTenant();
   const tenantName = tenantData?.tenant_schema_name || "";
   // Resolve selected objects
@@ -38,13 +38,6 @@ const POBasicInfoFieldsConverToPO = ({
     locationList.find((l) => l.id === formData.destination_location?.id) ||
     formData.destination_location ||
     null;
-  const selectedCurrency =
-    currencies.find((c) => c.url === formData.rfq.currency?.url) ||
-    formData.rfq.currency ||
-    null;
-  const selectedVendor = formData.rfq?.vendor || purchaseOrder?.vendor || null;
-
-  // console.log(formData);
 
   return (
     <div className="rfqBasicInfoField">
@@ -117,16 +110,9 @@ const POBasicInfoFieldsConverToPO = ({
             Vendor
             {isConvertToPO && REQUIRED_ASTERISK}
           </label>
-          {isConvertToPO ? (
-            <Typography>{selectedVendor?.company_name || "N/A"}</Typography>
-          ) : (
-            <TextField
-              fullWidth
-              value={formData.vendor || purchaseOrder?.vendor_url || ""}
-              onChange={(e) => handleInputChange("vendor", e.target.value)}
-              placeholder="Vendor"
-            />
-          )}
+          <Typography>
+            {formData?.rfq?.vendor_details?.company_name || "N/A"}
+          </Typography>
         </div>
 
         {/* Destination Location */}
@@ -157,13 +143,13 @@ const POBasicInfoFieldsConverToPO = ({
         <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Address</label>
           <Typography color="#353536">
-            {selectedVendor?.address || "N/A"}
+            {formData?.rfq?.vendor_details?.address || "N/A"}
           </Typography>
         </Box>
         <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Email</label>
           <Typography color="#353536">
-            {selectedVendor?.email || "N/A"}
+            {formData?.rfq?.vendor_details?.email || "N/A"}
           </Typography>
         </Box>
       </div>
@@ -179,30 +165,11 @@ const POBasicInfoFieldsConverToPO = ({
             Currency
             {isConvertToPO && REQUIRED_ASTERISK}
           </label>
-          {isConvertToPO ? (
-            <Typography>
-              {selectedCurrency
-                ? `${selectedCurrency.currency_name} - ${selectedCurrency.currency_symbol}`
-                : "N/A"}
-            </Typography>
-          ) : (
-            <Autocomplete
-              disablePortal
-              options={currencies}
-              value={selectedCurrency}
-              getOptionLabel={(option) =>
-                `${option.currency_name} - ${option.currency_symbol}`
-              }
-              isOptionEqualToValue={(option, value) =>
-                option.url === value?.url
-              }
-              onChange={(_, value) => handleInputChange("currency", value)}
-              renderInput={(params) => (
-                <TextField {...params} placeholder="Select Currency" />
-              )}
-              sx={{ width: "100%" }}
-            />
-          )}
+          <Typography>
+            {formData?.rfq?.currency_details
+              ? `${formData?.rfq?.currency_details?.currency_name} - ${formData?.rfq?.currency_details?.currency_symbol}`
+              : "N/A"}
+          </Typography>
         </div>
 
         {/* Payment Terms */}

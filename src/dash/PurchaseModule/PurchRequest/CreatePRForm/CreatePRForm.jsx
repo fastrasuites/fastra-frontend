@@ -49,13 +49,23 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     url,
   } = pr;
 
+  const prItems =
+    items && items.length > 0
+      ? items.map((item) => ({
+          ...item,
+          product: item.product_details,
+        }))
+      : [];
+
+  console.log(prItems);
+
   // ─── INITIALIZE formData (all simple types or strings) ────────────────────
   const [formData, setFormData] = useState({
     purpose,
     currency, // plain URL string
     vendor, // plain URL string
     requesting_location, // plain location ID string
-    items,
+    items: prItems,
     status,
     is_hidden,
   });
@@ -76,8 +86,6 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     fetchPurchaseRequests,
     getActiveLocationList,
   ]);
-
-  console.log(activeLocationList);
 
   useEffect(() => {
     setPrID(normalizedRFQ(purchaseRequests));
@@ -102,7 +110,6 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
       items: [
         ...prev.items,
         {
-          id: `new-${prev.items.length + 1}`,
           product: null,
           description: "",
           qty: "",
@@ -121,16 +128,17 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
   // Helper to transform formData → API payload
   const getCleanedFormData = (overrideStatus) => ({
     status: overrideStatus || formData.status,
-    currency: formData?.currency?.url || formData?.currency, // already a URL string
+    currency: formData.currency,
     purpose: formData.purpose,
-    vendor: formData?.vendor?.url || formData?.vendor, // already a URL string
+    vendor: formData.vendor,
     requesting_location: formData.requesting_location, // already an ID string
     items: formData.items.map((item) => ({
-      product: item.product?.url || item.product,
+      id: item.id,
+      product: item.product?.id || item.product,
       description: item.description,
       qty: Number(item.qty) || 0,
       unit_of_measure:
-        item.unit_of_measure?.url ||
+        item.unit_of_measure?.id ||
         (Array.isArray(item.unit_of_measure)
           ? item.unit_of_measure[0]
           : item.unit_of_measure),
@@ -153,6 +161,7 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = getCleanedFormData("draft");
+    console.log(payload);
     try {
       if (edit) {
         const id = extractRFQID(url);
@@ -193,9 +202,16 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
       }
     } catch (err) {
       console.error(err);
+      const errorMessage =
+        err?.response?.data?.non_field_errors?.[0] ||
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err.message ||
+        "An unexpected error occurred.";
+
       Swal.fire({
         title: "Error",
-        text: "An unexpected error occurred.",
+        text: errorMessage,
         icon: "error",
       });
     }
@@ -244,9 +260,16 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
       }
     } catch (err) {
       console.error(err);
+      const errorMessage =
+        err?.response?.data?.non_field_errors?.[0] ||
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err.message ||
+        "An unexpected error occurred.";
+
       Swal.fire({
         title: "Error",
-        text: "An unexpected error occurred while sharing.",
+        text: errorMessage,
         icon: "error",
       });
     }
@@ -303,6 +326,7 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
               <Button variant="outlined" type="submit">
                 {edit ? "Save Changes" : "Save"}
               </Button>
+
               <Button variant="contained" onClick={saveAndSubmit}>
                 Save & Send
               </Button>

@@ -1,6 +1,6 @@
 // src/dash/Inventory/Operations/IncomingProduct/CreateIncomingProduct.jsx
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import { formatDate } from "../../../../../helper/helper";
@@ -9,8 +9,8 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useIncomingProduct } from "../../../../../context/Inventory/IncomingProduct";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import { usePurchase } from "../../../../../context/PurchaseContext";
-import Swal from "sweetalert2";
 import { usePurchaseOrder } from "../../../../../context/PurchaseOrderContext.";
+import Swal from "sweetalert2";
 import "./CreateIncomingProduct.css";
 
 // ─── Receipt Type Options ───────────────────────────────────────────────────
@@ -22,11 +22,9 @@ const RECEIPT_TYPES = [
   { value: "scrap", label: "Scrap" },
 ];
 
-// ─── Helper: Resolve a formValue (object or string) into a matching object from `list` ──
+// ─── Helper: Resolve a formValue (object or string) into a matching object from list ──
 const getSelectedOption = (formValue, list = [], key) => {
-  if (typeof formValue === "object" && formValue !== null) {
-    return formValue;
-  }
+  if (typeof formValue === "object" && formValue !== null) return formValue;
   if (typeof formValue === "string") {
     return list.find((item) => item[key] === formValue) || null;
   }
@@ -47,44 +45,40 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
 
   const locationId = formData?.relatedPO?.destination_location;
 
-  // Ensure RFQ list is loaded
+  useEffect(() => {
+    if (locationId) getSingleLocation(locationId);
+  }, [locationId, getSingleLocation]);
+
   useEffect(() => {
     getApprovedPurchaseOrderList();
-    getSingleLocation(locationId);
-  }, [getApprovedPurchaseOrderList, getSingleLocation, locationId]);
+  }, [getApprovedPurchaseOrderList]);
 
-  // Resolve selectedReceipt, selectedPO, selectedSupplier, selectedLocation
   const selectedReceipt = getSelectedOption(
     formData.receiptType,
     RECEIPT_TYPES,
     "value"
   );
-
   const selectedPO = getSelectedOption(
     formData.relatedPO,
     purchaseOrderList,
     "id"
   );
-
   const selectedSupplier = getSelectedOption(
     formData.suppliersName,
     formData.suppliers,
     "id"
   );
 
-  const selectedLocation = getSelectedOption(formData.location, "id");
-
   return (
     <>
-      {/* ─── Row: Receipt Type / Source ID / Receipt Date ───────────────────── */}
       <div className="receiptTypeAndID">
-        {/* Receipt Type */}
         <div>
           <label>Receipt Type {REQUIRED_ASTERISK}</label>
           <Autocomplete
             options={RECEIPT_TYPES}
             value={selectedReceipt}
-            getOptionLabel={(opt) => opt.label}
+            getOptionLabel={(opt) => opt.label || ""}
+            isOptionEqualToValue={(opt, val) => opt.value === val?.value}
             onChange={(e, newValue) =>
               handleInputChange("receiptType", newValue?.value || "")
             }
@@ -94,34 +88,28 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
           />
         </div>
 
-        {/* Source ID (read-only) */}
         <div className="formLabelAndValue">
           <label>Source ID {REQUIRED_ASTERISK}</label>
           <p>Supplier Location</p>
         </div>
 
-        {/* Receipt Date (read-only) */}
         <div className="formLabelAndValue">
           <label>Receipt Date {REQUIRED_ASTERISK}</label>
           <p>{formData.receiptDate}</p>
         </div>
       </div>
 
-      {/* ─── Row: Purchase Order / Supplier / Destination Location ───────────── */}
       <Box className="supplierNameAndLocation" mt={2} display="flex" gap={2}>
-        {/* Purchase Order */}
         <Box flex={1}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Purchase Order {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
-            disablePortal
             options={purchaseOrderList || []}
             value={selectedPO}
             getOptionLabel={(opt) => opt.id || ""}
             isOptionEqualToValue={(opt, val) => opt.id === val?.id}
             onChange={(e, newValue) => {
-              // New PO selection: update relatedPO and auto‐fill items
               handleInputChange("relatedPO", newValue || null);
               if (newValue?.items) {
                 handleInputChange("items", newValue.items);
@@ -133,7 +121,6 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
           />
         </Box>
 
-        {/* Supplier */}
         <Box flex={1}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Name of Supplier {REQUIRED_ASTERISK}
@@ -152,7 +139,6 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
           />
         </Box>
 
-        {/* Destination Location: if already chosen, show read-only; otherwise let user pick */}
         <Box className="formLabelAndValue" flex={1}>
           <label>Destination Location {REQUIRED_ASTERISK}</label>
           <p>{singleLocation?.location_name}</p>
@@ -162,14 +148,12 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
   );
 }
 
-// ─── Parent Component: Convert to Incoming Product ─────────────────────────────
+// ─── Main Component ─────────────────────────────────────────────────────────────
 export default function ConvertPoToIncomingProduct() {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
-
   const location = useLocation();
 
-  // Initialize formData with default values
   const [formData, setFormData] = useState({
     receiptType: "",
     sourceLocation: "",
@@ -185,49 +169,42 @@ export default function ConvertPoToIncomingProduct() {
 
   const { products, fetchProducts, vendors, fetchVendors } = usePurchase();
   const { isLoading, createIncomingProduct } = useIncomingProduct();
-  // eslint-disable-next-line no-unused-vars
-  const { purchaseOrderList, getApprovedPurchaseOrderList } =
-    usePurchaseOrder();
+  const { getApprovedPurchaseOrderList } = usePurchaseOrder();
   const { locationList, getLocationList } = useCustomLocation();
 
-  // Fetch lookups and set default source_location
   useEffect(() => {
     fetchProducts();
     fetchVendors();
     getApprovedPurchaseOrderList();
     getLocationList();
-  }, [
-    fetchProducts,
-    fetchVendors,
-    getApprovedPurchaseOrderList,
-    getApprovedPurchaseOrderList,
-  ]);
+  }, []);
 
-  // Populate `suppliers` once vendors load
   useEffect(() => {
     if (Array.isArray(vendors) && vendors.length > 0) {
       setFormData((prev) => ({ ...prev, suppliers: vendors }));
     }
   }, [vendors]);
 
-  const sourceLocObj = locationList.find((loc) => loc.location_code === "SUPP");
+  const sourceLocObj = useMemo(
+    () => locationList.find((loc) => loc.location_code === "SUPP"),
+    [locationList]
+  );
 
-  // If we navigated here with a `po` in state, auto‐fill relevant fields
   useEffect(() => {
     const incoming = location.state?.po;
     if (incoming && products.length > 0 && vendors.length > 0) {
-      // Map each PO item into the format our table expects:
       const mappedItems = incoming.items.map((it) => ({
-        product: it.product, // assume this is the full product object
+        product: it.product_details,
         available_product_quantity: it.qty,
         qty_received: it.quantity_received,
         unit_of_measure: {
-          unit_category: it.unit_of_measure.unit_category,
-          unit_name: it.unit_of_measure.unit_category,
+          unit_category:
+            it?.product_details?.unit_of_measure_details?.unit_category,
+          unit_name:
+            it?.product_details?.unit_of_measure_details?.unit_category,
         },
       }));
 
-      // Find the matching supplier object by ID
       const foundSupplier =
         vendors.find((v) => v.id === incoming.vendor.id) || null;
 
@@ -235,26 +212,21 @@ export default function ConvertPoToIncomingProduct() {
         ...prev,
         receiptDate: formatDate(Date.now()),
         suppliersName: foundSupplier,
-        relatedPO: incoming, // store PO object so we can pull items from it
+        relatedPO: incoming,
         items: mappedItems,
       }));
     }
   }, [location.state, products, vendors]);
 
-  // Navigate to detail page after creation
   const navigateToDetail = (id) => {
-    setTimeout(
-      () =>
-        history.push(
-          `/${tenant_schema_name}/inventory/operations/incoming-product/${id}`
-        ),
-      1500
-    );
+    setTimeout(() => {
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/incoming-product/${id}`
+      );
+    }, 1500);
   };
 
-  // Handle form submission
   const handleSubmit = async () => {
-    // Build the payload
     const payload = {
       destination_location: formData?.relatedPO?.destination_location,
       receipt_type: formData.receiptType,
@@ -269,9 +241,7 @@ export default function ConvertPoToIncomingProduct() {
         quantity_received: Number(item.qty_received),
       })),
     };
-
     console.log(payload);
-
     try {
       const res = await createIncomingProduct(payload);
       Swal.fire({
@@ -279,39 +249,46 @@ export default function ConvertPoToIncomingProduct() {
         title: "Success",
         text: "Incoming product created successfully",
       });
-      console.log(res);
       navigateToDetail(res.data.incoming_product_id);
     } catch (err) {
       console.error(err);
-      if (err.validation) {
+
+      const errorData = err?.response?.data;
+
+      if (errorData) {
+        const messages = Object.values(errorData)
+          .flat() // flatten arrays of messages
+          .map((msg) => `<p>${msg}</p>`)
+          .join("");
+
         Swal.fire({
           icon: "error",
           title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
+          html: messages || "An unknown error occurred.",
         });
       } else {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: err.message,
+          text: err.message || "Something went wrong",
         });
       }
     }
   };
 
-  // Transform products for the table’s Autocomplete
   const transformProducts = (list) =>
     list.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
+      const unit_category = prod?.unit_of_measure_details?.unit_category;
       return {
         ...prod,
-        unit_of_measure: { url, unit_category, unit_name: unit_category },
+        unit_of_measure: {
+          url: prod.unit_of_measure,
+          unit_category,
+          unit_name: unit_category,
+        },
       };
     });
 
-  // Configuration for rows in the items table
   const rowConfig = [
     {
       label: "Product Name",
@@ -332,10 +309,12 @@ export default function ConvertPoToIncomingProduct() {
       disabled: true,
       transform: (val) => val.unit_category,
     },
-    { label: "QTY Received", field: "qty_received", type: "number" },
+    {
+      label: "QTY Received",
+      field: "qty_received",
+      type: "number",
+    },
   ];
-
-  console.log(formData);
 
   return (
     <CommonForm

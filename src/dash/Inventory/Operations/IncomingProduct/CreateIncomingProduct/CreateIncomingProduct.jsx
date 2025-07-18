@@ -83,7 +83,19 @@ const IncomingProductBasicInputs = ({
 
   const handleRelatedPOChange = (e, newVal) => {
     setSelectedRelatedPO(newVal);
-    setFormData({ ...formData, items: newVal.items });
+
+    const mappedItems = newVal.items.map((it) => ({
+      product: it.product_details,
+      available_product_quantity: it.qty,
+      qty_received: it.quantity_received,
+      unit_of_measure: {
+        unit_category:
+          it?.product_details?.unit_of_measure_details?.unit_category,
+        unit_name: it?.product_details?.unit_of_measure_details?.unit_category,
+      },
+    }));
+
+    setFormData({ ...formData, items: mappedItems });
     handleInputChange("related_po", newVal);
   };
 
@@ -95,7 +107,6 @@ const IncomingProductBasicInputs = ({
   // Find the supplier source location with code "SUPP"
   const sourceLocObj = locationList.find((loc) => loc.location_code === "SUPP");
 
-  // console.log(formData);
   return (
     <>
       <div className="receiptTypeAndID">
@@ -216,14 +227,16 @@ const CreateIncomingProduct = () => {
 
   const transformProducts = (list) =>
     list.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
+      const unit_category = prod?.unit_of_measure_details?.unit_category;
       return {
         ...prod,
-        unit_of_measure: { url, unit_category, unit_name: unit_category },
+        unit_of_measure: {
+          url: prod.unit_of_measure,
+          unit_category,
+          unit_name: unit_category,
+        },
       };
     });
-
-  // console.log(transformProducts(products), "transformed product");
 
   const rowConfig = [
     {
@@ -285,24 +298,29 @@ const CreateIncomingProduct = () => {
       navigateToDetail(res.data.incoming_product_id);
     } catch (err) {
       console.error(err);
-      if (err.validation) {
+
+      const errorData = err?.response?.data;
+
+      if (errorData) {
+        const messages = Object.values(errorData)
+          .flat() // flatten arrays of messages
+          .map((msg) => `<p>${msg}</p>`)
+          .join("");
+
         Swal.fire({
           icon: "error",
           title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
+          html: messages || "An unknown error occurred.",
         });
       } else {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: err.message,
+          text: err.message || "Something went wrong",
         });
       }
     }
   };
-
   const handleSubmitValidated = async (filledFormData) => {
     const payload = {
       destination_location: filledFormData.location?.id,
@@ -326,29 +344,32 @@ const CreateIncomingProduct = () => {
         title: "Success",
         text: "Incoming product validated and created successfully",
       });
-      console.log(res);
       navigateToDetail(res.data.incoming_product_id);
     } catch (err) {
       console.error(err);
-      if (err.validation) {
+
+      const errorData = err?.response?.data;
+
+      if (errorData) {
+        const messages = Object.values(errorData)
+          .flat() // flatten arrays of messages
+          .map((msg) => `<p>${msg}</p>`)
+          .join("");
+
         Swal.fire({
           icon: "error",
           title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
+          html: messages || "An unknown error occurred.",
         });
       } else {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: err.message,
+          text: err.message || "Something went wrong",
         });
       }
     }
   };
-
-  // console.log(formData);
 
   return (
     <CommonForm
