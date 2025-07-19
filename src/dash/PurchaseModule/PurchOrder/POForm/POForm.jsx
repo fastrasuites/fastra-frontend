@@ -116,7 +116,7 @@ const POForm = () => {
   const poItems = formData?.rfq?.items || [];
 
   const cleanData = (status) => ({
-    ...formData,
+    // ...formData,
     status,
     vendor: formData.rfq.vendor?.url || formData.rfq.vendor,
     destination_location:
@@ -130,20 +130,15 @@ const POForm = () => {
       product: i.product?.url || i.product,
       description: i.description,
       qty: Number(i.qty) || 0,
-      unit_of_measure:
-        i.unit_of_measure?.url ||
-        (Array.isArray(i.unit_of_measure)
-          ? i.unit_of_measure[0]
-          : i.unit_of_measure),
+      unit_of_measure: i.product_details.unit_of_measure,
       estimated_unit_price: i.estimated_unit_price,
     })),
     is_hidden: false,
-    created_by: tenantData.tenant_id,
     is_submitted: true,
     can_edit: true,
   });
 
-  console.log(tenantData);
+  console.log(formData);
 
   const navigateToDetail = (id) => {
     setTimeout(() => {

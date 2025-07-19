@@ -23,6 +23,8 @@ import ProductDetails from "./Product/ProductDetails";
 import Newvendor from "./Vendor/Newvendor";
 import VendorDetails from "./Vendor/VendorDetails";
 import EditRfqForm from "./Rfq/RfqForm/EditRFQForm";
+import EditProduct from "./Product/EditProduct";
+import EditVendor from "./Vendor/EditVendor";
 // import Newprod from "./Product/Newprod";
 
 export default function PurchaseLayout() {
@@ -108,6 +110,11 @@ export default function PurchaseLayout() {
           <Route exact path={`${path}/vendor/new`} component={Newvendor} />
 
           <Route exact path={`${path}/vendor/:id`} component={VendorDetails} />
+          <Route
+            exact
+            path={`${path}/vendor/edit/:id`}
+            component={EditVendor}
+          />
 
           <Route exact path={`${path}/product`} component={Prod} />
           <Route exact path={`${path}/product/new`} component={Newprod} />
@@ -115,6 +122,11 @@ export default function PurchaseLayout() {
             exact
             path={`${path}/product/:id`}
             component={ProductDetails}
+          />
+          <Route
+            exact
+            path={`${path}/product/edit/:id`}
+            component={EditProduct}
           />
 
           <Route

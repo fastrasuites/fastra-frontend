@@ -6,13 +6,7 @@ const cellStyle = (index) => ({
   fontSize: "12px",
 });
 
-const RfqItemRow = ({
-  row,
-  index,
-  handleRowChange,
-  products,
-  isConversion,
-}) => {
+const RfqItemRow = ({ row, index, handleRowChange, isConversion }) => {
   console.log(row);
   return (
     <TableRow

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useHistory, useParams } from "react-router-dom";
 import autosave from "../../../image/autosave.svg";
 import vendorLogo from "../../../image/vendor-logo.svg";
 import "./Newvendor.css";
@@ -15,12 +15,11 @@ import { usePurchase } from "../../../context/PurchaseContext";
 import { useTenant } from "../../../context/TenantContext";
 import Swal from "sweetalert2";
 
-const WIZARD_STORAGE_KEY = "purchaseWizardState";
-
-export default function Newvendor({ fromPurchaseModuleWizard = false }) {
+export default function EditVendor() {
   const history = useHistory();
+  const { id } = useParams();
   const tenantSchema = useTenant().tenantData?.tenant_schema_name;
-  const { createVendor } = usePurchase();
+  const { fetchSingleVendors, updateVendor } = usePurchase();
 
   const [formState, setFormState] = useState({
     vendor_name: "",
@@ -31,6 +30,31 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
     imagePreview: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    async function loadVendor() {
+      try {
+        const vendor = await fetchSingleVendors(id);
+        setFormState({
+          vendor_name: vendor.company_name,
+          email: vendor.email,
+          phone_number: vendor.phone_number,
+          address: vendor.address,
+          imageFile: null,
+          imagePreview: vendor.profile_picture
+            ? `data:image/png;base64,${vendor.profile_picture}`
+            : "",
+        });
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "Load Failed",
+          text: "Could not fetch vendor data.",
+        });
+      }
+    }
+    loadVendor();
+  }, [id, fetchSingleVendors]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,7 +77,7 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
       return Swal.fire({
         icon: "error",
         title: "File too large",
-        text: "Max size is 1 MB.",
+        text: "Max size is 1 MB.",
       });
     }
 
@@ -65,12 +89,7 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
   };
 
   const handleCancel = () => {
-    if (fromPurchaseModuleWizard) {
-      // Return to wizard step
-      history.push(`/${tenantSchema}/purchase`);
-    } else {
-      history.goBack();
-    }
+    history.goBack();
   };
 
   const handleSubmit = async (e) => {
@@ -94,31 +113,19 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
     }
 
     try {
-      await createVendor(payload);
-
+      await updateVendor(id, payload);
       Swal.fire({
         icon: "success",
-        title: "Vendor Created",
-        text: "Your new vendor has been successfully added.",
+        title: "Vendor Updated",
+        text: "Vendor details updated successfully.",
         timer: 1500,
         showConfirmButton: false,
       });
-
-      if (fromPurchaseModuleWizard) {
-        const wizardState = JSON.parse(
-          localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
-        );
-        wizardState.currentStep = 4;
-        wizardState.hidden = false;
-        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
-        history.push(`/${tenantSchema}/purchase/vendor`);
-      } else {
-        history.goBack();
-      }
+      history.goBack();
     } catch (err) {
       Swal.fire({
         icon: "error",
-        title: "Submission Failed",
+        title: "Update Failed",
         text: err.message || "Please try again later.",
       });
     } finally {
@@ -130,11 +137,10 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
     <div className="nvr-contain">
       <div id="nvr" className="nvr fade-in">
         <div className="nvr1">
-          {/* Header */}
           <div className="nvr2">
             <Box className="nvr2a" mb={6}>
               <Typography variant="h5" className="nvrhed">
-                New Vendor
+                Edit Vendor
               </Typography>
               <Box className="nvrauto" display="flex" alignItems="center">
                 <Typography>Autosaved</Typography>
@@ -143,10 +149,8 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
             </Box>
           </div>
 
-          {/* Form */}
           <div className="nvr3">
             <form className="nvrform" onSubmit={handleSubmit}>
-              {/* Basic Info */}
               <Box
                 className="nvr3a"
                 display="flex"
@@ -179,7 +183,6 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
 
               <Divider sx={{ my: 4 }} />
 
-              {/* Avatar Upload */}
               <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
                   <Box
@@ -219,33 +222,36 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
                       <img src={vendorLogo} alt="Upload" />
                     )}
                   </Box>
-                  <Typography variant="caption">Max size: {"1 MB"}</Typography>
+                  <Typography variant="caption">Max size: 1 MB</Typography>
                 </Grid>
               </Grid>
 
               <Divider sx={{ my: 4 }} />
 
-              {/* Contact Info */}
               <Typography variant="h6" gutterBottom>
                 Contact Information
               </Typography>
               <Grid container spacing={3}>
-                {[
-                  { name: "email", label: "Email Address", type: "email" },
-                  {
-                    name: "phone_number",
-                    label: "Phone Number",
-                    type: "text",
-                  },
-                  { name: "address", label: "Address", type: "text" },
-                ].map(({ name, label, type }) => (
+                {["email", "phone_number", "address"].map((name) => (
                   <Grid key={name} item xs={12} sm={6} md={4}>
-                    <Typography gutterBottom>{label}</Typography>
+                    <Typography gutterBottom>
+                      {name === "email"
+                        ? "Email Address"
+                        : name === "phone_number"
+                        ? "Phone Number"
+                        : "Address"}
+                    </Typography>
                     <TextField
                       name={name}
                       fullWidth
-                      type={type}
-                      placeholder={`Enter ${label}`}
+                      type={name === "email" ? "email" : "text"}
+                      placeholder={`Enter ${
+                        name === "email"
+                          ? "Email Address"
+                          : name === "phone_number"
+                          ? "Phone Number"
+                          : "Address"
+                      }`}
                       value={formState[name]}
                       onChange={handleChange}
                       disabled={isSubmitting}
@@ -254,7 +260,6 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
                 ))}
               </Grid>
 
-              {/* Submit Button */}
               <Box mt={4}>
                 <Button
                   type="submit"
@@ -262,7 +267,7 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
                   disabled={isSubmitting}
                   sx={{ px: 4 }}
                 >
-                  {isSubmitting ? "Submitting…" : "Add Vendor"}
+                  {isSubmitting ? "Updating…" : "Update Vendor"}
                 </Button>
               </Box>
             </form>

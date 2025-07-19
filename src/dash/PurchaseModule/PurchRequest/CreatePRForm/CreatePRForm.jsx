@@ -5,106 +5,89 @@ import autosave from "../../../../image/autosave.svg";
 import React, { useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import Swal from "sweetalert2";
-import { usePurchase } from "../../../../context/PurchaseContext";
-import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
-import PRBasicInfoFields from "./PRBasicInfoFields";
-import PRItemsTable from "./PRItemsTable";
 import { useHistory, useLocation } from "react-router-dom";
+
+import { usePurchase } from "../../../../context/PurchaseContext";
 import { useTenant } from "../../../../context/TenantContext";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 
-// eslint-disable-next-line no-unused-vars
-const CreatePRForm = ({ formUse, quotation = {} }) => {
+import PRBasicInfoFields from "./PRBasicInfoFields";
+import PRItemsTable from "./PRItemsTable";
+
+import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
+
+const CreatePRForm = () => {
+  const history = useHistory();
+  const location = useLocation();
+  const { pr = {}, edit = false } = location.state || {};
+  const isEdit = edit ? "Edit Purchase Request" : "Create Purchase Request";
+
   const {
-    products,
     fetchProducts,
-    vendors,
-    currencies,
-    fetchCurrencies,
+    products,
     fetchVendors,
+    vendors,
+    fetchCurrencies,
+    currencies,
     fetchPurchaseRequests,
     purchaseRequests,
     createPurchaseRequest,
     updatePurchaseRequest,
   } = usePurchase();
 
-  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const { getActiveLocationList, activeLocationList } = useCustomLocation();
   const { tenantData } = useTenant();
   const { tenant_schema_name: tenantSchemaName } = tenantData;
-  const history = useHistory();
-  const location = useLocation();
-  const { pr = {}, edit = false } = location.state || {};
-  let isEdit =
-    edit === true ? "Edit Purchase Request" : "Create Purchase Request";
 
-  // ─── DESTRUCTURE pr (existing data) ────────────────────────────────────────
-  const {
-    purpose = "",
-    currency = "", // string URL (or empty)
-    requesting_location = "", // string ID (or empty)
-    vendor = "", // string URL (or empty)
-    items = [],
-    status = "draft",
-    is_hidden = true,
-    url,
-  } = pr;
-
-  const prItems =
-    items && items.length > 0
-      ? items.map((item) => ({
-          ...item,
-          product: item.product_details,
-        }))
-      : [];
-
-  console.log(prItems);
-
-  // ─── INITIALIZE formData (all simple types or strings) ────────────────────
   const [formData, setFormData] = useState({
-    purpose,
-    currency, // plain URL string
-    vendor, // plain URL string
-    requesting_location, // plain location ID string
-    items: prItems,
-    status,
-    is_hidden,
+    purpose: pr.purpose || "",
+    currency: pr.currency || "",
+    vendor: pr.vendor || "",
+    requesting_location: pr.requesting_location || "",
+    status: pr.status || "draft",
+    is_hidden: pr.is_hidden ?? true,
+    items: (pr.items || []).map((item) => ({
+      ...item,
+      product: item.product_details,
+    })),
   });
 
-  // eslint-disable-next-line no-unused-vars
   const [prID, setPrID] = useState([]);
 
+  // ─── Load Required Data ─────────────────────────────────────
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
     fetchProducts();
     fetchPurchaseRequests();
     getActiveLocationList();
-  }, [
-    fetchVendors,
-    fetchCurrencies,
-    fetchProducts,
-    fetchPurchaseRequests,
-    getActiveLocationList,
-  ]);
+  }, []);
 
   useEffect(() => {
     setPrID(normalizedRFQ(purchaseRequests));
   }, [purchaseRequests]);
 
-  const handleInputChange = (field, value) =>
+  // ─── Handlers ───────────────────────────────────────────────
+  const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-
-  const handleRowChange = (idx, field, value) => {
-    const updated = [...formData.items];
-    updated[idx] = { ...updated[idx], [field]: value };
-    if (field === "product" && value?.product_description) {
-      updated[idx].description = value.product_description;
-      updated[idx].unit_of_measure = value.unit_of_measure;
-    }
-    setFormData((prev) => ({ ...prev, items: updated }));
   };
 
-  const handleAddRow = () =>
+  const handleRowChange = (index, field, value) => {
+    const updatedItems = [...formData.items];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      [field]: value,
+      ...(field === "product" && value?.product_description
+        ? {
+            description: value.product_description,
+            unit_of_measure: value.unit_of_measure,
+          }
+        : {}),
+    };
+    setFormData((prev) => ({ ...prev, items: updatedItems }));
+  };
+
+  const handleAddRow = () => {
     setFormData((prev) => ({
       ...prev,
       items: [
@@ -118,6 +101,7 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
         },
       ],
     }));
+  };
 
   const handleSuccessfulNavigation = (id) => {
     setTimeout(() => {
@@ -125,13 +109,25 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
     }, 2000);
   };
 
-  // Helper to transform formData → API payload
-  const getCleanedFormData = (overrideStatus) => ({
-    status: overrideStatus || formData.status,
+  const resetForm = () => {
+    setFormData({
+      purpose: "",
+      currency: "",
+      vendor: "",
+      requesting_location: "",
+      status: "draft",
+      is_hidden: true,
+      items: [],
+    });
+  };
+
+  const getCleanedFormData = (overrideStatus = formData.status) => ({
+    status: overrideStatus,
     currency: formData.currency,
     purpose: formData.purpose,
     vendor: formData.vendor,
-    requesting_location: formData.requesting_location, // already an ID string
+    requesting_location: formData.requesting_location,
+    is_hidden: false,
     items: formData.items.map((item) => ({
       id: item.id,
       product: item.product?.id || item.product,
@@ -144,137 +140,144 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
           : item.unit_of_measure),
       estimated_unit_price: item.estimated_unit_price,
     })),
-    is_hidden: false,
   });
 
-  const resetForm = () =>
-    setFormData({
-      purpose: "",
-      currency: "",
-      requesting_location: "",
-      vendor: "",
-      items: [],
-      status: "draft",
-      is_hidden: true,
+  const handleError = (err) => {
+    const message =
+      err?.response?.data?.non_field_errors?.[0] ||
+      err?.response?.data?.detail ||
+      err?.response?.data?.message ||
+      err.message ||
+      "An unexpected error occurred.";
+
+    Swal.fire({
+      title: "Error",
+      text: message,
+      icon: "error",
     });
+  };
+
+  const validateRequiredFields = (payload) => {
+    if (!payload.currency) return "Currency is required.";
+    if (!payload.vendor) return "Vendor is required.";
+    if (!payload.purpose) return "Purpose is required.";
+    if (!payload.requesting_location) return "Requesting location is required.";
+    if (!payload.items || payload.items.length === 0)
+      return "At least one product item is required.";
+    return null;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = getCleanedFormData("draft");
-    console.log(payload);
+
+    const errorMessage = validateRequiredFields(payload);
+    if (errorMessage) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: errorMessage,
+      });
+      return;
+    }
+
     try {
       if (edit) {
-        const id = extractRFQID(url);
-        console.log(payload, "Payload");
-        const res = await updatePurchaseRequest(id, { ...payload });
+        const id = extractRFQID(pr.url);
+        const res = await updatePurchaseRequest(id, payload);
         if (res.success) {
-          Swal.fire({
-            title: "Updated!",
-            text: "Purchase Request updated successfully.",
-            icon: "success",
-          });
+          Swal.fire(
+            "Updated!",
+            "Purchase Request updated successfully.",
+            "success"
+          );
           handleSuccessfulNavigation(id);
         } else {
-          Swal.fire({
-            title: "Update Failed",
-            text: res.message || "Could not update the Purchase Request.",
-            icon: "error",
-          });
+          Swal.fire(
+            "Update Failed",
+            res.message || "Could not update the Purchase Request.",
+            "error"
+          );
         }
       } else {
         const res = await createPurchaseRequest(payload);
         if (res.success) {
-          Swal.fire({
-            title: "Created!",
-            text: "Purchase Request saved as draft successfully.",
-            icon: "success",
-          });
+          Swal.fire(
+            "Created!",
+            "Purchase Request saved as draft successfully.",
+            "success"
+          );
           resetForm();
           fetchPurchaseRequests();
           handleSuccessfulNavigation(extractRFQID(res.data.url));
         } else {
-          Swal.fire({
-            title: "Creation Failed",
-            text: res.message || "Could not create Purchase Request.",
-            icon: "error",
-          });
+          Swal.fire(
+            "Creation Failed",
+            res.message || "Could not create Purchase Request.",
+            "error"
+          );
         }
       }
     } catch (err) {
-      console.error(err);
-      const errorMessage =
-        err?.response?.data?.non_field_errors?.[0] ||
-        err?.response?.data?.detail ||
-        err?.response?.data?.message ||
-        err.message ||
-        "An unexpected error occurred.";
-
-      Swal.fire({
-        title: "Error",
-        text: errorMessage,
-        icon: "error",
-      });
+      handleError(err);
     }
   };
 
   const saveAndSubmit = async () => {
     const payload = getCleanedFormData("pending");
+
+    const errorMessage = validateRequiredFields(payload);
+    if (errorMessage) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: errorMessage,
+      });
+      return;
+    }
+
     try {
       if (edit) {
-        const id = extractRFQID(url);
-        const resUpdate = await updatePurchaseRequest(id, {
-          ...payload,
-          status: "pending",
-        });
-        if (resUpdate.success) {
-          Swal.fire({
-            title: "Updated!",
-            text: "Purchase Request updated successfully.",
-            icon: "success",
-          });
+        const id = extractRFQID(pr.url);
+        const res = await updatePurchaseRequest(id, payload);
+        if (res.success) {
+          Swal.fire(
+            "Updated!",
+            "Purchase Request updated successfully.",
+            "success"
+          );
           handleSuccessfulNavigation(id);
         } else {
-          Swal.fire({
-            title: "Update Failed",
-            text: resUpdate.message || "Could not update the Purchase Request.",
-            icon: "error",
-          });
+          Swal.fire(
+            "Update Failed",
+            res.message || "Could not update the Purchase Request.",
+            "error"
+          );
         }
       } else {
         const res = await createPurchaseRequest(payload);
         if (res.success) {
-          Swal.fire({
-            title: "Shared!",
-            text: "Purchase Request created and shared successfully.",
-            icon: "success",
-          });
+          Swal.fire(
+            "Shared!",
+            "Purchase Request created and shared successfully.",
+            "success"
+          );
           resetForm();
           handleSuccessfulNavigation(extractRFQID(res.data.url));
         } else {
-          Swal.fire({
-            title: "Share Failed",
-            text: res.message || "Could not share Purchase Request.",
-            icon: "error",
-          });
+          Swal.fire(
+            "Share Failed",
+            res.message || "Could not share Purchase Request.",
+            "error"
+          );
         }
       }
     } catch (err) {
-      console.error(err);
-      const errorMessage =
-        err?.response?.data?.non_field_errors?.[0] ||
-        err?.response?.data?.detail ||
-        err?.response?.data?.message ||
-        err.message ||
-        "An unexpected error occurred.";
-
-      Swal.fire({
-        title: "Error",
-        text: errorMessage,
-        icon: "error",
-      });
+      handleError(err);
     }
   };
 
+  // ─── Render ────────────────────────────────────────────────
   return (
     <div className="RfqForm">
       <div className="rfqAutoSave">
@@ -303,9 +306,10 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
             currencies={currencies}
             vendors={vendors}
             requester={pr.requester_name}
-            rfqID={url}
+            rfqID={pr.url}
             locationList={activeLocationList}
           />
+
           <PRItemsTable
             items={formData.items}
             handleRowChange={handleRowChange}
@@ -326,7 +330,6 @@ const CreatePRForm = ({ formUse, quotation = {} }) => {
               <Button variant="outlined" type="submit">
                 {edit ? "Save Changes" : "Save"}
               </Button>
-
               <Button variant="contained" onClick={saveAndSubmit}>
                 Save & Send
               </Button>

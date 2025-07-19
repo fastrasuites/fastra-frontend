@@ -33,7 +33,6 @@ const RfqForm = () => {
   const formUse = edit ? "Edit RFQ" : "Create RFQ";
   const quotation = rfq || {};
   const conversionRFQ = rfq || {};
-  console.log(rfq);
   const isEdit = formUse === "Edit RFQ";
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
@@ -105,12 +104,12 @@ const RfqForm = () => {
       product: item.product,
       description: item.description,
       qty: Number(item.qty) || 0,
-      unit_of_measure: item.unit_of_measure?.url || "",
-      estimated_unit_price: item.total_price,
+      unit_of_measure: item.unit_of_measure || "",
+      estimated_unit_price: item.estimated_unit_price,
     }));
 
     return {
-      ...formData,
+      expiry_date: formData.expiry_date,
       status,
       vendor: formData?.purchase_request?.vendor || formData?.vendor,
       currency: formData?.purchase_request.currency || formData?.currency,
@@ -118,7 +117,6 @@ const RfqForm = () => {
       items,
       is_submitted: true,
       can_edit: true,
-      is_hidden: false,
     };
   };
 
@@ -129,18 +127,15 @@ const RfqForm = () => {
       );
     }, 1500);
   };
-
+  console.log(formData);
   // ─── Handle Save Draft or Save Changes ─────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = cleanData("draft");
-    console.log(payload, "payload");
     try {
       if (isEdit) {
         const id = quotation.id;
-        console.log(id);
         const res = await updateRFQ(payload, id);
-        console.log(res);
 
         if (res.success) Swal.fire("Updated!", "RFQ updated.", "success");
         else Swal.fire("Error", res.message, "error");

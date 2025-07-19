@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Table,
   TableBody,
@@ -15,7 +15,6 @@ import PropTypes from "prop-types";
 import { extractRFQID } from "../../../helper/helper";
 import { Trash } from "lucide-react";
 import { formatDate } from "../../../helper/helper";
-import { useTenant } from "../../../context/TenantContext";
 
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
@@ -32,8 +31,6 @@ const statusCellStyle = (index, getStatusColor, status) => ({
 
 const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
   const [selected, setSelected] = useState([]);
-  const { tenantData } = useTenant();
-  const requester = tenantData?.user?.username;
   // Handler to select/deselect all items.
   const handleSelectAll = useCallback(
     (event) => {
@@ -67,54 +64,64 @@ const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
   // Memoize the rendered rows for performance.
   // Memoize the rendered rows for performance.
   const renderedRows = React.useMemo(() => {
-    return items.map((item, index) => (
-      <TableRow
-        key={item.url}
-        sx={{
-          backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
-          cursor: "pointer",
-          "&:last-child td, &:last-child th": { border: 0 },
-        }}
-        onClick={() => onCardClick && onCardClick(item)}
-      >
-        <TableCell sx={cellStyle(index)} padding="checkbox">
-          <Checkbox
-            color="primary"
-            checked={selected.includes(item.url)}
-            onClick={(event) => event.stopPropagation()}
-            onChange={(event) => handleSelect(event, item.url)}
-          />
-        </TableCell>
-        {/* // purchase request date */}
-        <TableCell sx={cellStyle(index)}>
-          {formatDate(item?.date_created)}
-        </TableCell>
-        <TableCell sx={cellStyle(index)}>{extractRFQID(item.id)}</TableCell>
-        <TableCell sx={cellStyle(index)}>{requester}</TableCell>
-        <TableCell sx={cellStyle(index)}>{item?.vendor.company_name}</TableCell>
-        <TableCell sx={cellStyle(index)}>{item?.total_price}</TableCell>
-        <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor: getStatusColor(item.status),
-                marginRight: "8px",
-              }}
+    return items.map((item, index) => {
+      const requester =
+        item?.requester_details?.user?.first_name &&
+        item?.requester_details?.user?.last_name
+          ? `${item?.requester_details?.user?.first_name} ${item?.requester_details?.user?.last_name}`
+          : item?.requester_details?.user?.username;
+      return (
+        <TableRow
+          key={item.url}
+          sx={{
+            backgroundColor: index % 2 === 0 ? "#fff" : "#f2f2f2",
+            cursor: "pointer",
+            "&:last-child td, &:last-child th": { border: 0 },
+          }}
+          onClick={() => onCardClick && onCardClick(item)}
+        >
+          <TableCell sx={cellStyle(index)} padding="checkbox">
+            <Checkbox
+              color="primary"
+              checked={selected.includes(item.url)}
+              onClick={(event) => event.stopPropagation()}
+              onChange={(event) => handleSelect(event, item.url)}
             />
-            {item.status}
-          </div>
-        </TableCell>
-      </TableRow>
-    ));
+          </TableCell>
+          {/* // purchase request date */}
+          <TableCell sx={cellStyle(index)}>
+            {formatDate(item?.date_created)}
+          </TableCell>
+          <TableCell sx={cellStyle(index)}>{extractRFQID(item.id)}</TableCell>
+          <TableCell sx={cellStyle(index)}>{requester}</TableCell>
+          <TableCell sx={cellStyle(index)}>
+            {item?.vendor_details.company_name}
+          </TableCell>
+          <TableCell sx={cellStyle(index)}>{item?.total_price}</TableCell>
+          <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  backgroundColor: getStatusColor(item.status),
+                  marginRight: "8px",
+                  textTransform: "capitalize",
+                }}
+              />
+              {item.status}
+            </div>
+          </TableCell>
+        </TableRow>
+      );
+    });
   }, [items, selected, handleSelect, onCardClick, getStatusColor]);
 
   if (items.length === 0) {
     return <p>No items available. Please fill the form to add items.</p>;
   }
-
+  console.log(items);
   return (
     <Box sx={{ width: "100%", mt: 3 }}>
       {selected.length > 0 && (

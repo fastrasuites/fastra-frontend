@@ -62,7 +62,7 @@ export default function Vend() {
   const handleCardClick = (item) => {
     history.push(`/${tenant}/purchase/vendor/${item.id}`);
   };
-
+  console.log(vendors);
   return (
     <div>
       <div>
@@ -226,7 +226,7 @@ export default function Vend() {
                   >
                     <div className="vendor-image">
                       <img
-                        src={item.profile_picture}
+                        src={`data:image/png;base64,${item.profile_picture}`}
                         alt="Vendor"
                         className="circular-image"
                       />

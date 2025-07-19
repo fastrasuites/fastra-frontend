@@ -15,51 +15,30 @@ import { IoGrid } from "react-icons/io5";
 
 import SearchIcon from "../../../image/search.svg";
 import ProdListview from "./ProdListview";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 export default function Prod() {
-  const tenant = useTenant().tenantData.tenant_schema_name;
   const { products, fetchProducts } = usePurchase();
+  const { tenantData } = useTenant();
+  const history = useHistory();
 
-  const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const handler = setTimeout(async () => {
       setLoading(true);
-      await fetchProducts();
+      await fetchProducts(searchQuery);
       setLoading(false);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
     };
-    fetchData();
-  }, [fetchProducts]);
+  }, [fetchProducts, searchQuery]);
 
-  useEffect(() => {
-    setFilteredProducts(products);
-  }, [products]);
-
-  const handleSearch = () => {
-    if (searchQuery === "") {
-      setFilteredProducts(products);
-    } else {
-      const lowercasedQuery = searchQuery.toLowerCase();
-      const filtered = products.filter(
-        (item) =>
-          item.id.toLowerCase().includes(lowercasedQuery) ||
-          item.name.toLowerCase().includes(lowercasedQuery) ||
-          item.sp.toLowerCase().includes(lowercasedQuery) ||
-          item.type.toLowerCase().includes(lowercasedQuery) ||
-          item.category.toLowerCase().includes(lowercasedQuery)
-      );
-      setFilteredProducts(filtered);
-    }
-  };
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchQuery, products]);
-
+  console.log(tenantData);
   return (
     <Box p={4}>
       {/* Top Control Bar */}
@@ -123,7 +102,7 @@ export default function Prod() {
       {/* Product Grid or List */}
       {viewMode === "grid" ? (
         <Grid container spacing={2}>
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <Grid item key={product.id} xs={12} sm={6} md={4}>
               <Box
                 sx={{
@@ -134,12 +113,12 @@ export default function Prod() {
                   textAlign: "center",
                   bgcolor: "#fafafa",
                 }}
+                onClick={() =>
+                  history.push(
+                    `/${tenantData?.tenant_schema_name}/purchase/product/${product?.id}`
+                  )
+                }
               >
-                <img
-                  src={product.image || "default-image-url"}
-                  alt={product.name}
-                  style={{ width: "100%", height: 150, objectFit: "cover" }}
-                />
                 <Typography variant="h6" mt={2}>
                   {product.product_name}
                 </Typography>
@@ -147,14 +126,21 @@ export default function Prod() {
                   {product.category}
                 </Typography>
                 <Typography variant="caption">
-                  Qty: {product.availableProductQty}
+                  {product?.unit_of_measure_details.unit_category}
+                </Typography>
+                <Typography>{product?.product_category}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {product.category}
+                </Typography>
+                <Typography variant="caption">
+                  Qty: {product?.available_product_quantity}
                 </Typography>
               </Box>
             </Grid>
           ))}
         </Grid>
       ) : (
-        <ProdListview items={filteredProducts} loading={loading} />
+        <ProdListview items={products} loading={loading} />
       )}
     </Box>
   );

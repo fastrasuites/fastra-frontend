@@ -1,4 +1,3 @@
-// Purchreq.jsx
 import React, { useState, useEffect } from "react";
 import "./Purchreq.css";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
@@ -12,10 +11,10 @@ import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { extractRFQID, formatDate } from "../../../helper/helper";
-// import SecondaryBar.css
 import "../../Inventory/secondaryBar/SecondaryBar.css";
 import { Box, Button } from "@mui/material";
 import { Search } from "lucide-react";
+import Swal from "sweetalert2";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
@@ -23,15 +22,13 @@ export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-
+  const [loading, setLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
-
   const history = useHistory();
 
-  // Initialize wizard state properly
   const [wizardState, setWizardState] = useState(() => {
     const saved = localStorage.getItem(WIZARD_STORAGE_KEY);
     return saved
@@ -44,7 +41,6 @@ export default function Purchreq() {
         };
   });
 
-  // Sync wizard state to localStorage AND handle storage events
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === WIZARD_STORAGE_KEY && e.newValue) {
@@ -52,18 +48,13 @@ export default function Purchreq() {
       }
     };
 
-    // Save to localStorage when state changes
     localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
-
-    // Listen for storage events (from other tabs/windows)
     window.addEventListener("storage", handleStorageChange);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [wizardState]);
-
-  // REMOVED: The useEffect that depended on location.state
 
   const handleCloseModal = (action) => {
     if (action === "skip") {
@@ -84,45 +75,32 @@ export default function Purchreq() {
       setWizardState((prev) => ({ ...prev, hidden: true }));
     }
   };
+
   useEffect(() => {
-    const savedPR = localStorage.getItem("purchaseRequestData");
-    if (savedPR) {
-      setPurchaseRequestData(JSON.parse(savedPR));
-    }
-  }, []);
-  useEffect(() => {
-    fetchPurchaseRequests().then((data) => {
-      if (data.success) {
-        setPurchaseRequestData(data.data);
-        localStorage.setItem("purchaseRequestData", JSON.stringify(data.data));
+    const debounce = setTimeout(async () => {
+      setLoading(true);
+      const result = await fetchPurchaseRequests(searchQuery);
+      setLoading(false);
+
+      if (result.success) {
+        setPurchaseRequestData(result.data);
       }
-    });
-  }, [fetchPurchaseRequests]);
+
+      if (searchQuery && (!result || result.data.length === 0)) {
+        Swal.fire({
+          icon: "info",
+          title: "No results found",
+          text: "Try a different search term.",
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(debounce);
+  }, [fetchPurchaseRequests, searchQuery]);
 
   const toggleViewMode = (mode) => {
     setViewMode(mode);
   };
-
-  const filteredPurchaseRequest = purchaseRequestData.filter((item) => {
-    console.log(item);
-    if (!searchQuery) return true;
-    const lowercasedQuery = searchQuery.toLowerCase();
-
-    const price = item?.total_price?.toString().toLowerCase() || "";
-    const status = item?.status?.toLowerCase() || "";
-    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
-    const purchaseID = item.id?.toLowerCase() || "";
-    const vendor = item?.vendor?.company_name.toLowerCase() || "";
-    const date = formatDate(item?.date_created)?.toLowerCase() || "";
-    return (
-      price.includes(lowercasedQuery) ||
-      status.includes(lowercasedQuery) ||
-      currencyName.includes(lowercasedQuery) ||
-      purchaseID.includes(lowercasedQuery) ||
-      vendor.includes(lowercasedQuery) ||
-      date.includes(lowercasedQuery)
-    );
-  });
 
   const getStatusColor = (status) => {
     switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
@@ -212,7 +190,6 @@ export default function Purchreq() {
               </div>
 
               <nav className="secondary-bar" aria-label="Secondary navigation">
-                {/* Left side */}
                 <div className="secondary-bar__left">
                   <Link to={`purchase-request/new`}>
                     <Button
@@ -246,7 +223,6 @@ export default function Purchreq() {
                   </div>
                 </div>
 
-                {/* Right side */}
                 <div className="secondary-bar__right">
                   <div
                     className="secondary-bar__pagination"
@@ -298,13 +274,12 @@ export default function Purchreq() {
                       className="secondary-bar__divider"
                       aria-hidden="true"
                     />
-
                     <button
                       type="button"
                       className={`secondary-bar__icon-button ${
                         viewMode === "list" ? "active-view" : ""
                       }`}
-                      aria-label="Grid view"
+                      aria-label="List view"
                       onClick={() => toggleViewMode("list")}
                     >
                       <FaBars aria-hidden="true" />
@@ -317,32 +292,28 @@ export default function Purchreq() {
 
           {viewMode === "grid" ? (
             <div className="rfqStatusCards">
-              {filteredPurchaseRequest.map((item) => {
-                return (
-                  <div
-                    className="rfqStatusCard"
-                    key={item?.id}
-                    onClick={() => handleCardClick(item)}
+              {purchaseRequestData.map((item) => (
+                <div
+                  className="rfqStatusCard"
+                  key={item?.id}
+                  onClick={() => handleCardClick(item)}
+                >
+                  <p className="cardid">{extractRFQID(item?.url)}</p>
+                  <p className="cardate">{formatDate(item.date_created)}</p>
+                  <p className="vendname">{item?.vendor?.company_name}</p>
+                  <p className="cardid">{item?.purpose}</p>
+                  <p
+                    className="status"
+                    style={{ color: getStatusColor(item.status) }}
                   >
-                    <p className="cardid">{extractRFQID(item?.url)}</p>
-                    <p className="cardate">{formatDate(item.date_created)}</p>
-                    <p className="vendname">{item?.vendor?.company_name}</p>
-                    <p className="cardid">{item?.purpose}</p>
-                    <p
-                      className="status"
-                      style={{
-                        color: getStatusColor(item.status),
-                      }}
-                    >
-                      {item.status}
-                    </p>
-                  </div>
-                );
-              })}
+                    {item.status}
+                  </p>
+                </div>
+              ))}
             </div>
           ) : (
             <ListView
-              items={filteredPurchaseRequest}
+              items={purchaseRequestData}
               onCardClick={handleSelectedRequest}
               getStatusColor={getStatusColor}
             />

@@ -77,10 +77,18 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
       return;
     }
 
+    const extractID = (url) => {
+      if (!url) {
+        console.warn("extractRFQID: url is undefined");
+        return ""; // or handle the case appropriately
+      }
+      const segments = url.split("/").filter(Boolean);
+      return segments[segments.length - 1];
+    };
     try {
       const payload = new FormData();
       payload.append("product_name", formState.name);
-      payload.append("unit_of_measure", formState.unt);
+      payload.append("unit_of_measure", extractID(formState.unt));
       payload.append("product_category", formState.category);
       payload.append("product_description", formState.productDesc);
       payload.append(
@@ -102,6 +110,7 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
         title: "Product Created",
         text: "Your new product has been saved successfully.",
       });
+      history.push(`/${tenant_schema_name}/purchase/product`);
 
       if (fromPurchaseModuleWizard) {
         const saved =
@@ -109,6 +118,7 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
         saved.currentStep = 3;
         saved.hidden = false;
         localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(saved));
+
         history.push(`/${tenant_schema_name}/purchase`);
       }
     } catch (err) {

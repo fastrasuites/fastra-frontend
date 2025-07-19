@@ -91,7 +91,12 @@ const PurchaseRequestInfo = () => {
     }
   }, [fetchSinglePurchaseRequest, id, showError]);
 
-  console.log(item);
+  const requester =
+    item?.requester_details?.user?.first_name &&
+    item?.requester_details?.user?.last_name
+      ? `${item?.requester_details?.user?.first_name} ${item?.requester_details?.user?.last_name}`
+      : item?.requester_details?.user?.username;
+
   useEffect(() => {
     loadPurchaseRequest();
   }, [loadPurchaseRequest]);
@@ -110,18 +115,18 @@ const PurchaseRequestInfo = () => {
       // build payload
       const prId = extractRFQID(item.url);
       const payload = {
-        vendor: item.vendor?.url || item.vendor,
-        currency: item.currency?.url || item.currency,
+        //   vendor: item.vendor?.url || item.vendor,
+        //   currency: item.currency?.url || item.currency,
         status: newStatus,
-        purpose: item.purpose,
-        items: (item.items || []).map((it) => ({
-          product: it.product.url,
-          description: it.description,
-          qty: Number(it.qty) || 0,
-          unit_of_measure: it.unit_of_measure?.url || it.unit_of_measure?.[0],
-          estimated_unit_price: it.estimated_unit_price,
-        })),
-        is_hidden: item.is_hidden,
+        // purpose: item.purpose,
+        // items: (item.items || []).map((it) => ({
+        //   product: it.product.url,
+        //   description: it.description,
+        //   qty: Number(it.qty) || 0,
+        //   unit_of_measure: it.unit_of_measure?.url || it.unit_of_measure?.[0],
+        //   estimated_unit_price: it.estimated_unit_price,
+        // })),
+        // is_hidden: item.is_hidden,
       };
 
       try {
@@ -248,12 +253,7 @@ const PurchaseRequestInfo = () => {
       case "rejected":
         return {
           label: "Rejected",
-          actions: [
-            {
-              text: "Set Back to Draft",
-              onClick: () => handleStatusChange("draft"),
-            },
-          ],
+          actions: [],
         };
       case "draft":
         return {
@@ -286,6 +286,7 @@ const PurchaseRequestInfo = () => {
     );
   }
 
+  console.log(item);
   return (
     <div className="rfqStatus">
       {/* Header */}
@@ -398,7 +399,7 @@ const PurchaseRequestInfo = () => {
                     fontSize: 12,
                   }}
                 >
-                  {item.requester || "N/A"}
+                  {requester || "N/A"}
                 </TableCell>
                 <TableCell
                   sx={{

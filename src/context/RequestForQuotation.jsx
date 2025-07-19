@@ -27,15 +27,8 @@ export const RFQProvider = ({ children }) => {
   }, [tenant_schema_name, access_token, refresh_token]);
 
   const validateRFQFields = (info) => {
-    const {
-      expiry_date,
-      vendor,
-      purchase_request,
-      currency,
-      status,
-      items,
-      is_hidden,
-    } = info;
+    const { expiry_date, vendor, purchase_request, currency, status, items } =
+      info;
 
     return (
       !!expiry_date &&
@@ -43,8 +36,7 @@ export const RFQProvider = ({ children }) => {
       !!purchase_request &&
       !!currency &&
       !!status &&
-      !!items &&
-      typeof is_hidden === "boolean"
+      !!items
     );
   };
 
@@ -172,7 +164,7 @@ export const RFQProvider = ({ children }) => {
       }
       try {
         setIsLoading(true);
-        const response = await client.patch(
+        const response = await client.put(
           `/purchase/request-for-quotation/${id}/`,
           info
         );

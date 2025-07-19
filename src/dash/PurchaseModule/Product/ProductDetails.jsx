@@ -8,16 +8,21 @@ import {
   Skeleton,
   Button,
   IconButton,
+  Grid,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { usePurchase } from "../../../context/PurchaseContext";
+import { formatDate } from "../../../helper/helper";
+import "./ProductDetails.css";
+import { useTenant } from "../../../context/TenantContext";
 
 const ProductDetails = () => {
   const { fetchSingleProduct, singleProducts } = usePurchase();
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const { tenantData } = useTenant();
 
   useEffect(() => {
     (async () => {
@@ -74,125 +79,111 @@ const ProductDetails = () => {
   const product = singleProducts;
 
   return (
-    <Box p={4} pr={10} sx={{ minHeight: "100%" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4 }}>
-        <Typography variant="h4" sx={{ color: "#1976d2", fontWeight: 600 }}>
-          Product Details
-        </Typography>
-        {/* Action Buttons */}
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
-          <Button variant="outlined" onClick={() => window.history.back()}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              // Add your edit handler here
-              console.log("Edit button clicked");
-            }}
-          >
-            Edit
-          </Button>
-        </Stack>
-      </Box>
-
+    <Box id="prodetails" p={4}>
+      <Button variant="contained" mb={1} disableElevation>
+        New Product
+      </Button>
       <Box
-        sx={{
-          p: 3,
-          bgcolor: "#fff",
-          borderRadius: 2,
-        }}
+        className="prodet1"
+        bgcolor={"white"}
+        border={"1px solid #E2E6E9"}
+        p={4}
+        borderRadius={4}
+        marginTop={2}
       >
-        <Typography variant="h6" sx={{ mb: 2, color: "#1976d2" }}>
-          Basic Information
-        </Typography>
+        <Box className="prodet2">
+          <Typography>Basic Information</Typography>
+          <Box className="prodet2a">
+            <Button
+              type="button"
+              className="prodet2but"
+              onClick={() => window.history.back()}
+            >
+              Cancel
+            </Button>
 
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={4}
-          sx={{ mb: 4 }}
-        >
-          <Box flex={1}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Product Name
-            </Typography>
-            <Typography variant="body1" color="text.primary">
-              {product.product_name || "-"}
-            </Typography>
+            <Link
+              to={`/${tenantData?.tenant_schema_name}/purchase/product/edit/${product?.id}`}
+            >
+              <Button type="button" variant="contained" disableElevation>
+                Edit
+              </Button>
+            </Link>
           </Box>
+        </Box>
+        {/* product details */}
 
-          <Box flex={1}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Unit of Measure
-            </Typography>
-            <Typography variant="body1" color="text.primary">
-              {product.unit_of_measure_details.unit_name || "-"}
-            </Typography>
-          </Box>
+        <Box className="prodet3">
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Typography variant="subtitle2" gutterBottom>
+                Product Name
+              </Typography>
 
-          <Box flex={1}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Category
-            </Typography>
-            <Typography variant="body1" color="text.primary">
-              {product.product_category || "-"}
-            </Typography>
-          </Box>
+              <Typography className="prodet3b">
+                {product.product_name}
+              </Typography>
+            </Grid>
 
-          <Box flex={1}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Description
-            </Typography>
-            <Typography variant="body1" color="text.primary">
-              {product.product_description || "-"}
-            </Typography>
-          </Box>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Typography variant="subtitle2" gutterBottom>
+                Product Description
+              </Typography>
 
-          <Box sx={{ textAlign: "center", width: 120 }}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Image
-            </Typography>
-            {product.image ? (
-              <Avatar
-                variant="rounded"
-                src={product.image}
-                alt={product.product_name}
-                sx={{ width: 96, height: 96, mx: "auto" }}
-              />
-            ) : (
-              <Skeleton variant="rectangular" width={96} height={96} />
-            )}
-          </Box>
-        </Stack>
+              <Typography className="prodet3b">
+                {product.product_description}
+              </Typography>
+            </Grid>
 
-        <Typography variant="h6" sx={{ mb: 2, color: "#1976d2" }}>
-          Pricing
-        </Typography>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Typography variant="subtitle2" gutterBottom>
+                Unit of Measure
+              </Typography>
 
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={4}
-          sx={{ mb: 4 }}
-        >
-          <Box flex={1}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Selling Price
-            </Typography>
-            <Typography variant="body1" color="text.primary">
-              {product.sp != null ? `₦${product.sp}` : "-"}
-            </Typography>
-          </Box>
+              <Typography className="prodet3b">
+                {product.unit_of_measure_details?.unit_category} (
+                {product.unit_of_measure_details?.unit_symbol})
+              </Typography>
+            </Grid>
 
-          <Box flex={1}>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              Cost Price
-            </Typography>
-            <Typography variant="body1" color="text.primary">
-              {product.cp != null ? `₦${product.cp}` : "-"}
-            </Typography>
-          </Box>
-        </Stack>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Typography variant="subtitle2" gutterBottom>
+                Category
+              </Typography>
+
+              <Typography className="prodet3b">
+                {product.product_category}
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Typography variant="subtitle2" gutterBottom>
+                Date Created
+              </Typography>
+              <Typography className="prodet3b">
+                {formatDate(product.created_on)}
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Typography variant="subtitle2" gutterBottom>
+                Product Quantity
+              </Typography>
+              <Typography className="prodet3b">
+                {product.available_product_quantity}
+              </Typography>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4} lg={3}>
+              <Typography variant="subtitle2" gutterBottom>
+                Quantity Purchased
+              </Typography>
+              <Typography className="prodet3b">
+                {product.total_quantity_purchased}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Box>
       </Box>
     </Box>
   );
@@ -203,3 +194,287 @@ ProductDetails.propTypes = {
 };
 
 export default React.memo(ProductDetails);
+
+// import React, { useState, useEffect } from "react";
+// import "./ProductDetails.css";
+// import { formatDate } from "../../../helper/helper";
+// import {
+//   Box,
+//   Grid,
+//   Typography,
+//   TextField,
+//   MenuItem,
+//   CircularProgress,
+// } from "@mui/material";
+// import { useTenant } from "../../../context/TenantContext";
+// import { getTenantClient } from "../../../services/apiService";
+// import Swal from "sweetalert2";
+// import { usePurchase } from "../../../context/PurchaseContext";
+
+// export default function ProductDetails({ product, onClose, onSave }) {
+//   const initialState = {
+//     id: product.id || "",
+//     product_name: product.product_name || "",
+//     product_description: product.product_description || "",
+//     unit_of_measure_symbol:
+//       product.unit_of_measure_details?.unit_symbol ||
+//       product.unit_of_measure_details?.unit_name ||
+//       "",
+//     unit_of_measure: product.unit_of_measure_details?.url || "",
+//     category: product.product_category || "",
+//     available_product_quantity: product.available_product_quantity || 0,
+//     total_quantity_purchased: product.total_quantity_purchased || 0,
+//   };
+//   const { updateProduct } = usePurchase();
+//   const [editMode, setEditMode] = useState(false);
+//   const [savedUnits, setSavedUnits] = useState([]);
+//   const [formState, setFormState] = useState(initialState);
+//   const [isLoading, setIsLoading] = useState(false);
+//   const { tenant_schema_name, access_token } = useTenant().tenantData || {};
+//   const client = getTenantClient(tenant_schema_name, access_token);
+//   console.log("checking value of products prop", product);
+//   const id = useParams();
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         const response = await client.get(/purchase/unit-of-measure/);
+//         const units = response.data;
+//         setSavedUnits(units);
+//       } catch (err) {
+//         console.log(err.message);
+//       }
+//     };
+//     fetchData();
+//   }, []);
+
+//   console.log("saved units", savedUnits);
+
+//   const categoryOptions = [
+//     { value: "consumable", label: "Consumable" },
+//     { value: "stockable", label: "Stockable" },
+//     { value: "service-product", label: "Service Product" },
+//   ];
+
+//   if (!product) return null;
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormState((prev) => ({
+//       ...prev,
+//       [name]: value,
+//     }));
+//   };
+
+//   if (isLoading) {
+//     return (
+//       <Box
+//         display="flex"
+//         justifyContent="center"
+//         alignItems="center"
+//         height="100vh"
+//       >
+//         <CircularProgress />
+//       </Box>
+//     );
+//   }
+
+//   const handleSave = async (event) => {
+//     try {
+//       event.preventDefault();
+//       setIsLoading(true);
+//       const result = await updateProduct(formState.id, formState);
+//       console.log("result from updateProduct", result);
+//       setIsLoading(false);
+
+//       if (result?.success && result.data) {
+//         Swal.fire({
+//           icon: "success",
+//           title: "Product Updated",
+//           text: "The product details updated successfully.",
+//         });
+
+//         // ✅ Use returned data to update formState
+//         const updated = result.data;
+//         console.log("updated product", updated);
+//         setFormState({
+//           id: updated.id,
+//           product_name: updated.product_name || "",
+//           product_description: updated.product_description || "",
+//           unit_of_measure_symbol:
+//             updated.unit_of_measure_details?.unit_symbol ||
+//             updated.unit_of_measure_details?.unit_name ||
+//             "",
+//           unit_of_measure: updated.unit_of_measure_details?.url || "",
+//           category: updated.product_category || "",
+//           available_product_quantity: updated.available_product_quantity || 0,
+//           total_quantity_purchased: updated.total_quantity_purchased || 0,
+//         });
+//         // setEditMode(false);
+//         onClose();
+//       }
+//     } catch (err) {
+//       Swal.fire({
+//         icon: "error",
+//         title: "Update Failed",
+//         text:
+//           err?.message || "There was an error updating the product details.",
+//       });
+//       setIsLoading(false);
+//     }
+//   };
+
+//   return (
+//     <Box id="prodetails" className="prodet">
+//       <form className="prodet1">
+//         <Box className="prodet2">
+//           <Typography>Basic Information</Typography>
+//           <Box className="prodet2a">
+//             <button type="button" className="prodet2but" onClick={onClose}>
+//               Cancel
+//             </button>
+//             {editMode ? (
+//               <button type="button" className="prodet2btn" onClick={handleSave}>
+//                 Save
+//               </button>
+//             ) : (
+//               <button
+//                 type="button"
+//                 className="prodet2btn"
+//                 onClick={() => setEditMode(true)}
+//               >
+//                 Edit
+//               </button>
+//             )}
+//           </Box>
+//         </Box>
+//         {/* product details */}
+
+//         <Box className="prodet3">
+//           <Grid container spacing={3}>
+//             <Grid item xs={12} sm={6} md={4} lg={3}>
+//               <Typography variant="subtitle2" gutterBottom>
+//                 Product Name
+//               </Typography>
+//               {editMode ? (
+//                 <TextField
+//                   fullWidth
+//                   variant="outlined"
+//                   name="product_name"
+//                   value={formState.product_name}
+//                   onChange={handleChange}
+//                   size="small"
+//                 />
+//               ) : (
+//                 <Typography className="prodet3b">
+//                   {product.product_name}
+//                 </Typography>
+//               )}
+//             </Grid>
+
+//             <Grid item xs={12} sm={6} md={4} lg={3}>
+//               <Typography variant="subtitle2" gutterBottom>
+//                 Product Description
+//               </Typography>
+//               {editMode ? (
+//                 <TextField
+//                   fullWidth
+//                   variant="outlined"
+//                   name="product_description"
+//                   value={formState.product_description}
+//                   onChange={handleChange}
+//                   size="small"
+//                 />
+//               ) : (
+//                 <Typography className="prodet3b">
+//                   {product.product_description}
+//                 </Typography>
+//               )}
+//             </Grid>
+
+//             <Grid item xs={12} sm={6} md={4} lg={3}>
+//               <Typography variant="subtitle2" gutterBottom>
+//                 Unit of Measure
+//               </Typography>
+//               {editMode ? (
+//                 <TextField
+//                   select
+//                   fullWidth
+//                   variant="outlined"
+//                   name="unit_of_measure_symbol"
+//                   value={formState.unit_of_measure_symbol}
+//                   onChange={handleChange}
+//                   size="small"
+//                 >
+//                   {savedUnits.map((option) => (
+//                     <MenuItem key={option.unit_name} value={option.unit_symbol}>
+//                       {option.unit_name} - {option.unit_category}
+//                     </MenuItem>
+//                   ))}
+//                 </TextField>
+//               ) : (
+//                 <Typography className="prodet3b">
+//                   {product.unit_of_measure_details?.unit_symbol}
+//                 </Typography>
+//               )}
+//             </Grid>
+
+//             <Grid item xs={12} sm={6} md={4} lg={3}>
+//               <Typography variant="subtitle2" gutterBottom>
+//                 Category
+//               </Typography>
+//               {editMode ? (
+//                 <TextField
+//                   select
+//                   fullWidth
+//                   variant="outlined"
+//                   name="category"
+//                   value={formState.category}
+//                   onChange={handleChange}
+//                   size="small"
+//                 >
+//                   {categoryOptions.map((option) => (
+//                     <MenuItem key={option.value} value={option.value}>
+//                       {option.label}
+//                     </MenuItem>
+//                   ))}
+//                 </TextField>
+//               ) : (
+//                 <Typography className="prodet3b">
+//                   {product.product_category}
+//                 </Typography>
+//               )}
+//             </Grid>
+
+//             <Grid item xs={12} sm={6} md={4} lg={3}>
+//               <Typography variant="subtitle2" gutterBottom>
+//                 Date Created
+//               </Typography>
+//               <Typography className="prodet3b">
+//                 {formatDate(product.created_on)}
+//               </Typography>
+//             </Grid>
+
+//             <Grid item xs={12} sm={6} md={4} lg={3}>
+//               <Typography variant="subtitle2" gutterBottom>
+//                 Product Quantity
+//               </Typography>
+//               <Typography className="prodet3b">
+//                 {product.available_product_quantity}
+//               </Typography>
+//             </Grid>
+
+//             <Grid item xs={12} sm={6} md={4} lg={3}>
+//               <Typography variant="subtitle2" gutterBottom>
+//                 Product Purchased
+//               </Typography>
+//               <Typography className="prodet3b">
+//                 {product.total_quantity_purchased}
+//               </Typography>
+//             </Grid>
+//           </Grid>
+//         </Box>
+//       </form>
+//     </Box>
+//   );
+// }

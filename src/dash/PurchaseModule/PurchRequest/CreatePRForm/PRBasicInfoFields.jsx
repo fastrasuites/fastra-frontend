@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Autocomplete, TextField, Typography } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
+import { useTenant } from "../../../../context/TenantContext";
 
 const REQUIRED_ASTERISK = (
   <Typography component="span" color="#D32F2F" ml={0.5}>
@@ -23,13 +24,13 @@ const PRBasicInfoFields = ({
   formUse,
   currencies = [],
   vendors = [],
-  requester,
   rfqID,
   locationList = [],
 }) => {
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const { tenantData } = useTenant();
 
   useEffect(() => {
     setSelectedCurrency(getSelectedOption(formData.currency, currencies, "id"));
@@ -63,7 +64,7 @@ const PRBasicInfoFields = ({
           </div>
           <div className="refDate">
             <label>Requester</label>
-            <p>{requester || "N/A"}</p>
+            <p>{tenantData?.user?.username}</p>
           </div>
         </div>
       </div>

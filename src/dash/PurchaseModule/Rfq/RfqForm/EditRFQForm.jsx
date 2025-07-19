@@ -59,6 +59,7 @@ const EditRfqForm = () => {
   // eslint-disable-next-line no-unused-vars
   const [prIDList, setPrIDList] = useState([]);
 
+  console.log(formData);
   // ─── Fetch required data on mount ──────────────────────────────────────────
   useEffect(() => {
     fetchVendors();
@@ -101,15 +102,16 @@ const EditRfqForm = () => {
         : formData.items;
 
     const items = sourceItems.map((item) => ({
+      id: item.id,
       product: item.product,
       description: item.description,
       qty: Number(item.qty) || 0,
-      unit_of_measure: item.unit_of_measure?.url || "",
-      estimated_unit_price: item.total_price,
+      unit_of_measure: item.product_details.unit_of_measure || "",
+      estimated_unit_price: item.estimated_unit_price,
     }));
 
     return {
-      ...formData,
+      //   ...formData,
       expiry_date: formData?.expiry_date,
       id: formData?.id,
       status,
@@ -136,6 +138,7 @@ const EditRfqForm = () => {
     }, 1500);
   };
 
+  console.log(formData);
   // ─── Handle Save Draft or Save Changes ─────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();

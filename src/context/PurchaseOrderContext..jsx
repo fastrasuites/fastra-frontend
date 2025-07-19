@@ -34,7 +34,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       payment_terms,
       purchase_policy,
       delivery_terms,
-      created_by,
       items,
       is_hidden,
     } = info;
@@ -46,7 +45,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       !!delivery_terms &&
       !!currency &&
       !!status &&
-      !!created_by &&
       !!items &&
       typeof is_hidden === "boolean"
     );
