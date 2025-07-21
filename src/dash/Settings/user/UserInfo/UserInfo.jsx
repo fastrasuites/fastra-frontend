@@ -88,7 +88,6 @@ const UserInfo = () => {
     if (lang === "en") return "English";
     return lang ? lang.charAt(0).toUpperCase() + lang.slice(1) : "Not provided";
   };
-  console.log("singleUser", singleUser);
 
   if (isLoading) {
     return (
@@ -146,7 +145,6 @@ const UserInfo = () => {
       </Box>
     );
   }
-  console.log(singleUser);
   return (
     <Box p={6}>
       <Box
@@ -483,7 +481,7 @@ const UserInfo = () => {
                   <Button variant="outlined" size="large">
                     Access Rights
                   </Button>
-                  <Button variant="outlined" color="inherit" size="large">
+                  {/* <Button variant="outlined" color="inherit" size="large">
                     Sessions
                   </Button>
                   <Button variant="outlined" color="inherit" size="large">
@@ -494,7 +492,7 @@ const UserInfo = () => {
                   </Button>
                   <Button variant="outlined" color="inherit" size="large">
                     Sales Preferences
-                  </Button>
+                  </Button> */}
                 </Box>
 
                 <Typography color="#3B7CED" fontSize="20px" pb={2}>

@@ -74,7 +74,6 @@ const ProfileMenuDropdown = () => {
   const handlelogout = () => {
     logout(); // from useTenant
     setOpen(false);
-    console.log("logged out user");
   };
 
   return (

@@ -102,10 +102,6 @@ export default function Papr({ prData, onClose, onStatusChange }) {
   const [totalPrice, setTotalPrice] = useState(0);
   const [rows, setRows] = useState([]);
 
-  console.log(prData);
-  console.log(prData.result);
-  console.log(prData.items);
-
   useEffect(() => {
     if (prData && prData.rows) {
       const total = prData.rows.reduce((sum, row) => {

@@ -61,7 +61,6 @@ export const ScrapProvider = ({ children }) => {
 
   const normalizeStockAdjustment = useCallback(
     async (stock_adjustment) => {
-      // console.log(stock_adjustment);
       if (!stock_adjustment) return null;
       const warehouse = await fetchResource(
         stock_adjustment.warehouse_location
@@ -123,8 +122,6 @@ export const ScrapProvider = ({ children }) => {
 
   const createScrap = useCallback(
     async (scrapData) => {
-      // console.log(scrapData);
-
       if (!client) {
         const msg = "API client not initialized.";
         setError(msg);
@@ -147,7 +144,6 @@ export const ScrapProvider = ({ children }) => {
           is_hidden: false,
         };
 
-        // console.log(payload);
         const { data } = await client.post("/inventory/scrap/", payload);
         setScrapList((prev) => [...prev, data]);
         setError(null);
@@ -164,8 +160,6 @@ export const ScrapProvider = ({ children }) => {
 
   const updateScrap = useCallback(
     async (scrapData, id) => {
-      // console.log(scrapData);
-
       if (!client) {
         const msg = "API client not initialized.";
         setError(msg);
@@ -188,7 +182,6 @@ export const ScrapProvider = ({ children }) => {
           is_hidden: false,
         };
 
-        console.log(payload);
         const { data } = await client.patch(`/inventory/scrap/${id}/`, payload);
         setScrapList((prev) => [...prev, data]);
         setError(null);

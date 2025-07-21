@@ -97,9 +97,7 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
       );
       payload.append("total_quantity_Purchased", formState.totalQtyPurchased);
 
-      // console.log("Submitting payload:", payload);
       // for(const [key, value] of payload.entries()){
-      //   console.log(`${key}: ${value}`)
       // }
       setError(null);
 

@@ -493,7 +493,9 @@ const CompanyForm = () => {
   const { updateCompany, getCompany, company: companyDetails } = useCompany();
   const initialCompanyDataRef = useRef(null);
   const location = useLocation();
-  const fromStepModal = location.state?.fromStepModal || localStorage.getItem("fromStepModal") === "true";
+  const fromStepModal =
+    location.state?.fromStepModal ||
+    localStorage.getItem("fromStepModal") === "true";
 
   const history = useHistory();
   const tenant_schema_name = tenantData?.tenant_schema_name;
@@ -628,13 +630,11 @@ const CompanyForm = () => {
   }, []);
 
   const handleSubmit = useCallback(
-    
     async (e) => {
       e.preventDefault();
       setIsSubmitting(true);
 
       try {
-        console.log("i got here")
         const formData = new FormData();
         if (state.imageFile) formData.append("logo_image", state.imageFile);
 
@@ -682,9 +682,9 @@ const CompanyForm = () => {
             showConfirmButton: false,
           });
 
-          if (fromStepModal) { 
+          if (fromStepModal) {
             localStorage.removeItem("fromStepModal");
-              history.push(`/${tenant_schema_name}/dashboard`);
+            history.push(`/${tenant_schema_name}/dashboard`);
           }
         } else {
           throw new Error(res.error || "Failed to update company");
@@ -696,7 +696,6 @@ const CompanyForm = () => {
           title: "Update Failed",
           text: err.message || "An error occurred while updating the company",
         });
-
       } finally {
         setIsSubmitting(false);
       }

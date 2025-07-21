@@ -73,7 +73,8 @@ export const PurchaseOrderProvider = ({ children }) => {
       } catch (err) {
         console.error("Error creating purchase order:", err);
         setError(err);
-        return { success: false, message: err.message };
+        throw err;
+        // return { success: false, message: err.message };
       } finally {
         setIsLoading(false);
       }

@@ -22,8 +22,6 @@ const Receipt3 = ({
   const [page, setPage] = useState(0);
   const rows = formData && formData.rows ? formData.rows : [];
 
-  console.log(formData); // Expected more data like 'rows' and it's contents
-
   // Dummy Addressess
   const [vendorAddress, setVendorAddress] = useState({
     line1: "Bela Const",

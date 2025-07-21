@@ -152,7 +152,6 @@ export default function StockAdjustmentInfo() {
       </Box>
     );
 
-  console.log(stock);
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
       {/* Action button */}
@@ -276,7 +275,7 @@ export default function StockAdjustmentInfo() {
                   <TableCell
                     sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}
                   >
-                    {row?.current_quantity}
+                    {row?.product?.available_product_quantity || 0}
                   </TableCell>
                   <TableCell
                     sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}

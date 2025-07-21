@@ -25,8 +25,6 @@ const POStatus = ({
 
   const itemsPerPage = 10;
 
-
-
   const handleClick = (item) => {
     setSelectedItem(item);
   };
@@ -49,7 +47,6 @@ const POStatus = ({
           draft: "draft",
         };
         const status = statusMap[selectedStatus[1].toLowerCase()];
-        console.log(status);
         return purchaseOrderData.filter((item) => item.status === status);
       });
     }

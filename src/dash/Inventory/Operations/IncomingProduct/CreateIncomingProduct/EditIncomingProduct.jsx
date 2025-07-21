@@ -210,7 +210,6 @@ export default function EditIncomingProduct() {
     );
   }, []);
 
-  console.log(location.state);
   // Auto-fill incoming state
   useEffect(() => {
     const incoming = location.state?.incoming;
@@ -260,7 +259,6 @@ export default function EditIncomingProduct() {
     };
     try {
       const res = await updateIncomingProduct(id, payload);
-      console.log(res);
 
       Swal.fire("Success", "Record saved", "success");
       history.push(

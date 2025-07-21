@@ -49,9 +49,6 @@ const Receipt = ({ formData, onClose }) => {
     setInvoiceTableHeadTextColor(color);
   };
 
-  console.log(formData);
-  // console.log(formData.rows);
-
   if (printReceipt) {
     // window.print();
     setPrintReceipt(false);

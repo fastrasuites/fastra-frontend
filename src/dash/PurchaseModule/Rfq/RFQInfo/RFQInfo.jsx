@@ -76,7 +76,6 @@ const RFQInfo = () => {
   useEffect(() => {
     loadRFQ();
   }, [loadRFQ]);
-  console.log(item);
 
   // Status change handler
   const handleStatusChange = useCallback(

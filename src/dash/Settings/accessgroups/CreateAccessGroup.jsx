@@ -39,10 +39,9 @@ const CreateAccessGroup = () => {
   const totalPages = 2;
 
   const location = useLocation();
-  const fromStepModal = location.state?.fromStepModal || localStorage.getItem("fromStepModal") === "true";
-  console.log("step",fromStepModal)
-
-
+  const fromStepModal =
+    location.state?.fromStepModal ||
+    localStorage.getItem("fromStepModal") === "true";
 
   const [formData, setFormData] = useState({
     groupName: "",
@@ -76,7 +75,6 @@ const CreateAccessGroup = () => {
   // const handleSubmit = async () => {
   //   try {
   //     const id = await createAccessGroup(formData);
-  //     console.log("Access group created with ID:", id);
   //     // Show success message
 
   //     if (id) {
@@ -89,7 +87,6 @@ const CreateAccessGroup = () => {
   //     history.push(`/${tenant_schema_name}/settings/accessgroups/${id}`);
   //   } catch (error) {
   //     // Error handling is already done in context
-  //     console.log(error);
   //   }
   // };
 
@@ -111,13 +108,13 @@ const CreateAccessGroup = () => {
       Swal.close();
       Swal.fire("Success", "Access group created successfully", "success");
 
-      console.log("Almost at submit")
       // Move to the thurd step for first time users
-     
 
-      if (fromStepModal) { 
+      if (fromStepModal) {
         localStorage.removeItem("fromStepModal");
-        history.push(`/${tenant_schema_name}/dashboard`, { fromStepModal: true });
+        history.push(`/${tenant_schema_name}/dashboard`, {
+          fromStepModal: true,
+        });
       } else {
         // Navigate to view page only if not in onboarding flow
         history.push(
@@ -127,7 +124,7 @@ const CreateAccessGroup = () => {
     } catch (error) {
       Swal.close();
       // Error handling is already done in context
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -138,8 +135,6 @@ const CreateAccessGroup = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
-
-  console.log("accessRights", accessRights);
 
   return (
     <Box p={{ xs: 2, sm: 4, md: 6 }}>

@@ -126,9 +126,9 @@ const AccessRightsSection = ({
         <Button variant="outlined" size="large">
           Access Rights
         </Button>
-        <Button variant="outlined" color="inherit" size="large">
+        {/* <Button variant="outlined" color="inherit" size="large">
           Sessions
-        </Button>
+        </Button> */}
       </Box>
 
       <Typography color="#3B7CED" fontSize="20px">
@@ -458,7 +458,6 @@ const CreateUser = () => {
   const fromStepModal =
     location.state?.fromStepModal ||
     localStorage.getItem("fromStepModal") === "true";
-  console.log("step", fromStepModal);
   const {
     createUser,
     getAccessGroups,
@@ -483,8 +482,6 @@ const CreateUser = () => {
 
     fetchData();
   }, [getAccessGroups, getCompany]);
-
-  console.log(accessGroupRights);
 
   // Handlers
   const handleTabChange = useCallback(
@@ -600,6 +597,11 @@ const CreateUser = () => {
       formData.append("in_app_notifications", state.inAppNotification);
       formData.append("email_notifications", state.emailNotification);
 
+      // Append image file if exists
+      if (state.imageFile) {
+        formData.append("user_image_image", state.imageFile);
+      }
+
       // Handle signature
       if (state.signature) {
         const signatureFile = dataURLtoFile(state.signature, "signature.png");
@@ -630,9 +632,6 @@ const CreateUser = () => {
           });
 
           if (fromStepModal) {
-            console.log(
-              "I got here - navigating to dashboard for onboarding step 3"
-            );
             localStorage.removeItem("fromStepModal");
             history.push(`/${tenant_schema_name}/dashboard`, {
               fromStepModal: false,
@@ -643,7 +642,6 @@ const CreateUser = () => {
             }, 2000);
           }
         } else {
-          console.log(res);
           throw new Error(res?.error || "Failed to create user");
         }
       } catch (error) {

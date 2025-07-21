@@ -16,8 +16,12 @@ import settings from "../image/settings.svg";
 import app from "../image/app.svg";
 import dots from "../image/dots.svg";
 import { Link } from "react-router-dom";
+import {
+  extractPermissions,
+  getPermissionsByApp,
+} from "../helper/extractPermissions";
 
-const Card = ({ name, description, link }) => {
+const Card = ({ name, description, link, hasAccess = false }) => {
   let icon;
   switch (name) {
     case "Account":
@@ -116,7 +120,11 @@ const Card = ({ name, description, link }) => {
   }
 
   return (
-    <Link to={link} className="card">
+    <Link
+      to={link}
+      className="card"
+      style={{ visibility: hasAccess ? "visible" : "hidden" }}
+    >
       {icon && <img src={icon} alt={name} />}
       <div className="cardtext">
         <h3 className="cardhed">{name}</h3>
@@ -130,24 +138,37 @@ const Card = ({ name, description, link }) => {
 const DashCard = () => {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
+  const permissionsMap = extractPermissions(tenantData?.user_accesses || []);
+
+  // Example:
+  const purchasePermissions =
+    Object.keys(getPermissionsByApp("purchase", permissionsMap)).length > 0;
+  const inventoryPermissions =
+    Object.keys(getPermissionsByApp("inventory", permissionsMap)).length > 0;
+  const settingsPermissions =
+    Object.keys(getPermissionsByApp("settings", permissionsMap)).length > 0;
+
   const fastra = [
     {
       name: "Purchase",
       description:
         "Streamline procurement processes by tracking purchase orders, vendor management, and inventory replenishment to optimize supply chain efficiency and cost savings.",
       link: `/${tenant_schema_name}/purchase/purchase-request`,
+      hasAccess: purchasePermissions,
     },
     {
       name: "Inventory",
       description:
         "Monitor stock levels, track inventory movements, and optimize warehouse operations to ensure optimal inventory management and minimize stockouts.",
       link: `/${tenant_schema_name}/inventory/operations`,
+      hasAccess: inventoryPermissions,
     },
     {
       name: "Settings",
       description:
         "Configure system preferences, manage user permissions, and customize application settings to align with organizational requirements and user preferences.",
       link: `/${tenant_schema_name}/settings`,
+      hasAccess: settingsPermissions,
     },
     // {
     //   name: "Account",
@@ -226,6 +247,7 @@ const DashCard = () => {
           name={fastra.name}
           description={fastra.description}
           link={fastra.link}
+          hasAccess={fastra.hasAccess}
         />
       ))}
     </div>

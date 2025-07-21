@@ -15,6 +15,8 @@ import PRBasicInfoFields from "./PRBasicInfoFields";
 import PRItemsTable from "./PRItemsTable";
 
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
+import { extractPermissions } from "../../../../helper/extractPermissions";
+import { useCanAccess } from "../../../../context/Access/AccessContext";
 
 const CreatePRForm = () => {
   const history = useHistory();
@@ -37,7 +39,12 @@ const CreatePRForm = () => {
 
   const { getActiveLocationList, activeLocationList } = useCustomLocation();
   const { tenantData } = useTenant();
+  const examps = useCanAccess();
   const { tenant_schema_name: tenantSchemaName } = tenantData;
+
+  // console.log("tenantData", tenantData);
+  // // const extractedpermission = extractPermissions(tenantData.user_accesses);
+  // // console.log(extractedpermission);
 
   const [formData, setFormData] = useState({
     purpose: pr.purpose || "",

@@ -66,74 +66,79 @@ const UserCard = memo(({ user }) => (
 ));
 
 // -- ROW VIEW --
-const UserRow = memo(({ user, selected, onSelect, onClick, showArchive }) => (
-  <TableRow
-    hover
-    onClick={onClick}
-    sx={{
-      cursor: "pointer",
-      backgroundColor: selected ? "action.selected" : "transparent",
-      "&:nth-of-type(odd)": { backgroundColor: "#F9F9F9" },
-      "& td, & th": { borderBottom: "none" },
-    }}
-  >
-    <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
-      <Checkbox
-        checked={selected}
-        onChange={(e) => onSelect(user.id, e.target.checked)}
-        sx={{ color: "#C6CCD2" }}
-      />
-    </TableCell>
-    <TableCell sx={{ p: 2, display: "flex", alignItems: "center" }}>
-      <Box
-        component="img"
-        src={user.avatar || AvatarPlaceholder}
-        alt={user.fullName}
-        sx={{ width: 40, height: 40, borderRadius: "50%", mr: 1 }}
-      />
-      <Typography variant="body1" noWrap>
-        {user.fullName}
-      </Typography>
-    </TableCell>
-    <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
-      {user.role || "—"}
-    </TableCell>
-    <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
-      {user.email}
-    </TableCell>
-    <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
-      {user.phone}
-    </TableCell>
-    <TableCell
-      sx={{ p: 2, typography: "caption", color: "#7A8A98", minWidth: 200 }}
-      noWrap
+const UserRow = memo(({ user, selected, onSelect, onClick, showArchive }) => {
+  return (
+    <TableRow
+      hover
+      onClick={onClick}
+      sx={{
+        cursor: "pointer",
+        backgroundColor: selected ? "action.selected" : "transparent",
+        "&:nth-of-type(odd)": { backgroundColor: "#F9F9F9" },
+        "& td, & th": { borderBottom: "none" },
+      }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
+      <TableCell padding="checkbox" onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={selected}
+          onChange={(e) => onSelect(user.id, e.target.checked)}
+          sx={{ color: "#C6CCD2" }}
+        />
+      </TableCell>
+      <TableCell sx={{ p: 2, display: "flex", alignItems: "center" }}>
+        <img
+          src={
+            user.user_image
+              ? `data:image/png;base64,${user.user_image}`
+              : AvatarPlaceholder
+          }
+          alt={user.fullName}
+          style={{ width: 40, height: 40, borderRadius: "50%", marginRight: 8 }} // "mr" is not valid in style
+        />
+        <Typography variant="body1" noWrap>
+          {user.fullName}
+        </Typography>
+      </TableCell>
+      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+        {user.role || "—"}
+      </TableCell>
+      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+        {user.email}
+      </TableCell>
+      <TableCell sx={{ p: 2, typography: "body2", color: "#7A8A98" }} noWrap>
+        {user.phone}
+      </TableCell>
+      <TableCell
+        sx={{ p: 2, typography: "caption", color: "#7A8A98", minWidth: 200 }}
+        noWrap
       >
-        {formatDate(user.last_login || user.date_created || Date.now())}
-        {showArchive && (
-          <Button
-            disableElevation
-            variant="contained"
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              // handle archive action
-            }}
-            sx={{ backgroundColor: "#FF9500", "&:hover": { opacity: 0.9 } }}
-          >
-            Archive
-          </Button>
-        )}
-      </Box>
-    </TableCell>
-  </TableRow>
-));
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          {formatDate(user.last_login || user.date_created || Date.now())}
+          {showArchive && (
+            <Button
+              disableElevation
+              variant="contained"
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                // handle archive action
+              }}
+              sx={{ backgroundColor: "#FF9500", "&:hover": { opacity: 0.9 } }}
+            >
+              Archive
+            </Button>
+          )}
+        </Box>
+      </TableCell>
+    </TableRow>
+  );
+});
 
 const UserList = () => {
   const history = useHistory();
@@ -153,6 +158,7 @@ const UserList = () => {
       userList.map((u) => ({
         id: u.id,
         avatar: AvatarPlaceholder,
+        user_image: u.user_image,
         fullName: `${u.first_name} ${u.last_name}`,
         email: u.email,
         phone: u.phone_number?.trim() || "—",
@@ -202,7 +208,6 @@ const UserList = () => {
       </Grid>
     ));
 
-  console.log(userList);
   return (
     <Box p={{ xs: 2, sm: 4, md: 6 }}>
       <ListToolbar

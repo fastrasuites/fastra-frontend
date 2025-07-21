@@ -5,14 +5,17 @@ import autosave from "../../../../image/autosave.svg";
 import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "@mui/material";
 import Swal from "sweetalert2";
-import { usePurchase } from "../../../../context/PurchaseContext";
-import RfqBasicInfoFields from "./RfqBasicInfoFields";
-import RfqItemsTable from "./RfqItemsTable";
-import { useRFQ } from "../../../../context/RequestForQuotation";
-import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
 import { useHistory, useLocation } from "react-router-dom";
+
+import { usePurchase } from "../../../../context/PurchaseContext";
+import { useRFQ } from "../../../../context/RequestForQuotation";
 import { useTenant } from "../../../../context/TenantContext";
+
+import RfqBasicInfoFields from "./RfqBasicInfoFields";
 import RfqBasicInfoFieldsConvertToRFQ from "./RFQBasisInfoConvert";
+import RfqItemsTable from "./RfqItemsTable";
+
+import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
 
 const RfqForm = () => {
   const {
@@ -25,19 +28,15 @@ const RfqForm = () => {
     fetchApprovedPurchaseRequests,
     purchaseRequests,
   } = usePurchase();
-
   const { createRFQ, updateRFQ } = useRFQ();
-  const { state } = useLocation();
-  const { rfq = {}, edit = false, isConvertToRFQ } = state || {};
-
-  const formUse = edit ? "Edit RFQ" : "Create RFQ";
-  const quotation = rfq || {};
-  const conversionRFQ = rfq || {};
-  const isEdit = formUse === "Edit RFQ";
   const { tenant_schema_name } = useTenant().tenantData || {};
+  const { state } = useLocation();
   const history = useHistory();
 
-  // ─── Default and initial form data ──────────────────────────────────────────
+  const { rfq = {}, edit = false, isConvertToRFQ = false } = state || {};
+  const isEdit = edit;
+  const formUse = isEdit ? "Edit RFQ" : "Create RFQ";
+
   const defaultForm = {
     purchase_request: "",
     expiry_date: "",
@@ -49,34 +48,24 @@ const RfqForm = () => {
   };
 
   const initial =
-    conversionRFQ && Object.keys(conversionRFQ).length > 0
-      ? { ...defaultForm, ...conversionRFQ }
-      : isEdit
-      ? { ...defaultForm, ...quotation }
-      : defaultForm;
+    Object.keys(rfq).length > 0 ? { ...defaultForm, ...rfq } : defaultForm;
 
   const [formData, setFormData] = useState(initial);
-  // eslint-disable-next-line no-unused-vars
   const [prIDList, setPrIDList] = useState([]);
 
-  // ─── Fetch required data on mount ──────────────────────────────────────────
+  // ─── Effects ─────────────────────────────────────────────
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
     fetchProducts();
     fetchApprovedPurchaseRequests();
-  }, [
-    fetchVendors,
-    fetchCurrencies,
-    fetchProducts,
-    fetchApprovedPurchaseRequests,
-  ]);
+  }, []);
 
   useEffect(() => {
     setPrIDList(normalizedRFQ(purchaseRequests));
   }, [purchaseRequests]);
 
-  // ─── Handlers for formData updates ─────────────────────────────────────────
+  // ─── Handlers ────────────────────────────────────────────
   const handleInputChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
@@ -85,15 +74,16 @@ const RfqForm = () => {
     setFormData((prev) => {
       const items = [...prev.items];
       items[idx] = { ...items[idx], [field]: value };
+
       if (field === "product" && value?.product_description) {
         items[idx].description = value.product_description;
         items[idx].unit_of_measure = value.unit_of_measure;
       }
+
       return { ...prev, items };
     });
   }, []);
 
-  // ─── Prepare payload by cleaning formData (string URLs ↔ objects) ─────────
   const cleanData = (status) => {
     const sourceItems =
       formData.purchase_request?.items?.length > 0
@@ -112,12 +102,44 @@ const RfqForm = () => {
       expiry_date: formData.expiry_date,
       status,
       vendor: formData?.purchase_request?.vendor || formData?.vendor,
-      currency: formData?.purchase_request.currency || formData?.currency,
+      currency: formData?.purchase_request?.currency || formData?.currency,
       purchase_request: formData.purchase_request?.id || formData?.id,
       items,
       is_submitted: true,
       can_edit: true,
     };
+  };
+
+  const validateRequiredFields = (payload) => {
+    if (!payload.currency) return "Currency is required.";
+    if (!payload.vendor) return "Vendor is required.";
+    if (!payload.expiry_date) return "Expiry date is required.";
+    if (!payload.purchase_request) return "Purchase Request is required.";
+    if (!payload.items || payload.items.length === 0)
+      return "At least one product item is required.";
+    return null;
+  };
+
+  const handleError = (err) => {
+    let message = "An unexpected error occurred.";
+    if (err?.response?.data) {
+      if (err.response.data.non_field_errors) {
+        message = err.response.data.non_field_errors.join(", ");
+      } else if (err.response.data.detail) {
+        message = err.response.data.detail;
+      } else if (err.response.data.message) {
+        message = err.response.data.message;
+      }
+    } else if (err?.message) {
+      message = err.message;
+    }
+
+    Swal.fire({
+      title: "Error",
+      text: message,
+      icon: "error",
+    });
+    console.error("Error: ", err); // Log error for debugging purposes
   };
 
   const navigateToDetail = (id) => {
@@ -127,77 +149,65 @@ const RfqForm = () => {
       );
     }, 1500);
   };
-  console.log(formData);
-  // ─── Handle Save Draft or Save Changes ─────────────────────────────────────
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const payload = cleanData("draft");
+    const errorMessage = validateRequiredFields(payload);
+    if (errorMessage) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: errorMessage,
+      });
+      return;
+    }
+
     try {
       if (isEdit) {
-        const id = quotation.id;
+        const id = rfq.id;
         const res = await updateRFQ(payload, id);
-
-        if (res.success) Swal.fire("Updated!", "RFQ updated.", "success");
-        else Swal.fire("Error", res.message, "error");
+        res.success
+          ? Swal.fire("Updated!", "RFQ updated.", "success")
+          : Swal.fire("Error", res.message, "error");
         navigateToDetail(id);
       } else {
         const res = await createRFQ(payload);
-        if (res.success) {
-          Swal.fire("Created!", "RFQ saved as draft.", "success");
-          navigateToDetail(extractRFQID(res.data.url));
-        } else {
-          Swal.fire("Error", res.message, "error");
-        }
+        res.success
+          ? (Swal.fire("Created!", "RFQ saved as draft.", "success"),
+            navigateToDetail(extractRFQID(res.data.url)))
+          : Swal.fire("Error", res.message, "error");
       }
     } catch (err) {
-      console.error(err);
-      let errMsg = "Unexpected error occurred.";
-
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        if (data.non_field_errors?.length) {
-          errMsg = data.non_field_errors.join(" ");
-        } else if (typeof data === "string") {
-          errMsg = data;
-        } else {
-          errMsg = JSON.stringify(data);
-        }
-      }
-
-      Swal.fire("Error", errMsg, "error");
+      handleError(err);
     }
   };
 
-  // ─── Handle Save & Send (only in Create mode) ──────────────────────────────
   const saveAndShare = async () => {
     const payload = cleanData("pending");
+    const errorMessage = validateRequiredFields(payload);
+    if (errorMessage) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: errorMessage,
+      });
+      return;
+    }
+
     try {
       const res = await createRFQ(payload);
-      if (res.success) {
-        Swal.fire("Shared!", "RFQ created and shared.", "success");
-        navigateToDetail(extractRFQID(res.data.url));
-      } else {
-        Swal.fire("Error", res.message, "error");
-      }
+      res.success
+        ? (Swal.fire("Shared!", "RFQ created and shared.", "success"),
+          navigateToDetail(extractRFQID(res.data.url)))
+        : Swal.fire("Error", res.message, "error");
     } catch (err) {
-      console.error(err);
-      let errMsg = "Unexpected error occurred.";
-
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        if (data.non_field_errors?.length) {
-          errMsg = data.non_field_errors.join(" ");
-        } else if (typeof data === "string") {
-          errMsg = data;
-        } else {
-          errMsg = JSON.stringify(data);
-        }
-      }
-
-      Swal.fire("Error", errMsg, "error");
+      handleError(err);
     }
   };
 
+  // ─── UI ─────────────────────────────────────────────────
   return (
     <div className="RfqForm">
       <div className="rfqAutoSave">
@@ -227,8 +237,9 @@ const RfqForm = () => {
               currencies={currencies}
               vendors={vendors}
               purchaseIdList={purchaseRequests}
-              rfqID={quotation?.url}
-              isConvertToRFQ={!!conversionRFQ}
+              rfqID={rfq?.url}
+              isConvertToRFQ={!!rfq}
+              minDate={new Date().toISOString().split("T")[0]}
             />
           ) : (
             <RfqBasicInfoFields
@@ -238,45 +249,30 @@ const RfqForm = () => {
               currencies={currencies}
               vendors={vendors}
               purchaseIdList={purchaseRequests}
-              rfqID={quotation?.url}
+              rfqID={rfq?.url}
+              minDate={new Date().toISOString().split("T")[0]}
             />
           )}
 
-          {/** Show existing RFQ items in Edit mode, or associated PR items in Create mode */}
-          {formUse === "Edit RFQ" ? (
-            <RfqItemsTable
-              items={formData?.items}
-              handleRowChange={handleRowChange}
-              products={products}
-            />
-          ) : (
-            <RfqItemsTable
-              items={formData?.purchase_request?.items || formData?.items}
-              handleRowChange={handleRowChange}
-              products={products}
-            />
-          )}
+          <RfqItemsTable
+            items={
+              formUse === "Edit RFQ"
+                ? formData?.items
+                : formData?.purchase_request?.items || formData?.items
+            }
+            handleRowChange={handleRowChange}
+            products={products}
+          />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "end",
-              alignItems: "center",
-            }}
-          >
-            {/* <Button variant="outlined" onClick={handleAddRow}>
-              Add Item
-            </Button> */}
-            <div style={{ display: "flex", gap: 16 }}>
-              <Button variant="outlined" type="submit">
-                {isEdit ? "Save Changes" : "Save Draft"}
+          <div style={{ display: "flex", justifyContent: "end", gap: 16 }}>
+            <Button variant="outlined" type="submit">
+              {isEdit ? "Save Changes" : "Save Draft"}
+            </Button>
+            {!isEdit && (
+              <Button variant="contained" onClick={saveAndShare}>
+                Save & Send
               </Button>
-              {!isEdit && (
-                <Button variant="contained" onClick={saveAndShare}>
-                  Save & Send
-                </Button>
-              )}
-            </div>
+            )}
           </div>
         </form>
       </div>

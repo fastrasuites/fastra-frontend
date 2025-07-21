@@ -59,7 +59,6 @@ const EditRfqForm = () => {
   // eslint-disable-next-line no-unused-vars
   const [prIDList, setPrIDList] = useState([]);
 
-  console.log(formData);
   // ─── Fetch required data on mount ──────────────────────────────────────────
   useEffect(() => {
     fetchVendors();
@@ -130,6 +129,38 @@ const EditRfqForm = () => {
     };
   };
 
+  const validateRequiredFields = (payload) => {
+    if (!payload.currency) return "Currency is required.";
+    if (!payload.vendor) return "Vendor is required.";
+    if (!payload.expiry_date) return "Expiry date is required.";
+    if (!payload.purchase_request) return "Purchase Request is required.";
+    if (!payload.items || payload.items.length === 0)
+      return "At least one product item is required.";
+    return null;
+  };
+
+  const handleError = (err) => {
+    let message = "An unexpected error occurred.";
+    if (err?.response?.data) {
+      if (err.response.data.non_field_errors) {
+        message = err.response.data.non_field_errors.join(", ");
+      } else if (err.response.data.detail) {
+        message = err.response.data.detail;
+      } else if (err.response.data.message) {
+        message = err.response.data.message;
+      }
+    } else if (err?.message) {
+      message = err.message;
+    }
+
+    Swal.fire({
+      title: "Error",
+      text: message,
+      icon: "error",
+    });
+    console.error("Error: ", err); // Log error for debugging purposes
+  };
+
   const navigateToDetail = (id) => {
     setTimeout(() => {
       history.push(
@@ -138,37 +169,28 @@ const EditRfqForm = () => {
     }, 1500);
   };
 
-  console.log(formData);
   // ─── Handle Save Draft or Save Changes ─────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = cleanData("draft");
-    console.log(payload, "payload");
+    const errorMessage = validateRequiredFields(payload);
+    if (errorMessage) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: errorMessage,
+      });
+      return;
+    }
     try {
       const id = quotation.id;
-      console.log(id);
       const res = await updateRFQ(payload, id);
-      console.log(res);
 
       if (res.success) Swal.fire("Updated!", "RFQ updated.", "success");
       else Swal.fire("Error", res.message, "error");
       navigateToDetail(id);
     } catch (err) {
-      console.error(err);
-      let errMsg = "Unexpected error occurred.";
-
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        if (data.non_field_errors?.length) {
-          errMsg = data.non_field_errors.join(" ");
-        } else if (typeof data === "string") {
-          errMsg = data;
-        } else {
-          errMsg = JSON.stringify(data);
-        }
-      }
-
-      Swal.fire("Error", errMsg, "error");
+      handleError(err);
     }
   };
 

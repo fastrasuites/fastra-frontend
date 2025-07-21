@@ -67,7 +67,7 @@ const POBasicInfoFields = ({
       >
         {/* RFQ Autocomplete */}
         <div className="rfqBasicInfoFields1SelectFields" style={{ flex: 1 }}>
-          <label style={labelStyle}>Requested for Quotation ID</label>
+          <label style={labelStyle}>RFQ ID</label>
           <Autocomplete
             disablePortal
             options={rfqList}
@@ -87,7 +87,9 @@ const POBasicInfoFields = ({
         <div style={{ flex: 1 }}>
           <label style={labelStyle}>Vendor</label>
           <Typography marginTop={2}>
-            {formData?.rfq?.vendor_details?.company_name || "N/A"}
+            {formData?.rfq?.vendor_details?.company_name ||
+              formData?.item?.vendor_details?.company_name ||
+              "N/A"}
           </Typography>
         </div>
 
@@ -119,13 +121,17 @@ const POBasicInfoFields = ({
         <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Address</label>
           <Typography color="#353536">
-            {formData?.rfq?.vendor_details?.address || "N/A"}
+            {formData?.rfq?.vendor_details?.address ||
+              formData?.item?.vendor_details?.address ||
+              "N/A"}
           </Typography>
         </Box>
         <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Email</label>
           <Typography color="#353536">
-            {formData?.rfq?.vendor_details?.email || "N/A"}
+            {formData?.rfq?.vendor_details?.email ||
+              formData?.item?.vendor_details?.email ||
+              "N/A"}
           </Typography>
         </Box>
       </div>
@@ -140,6 +146,8 @@ const POBasicInfoFields = ({
           <Typography marginTop={2}>
             {formData?.rfq?.currency_details
               ? `${formData?.rfq?.currency_details?.currency_name} - ${formData?.rfq?.currency_details?.currency_symbol}`
+              : formData?.item?.currency_details
+              ? `${formData?.item?.currency_details?.currency_name} - ${formData?.item?.currency_details?.currency_symbol}`
               : "N/A"}
           </Typography>
         </div>

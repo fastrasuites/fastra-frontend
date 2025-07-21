@@ -162,8 +162,6 @@ const Operations = () => {
     [incomingProductList, selectedLocation]
   );
 
-  console.log(filteredIncoming);
-
   const fetchInventoryCounts = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -220,7 +218,6 @@ const Operations = () => {
       )),
     [inventoryModule]
   );
-  console.log(selectedLocation);
   return (
     <Box sx={inventoryShareStyle.operationWrapper(theme)}>
       <HeaderContainer>

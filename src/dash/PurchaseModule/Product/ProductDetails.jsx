@@ -232,7 +232,6 @@ export default React.memo(ProductDetails);
 //   const [isLoading, setIsLoading] = useState(false);
 //   const { tenant_schema_name, access_token } = useTenant().tenantData || {};
 //   const client = getTenantClient(tenant_schema_name, access_token);
-//   console.log("checking value of products prop", product);
 //   const id = useParams();
 
 //   useEffect(() => {
@@ -242,13 +241,10 @@ export default React.memo(ProductDetails);
 //         const units = response.data;
 //         setSavedUnits(units);
 //       } catch (err) {
-//         console.log(err.message);
 //       }
 //     };
 //     fetchData();
 //   }, []);
-
-//   console.log("saved units", savedUnits);
 
 //   const categoryOptions = [
 //     { value: "consumable", label: "Consumable" },
@@ -284,7 +280,6 @@ export default React.memo(ProductDetails);
 //       event.preventDefault();
 //       setIsLoading(true);
 //       const result = await updateProduct(formState.id, formState);
-//       console.log("result from updateProduct", result);
 //       setIsLoading(false);
 
 //       if (result?.success && result.data) {
@@ -296,7 +291,6 @@ export default React.memo(ProductDetails);
 
 //         // ✅ Use returned data to update formState
 //         const updated = result.data;
-//         console.log("updated product", updated);
 //         setFormState({
 //           id: updated.id,
 //           product_name: updated.product_name || "",

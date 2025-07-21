@@ -30,6 +30,7 @@ const RfqBasicInfoFields = ({
   formUse,
   purchaseIdList = [],
   rfqID,
+  minDate,
 }) => {
   const selectedPurchaseRequest = getSelectedOption(
     formData.purchase_request,
@@ -80,6 +81,7 @@ const RfqBasicInfoFields = ({
           {renderLabel("Select Currency")}
           <Typography color="#303030" marginTop={2}>
             {formData?.purchase_request?.currency_details?.currency_name ||
+              formData?.currency_details?.currency_name ||
               "N/A"}
           </Typography>
         </div>
@@ -97,6 +99,10 @@ const RfqBasicInfoFields = ({
                 : ""
             }
             onChange={(e) => handleInputChange("expiry_date", e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ min: new Date().toISOString().split("T")[0] }}
+            variant="outlined"
+            fullWidth
             sx={{ width: "100%", mt: 0.5 }}
           />
         </Box>
@@ -104,7 +110,9 @@ const RfqBasicInfoFields = ({
         <div>
           {renderLabel("Vendor")}
           <Typography color="#303030" marginTop={3}>
-            {formData?.purchase_request?.vendor_details?.company_name || "N/A"}
+            {formData?.purchase_request?.vendor_details?.company_name ||
+              formData?.vendor_details?.company_name ||
+              "N/A"}
           </Typography>
         </div>
       </div>

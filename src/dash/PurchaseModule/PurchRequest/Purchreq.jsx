@@ -15,6 +15,8 @@ import "../../Inventory/secondaryBar/SecondaryBar.css";
 import { Box, Button } from "@mui/material";
 import { Search } from "lucide-react";
 import Swal from "sweetalert2";
+import Can from "../../../components/Access/Can";
+import { useTenant } from "../../../context/TenantContext";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
@@ -25,6 +27,8 @@ export default function Purchreq() {
   const [loading, setLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  // const { tenantData } = useTenant();
+  // console.log(tenantData);
 
   const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
   const history = useHistory();
@@ -189,18 +193,21 @@ export default function Purchreq() {
                 })}
               </div>
 
-              <nav className="secondary-bar" aria-label="Secondary navigation">
+              <Box className="secondary-bar" aria-label="Secondary navigation">
                 <div className="secondary-bar__left">
-                  <Link to={`purchase-request/new`}>
-                    <Button
-                      variant="contained"
-                      disableElevation
-                      className="secondary-bar__button"
-                      aria-label="Create new purchase request"
-                    >
-                      New Purchase Request
-                    </Button>
-                  </Link>
+                  <Can app="purchase" module="purchase_request" action="create">
+                    <Link to={`purchase-request/new`}>
+                      <Button
+                        variant="contained"
+                        disableElevation
+                        className="secondary-bar__button"
+                        aria-label="Create new purchase request"
+                      >
+                        New Purchase Request
+                      </Button>
+                    </Link>
+                  </Can>
+
                   <div className="secondary-bar__search">
                     <label htmlFor="searchInput" className="visually-hidden">
                       Search Purchase requests
@@ -286,7 +293,7 @@ export default function Purchreq() {
                     </button>
                   </div>
                 </div>
-              </nav>
+              </Box>
             </div>
           )}
 

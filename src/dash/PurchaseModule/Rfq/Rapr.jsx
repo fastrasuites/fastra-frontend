@@ -68,13 +68,11 @@ export default function Rapr({ onUpdateRfq, formData, onClose }) {
   const handleApproval = () => {
     // Using onUpdateRfq to update status to "Approved"
     onUpdateRfq(formData.id, "Approved");
-    console.log("Approved");
   };
 
   const handleSendToVendor = (e) => {
     e.preventDefault();
     // Implement sending logic here
-    console.log("Sent to vendor");
   };
 
   const formatDate = (date) => {
@@ -93,14 +91,22 @@ export default function Rapr({ onUpdateRfq, formData, onClose }) {
   };
 
   const renderTable = () => (
-    <StyledTableContainer component={Paper} sx={{ boxShadow: "none", border: "1px solid #e2e6e9" }}>
-      <StyledTable sx={{ minWidth: 700, border: "none" }} aria-label="customized table">
+    <StyledTableContainer
+      component={Paper}
+      sx={{ boxShadow: "none", border: "1px solid #e2e6e9" }}
+    >
+      <StyledTable
+        sx={{ minWidth: 700, border: "none" }}
+        aria-label="customized table"
+      >
         <TableHead>
           <TableRow>
             <StyledTableCell>Product Name</StyledTableCell>
             <StyledTableCell>Description</StyledTableCell>
             <StyledTableCell align="right">Qty</StyledTableCell>
-            <StyledTableCell align="right">Estimated Unit Price</StyledTableCell>
+            <StyledTableCell align="right">
+              Estimated Unit Price
+            </StyledTableCell>
             <StyledTableCell align="right">Total Price</StyledTableCell>
           </TableRow>
         </TableHead>
@@ -112,7 +118,9 @@ export default function Rapr({ onUpdateRfq, formData, onClose }) {
                 <StyledTableCell>{row.description}</StyledTableCell>
                 <StyledTableCell align="right">{row.qty}</StyledTableCell>
                 <StyledTableCell align="right">{row.unitPrice}</StyledTableCell>
-                <StyledTableCell align="right">{row.totalPrice}</StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.totalPrice}
+                </StyledTableCell>
               </StyledTableRow>
             ))
           ) : (
@@ -123,7 +131,11 @@ export default function Rapr({ onUpdateRfq, formData, onClose }) {
             </StyledTableRow>
           )}
           <StyledTableRow>
-            <StyledTableCell colSpan={4} align="right" style={{ fontWeight: "bold" }}>
+            <StyledTableCell
+              colSpan={4}
+              align="right"
+              style={{ fontWeight: "bold" }}
+            >
               Total
             </StyledTableCell>
             <StyledTableCell align="right" style={{ fontWeight: "bold" }}>
@@ -155,7 +167,9 @@ export default function Rapr({ onUpdateRfq, formData, onClose }) {
             RFQ
           </p>
           <p
-            className={`togclk ${currentView === "vendorQuote" ? "active" : ""}`}
+            className={`togclk ${
+              currentView === "vendorQuote" ? "active" : ""
+            }`}
             onClick={() => setCurrentView("vendorQuote")}
           >
             Vendor Quotes
@@ -168,7 +182,11 @@ export default function Rapr({ onUpdateRfq, formData, onClose }) {
                 <div className="rapr3ae">
                   <p style={{ fontSize: "20px" }}>Basic Information</p>
                   <div className="rapr3e">
-                    <button type="button" className="rapr3but" onClick={onClose}>
+                    <button
+                      type="button"
+                      className="rapr3but"
+                      onClick={onClose}
+                    >
                       Cancel
                     </button>
                     <button type="submit" className="rapr3btn">
@@ -193,7 +211,11 @@ export default function Rapr({ onUpdateRfq, formData, onClose }) {
                 <div className="rapr3bb">
                   <p>Date Opened</p>
                   <p style={{ fontSize: "14px", color: "#7a8a98" }}>
-                    {formData ? `${formatDate(formData.date)} - ${formatTime(formData.date)}` : ""}
+                    {formData
+                      ? `${formatDate(formData.date)} - ${formatTime(
+                          formData.date
+                        )}`
+                      : ""}
                   </p>
                 </div>
                 <div className="rapr3bb">

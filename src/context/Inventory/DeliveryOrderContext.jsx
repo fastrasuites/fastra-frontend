@@ -177,7 +177,6 @@ export const DeliveryOrderProvider = ({ children }) => {
           payload.source_location = payload.source_location.id;
         }
         // checking the payload
-        console.log("final Payload for update:", payload);
         const method = partial ? "patch" : "put";
         const { data } = await client[method](
           `/inventory/delivery-orders/${id}/`,
@@ -187,11 +186,9 @@ export const DeliveryOrderProvider = ({ children }) => {
         // Update state
         setDeliveryOrderList((prev) => {
           prev.map((order) => (order.id === id ? data : order));
-          console.log("1st time update for deli");
         });
         if (singleDeliveryOrder?.id === id) {
           setSingleDeliveryOrder(data);
-          console.log("2nd time update from singleDelOrder if block");
         }
 
         setError(null);

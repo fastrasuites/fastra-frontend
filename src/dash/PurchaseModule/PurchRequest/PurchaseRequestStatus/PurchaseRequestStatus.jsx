@@ -1,17 +1,15 @@
-// Ensure Fuse.js is installed in your project:
-// npm install fuse.js
-
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa6";
 import { IoGrid } from "react-icons/io5";
 import { Button } from "@mui/material";
 import { Search } from "lucide-react";
-import Fuse from "fuse.js";
 import PurchaseRequestGrid from "../PurchaseRequestGrid";
 import ListView from "../Listview";
-import { extractRFQID, formatDate } from "../../../../helper/helper";
+import { formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
+import { usePurchase } from "../../../../context/PurchaseContext";
+import Swal from "sweetalert2";
 
 // Debounce hook
 function useDebounce(value, delay) {
@@ -44,92 +42,62 @@ const PurchaseRequestStatus = () => {
   const [viewMode, setViewMode] = useState("list");
   const [searchInput, setSearchInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const fuseRef = useRef(null);
+  const { fetchPurchaseRequests } = usePurchase();
 
   const debouncedQuery = useDebounce(searchInput, 300);
   const { state } = useLocation();
-  const { status: selectedStatus, purchaseRequestData = [] } = state || {};
+  const { status: selectedStatus = [] } = state || {};
   const history = useHistory();
-  const {tenantData} = useTenant();
-  const {tenant_schema_name} = tenantData; 
-  // Initialize Fuse.js with better search configuration
+  const { tenantData } = useTenant();
+  const [loading, setLoading] = useState(false);
+
+  const { tenant_schema_name } = tenantData;
+
   useEffect(() => {
-    if (selectedStatus) {
-      const filtered = purchaseRequestData.filter(
-        (item) => item.status === selectedStatus
-      );
-      setQuotations(filtered);
-      
-      // Enhanced Fuse.js configuration
-      fuseRef.current = new Fuse(filtered, {
-        keys: [
-          { name: 'purpose', weight: 0.3 },
-          { name: 'vendor.company_name', weight: 0.25 },
-          { name: 'items.product.product_name', weight: 0.2 },
-          { name: 'status', weight: 0.15 },
-          { name: 'requester', weight: 0.1 },
-          { 
-            name: 'date_created', 
-            getter: i => formatDate(i.date_created), 
-            weight: 0.1 
-          },
-          { 
-            name: 'url', 
-            getter: i => extractRFQID(i.url), 
-            weight: 0.1 
-          }
-        ],
-        threshold: 0.2, // Stricter threshold for better accuracy
-        includeMatches: true, // Include match information
-        findAllMatches: true, // Find all matches in a string
-        ignoreLocation: true, // Search in all string locations
-        useExtendedSearch: true,
-        minMatchCharLength: 2, // Minimum characters to start matching
-      });
-      setCurrentPage(1);
-    }
-  }, [selectedStatus, purchaseRequestData]);
+    const debounce = setTimeout(async () => {
+      setLoading(true);
+      const result = await fetchPurchaseRequests(selectedStatus);
+      setLoading(false);
 
-  // Enhanced search handler
-  const searchedQuotations = useMemo(() => {
-    if (!debouncedQuery.trim() || !fuseRef.current) return quotations;
-    
-    try {
-      // Advanced search pattern handling
-      const cleanQuery = debouncedQuery.trim().replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
-      const pattern = cleanQuery.includes(' ')
-        ? `="${cleanQuery}"` // Exact phrase match
-        : `'${cleanQuery}`; // Prefix match
+      if (result.success) {
+        setQuotations(result.data);
+      }
 
-      const results = fuseRef.current.search(pattern);
-      return results.map(r => ({ ...r.item, matches: r.matches }));
-    } catch (error) {
-      console.error("Search error:", error);
-      return quotations;
-    }
-  }, [debouncedQuery, quotations]);
+      if (searchInput && (!result || result.data.length === 0)) {
+        Swal.fire({
+          icon: "info",
+          title: "No results found",
+          text: "Try a different search term.",
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(debounce);
+  }, [fetchPurchaseRequests, searchInput]);
 
   // Pagination with page validation
-  const pageCount = Math.max(1, Math.ceil(searchedQuotations.length / itemsPerPage));
+  const pageCount = Math.max(1, Math.ceil(quotations.length / itemsPerPage));
   const paginatedQuotations = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return searchedQuotations.slice(start, start + itemsPerPage);
-  }, [searchedQuotations, currentPage]);
+    return quotations.slice(start, start + itemsPerPage);
+  }, [quotations, currentPage]);
 
   // Reset to first page when search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedQuery]);
 
-  const startIdx = searchedQuotations.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
-  const endIdx = Math.min(currentPage * itemsPerPage, searchedQuotations.length);
+  const startIdx =
+    quotations.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+  const endIdx = Math.min(currentPage * itemsPerPage, quotations.length);
 
-  const handlePrev = () => setCurrentPage(p => Math.max(p - 1, 1));
-  const handleNext = () => setCurrentPage(p => Math.min(p + 1, pageCount));
+  const handlePrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
+  const handleNext = () => setCurrentPage((p) => Math.min(p + 1, pageCount));
 
   const handleSelectedRequest = (item) => {
-  console.log(tenant_schema_name)
-    history.push(`/${tenant_schema_name}/purchase/purchase-request/${item?.id}`);
+    history.push(
+      `/${tenant_schema_name}/purchase/purchase-request/${item?.id}`
+    );
   };
 
   return (
@@ -154,7 +122,7 @@ const PurchaseRequestStatus = () => {
               type="search"
               placeholder="Search by ID, vendor, product, status, or date..."
               value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="searchInput"
               aria-label="Search purchase requests"
             />
@@ -163,15 +131,15 @@ const PurchaseRequestStatus = () => {
 
         <div className="r3b">
           <p className="r3bpage">
-            {startIdx}-{endIdx} of {searchedQuotations.length}
+            {startIdx}-{endIdx} of {quotations.length}
           </p>
           <div className="r3bnav">
             <FaCaretLeft
               className="lr"
               onClick={handlePrev}
-              style={{ 
-                cursor: currentPage > 1 ? 'pointer' : 'not-allowed', 
-                opacity: currentPage > 1 ? 1 : 0.5 
+              style={{
+                cursor: currentPage > 1 ? "pointer" : "not-allowed",
+                opacity: currentPage > 1 ? 1 : 0.5,
               }}
               aria-label="Previous page"
             />
@@ -179,9 +147,9 @@ const PurchaseRequestStatus = () => {
             <FaCaretRight
               className="lr"
               onClick={handleNext}
-              style={{ 
-                cursor: currentPage < pageCount ? 'pointer' : 'not-allowed', 
-                opacity: currentPage < pageCount ? 1 : 0.5 
+              style={{
+                cursor: currentPage < pageCount ? "pointer" : "not-allowed",
+                opacity: currentPage < pageCount ? 1 : 0.5,
               }}
               aria-label="Next page"
             />
@@ -215,7 +183,7 @@ const PurchaseRequestStatus = () => {
             items={paginatedQuotations}
             getStatusColor={getStatusColor}
             searchTerm={debouncedQuery}
-            matches={paginatedQuotations.matches} 
+            matches={paginatedQuotations.matches}
             onCardClick={handleSelectedRequest}
           />
         </div>

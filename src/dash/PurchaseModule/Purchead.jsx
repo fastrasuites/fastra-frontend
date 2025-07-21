@@ -28,7 +28,6 @@ export default function Purchead() {
     setShowProductDropdown(false);
   };
   const handleOpenSidebar = () => {
-    console.log("clicked to open sidebar from settings header");
     setSidebarOpen(true);
   };
 
