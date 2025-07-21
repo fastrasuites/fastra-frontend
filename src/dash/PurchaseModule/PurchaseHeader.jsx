@@ -19,20 +19,21 @@ const PurchaseHeader = () => {
       label: "Vendors",
       link: `/${tenant_schema_name}/vendor`,
       subItems: [
-        { label: "Vendors Bills", link: `/${tenant_schema_name}/vendor-bill` },
+        // { label: "Vendors Bills" },
+        // { label: "Vendors Bills", link: `/${tenant_schema_name}/vendor-bill` },
         { label: "Vendors", link: `/${tenant_schema_name}/purchase/vendor` },
       ],
     },
     {
       label: "Products",
-      link: `/${tenant_schema_name}/prod`,
-      subItems: [
-        {
-          label: "Incoming Products",
-          link: `/${tenant_schema_name}/incoming-product`,
-        },
-        { label: "Products", link: `/${tenant_schema_name}/purchase/product` },
-      ],
+      link: `/${tenant_schema_name}/purchase/product`,
+      // subItems: [
+      //   {
+      //     label: "Incoming Products",
+      //     link: `/${tenant_schema_name}/incoming-product`,
+      //   },
+      //   { label: "Products", link: `/${tenant_schema_name}/purchase/product` },
+      // ],
     },
     {
       label: "Configurations",

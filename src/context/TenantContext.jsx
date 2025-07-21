@@ -16,6 +16,7 @@ export const TenantProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("tenantData");
+    localStorage.removeItem("access_token");
     setTenantData(null);
   };
 

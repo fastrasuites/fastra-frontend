@@ -193,11 +193,15 @@ const LocationInfo = () => {
           </Box>
         ) : (
           <List sx={{ overflow: "auto", maxHeight: "80vh" }}>
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="h6">Product Name</Typography>
+              <Typography variant="h6">Quantity at Hand</Typography>
+            </Box>
             {locationProducts.map((product) => (
               <ListItem key={product.product_id} divider sx={{ py: 2 }}>
                 <ListItemText
                   primary={product.product_name}
-                  secondary={`SKU: ${product.sku || "N/A"}`}
+                  // secondary={`SKU: ${product.sku || "N/A"}`}
                   primaryTypographyProps={{ fontWeight: 500 }}
                 />
                 <Chip

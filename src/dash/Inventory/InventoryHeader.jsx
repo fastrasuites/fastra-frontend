@@ -19,14 +19,14 @@ const InventoryHeader = () => {
           label: "Delivery Order",
           link: `/${tenant_schema_name}/inventory/operations/delivery-order`,
         },
-        {
-          label: "Internal Transfer",
-          link: `/${tenant_schema_name}/inventory/operations/internal-transfer`,
-        },
-        {
-          label: "Material Consumption",
-          link: `/${tenant_schema_name}/inventory/operations/material-consumption`,
-        },
+        // {
+        //   label: "Internal Transfer",
+        //   link: `/${tenant_schema_name}/inventory/operations/internal-transfer`,
+        // },
+        // {
+        //   label: "Material Consumption",
+        //   link: `/${tenant_schema_name}/inventory/operations/material-consumption`,
+        // },
       ],
     },
     {
