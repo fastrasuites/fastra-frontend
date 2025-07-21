@@ -45,7 +45,6 @@ const LocationInfo = () => {
   const handleDone = () => {
     window.history.back();
   };
-  console.log("locationProducts", locationProducts);
   return (
     <Box padding={"30px"} display={"grid"} gap="32px">
       <Typography variant="h6" fontSize={24} fontWeight={600}>

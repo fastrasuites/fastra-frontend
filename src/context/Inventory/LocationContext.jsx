@@ -72,11 +72,8 @@ export const LocationProvider = ({ children }) => {
           is_hidden: locationData.isHidden ?? true,
         };
 
-        console.log("Submitting location data:", requestBody); // Debug log
-
         const response = await client.post("/inventory/location/", requestBody);
         const newLocation = response.data;
-        console.log("Location created:", newLocation); // Debug log
 
         setLocationList((prev) => [...prev, newLocation]);
         setError(null);
@@ -104,7 +101,6 @@ export const LocationProvider = ({ children }) => {
 
       setIsLoading(true);
       setError(null);
-      console.log("Axios base URL", client.defaults.baseURL);
 
       try {
         const params = searchTerm ? { search: searchTerm } : {};

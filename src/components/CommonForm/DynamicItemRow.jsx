@@ -17,7 +17,6 @@ const DynamicItemRow = ({
   handleRemoveRow,
   rowConfig,
 }) => {
-  // console.log("Row Config", rowConfig)
   // Render a table cell based on field type defined in rowConfig
 
   const renderCell = (cfg) => {

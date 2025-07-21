@@ -24,8 +24,6 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
     image: "",
   });
 
- 
-
   const [isEditable, setIsEditable] = useState(false); // State to control if fields are editable
   const [roles, setRoles] = useState([]); // State to manage the list of roles
   const [currentRole, setCurrentRole] = useState(""); // State to manage the current input for the role
@@ -45,13 +43,11 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`${name}: ${value}`); // Log the field name and value
     setFormState((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
-  
 
   const handleRoleInputChange = (e) => {
     setCurrentRole(e.target.value);
@@ -89,7 +85,7 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
 
   const history = useHistory();
 
- /* const handleSubmit = (e) => {
+  /* const handleSubmit = (e) => {
     e.preventDefault();
     onSaveAndSubmit(formState);
     onClose();
@@ -104,20 +100,17 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
     e.preventDefault();
     onSaveAndSubmit(formState);
 
-    console.log("i am her")
-
     if (fromStepModal) {
-      console.log("i am in here")
-      const currentStep = parseInt(localStorage.getItem("onboardingStep") || "0");
+      const currentStep = parseInt(
+        localStorage.getItem("onboardingStep") || "0"
+      );
       const nextStep = currentStep + 1;
-      console.log(nextStep)
       localStorage.setItem("onboardingStep", String(nextStep));
       history.push("/dashboard");
-  } else {
+    } else {
       onClose?.();
-  }
-}
-
+    }
+  };
 
   const handleEditClick = () => {
     setIsEditable(true); // Enable the fields on Edit button click
@@ -166,12 +159,24 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
 
   return (
     <div
-      id="newcompany" style={{margin: "0"}}
+      id="newcompany"
+      style={{ margin: "0" }}
       className={`registration-page ${showForm ? "fade-in" : "fade-out"}`}
     >
-      <div className="form-header" style={{width: "100%", overflowY: "none", boxSizing: "border-box", margin: "0"}}>
+      <div
+        className="form-header"
+        style={{
+          width: "100%",
+          overflowY: "none",
+          boxSizing: "border-box",
+          margin: "0",
+        }}
+      >
         <div className="form-header-details">
-          <div className="form-header-activity" style={{ marginBottom: "10px"}}>
+          <div
+            className="form-header-activity"
+            style={{ marginBottom: "10px" }}
+          >
             <h2 className="header-text">New Company</h2>
             <div className="autosave">
               <p>Autosaved</p>
@@ -185,7 +190,11 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
             <div className="registration-header-info">
               <h2>Basic Information</h2>
               <div className="reg-action-btn">
-                <button type="button" className="cancel-btn" onClick={handleEditClick}>
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={handleEditClick}
+                >
                   Edit
                 </button>
                 <button
@@ -232,7 +241,7 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
                 <label>Company name</label>
                 <input
                   type="text"
-                  style={{border: "none", backgroundColor: "#fff"}}
+                  style={{ border: "none", backgroundColor: "#fff" }}
                   className="form-control"
                   placeholder="company.fastrasuite.com"
                   name="companyName"
@@ -252,13 +261,13 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
                 <label>Email</label>
                 <input
                   type="email"
-                  style={{border: "none", backgroundColor: "#fff"}}
+                  style={{ border: "none", backgroundColor: "#fff" }}
                   className="form-control"
                   placeholder="company email"
                   name="email"
                   value={formState.email}
                   onChange={handleChange}
-                  disabled 
+                  disabled
                 />
               </div>
               <div className="form-group">
@@ -443,36 +452,53 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
             <hr />
             {/* Role input and display section */}
             <div className="registration-role-grouped">
-  <h2>Roles</h2>
-  <div className="form-group" style={{ display: "flex", alignItems: "center", alignContent: "center"}}>
-    <label>Add a Role</label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Enter a role"
-      value={currentRole}
-      onChange={handleRoleInputChange}
-      disabled={!isEditable}
-    />
-    <button type="button" onClick={addRole} disabled={!isEditable} style={{ padding: "2px 10px", border: "none", backgroundColor: "transparent", color: "#242424"}}>
-       + Add Role
-    </button>
-  </div>
+              <h2>Roles</h2>
+              <div
+                className="form-group"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  alignContent: "center",
+                }}
+              >
+                <label>Add a Role</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter a role"
+                  value={currentRole}
+                  onChange={handleRoleInputChange}
+                  disabled={!isEditable}
+                />
+                <button
+                  type="button"
+                  onClick={addRole}
+                  disabled={!isEditable}
+                  style={{
+                    padding: "2px 10px",
+                    border: "none",
+                    backgroundColor: "transparent",
+                    color: "#242424",
+                  }}
+                >
+                  + Add Role
+                </button>
+              </div>
 
-  {roles.length > 0 && (
-    <div className="roles-list">
-      <h3>Assigned Roles</h3>
-      <ul>
-        {roles.map((role, index) => (
-          <li key={index}>{role}</li>
-        ))}
-      </ul>
-    </div>
-  )}
-</div>
+              {roles.length > 0 && (
+                <div className="roles-list">
+                  <h3>Assigned Roles</h3>
+                  <ul>
+                    {roles.map((role, index) => (
+                      <li key={index}>{role}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
 
-{/* Submission Section */}
-{/* <div className="form-group">
+            {/* Submission Section */}
+            {/* <div className="form-group">
   <button
     type="submit"
     className="submit-btn"
@@ -481,9 +507,9 @@ export default function NewCompany({ onClose, onSaveAndSubmit }) {
     Save and Submit
   </button>
 </div> */}
-</form>
-</div>
-</div>
-</div>
-);
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 }

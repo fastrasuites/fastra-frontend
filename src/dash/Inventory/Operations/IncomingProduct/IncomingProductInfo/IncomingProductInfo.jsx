@@ -59,7 +59,6 @@ export default function IncomingProductInfo() {
       // fetch all vendors (so we can look up supplier name later)
       await fetchVendors();
 
-      console.log("Incoming product:", raw);
       // enrich each item with full product info
       const items = await Promise.all(
         (raw.incoming_product_items || []).map(async (item) => {
@@ -108,8 +107,6 @@ export default function IncomingProductInfo() {
       };
     }
   );
-
-  console.log(refactoredIncoming_product_items);
 
   // mark as validated
   const handleValidate = async () => {
@@ -221,7 +218,6 @@ export default function IncomingProductInfo() {
 
   const supplier = vendors.find((v) => v.id === incoming.supplier);
 
-  console.log(incoming);
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
       <Box display="flex" justifyContent="space-between" mb={2}>

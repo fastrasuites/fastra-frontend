@@ -16,6 +16,7 @@ import { IoGrid } from "react-icons/io5";
 import SearchIcon from "../../../image/search.svg";
 import ProdListview from "./ProdListview";
 import { Link, useHistory } from "react-router-dom";
+import Can from "../../../components/Access/Can";
 
 export default function Prod() {
   const { products, fetchProducts } = usePurchase();
@@ -38,7 +39,6 @@ export default function Prod() {
     };
   }, [fetchProducts, searchQuery]);
 
-  console.log(tenantData);
   return (
     <Box p={4}>
       {/* Top Control Bar */}
@@ -49,18 +49,20 @@ export default function Prod() {
         justifyContent={"space-between"}
       >
         <Box display={"flex"} gap={4}>
-          <Link to={"product/new"}>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#3B7CED",
-                color: "white",
-                textTransform: "capitalize",
-              }}
-            >
-              New Product
-            </Button>
-          </Link>
+          <Can app="purchase" module="product" action="create">
+            <Link to={"product/new"}>
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: "#3B7CED",
+                  color: "white",
+                  textTransform: "capitalize",
+                }}
+              >
+                New Product
+              </Button>
+            </Link>
+          </Can>
           <Box
             sx={{
               display: "flex",

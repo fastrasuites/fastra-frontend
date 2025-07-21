@@ -89,11 +89,9 @@ const RListView = ({
         <TableCell sx={cellStyle(index)}>
           {extractRFQID(item.purchase_request)}
         </TableCell>
+        <TableCell sx={cellStyle(index)}>{extractRFQID(item?.id)}</TableCell>
         <TableCell sx={cellStyle(index)}>
-          {extractRFQID(item?.id)}
-        </TableCell>
-        <TableCell sx={cellStyle(index)}>
-          {item?.vendor?.company_name}
+          {item?.vendor_details?.company_name}
         </TableCell>
         {/* <TableCell sx={cellStyle(index)}>
           {item?.items.map((item, index) => (
@@ -106,9 +104,7 @@ const RListView = ({
           ))}
         </TableCell> */}
         <TableCell sx={cellStyle(index)}>{item?.rfq_total_price}</TableCell>
-        <TableCell
-          sx={statusCellStyle(index, getStatusColor, item.status)}
-        >
+        <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <div
               style={{
@@ -156,8 +152,7 @@ const RListView = ({
           }}
           stickyHeader
         >
-          <TableHead
-          >
+          <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox

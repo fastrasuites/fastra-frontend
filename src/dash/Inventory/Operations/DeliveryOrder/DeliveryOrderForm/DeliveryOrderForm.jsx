@@ -41,11 +41,9 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
 
   // Sync with parent state upon selection change
   const handleLocationChange = (event, newValue) => {
-    // console.log("inside handle location change", newValue);
     setSelectedLocation(newValue);
     handleInputChange("source_location", newValue);
   };
-  // console.log(locationList);
   return (
     <>
       <Box display="flex" flexDirection="column" gap={3}>
@@ -291,11 +289,8 @@ const DeliveryOrderForm = () => {
     }
   }, [formData.items]);
 
-  console.log("formData", formData);
-
   // Callback to process the final filled form data
   const handleSubmit = async (filledFormData) => {
-    console.log("filled form data", filledFormData);
     setFormErrors({}); // Clear previous errors
 
     try {

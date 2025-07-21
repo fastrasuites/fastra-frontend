@@ -7,7 +7,6 @@ const cellStyle = (index) => ({
 });
 
 const RfqItemRow = ({ row, index, handleRowChange, isConversion }) => {
-  console.log(row);
   return (
     <TableRow
       key={row.id || index}

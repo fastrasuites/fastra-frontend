@@ -154,7 +154,7 @@ export default function PurchaseOrder() {
     return purchaseOrderData.reduce((acc, order) => {
       const { status } = order;
       const newStatus = statusMap[status] || status;
-       // Use the mapped status or default to the original
+      // Use the mapped status or default to the original
       if (!acc[newStatus]) {
         acc[newStatus] = [];
       }
@@ -170,7 +170,6 @@ export default function PurchaseOrder() {
       state: { urlList, status, purchaseOrderData },
     });
   };
-
 
   const toggleViewMode = useCallback((mode) => {
     setViewMode(mode);
@@ -188,10 +187,6 @@ export default function PurchaseOrder() {
     },
     [totalPages]
   );
-
-
-
-  console.log(purchaseOrderData, "purchaseOrderData in PurchaseOrder.jsx");
 
   return (
     <div className="rfq" id="rfq">
@@ -281,7 +276,7 @@ export default function PurchaseOrder() {
               </div>
             </div>
           </div>
-          { viewMode === "grid" ? (
+          {viewMode === "grid" ? (
             <div className="rfqStatusCards" style={{ marginTop: "20px" }}>
               {paginatedPurchaseOrders.map((item) => (
                 <div

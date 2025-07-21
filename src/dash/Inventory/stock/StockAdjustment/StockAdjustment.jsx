@@ -25,7 +25,6 @@ function StockAdjustment() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
-  
 
   const {
     adjustmentList,
@@ -34,21 +33,14 @@ function StockAdjustment() {
     getStockAdjustmentList,
   } = useStockAdjustment();
 
-
-
   useEffect(() => {
-    getStockAdjustmentList()
-  }, [])
-
-
+    getStockAdjustmentList();
+  }, []);
 
   const arrangeStockAdjustments = adjustmentList.map((item) => ({
     ...item,
     warehouse_location: item.warehouse_location?.location_name ?? "—",
   }));
-
-
-
 
   const getStatusColor = (status) => {
     const normalized = status.toLowerCase();
@@ -154,7 +146,6 @@ function StockAdjustment() {
         Stock Adjustment
       </Typography>
 
-      
       <CommonTable
         columns={columns}
         rows={arrangeStockAdjustments.filter((item) =>
@@ -194,7 +185,6 @@ function StockAdjustment() {
         gridRenderItem={renderGridItem}
         path={`/${tenantSchemaName}/inventory/stock/stock-adjustment`}
         isLoading={isLoading}
-
       />
     </Box>
   );

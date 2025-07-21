@@ -62,7 +62,6 @@ export default function Vend() {
   const handleCardClick = (item) => {
     history.push(`/${tenant}/purchase/vendor/${item.id}`);
   };
-  console.log(vendors);
   return (
     <div>
       <div>

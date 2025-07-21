@@ -18,8 +18,6 @@ const CompanyInfo = () => {
   const { company, isLoading, error, getCompany } = useCompany();
   const { tenantData } = useTenant();
 
-  console.log(tenantData);
-
   useEffect(() => {
     const fetchData = async () => {
       try {

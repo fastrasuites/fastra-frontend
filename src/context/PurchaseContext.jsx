@@ -161,7 +161,6 @@ export const PurchaseProvider = ({ children }) => {
       try {
         const response = await client.post("/purchase/products/", newProduct);
         setProducts((prev) => [...prev, response.data]);
-        console.log(response);
       } catch (err) {
         console.error(err);
         setError(err);

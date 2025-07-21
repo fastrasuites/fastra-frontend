@@ -70,7 +70,6 @@ const PurchaseRequestInfo = () => {
   }, []);
   const showSuccess = useCallback((msg) => {
     // e.g. enqueueSnackbar(msg, { variant: "success" });
-    console.log(msg);
   }, []);
 
   // Centralized data loader
@@ -286,7 +285,6 @@ const PurchaseRequestInfo = () => {
     );
   }
 
-  console.log(item);
   return (
     <div className="rfqStatus">
       {/* Header */}

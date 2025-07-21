@@ -19,12 +19,10 @@ export default function SetHead() {
   };
 
   const handleOpenSidebar = () => {
-    console.log("clicked to open sidebar from settings header");
     setSidebarOpen(true);
   };
 
   const handleCloseSidebar = () => {
-    console.log("clicked to close sidebar");
     setSidebarOpen(false);
   };
 

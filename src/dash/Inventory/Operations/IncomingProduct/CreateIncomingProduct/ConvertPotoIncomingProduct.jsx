@@ -241,7 +241,6 @@ export default function ConvertPoToIncomingProduct() {
         quantity_received: Number(item.qty_received),
       })),
     };
-    console.log(payload);
     try {
       const res = await createIncomingProduct(payload);
       Swal.fire({

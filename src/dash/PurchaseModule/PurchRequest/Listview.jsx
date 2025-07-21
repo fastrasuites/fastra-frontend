@@ -121,7 +121,6 @@ const ListView = ({ items, onCardClick, getStatusColor, onDeleteSelected }) => {
   if (items.length === 0) {
     return <p>No items available. Please fill the form to add items.</p>;
   }
-  console.log(items);
   return (
     <Box sx={{ width: "100%", mt: 3 }}>
       {selected.length > 0 && (

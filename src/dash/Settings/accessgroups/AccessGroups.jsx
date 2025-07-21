@@ -48,8 +48,6 @@ const AccessGroups = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
 
-  console.log(accessGroups);
-
   return (
     <Box p={{ xs: 2, sm: 4, md: 6 }}>
       <Box

@@ -28,18 +28,18 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedAdjustment, setSelectedAdjustment] = useState(
     formData.adjustmentType
   );
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
 
   useEffect(() => {
-    getLocationList();
-  }, [getLocationList]);
+    getActiveLocationList();
+  }, [getActiveLocationList]);
 
   useEffect(() => {
-    if (locationList.length <= 3 && locationList[0]) {
-      setSelectedLocation(locationList[0]);
-      handleInputChange("location", locationList[0]);
+    if (activeLocationList.length <= 1 && activeLocationList[0]) {
+      setSelectedLocation(activeLocationList[0]);
+      handleInputChange("location", activeLocationList[0]);
     }
-  }, [locationList, handleInputChange]);
+  }, [activeLocationList, handleInputChange]);
 
   // Sync local state when formData changes
   useEffect(() => {
@@ -92,14 +92,14 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
             Warehouse Location
             <Asterisk />
           </label>
-          {locationList.length <= 3 ? (
+          {activeLocationList.length <= 1 ? (
             <Typography color={"gray"}>
               {selectedLocation?.id || "N/A"}
             </Typography>
           ) : (
             <Autocomplete
               disablePortal
-              options={locationList}
+              options={activeLocationList}
               value={selectedLocation}
               getOptionLabel={(option) =>
                 option.location_name || option.id || ""
@@ -203,7 +203,6 @@ const ScrapForm = () => {
         items,
       });
       setFormData(defaultFormData);
-      // console.log(createdScrap);
       Swal.fire("Success", "Scrap created successfully", "success");
       navigateToDetail(createdScrap?.data?.id);
     } catch (err) {
@@ -239,7 +238,6 @@ const ScrapForm = () => {
         status: "done",
       });
       setFormData(defaultFormData);
-      console.log(createdScrap);
       Swal.fire("Success", "Scrap created successfully", "success");
       navigateToDetail(createdScrap?.data?.id);
     } catch (err) {

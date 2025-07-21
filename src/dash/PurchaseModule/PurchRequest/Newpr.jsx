@@ -424,8 +424,6 @@ export default function Newpr({
       items,
       is_hidden: false,
     };
-    console.log("checking payload", payload);
-    console.log("checking existingRequest", existingRequest);
     try {
       if (existingRequest) {
         await updatePurchaseRequest(existingRequest.url, payload);
@@ -488,8 +486,6 @@ export default function Newpr({
       // checking payload
 
       // checking existing request
-      console.log("checking payload", payload);
-      console.log("checking existingRequest", existingRequest);
       try {
         const result = existingRequest
           ? await updatePurchaseRequest(existingRequest.url, {

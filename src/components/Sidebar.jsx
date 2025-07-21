@@ -13,11 +13,25 @@ import logistics from "../image/sidebar/logistics.svg";
 import contacts from "../image/sidebar/contacts.svg";
 import apps from "../image/sidebar/apps.svg";
 import settings from "../image/sidebar/settings.svg";
+import {
+  extractPermissions,
+  getPermissionsByApp,
+} from "../helper/extractPermissions";
 
 const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
   const { tenantData } = useTenant();
 
   const tenant_schema_name = tenantData?.tenant_schema_name;
+
+  const permissionsMap = extractPermissions(tenantData?.user_accesses || []);
+
+  // Example:
+  const purchasePermissions =
+    Object.keys(getPermissionsByApp("purchase", permissionsMap)).length > 0;
+  const inventoryPermissions =
+    Object.keys(getPermissionsByApp("inventory", permissionsMap)).length > 0;
+  const settingsPermissions =
+    Object.keys(getPermissionsByApp("settings", permissionsMap)).length > 0;
   const handleReload = () => {
     window.location.reload();
   };
@@ -56,6 +70,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           to={`/${tenant_schema_name}/purchase`}
           className="sidebar-item"
           onClick={handleCloseSidebar}
+          style={{ visibility: purchasePermissions ? "visible" : "hidden" }}
         >
           <img src={purchase} alt="Purchase" className="sidebar-icon" />
           <span>Purchase</span>
@@ -80,6 +95,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           onClick={() => {
             handleCloseSidebar();
           }}
+          style={{ visibility: inventoryPermissions ? "visible" : "hidden" }}
         >
           <img src={inventory} alt="Inventory" className="sidebar-icon" />
           <span>Inventory</span>
@@ -141,6 +157,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           onClick={() => {
             handleCloseSidebar();
           }}
+          style={{ visibility: settingsPermissions ? "visible" : "hidden" }}
         >
           <img src={settings} alt="Settings" className="sidebar-icon" />
           <span>Settings</span>

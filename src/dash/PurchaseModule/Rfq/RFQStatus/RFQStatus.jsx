@@ -7,7 +7,7 @@ import RListView from "../RListView";
 import { Button } from "@mui/material";
 import { Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { extractRFQID, formatDate } from "../../../../helper/helper";
+import { formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 
 const statusColor = (status) => {
@@ -26,7 +26,6 @@ const statusColor = (status) => {
 const RFQStatus = () => {
   const location = useLocation();
   const { status: selectedStatus, quotationsData } = location.state || {};
-  console.log(location);
   const [quotations, setQuotations] = useState([]);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
@@ -52,23 +51,51 @@ const RFQStatus = () => {
 
   const filteredQuotations = quotations.filter((item) => {
     if (!searchQuery) return true;
-    const lowercasedQuery = searchQuery.toLowerCase();
+    const lowercasedQuery = searchQuery.toLowerCase().trim();
 
-    const price = item?.rfq_total_price?.toString().toLowerCase() || "";
-    const expiryDate = formatDate(item.expiry_date).toLowerCase();
+    // 1. Price search (using actual existing field)
+    const totalPrice = item?.total_price?.toString().toLowerCase() || "";
+
+    // 2. Date search (using existing date fields)
+    const createdDate = formatDate(item.date_created).toLowerCase();
+    const updatedDate = formatDate(item.date_updated).toLowerCase();
+
+    // 3. Status search
     const status = item?.status?.toLowerCase() || "";
-    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
-    const purchaseID = extractRFQID(item.purchase_request)?.toLowerCase() || "";
-    const vendor =
-      typeof item.vendor === "string" ? item.vendor.toLowerCase() : "";
+
+    // 4. Currency search (corrected path)
+    const currencyName =
+      item?.currency_details?.currency_name?.toLowerCase() || "";
+
+    // 5. Purchase ID search (using actual ID field)
+    const purchaseID = item?.id?.toLowerCase() || "";
+
+    // 6. Vendor search
+    const vendor = item.vendor_details?.company_name?.toLowerCase() || "";
+
+    // 7. Search within items array
+    const itemSearch =
+      item.items?.some(
+        (i) =>
+          i.description?.toLowerCase().includes(lowercasedQuery) ||
+          i.product_details?.product_name
+            ?.toLowerCase()
+            .includes(lowercasedQuery)
+      ) || false;
+
+    // 8. Purpose field search
+    const purpose = item.purpose?.toLowerCase() || "";
+
     return (
-      price.includes(lowercasedQuery) ||
-      expiryDate.includes(lowercasedQuery) ||
+      totalPrice.includes(lowercasedQuery) ||
+      createdDate.includes(lowercasedQuery) ||
+      updatedDate.includes(lowercasedQuery) ||
       status.includes(lowercasedQuery) ||
       currencyName.includes(lowercasedQuery) ||
       purchaseID.includes(lowercasedQuery) ||
       vendor.includes(lowercasedQuery) ||
-      vendorCategory.includes(lowercasedQuery)
+      purpose.includes(lowercasedQuery) ||
+      itemSearch
     );
   });
 

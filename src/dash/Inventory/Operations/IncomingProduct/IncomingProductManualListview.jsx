@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, Button, Paper, Typography } from "@mui/material";
 import CommonTable from "../../../../components/CommonTable/CommonTable";
 import { useTenant } from "../../../../context/TenantContext";
+import { useIncomingProduct } from "../../../../context/Inventory/IncomingProduct";
 // import { mockData } from "../../data/incomingProductData";
 // import { getStatusColor } from '../../utils';
 
@@ -22,13 +23,23 @@ const getStatusColor = (status) => {
   }
 };
 
-const IncomingProductManualListview = ({ incomingProductList, isLoading }) => {
+const IncomingProductManualListview = () => {
   const { tenantData } = useTenant();
   const tenantSchemaName = tenantData?.tenant_schema_name;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
+
+  const { incomingProductList, getIncomingProductList, isLoading } =
+    useIncomingProduct();
+
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      getIncomingProductList(searchQuery);
+    }, 500);
+    return () => clearTimeout(debounce);
+  }, [searchQuery, getIncomingProductList]);
 
   const columns = [
     { id: "incoming_product_id", label: "Incoming Product ID" },

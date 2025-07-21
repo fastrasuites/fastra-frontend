@@ -68,7 +68,6 @@ export const IncomingProductProvider = ({ children }) => {
         return Promise.reject(new Error(msg));
       }
       setIsLoading(true);
-      console.log(id);
       try {
         const { data } = await client.get(`/inventory/incoming-product/${id}/`);
         if (!data) {
@@ -98,8 +97,6 @@ export const IncomingProductProvider = ({ children }) => {
         throw { validation: errors };
       }
 
-      console.log(formData);
-
       setIsLoading(true);
       try {
         const payload = {
@@ -114,7 +111,6 @@ export const IncomingProductProvider = ({ children }) => {
           can_edit: formData.can_edit ?? true,
           is_hidden: formData.is_hidden ?? false,
         };
-        console.log(payload);
         const { data } = await client.post(
           "/inventory/incoming-product/",
           payload
@@ -151,7 +147,6 @@ export const IncomingProductProvider = ({ children }) => {
           can_edit: formData.can_edit ?? true,
           is_hidden: formData.is_hidden ?? false,
         };
-        console.log(payload);
         const { data } = await client.patch(
           `/inventory/incoming-product/${id}/`,
           payload
@@ -176,7 +171,6 @@ export const IncomingProductProvider = ({ children }) => {
       if (!client) throw new Error("API client not initialized.");
 
       setIsLoading(true);
-      console.log(formData);
       try {
         const { data } = await client.patch(
           `/inventory/incoming-product/${id}/`,

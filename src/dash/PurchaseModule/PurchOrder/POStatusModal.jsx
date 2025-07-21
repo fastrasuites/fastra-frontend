@@ -94,7 +94,6 @@ const POStatusModal = ({
 
       if (actions[statusAction]) {
         const result = await actions[statusAction](cleanedData, id);
-        console.log(result);
         if (result && result.success) {
           toast.success(`Status ${statusAction} successfully`, {
             position: "top-right",
@@ -406,9 +405,7 @@ const POStatusModal = ({
             component={Paper}
             sx={{ boxShadow: "none", borderRadius: "10px" }}
           >
-            <Table
-             stickyHeader
-            >
+            <Table stickyHeader>
               <TableHead>
                 <TableRow>
                   <TableCell>Product Name</TableCell>

@@ -25,18 +25,18 @@ const defaultFormData = {
 // ---------- COMPONENT: Basic Form Inputs ----------
 const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
 
   useEffect(() => {
-    getLocationList();
+    getActiveLocationList();
   }, []);
 
   useEffect(() => {
-    if (locationList.length <= 3 && locationList[0]) {
-      setSelectedLocation(locationList[0]);
-      handleInputChange("location", locationList[0]);
+    if (activeLocationList.length <= 1 && activeLocationList[0]) {
+      setSelectedLocation(activeLocationList[0]);
+      handleInputChange("location", activeLocationList[0]);
     }
-  }, [locationList, handleInputChange]);
+  }, [activeLocationList, handleInputChange]);
 
   const handleLocationChange = (_, newLoc) => {
     setSelectedLocation(newLoc);
@@ -57,7 +57,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
         </label>
         <p>{formData.date}</p>
       </div>
-      {locationList.length <= 3 ? (
+      {activeLocationList.length <= 1 ? (
         <div className="formLabelAndValue">
           <label style={{ marginBottom: 6, display: "flex" }}>
             Location <Asterisk />
@@ -71,7 +71,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
           </label>
           <Autocomplete
             disablePortal
-            options={locationList}
+            options={activeLocationList}
             value={selectedLocation}
             getOptionLabel={(option) => option?.location_name || ""}
             isOptionEqualToValue={(option, value) => option?.id === value?.id}
@@ -145,7 +145,7 @@ const NewStockAdjustment = () => {
       label: "Current Quantity",
       field: "available_product_quantity",
       type: "number",
-      transform: (val) => val || "",
+      transform: (val) => val || 0,
     },
     {
       label: "Adjusted Quantity",
@@ -160,6 +160,27 @@ const NewStockAdjustment = () => {
         `/${tenant_schema_name}/inventory/stock/stock-adjustment/${id}`
       );
     }, 1500);
+  };
+
+  const validateForm = (data) => {
+    const errors = {};
+    if (!data.warehouse_location) {
+      errors.warehouse_location = "Location is required.";
+    }
+    if (!data.notes) {
+      errors.notes = "Notes is required.";
+    }
+    if (!data.items || data.items.length === 0) {
+      errors.items = "At least one item is required.";
+    } else {
+      data.items.forEach((item, index) => {
+        if (!item.product) {
+          if (!errors.items) errors.items = [];
+          errors.items.push(`Item ${index + 1}: Product is required.`);
+        }
+      });
+    }
+    return Object.keys(errors).length > 0 ? errors : null;
   };
 
   const showValidationErrors = (errorData) => {
@@ -177,8 +198,8 @@ const NewStockAdjustment = () => {
 
   const handleSubmitBase = async (filledData, status = "draft") => {
     const cleanData = {
-      warehouse_location: filledData.location.id,
-      notes: filledData.notes,
+      warehouse_location: filledData?.location?.id,
+      notes: filledData?.notes,
       status,
       is_hidden: false,
       items: filledData.items.map((item) => ({
@@ -186,6 +207,12 @@ const NewStockAdjustment = () => {
         adjusted_quantity: item.qty_received,
       })),
     };
+
+    validateForm(cleanData);
+    if (validateForm(cleanData)) {
+      showValidationErrors(validateForm(cleanData));
+      return;
+    }
 
     try {
       const created = await createStockAdjustment(cleanData);

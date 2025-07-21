@@ -129,9 +129,9 @@ const AccessRightsSection = ({
         <Button variant="outlined" size="large">
           Access Rights
         </Button>
-        <Button variant="outlined" color="inherit" size="large">
+        {/* <Button variant="outlined" color="inherit" size="large">
           Sessions
-        </Button>
+        </Button> */}
       </Box>
 
       <Typography color="#3B7CED" fontSize="20px">
@@ -494,7 +494,6 @@ const UpdateUser = () => {
   useEffect(() => {
     if (singleUser && singleUser.id === parseInt(id)) {
       const accessGroupsMap = {};
-      console.log("SingleUser", singleUser);
       // @FAVOUR: this singleUser does not have application_accesses
       // Map access groups
       // singleUser?.application_accesses.forEach((access) => {
@@ -526,7 +525,6 @@ const UpdateUser = () => {
     }
   }, [singleUser, id]);
 
-  console.log(state);
   // Handlers
   const handleTabChange = useCallback(
     (index) => dispatch({ type: ActionTypes.SET_TAB, payload: index }),
@@ -641,17 +639,17 @@ const UpdateUser = () => {
       formData.append("in_app_notifications", state.inAppNotification);
       formData.append("email_notifications", state.emailNotification);
 
-      // Handle signature only if it's changed
-      if (state.signature && state.signature !== singleUser?.signature) {
+      // Append image file if exists
+      if (state.imageFile) {
+        formData.append("user_image_image", state.imageFile);
+      }
+
+      // Handle signature
+      if (state.signature) {
         const signatureFile = dataURLtoFile(state.signature, "signature.png");
         if (signatureFile) {
           formData.append("signature_image", signatureFile);
         }
-      }
-
-      // Handle profile image only if changed
-      if (state.imageFile) {
-        formData.append("image", state.imageFile);
       }
 
       // Append access codes
@@ -669,7 +667,6 @@ const UpdateUser = () => {
             showConfirmButton: false,
             timer: 2000,
           });
-          console.log(res);
           // Redirect to users list after update
           setTimeout(() => {
             history.push(`/${tenant_schema_name}/settings/user/${res.data.id}`);
@@ -689,7 +686,7 @@ const UpdateUser = () => {
         setIsSubmitting(false);
       }
     },
-    [state, id, patchUser, history, tenant_schema_name, singleUser]
+    [state, id, patchUser, history, tenant_schema_name]
   );
 
   if (isLoading) {

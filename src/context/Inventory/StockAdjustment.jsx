@@ -27,7 +27,6 @@ const validateStockAdjustmentData = (data) => {
 };
 
 const validateItemData = (item) => {
-  console.log(item);
   const errors = {};
   if (!item.product) {
     errors.product = "Product is required";
@@ -73,7 +72,6 @@ export const StockAdjustmentProvider = ({ children }) => {
 
   const normalizeStockAdjustment = useCallback(
     async (stock_adjustment) => {
-      // console.log(stock_adjustment);
       if (!stock_adjustment) return null;
       const warehouse = await fetchResource(
         stock_adjustment.warehouse_location
@@ -120,8 +118,6 @@ export const StockAdjustmentProvider = ({ children }) => {
       }
       setIsLoading(true);
       try {
-        console.log(client.defaults.baseURL);
-
         // Use template literal to insert the real id:
         const { data } = await client.get(`/inventory/stock-adjustment/${id}/`);
         setSingleAdjustment(data);
@@ -198,8 +194,6 @@ export const StockAdjustmentProvider = ({ children }) => {
           is_hidden: false,
         };
 
-        console.log("Payload", payload);
-
         const { data } = await client.put(
           `/inventory/stock-adjustment/${id}/`,
           payload
@@ -211,7 +205,6 @@ export const StockAdjustmentProvider = ({ children }) => {
         setError(null);
         return { success: true, data };
       } catch (err) {
-        console.log(err);
         setError(err.message || "Failed to update stock adjustment");
         return { success: false, error: err.message };
       } finally {
@@ -233,8 +226,6 @@ export const StockAdjustmentProvider = ({ children }) => {
           status: "done",
         };
 
-        console.log("Payload", payload);
-
         const { data } = await client.patch(
           `/inventory/stock-adjustment/${id}/`,
           payload
@@ -246,7 +237,6 @@ export const StockAdjustmentProvider = ({ children }) => {
         setError(null);
         return { success: true, data };
       } catch (err) {
-        console.log(err);
         setError(err.message || "Failed to update stock adjustment");
         return { success: false, error: err.message };
       } finally {

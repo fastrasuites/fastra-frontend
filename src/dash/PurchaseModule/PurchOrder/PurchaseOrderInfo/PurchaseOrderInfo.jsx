@@ -103,7 +103,6 @@ const PurchaseOrderInfo = () => {
     async (actionKey) => {
       setActionLoading(true);
       try {
-        console.log(actionKey);
         const result = await updatePurchaseOrder({ status: actionKey }, id);
         if (result.success) showSuccess(`Status set to ${actionKey}`);
         else showError(`Failed to ${actionKey} purchase order.`);
@@ -145,7 +144,7 @@ const PurchaseOrderInfo = () => {
     return rows.map((row, idx) => (
       <TableRow key={row.url || idx}>
         <TableCell sx={cellStyle(idx)}>
-          {row.product?.product_name || "N/A"}
+          {row.product_details?.product_name || "N/A"}
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
@@ -157,7 +156,8 @@ const PurchaseOrderInfo = () => {
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
-          {row.unit_of_measure?.unit_category || "N/A"}
+          {row?.product_details?.unit_of_measure_details?.unit_category ||
+            "N/A"}
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
@@ -242,7 +242,6 @@ const PurchaseOrderInfo = () => {
       </Box>
     );
   }
-  console.log(item);
   return (
     <div className="rfqStatus">
       <div className="rfqHeader">
@@ -394,7 +393,7 @@ const PurchaseOrderInfo = () => {
             </Typography>
 
             <Typography variant="p" color={"#353536"}>
-              {item.vendor?.company_name || ""}
+              {item?.vendor_details?.company_name || ""}
             </Typography>
           </Box>
         </div>
@@ -406,7 +405,7 @@ const PurchaseOrderInfo = () => {
                 Vendor Address
               </Typography>
               <Typography variant="p" color={"#353536"}>
-                {item.vendor?.address || "N/A"}
+                {item.vendor_details?.address || "N/A"}
               </Typography>
             </div>
             <div>
@@ -414,7 +413,7 @@ const PurchaseOrderInfo = () => {
                 Vendor Email
               </Typography>
               <Typography variant="p" color={"#353536"}>
-                {item.vendor?.email || "N/A"}
+                {item.vendor_details?.email || "N/A"}
               </Typography>
             </div>
           </div>
@@ -425,8 +424,8 @@ const PurchaseOrderInfo = () => {
                 Currency Type
               </Typography>
               <Typography variant="p" color={"#353536"}>
-                {item.currency
-                  ? `${item.currency.currency_name} - ${item.currency.currency_symbol}`
+                {item.currency_details
+                  ? `${item.currency_details.currency_name} - ${item.currency_details.currency_symbol}`
                   : "N/A"}
               </Typography>
             </div>

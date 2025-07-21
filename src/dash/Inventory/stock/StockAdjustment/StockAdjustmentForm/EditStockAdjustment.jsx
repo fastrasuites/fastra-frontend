@@ -22,36 +22,34 @@ const defaultFormData = {
 
 // Renders the top form section
 const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
   const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
-    getLocationList();
-  }, []);
+    getActiveLocationList();
+  }, [getActiveLocationList]);
 
   useEffect(() => {
-    if (locationList.length <= 3 && locationList[0]) {
-      setSelectedLocation(locationList[0]);
-      handleInputChange("location", locationList[0]);
+    if (activeLocationList.length <= 1 && activeLocationList[0]) {
+      setSelectedLocation(activeLocationList[0]);
+      handleInputChange("location", activeLocationList[0]);
     }
-  }, [locationList, handleInputChange]);
+  }, [activeLocationList, handleInputChange]);
 
   useEffect(() => {
     // Prefill Autocomplete with matching location object
-    if (formData.location && locationList.length > 0) {
-      const matched = locationList.find(
+    if (formData.location && activeLocationList.length > 0) {
+      const matched = activeLocationList.find(
         (loc) => loc.id === formData.location?.id || formData.location
       );
       setSelectedLocation(matched || null);
     }
-  }, [formData.location, locationList]);
+  }, [formData.location, activeLocationList]);
 
   const handleReceiptChange = (event, newValue) => {
     setSelectedLocation(newValue);
     handleInputChange("location", newValue);
   };
-
-  console.log(locationList);
 
   return (
     <div className="stockbasicInformationInputs">
@@ -69,7 +67,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
         <p>{formData.date}</p>
       </div>
 
-      {locationList.length <= 3 ? (
+      {activeLocationList.length <= 1 ? (
         <div className="formLabelAndValue">
           <label>Location</label>
           <p>{selectedLocation?.id || "N/A"}</p>
@@ -81,7 +79,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
           </label>
           <Autocomplete
             disablePortal
-            options={locationList}
+            options={activeLocationList}
             value={selectedLocation}
             getOptionLabel={(option) => option?.location_name || ""}
             isOptionEqualToValue={(option, value) => option?.id === value?.id}
@@ -144,16 +142,13 @@ const EditStockAdjustment = () => {
       locationList.length
     ) {
       const adj = location.state.StockAdjustment;
-
       // Map adjustment items to form items
       const items = adj.stock_adjustment_items.map((item) => {
         return {
           ...item,
           product: item?.product,
-          unit_of_measure: item.product?.unit_of_measure
-            ? { unit_category: item.product.unit_of_measure[1] }
-            : { unit_category: item?.unit_of_measure },
-          available_product_quantity: item.current_quantity,
+          unit_of_measure: item.product?.unit_of_measure_details,
+          available_product_quantity: item?.product?.available_product_quantity,
           qty_received: item.adjusted_quantity,
         };
       });
@@ -180,7 +175,6 @@ const EditStockAdjustment = () => {
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-
   const rowConfig = [
     {
       label: "Product Name",
@@ -201,6 +195,7 @@ const EditStockAdjustment = () => {
       field: "available_product_quantity",
       type: "number",
       disabled: true,
+      transform: (val) => val || 0,
     },
     {
       label: "Adjusted Quantity",
@@ -217,11 +212,45 @@ const EditStockAdjustment = () => {
     }, 1500);
   };
 
+  const validateForm = (data) => {
+    const errors = {};
+    if (!data.warehouse_location) {
+      errors.warehouse_location = "Location is required.";
+    }
+    if (!data.notes) {
+      errors.notes = "Notes is required.";
+    }
+    if (!data.items || data.items.length === 0) {
+      errors.items = "At least one item is required.";
+    } else {
+      data.items.forEach((item, index) => {
+        if (!item.product) {
+          if (!errors.items) errors.items = [];
+          errors.items.push(`Item ${index + 1}: Product is required.`);
+        }
+      });
+    }
+    return Object.keys(errors).length > 0 ? errors : null;
+  };
+
+  const showValidationErrors = (errorData) => {
+    const messages = Object.values(errorData)
+      .flat()
+      .map((msg) => `<p>${msg}</p>`)
+      .join("");
+
+    Swal.fire({
+      icon: "error",
+      title: "Validation Error",
+      html: messages || "An unknown error occurred.",
+    });
+  };
+
   const handleSubmit = async (filledData) => {
     const cleanData = {
       id: filledData.id || null,
       adjustment_type: filledData.adjustmentType || null,
-      warehouse_location: filledData.location?.url || filledData.location,
+      warehouse_location: filledData.location?.id || filledData.location,
       notes: filledData.notes || null,
       status: filledData.status || null,
       is_hidden: false,
@@ -230,6 +259,12 @@ const EditStockAdjustment = () => {
         adjusted_quantity: item.qty_received,
       })),
     };
+
+    validateForm(cleanData);
+    if (validateForm(cleanData)) {
+      showValidationErrors(validateForm(cleanData));
+      return;
+    }
 
     try {
       const { data } = await updateStockAdjustment(cleanData, id);
@@ -264,7 +299,7 @@ const EditStockAdjustment = () => {
     const cleanData = {
       id: filledData.id || null,
       adjustment_type: filledData.adjustmentType || null,
-      warehouse_location: filledData.location?.url || filledData.location,
+      warehouse_location: filledData.location?.id || filledData.location,
       notes: filledData.notes || null,
       status: "done",
       is_hidden: false,
@@ -273,6 +308,12 @@ const EditStockAdjustment = () => {
         adjusted_quantity: item.qty_received,
       })),
     };
+
+    validateForm(cleanData);
+    if (validateForm(cleanData)) {
+      showValidationErrors(validateForm(cleanData));
+      return;
+    }
 
     try {
       const { data } = await updateStockAdjustment(cleanData, id);

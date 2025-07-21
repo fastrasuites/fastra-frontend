@@ -111,7 +111,6 @@ const DeliveryOrderReturnForm = () => {
   }
 
   if (error) {
-    console.log(error);
     return (
       <Box p={4}>
         <Typography marginBlock={2} color="error">
@@ -303,8 +302,6 @@ Thank you.`;
         })),
     };
 
-    console.log("Payload for return order:", payload);
-
     try {
       const response = await createDeliveryOrderReturn(payload);
 
@@ -338,7 +335,6 @@ Thank you.`;
               "shared"
             );
           } catch (shareError) {
-            console.log("Sharing cancelled or failed", shareError);
             // Fall back to email if sharing fails
             openEmailClient(response.data.unique_record_id, fileName, pdf);
           }
@@ -356,8 +352,6 @@ Thank you.`;
       });
     }
   };
-
-  console.log("singleDeliveryOrder", singleDeliveryOrder);
 
   return (
     <Box p={4} display="grid" gap={4}>

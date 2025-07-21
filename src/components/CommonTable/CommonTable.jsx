@@ -71,7 +71,6 @@ const CommonTable = ({
   const showViewToggles = viewModes.length > 1;
 
   const handleRowClick = (row, event, path) => {
-    console.log(row);
     // Prevent navigation if clicking selectable elements
     if (event.target.closest('input[type="checkbox"]')) return;
     const id = row[rowKey] || row.id;
