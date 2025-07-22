@@ -17,6 +17,8 @@ import Swal from "sweetalert2";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { Link, useHistory } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
+import UploadIcon from "../../../image/cloud-download.svg";
+import excelFile from "../../../vendorExcelFile.xlsx";
 
 export default function Vend() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,6 +119,16 @@ export default function Vend() {
                     placeholder="Search"
                     sx={{ ml: 1, padding: "0 8px" }}
                   />
+                </Box>
+                <Box>
+                  {/* IconButton to show modal (UploadMedia.jsx) to create vendors from excel file */}
+                  <IconButton>
+                    <img
+                      src={UploadIcon}
+                      alt="Upload"
+                      title="Create Vendors via excelFile upload"
+                    />
+                  </IconButton>
                 </Box>
               </Grid>
 

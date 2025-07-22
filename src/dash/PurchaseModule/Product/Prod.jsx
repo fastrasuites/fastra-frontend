@@ -17,6 +17,9 @@ import SearchIcon from "../../../image/search.svg";
 import ProdListview from "./ProdListview";
 import { Link, useHistory } from "react-router-dom";
 import Can from "../../../components/Access/Can";
+import UploadIcon from "../../../image/cloud-download.svg";
+import productExcelFile from "../../../productExcelFile.xlsx";
+import UploadMedia from "../../../components/UploadMedia";
 
 export default function Prod() {
   const { products, fetchProducts } = usePurchase();
@@ -26,6 +29,7 @@ export default function Prod() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
   const [loading, setLoading] = useState(true);
+  const [openUploadMedia, setOpenUploadMedia] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(async () => {
@@ -38,6 +42,10 @@ export default function Prod() {
       clearTimeout(handler);
     };
   }, [fetchProducts, searchQuery]);
+
+  const handleCloseUploadMedia = () => {
+    setOpenUploadMedia(false);
+  };
 
   return (
     <Box p={4}>
@@ -81,7 +89,27 @@ export default function Prod() {
               sx={{ ml: 1, height: "100%", padding: "0 8px" }}
             />
           </Box>
+          <Box>
+            <Can app="purchase" module="product" action="create">
+              {/* IconButton to show modal (UploadMedia.jsx) to create products from excel file */}
+              <IconButton onClick={() => setOpenUploadMedia(true)}>
+                <img
+                  src={UploadIcon}
+                  alt="Upload"
+                  title="Create Products via excelFile upload"
+                />
+              </IconButton>
+            </Can>
+          </Box>
         </Box>
+
+        {openUploadMedia && (
+          <UploadMedia
+            endpoint="/purchase/products/upload_excel/"
+            onClose={handleCloseUploadMedia}
+            excelFile={productExcelFile}
+          />
+        )}
 
         <Grid item>
           <IconButton onClick={() => setViewMode("grid")}>
