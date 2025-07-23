@@ -19,6 +19,7 @@ import { Link, useHistory } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
 import UploadIcon from "../../../image/cloud-download.svg";
 import UploadMedia from "../../../components/UploadMedia";
+import Can from "../../../components/Access/Can";
 
 export default function Vend() {
   const [openUploadMedia, setOpenUploadMedia] = useState();
