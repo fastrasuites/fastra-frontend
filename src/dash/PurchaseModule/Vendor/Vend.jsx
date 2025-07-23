@@ -17,6 +17,7 @@ import Swal from "sweetalert2";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { Link, useHistory } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
+import Can from "../../../components/Access/Can";
 
 export default function Vend() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,19 +85,22 @@ export default function Vend() {
                   alignItems: "center",
                 }}
               >
-                <Link to="vendor/new">
-                  <Button
-                    variant="contained"
-                    sx={{
-                      height: "100%",
-                      backgroundColor: "#3B7CED",
-                      color: "white",
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    New Vendor
-                  </Button>
-                </Link>
+                <Can app="purchase" module="vendor" action="create">
+                  <Link to="vendor/new">
+                    <Button
+                      variant="contained"
+                      sx={{
+                        height: "100%",
+                        backgroundColor: "#3B7CED",
+                        color: "white",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      New Vendor
+                    </Button>
+                  </Link>
+                </Can>
+
                 <Box
                   sx={{
                     display: "flex",

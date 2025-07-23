@@ -4,6 +4,7 @@ import { useCanAccess } from "../../context/Access/AccessContext";
 
 const Can = ({ app, module, action, children }) => {
   const accessMap = useCanAccess();
+  console.log("Access Map:", accessMap);
 
   const key = `${app}:${module}:${action}`;
 

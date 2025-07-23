@@ -17,6 +17,7 @@ import PRItemsTable from "./PRItemsTable";
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
 import { extractPermissions } from "../../../../helper/extractPermissions";
 import { useCanAccess } from "../../../../context/Access/AccessContext";
+import Can from "../../../../components/Access/Can";
 
 const CreatePRForm = () => {
   const history = useHistory();
@@ -337,9 +338,11 @@ const CreatePRForm = () => {
               <Button variant="outlined" type="submit">
                 {edit ? "Save Changes" : "Save"}
               </Button>
-              <Button variant="contained" onClick={saveAndSubmit}>
-                Save & Send
-              </Button>
+              <Can app="purchase" module="purchaserequest" action="update">
+                <Button variant="contained" onClick={saveAndSubmit}>
+                  Save & Send
+                </Button>
+              </Can>
             </div>
           </div>
         </form>

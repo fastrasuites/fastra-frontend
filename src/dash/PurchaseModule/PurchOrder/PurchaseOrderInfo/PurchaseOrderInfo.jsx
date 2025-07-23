@@ -24,6 +24,7 @@ import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 import { useTenant } from "../../../../context/TenantContext";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
+import Can from "../../../../components/Access/Can";
 
 // Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
@@ -184,6 +185,7 @@ const PurchaseOrderInfo = () => {
               text: "Send to Inventory",
               onClick: handleConvertToInventory,
               disabled: actionLoading,
+              action: ["inventory", "incomingproduct", "create"],
             },
           ],
         };
@@ -195,11 +197,13 @@ const PurchaseOrderInfo = () => {
               text: "Approve",
               color: "success",
               onClick: () => handleStatusChange("completed"),
+              action: ["purchase", "purchaseorder", "approve"],
             },
             {
               text: "Reject",
               color: "error",
               onClick: () => handleStatusChange("cancelled"),
+              action: ["purchase", "purchaseorder", "reject"],
             },
           ],
         };
@@ -210,6 +214,7 @@ const PurchaseOrderInfo = () => {
             {
               text: "Set Back to Draft",
               onClick: () => handleStatusChange("pending"),
+              action: ["purchase", "purchaseorder", "edit"],
             },
           ],
         };
@@ -220,6 +225,7 @@ const PurchaseOrderInfo = () => {
             {
               text: "Set to Pending",
               onClick: () => handleStatusChange("awaiting"),
+              action: ["purchase", "purchaseorder", "edit"],
             },
           ],
         };
@@ -266,37 +272,39 @@ const PurchaseOrderInfo = () => {
           <h2>Basic Information</h2>
           <div className="editCancel">
             {!["awaiting", "completed", "cancelled"].includes(item.status) && (
-              <Button
-                onClick={() =>
-                  history.push({
-                    pathname: `/${tenant_schema_name}/purchase/purchase-order/${extractRFQID(
-                      item.url
-                    )}/edit`,
-                    state: {
-                      po: {
-                        item,
-                        rfq: {
-                          id: item?.related_rfq,
-                          vendor: item?.vendor,
-                          items: item?.items,
+              <Can app="purchase" module="purchaseorder" action="edit">
+                <Button
+                  onClick={() =>
+                    history.push({
+                      pathname: `/${tenant_schema_name}/purchase/purchase-order/${extractRFQID(
+                        item.url
+                      )}/edit`,
+                      state: {
+                        po: {
+                          item,
+                          rfq: {
+                            id: item?.related_rfq,
+                            vendor: item?.vendor,
+                            items: item?.items,
+                          },
+                          destination_location: {
+                            ...singleLocation,
+                          },
+                          currency: item?.currency,
+                          payment_terms: item?.payment_terms,
+                          purchase_policy: item?.purchase_policy,
+                          delivery_terms: item?.delivery_terms,
+                          status: "draft",
+                          is_hidden: true,
                         },
-                        destination_location: {
-                          ...singleLocation,
-                        },
-                        currency: item?.currency,
-                        payment_terms: item?.payment_terms,
-                        purchase_policy: item?.purchase_policy,
-                        delivery_terms: item?.delivery_terms,
-                        status: "draft",
-                        is_hidden: true,
+                        edit: true,
                       },
-                      edit: true,
-                    },
-                  })
-                }
-              >
-                Edit
-              </Button>
+                    })
+                  }
+                >
+                  Edit
+                </Button>
+              </Can>
             )}
             <Button variant="outlined" onClick={() => history.goBack()}>
               Close
@@ -506,17 +514,23 @@ const PurchaseOrderInfo = () => {
             </div>
             <div className="rfqStatusDraftFooterBtns">
               {footerConfig.actions.map((action, idx) => (
-                <Button
-                  key={idx}
-                  variant="contained"
-                  disableElevation
-                  color={action.color}
-                  onClick={action.onClick}
-                  disabled={action.disabled || actionLoading}
-                  sx={{ ml: 1 }}
+                <Can
+                  app={action.action[0]}
+                  module={action.action[1]}
+                  action={action.action[2]}
                 >
-                  {action.text}
-                </Button>
+                  <Button
+                    key={idx}
+                    variant="contained"
+                    disableElevation
+                    color={action.color}
+                    onClick={action.onClick}
+                    disabled={action.disabled || actionLoading}
+                    sx={{ ml: 1 }}
+                  >
+                    {action.text}
+                  </Button>
+                </Can>
               ))}
             </div>
           </div>

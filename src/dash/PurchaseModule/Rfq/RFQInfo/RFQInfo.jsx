@@ -19,6 +19,7 @@ import approvedIcon from "../../../../../src/image/icons/approved-rfq.svg";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 import { useRFQ } from "../../../../context/RequestForQuotation";
+import Can from "../../../../components/Access/Can";
 
 // Style constants
 const cellStyle = (index) => ({
@@ -165,6 +166,7 @@ const RFQInfo = () => {
               text: "Convert to PO",
               onClick: handleConvertToPO,
               disabled: actionLoading,
+              action: ["purchaseorder", "create"],
             },
           ],
         };
@@ -176,11 +178,13 @@ const RFQInfo = () => {
               text: "Approve",
               onClick: () => handleStatusChange("approve"),
               color: "success",
+              action: ["requestforquotation", "approve"],
             },
             {
               text: "Reject",
               onClick: () => handleStatusChange("reject"),
               color: "error",
+              action: ["requestforquotation", "reject"],
             },
           ],
         };
@@ -202,6 +206,7 @@ const RFQInfo = () => {
             {
               text: "Set to Pending",
               onClick: () => handleStatusChange("pending"),
+              action: ["requestforquotation", "edit"],
             },
           ],
         };
@@ -252,18 +257,20 @@ const RFQInfo = () => {
             {!["pending", "approved", "rejected", "cancelled"].includes(
               item.status
             ) && (
-              <Button
-                onClick={() =>
-                  history.push({
-                    pathname: `/${tenantSchema}/purchase/request-for-quotations/${extractRFQID(
-                      item.url
-                    )}/edit`,
-                    state: { rfq: item, edit: true },
-                  })
-                }
-              >
-                Edit
-              </Button>
+              <Can app="purchase" module="requestforquotation" action="edit">
+                <Button
+                  onClick={() =>
+                    history.push({
+                      pathname: `/${tenantSchema}/purchase/request-for-quotations/${extractRFQID(
+                        item.url
+                      )}/edit`,
+                      state: { rfq: item, edit: true },
+                    })
+                  }
+                >
+                  Edit
+                </Button>
+              </Can>
             )}
             <Link to={`/${tenantSchema}/purchase/request-for-quotations`}>
               <Button variant="outlined">Close</Button>
@@ -402,17 +409,23 @@ const RFQInfo = () => {
             </div>
             <div className="rfqStatusDraftFooterBtns">
               {footerConfig.actions.map((action, idx) => (
-                <Button
-                  key={idx}
-                  variant="contained"
-                  disableElevation
-                  color={action.color}
-                  onClick={action.onClick}
-                  disabled={action.disabled || actionLoading}
-                  sx={{ ml: 1 }}
+                <Can
+                  app="purchase"
+                  module={action.action[0]}
+                  action={action.action[1]}
                 >
-                  {action.text}
-                </Button>
+                  <Button
+                    key={idx}
+                    variant="contained"
+                    disableElevation
+                    color={action.color}
+                    onClick={action.onClick}
+                    disabled={action.disabled || actionLoading}
+                    sx={{ ml: 1 }}
+                  >
+                    {action.text}
+                  </Button>
+                </Can>
               ))}
             </div>
           </div>

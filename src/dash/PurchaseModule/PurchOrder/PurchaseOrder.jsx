@@ -14,6 +14,7 @@ import "./PurchaseOrder.css";
 import { toast } from "react-toastify";
 import { useTenant } from "../../../context/TenantContext";
 import { Link, useHistory } from "react-router-dom";
+import Can from "../../../components/Access/Can";
 
 export default function PurchaseOrder() {
   // Local state
@@ -225,13 +226,15 @@ export default function PurchaseOrder() {
           <div className="rfq3">
             <div className="r3a">
               <Link to="purchase-order/new">
-                <Button
-                  variant="contained"
-                  disableElevation
-                  style={{ fontSize: "17px", whiteSpace: "nowrap" }}
-                >
-                  New Purchase Order
-                </Button>
+                <Can app="purchase" module="purchaseorder" action="create">
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    style={{ fontSize: "17px", whiteSpace: "nowrap" }}
+                  >
+                    New Purchase Order
+                  </Button>
+                </Can>
               </Link>
               <div className="rfqsash">
                 <Search

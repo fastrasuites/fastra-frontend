@@ -16,6 +16,7 @@ import { usePurchase } from "../../../context/PurchaseContext";
 import { formatDate } from "../../../helper/helper";
 import "./ProductDetails.css";
 import { useTenant } from "../../../context/TenantContext";
+import Can from "../../../components/Access/Can";
 
 const ProductDetails = () => {
   const { fetchSingleProduct, singleProducts } = usePurchase();
@@ -80,9 +81,13 @@ const ProductDetails = () => {
 
   return (
     <Box id="prodetails" p={4}>
-      <Button variant="contained" mb={1} disableElevation>
-        New Product
-      </Button>
+      <Can app="purchase" module="product" action="create">
+        <Link to={`/${tenantData?.tenant_schema_name}/purchase/product/new`}>
+          <Button variant="contained" mb={1} disableElevation>
+            New Product
+          </Button>
+        </Link>
+      </Can>
       <Box
         className="prodet1"
         bgcolor={"white"}
@@ -102,13 +107,15 @@ const ProductDetails = () => {
               Cancel
             </Button>
 
-            <Link
-              to={`/${tenantData?.tenant_schema_name}/purchase/product/edit/${product?.id}`}
-            >
-              <Button type="button" variant="contained" disableElevation>
-                Edit
-              </Button>
-            </Link>
+            <Can app="purchase" module="product" action="edit">
+              <Link
+                to={`/${tenantData?.tenant_schema_name}/purchase/product/edit/${product?.id}`}
+              >
+                <Button type="button" variant="contained" disableElevation>
+                  Edit
+                </Button>
+              </Link>
+            </Can>
           </Box>
         </Box>
         {/* product details */}

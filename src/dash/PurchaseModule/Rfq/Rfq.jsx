@@ -8,6 +8,7 @@ import { Button } from "@mui/material";
 import { toast } from "react-toastify";
 
 import RListView from "./RListView";
+import Can from "../../../components/Access/Can";
 import { useRFQ } from "../../../context/RequestForQuotation";
 import { useTenant } from "../../../context/TenantContext";
 import { extractRFQID, formatDate } from "../../../helper/helper";
@@ -161,9 +162,15 @@ export default function Rfq() {
           <div className="rfq3">
             <div className="r3a">
               <Link to={`/${tenantSchema}/purchase/request-for-quotations/new`}>
-                <Button variant="contained" disableElevation>
-                  New RFQ
-                </Button>
+                <Can
+                  app="purchase"
+                  module="requestforquotation"
+                  action="create"
+                >
+                  <Button variant="contained" disableElevation>
+                    New RFQ
+                  </Button>
+                </Can>
               </Link>
               <div className="rfqsash">
                 <Search

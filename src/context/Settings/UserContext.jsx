@@ -207,8 +207,12 @@ export const UserProvider = ({ children }) => {
       setIsLoading(true);
       try {
         const { data } = await client.patch(
-          `/users/tenant-users/${id}/`,
-          userData
+          `/users/tenant-users/edit/${id}/`,
+          userData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            transformRequest: [(data /*, headers*/) => data],
+          }
         );
         setUserList((prev) => prev.map((usr) => (usr.id === id ? data : usr)));
         setError(null);
