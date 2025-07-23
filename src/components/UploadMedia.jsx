@@ -13,8 +13,8 @@ import ExcelFileIcon from "../image/Excel-file-icon.svg";
 import ErrorIcon from "../image/error-icon.svg";
 import { usePurchase } from "../context/PurchaseContext";
 
-const UploadMedia = ({ onClose, endpoint, excelFile }) => {
-  const { uploadFile } = usePurchase();
+const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
+  const { uploadFile, downloadExcelTemplate } = usePurchase();
   const [file, setFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorPopup, setShowErrorPopup] = useState(false);
@@ -72,7 +72,7 @@ const UploadMedia = ({ onClose, endpoint, excelFile }) => {
 
     if (file) {
       try {
-        await uploadFile(file, endpoint);
+        await uploadFile(file, uploadfileEndpoint);
         setFile(null);
         onClose();
       } catch (error) {
@@ -89,6 +89,16 @@ const UploadMedia = ({ onClose, endpoint, excelFile }) => {
   const handleTryAgain = () => {
     setShowErrorPopup(false);
     setErrorMessage("");
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      await downloadExcelTemplate(endpoint);
+    } catch (error) {
+      console.error("Error downloading template:", error);
+      setErrorMessage("Failed to download the template. Please try again.");
+      setShowErrorPopup(true);
+    }
   };
 
   return (
@@ -115,7 +125,11 @@ const UploadMedia = ({ onClose, endpoint, excelFile }) => {
             </Typography>
             <Typography sx={{ my: 2 }}>
               Click{" "}
-              <a href={excelFile} download style={{ color: "red" }}>
+              <a
+                href="#"
+                onClick={handleDownloadTemplate}
+                style={{ color: "red" }}
+              >
                 here to download the acceptable format,
               </a>{" "}
               edit appropriately and re-upload to continue.
@@ -144,7 +158,11 @@ const UploadMedia = ({ onClose, endpoint, excelFile }) => {
                 <Typography variant="h6">Media Upload</Typography>
                 <Typography variant="body2">
                   Add your documents here.{" "}
-                  <a href={excelFile} download style={{ color: "red" }}>
+                  <a
+                    href="#"
+                    onClick={handleDownloadTemplate}
+                    style={{ color: "red" }}
+                  >
                     Download acceptable format
                   </a>
                 </Typography>

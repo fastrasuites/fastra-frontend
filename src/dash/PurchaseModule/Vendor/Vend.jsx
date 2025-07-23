@@ -18,9 +18,10 @@ import { usePurchase } from "../../../context/PurchaseContext";
 import { Link, useHistory } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
 import UploadIcon from "../../../image/cloud-download.svg";
-import excelFile from "../../../vendorExcelFile.xlsx";
+import UploadMedia from "../../../components/UploadMedia";
 
 export default function Vend() {
+  const [openUploadMedia, setOpenUploadMedia] = useState();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
   const [openRight, setOpenRight] = useState(false);
@@ -63,6 +64,10 @@ export default function Vend() {
 
   const handleCardClick = (item) => {
     history.push(`/${tenant}/purchase/vendor/${item.id}`);
+  };
+
+  const handleCloseUploadMedia = () => {
+    setOpenUploadMedia(false);
   };
   return (
     <div>
@@ -121,16 +126,25 @@ export default function Vend() {
                   />
                 </Box>
                 <Box>
-                  {/* IconButton to show modal (UploadMedia.jsx) to create vendors from excel file */}
-                  <IconButton>
+                  {/* IconButton to show modal (UploadMedia.jsx) to create products from excel file */}
+                  <IconButton onClick={() => setOpenUploadMedia(true)}>
                     <img
                       src={UploadIcon}
                       alt="Upload"
-                      title="Create Vendors via excelFile upload"
+                      title="Create Vendor via excelFile upload"
                     />
                   </IconButton>
                 </Box>
               </Grid>
+
+              {openUploadMedia && (
+                <UploadMedia
+                  endpoint="purchase/vendors/download-template/"
+                  uploadfileEndpoint="/purchase/vendors/upload_excel/"
+                  onClose={handleCloseUploadMedia}
+                  // templateEndpoint="/purchase/download_excel_template/"
+                />
+              )}
 
               <Grid
                 item

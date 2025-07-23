@@ -18,7 +18,6 @@ import ProdListview from "./ProdListview";
 import { Link, useHistory } from "react-router-dom";
 import Can from "../../../components/Access/Can";
 import UploadIcon from "../../../image/cloud-download.svg";
-import productExcelFile from "../../../productExcelFile.xlsx";
 import UploadMedia from "../../../components/UploadMedia";
 
 export default function Prod() {
@@ -91,7 +90,6 @@ export default function Prod() {
           </Box>
           <Box>
             <Can app="purchase" module="product" action="create">
-              {/* IconButton to show modal (UploadMedia.jsx) to create products from excel file */}
               <IconButton onClick={() => setOpenUploadMedia(true)}>
                 <img
                   src={UploadIcon}
@@ -102,12 +100,13 @@ export default function Prod() {
             </Can>
           </Box>
         </Box>
-
+        {/* UploadMedia (Excel) for bulk uplaod products or vendor*/}
         {openUploadMedia && (
           <UploadMedia
-            endpoint="/purchase/products/upload_excel/"
+            endpoint="purchase/products/download-template/"
+            uploadfileEndpoint="/purchase/products/upload_excel/"
             onClose={handleCloseUploadMedia}
-            excelFile={productExcelFile}
+            templateEndpoint="/purchase/download_excel_template/"
           />
         )}
 
