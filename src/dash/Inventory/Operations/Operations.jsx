@@ -131,7 +131,6 @@ const PendingBox = ({
 const Operations = () => {
   const theme = useTheme();
   const tenant = useTenant().tenantData.tenant_schema_name;
-  console.log(tenant);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [inventoryModule, setInventoryModule] = useState(INITIAL_STATE);
   const [isLoading, setIsLoading] = useState(false);

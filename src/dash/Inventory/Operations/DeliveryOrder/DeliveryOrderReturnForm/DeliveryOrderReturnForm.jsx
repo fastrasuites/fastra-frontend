@@ -345,10 +345,24 @@ Thank you.`;
       }
     } catch (err) {
       console.error("Return creation failed:", err);
+
+      // Get all error messages
+      const errorData = err.response?.data;
+      const errorMessages = errorData
+        ? Object.entries(errorData)
+            .map(
+              ([field, messages]) =>
+                `${field}: ${
+                  Array.isArray(messages) ? messages.join(", ") : messages
+                }`
+            )
+            .join("\n")
+        : "Return order could not be created";
+
       Swal.fire({
         title: "Error",
         icon: "error",
-        text: "Return order could not be created",
+        text: errorMessages,
       });
     }
   };

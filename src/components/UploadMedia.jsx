@@ -78,8 +78,7 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
       } catch (error) {
         console.log("error :", error);
         setErrorMessage(
-          error.response.data.error,
-          "Failed to upload the file."
+          error.response.data.error || "Failed to upload the file."
         );
         setShowErrorPopup(true);
       }
