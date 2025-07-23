@@ -19,6 +19,7 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const validTypes = [
     "application/vnd.ms-excel",
@@ -67,20 +68,80 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
     validateFile(droppedFile);
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   if (file) {
+  //     try {
+  //       await uploadFile(file, uploadfileEndpoint);
+  //       setFile(null);
+  //       onClose();
+  //     } catch (error) {
+  //       console.error("Upload failed:", error);
+
+  //       const responseData = error.response?.data;
+  //       const message = responseData?.message || "Failed to upload the file.";
+  //       const errorDetails = responseData?.errors;
+
+  //       const formattedErrors = Array.isArray(errorDetails)
+  //         ? errorDetails
+  //             .map((errObj) => {
+  //               const row = errObj.row ?? "Unknown row";
+  //               const errors = Array.isArray(errObj.errors)
+  //                 ? errObj.errors.join("; ")
+  //                 : String(errObj.errors);
+  //               return `Row ${row}: ${errors}`;
+  //             })
+  //             .join("\n")
+  //         : "";
+
+  //       const fullMessage = formattedErrors
+  //         ? `${message}\n\n${formattedErrors}`
+  //         : message;
+
+  //       console.log("Parsed error message:", fullMessage);
+  //       setErrorMessage(fullMessage);
+  //       setShowErrorPopup(true);
+  //     }
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (file) {
+      setIsUploading(true); // Start loading
       try {
         await uploadFile(file, uploadfileEndpoint);
         setFile(null);
         onClose();
       } catch (error) {
-        console.log("error :", error);
-        setErrorMessage(
-          error.response.data.error || "Failed to upload the file."
-        );
+        console.error("Upload failed:", error);
+
+        const responseData = error.response?.data;
+        const message = responseData?.message || "Failed to upload the file.";
+        const errorDetails = responseData?.errors;
+
+        const formattedErrors = Array.isArray(errorDetails)
+          ? errorDetails
+              .map((errObj) => {
+                const row = errObj.row ?? "Unknown row";
+                const errors = Array.isArray(errObj.errors)
+                  ? errObj.errors.join("; ")
+                  : String(errObj.errors);
+                return `Row ${row}: ${errors}`;
+              })
+              .join("\n")
+          : "";
+
+        const fullMessage = formattedErrors
+          ? `${message}\n\n${formattedErrors}`
+          : message;
+
+        setErrorMessage(fullMessage);
         setShowErrorPopup(true);
+      } finally {
+        setIsUploading(false); // Always stop loading
       }
     }
   };
@@ -118,10 +179,13 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
             <Box mb={2} display="flex" justifyContent="center">
               <img src={ErrorIcon} alt="File upload failed" width={32} />
             </Box>
-            <Typography color="error">
+            <Typography color="error" component="div">
               ERROR! <br />
-              {errorMessage}
+              {errorMessage.split("\n").map((line, index) => (
+                <div key={index}>{line}</div>
+              ))}
             </Typography>
+
             <Typography sx={{ my: 2 }}>
               Click{" "}
               <a
@@ -265,8 +329,12 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
               <Button onClick={onClose} variant="outlined">
                 Cancel
               </Button>
-              <Button type="submit" variant="contained" disabled={!file}>
-                Next
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={!file || isUploading}
+              >
+                {isUploading ? "Uploading..." : "Next"}
               </Button>
             </Box>
           </form>
