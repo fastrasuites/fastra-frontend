@@ -69,6 +69,39 @@ export const PurchaseProvider = ({ children }) => {
     [client]
   );
 
+  const downloadExcelTemplate = useCallback(
+    async (endpoint) => {
+      try {
+        const response = await client.get(endpoint, {
+          responseType: "blob",
+        });
+        const contentDisposition = response.headers["content-disposition"];
+        let filename = "template.xlsx";
+        if (contentDisposition && contentDisposition.includes("filename=")) {
+          const filenameMatch = contentDisposition
+            .split("filename=")[1]
+            ?.replace(/['"]/g, "")
+            .trim();
+          filename = filenameMatch || "template.xlsx";
+        }
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        setError(err);
+        throw err;
+      }
+    },
+    [client]
+  );
+
   const fetchVendors = useCallback(
     async (searchTerm = "") => {
       try {
@@ -366,6 +399,7 @@ export const PurchaseProvider = ({ children }) => {
       fetchCurrencies,
       createCurrency,
       uploadFile,
+      downloadExcelTemplate,
       fetchVendors,
       fetchSingleVendors,
       createVendor,
@@ -396,6 +430,7 @@ export const PurchaseProvider = ({ children }) => {
       fetchCurrencies,
       createCurrency,
       uploadFile,
+      downloadExcelTemplate,
       fetchVendors,
       fetchSingleVendors,
       createVendor,

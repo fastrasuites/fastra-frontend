@@ -348,7 +348,22 @@ export const DeliveryOrderProvider = ({ children }) => {
         setError(null);
         return { success: true, data };
       } catch (err) {
-        setError(err.message || "Failed to create delivery order return");
+        console.error("Return creation failed:", err);
+
+        // Get all error messages
+        const errorData = err.response?.data;
+        const errorMessages = errorData
+          ? Object.entries(errorData)
+              .map(
+                ([field, messages]) =>
+                  `${field}: ${
+                    Array.isArray(messages) ? messages.join(", ") : messages
+                  }`
+              )
+              .join("\n")
+          : "Return order could not be created";
+
+        setError(errorMessages);
         return Promise.reject(err);
       } finally {
         setIsLoading(false);
@@ -443,6 +458,7 @@ export const DeliveryOrderProvider = ({ children }) => {
 
         return { success: true, data };
       } catch (err) {
+        console.error("checkDeliveryOrderAvailability error: ", err);
         setError(err.message || "Failed to check order availability");
         return Promise.reject(err);
       } finally {
