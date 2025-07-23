@@ -17,7 +17,7 @@ const Change = () => {
 
   const tenant_schema_name = useTenant().tenantData.tenant_schema_name;
   const access_token = useTenant().tenantData.access_token;
-  const refresh_token = useTenant().tenantData.access_token;
+  const refresh_token = useTenant().tenantData.refresh_token;
 
   //const {refresh_token, access_token } = tenantData || {};
   const client = useMemo(

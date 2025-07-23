@@ -26,6 +26,18 @@ export const TenantProvider = ({ children }) => {
     }
   };
 
+
+  /**
+   * NEW: update specific keys in tenantData while syncing localStorage
+   */
+  const updateTenantData = (updates) => {
+    setTenantData((prev) => {
+      const updated = { ...prev, ...updates };
+      localStorage.setItem("tenantData", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const logout = () => {
     localStorage.removeItem("tenantData");
     localStorage.removeItem("permissions");
@@ -34,7 +46,7 @@ export const TenantProvider = ({ children }) => {
   };
 
   return (
-    <TenantContext.Provider value={{ tenantData, permissions, login, logout }}>
+    <TenantContext.Provider value={{ tenantData, permissions, login, logout, updateTenantData }}>
       <AccessProvider permissions={permissions}>{children}</AccessProvider>
     </TenantContext.Provider>
   );

@@ -633,6 +633,7 @@ const CreateUser = () => {
 
           if (fromStepModal) {
             localStorage.removeItem("fromStepModal");
+            localStorage.removeItem("onboardingStep")
             history.push(`/${tenant_schema_name}/dashboard`, {
               fromStepModal: false,
             });
