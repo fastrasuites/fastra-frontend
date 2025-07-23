@@ -62,8 +62,6 @@ const columns = [
   },
 ];
 
-
-
 export default function InternalTransfer() {
   const { tenantData } = useTenant();
   const tenantSchema = tenantData?.tenant_schema_name ?? "";
@@ -119,6 +117,9 @@ export default function InternalTransfer() {
         actionButton={{
           text: "New Transfer Order",
           link: `/${tenantSchema}/inventory/operations/internal-transfer/create-internal-transfer`,
+          action: "create",
+          app: "inventory",
+          module: "internaltransfer",
         }}
         gridRenderItem={(item) => (
           <Box
