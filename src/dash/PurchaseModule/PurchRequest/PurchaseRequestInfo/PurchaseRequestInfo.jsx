@@ -19,6 +19,7 @@ import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
+import Can from "../../../../components/Access/Can";
 
 // Style constants
 const cellStyle = (index) => ({
@@ -241,18 +242,24 @@ const PurchaseRequestInfo = () => {
               text: "Approve",
               onClick: () => handleStatusChange("approve"),
               color: "success",
+              action: "approve",
             },
             {
               text: "Reject",
               onClick: () => handleStatusChange("reject"),
               color: "error",
+              action: "reject",
             },
           ],
         };
       case "rejected":
         return {
           label: "Rejected",
-          actions: [],
+          actions: [
+            {
+              action: "reject",
+            },
+          ],
         };
       case "draft":
         return {
@@ -262,6 +269,7 @@ const PurchaseRequestInfo = () => {
               text: "Send to Approval",
               onClick: () => handleStatusChange("pending"),
               disabled: actionLoading,
+              action: "edit",
             },
           ],
         };
@@ -313,9 +321,12 @@ const PurchaseRequestInfo = () => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            {!["pending", "approved", "rejected"].includes(item.status) && (
-              <Button onClick={() => handleEditClick(item.id)}>Edit</Button>
-            )}
+            <Can app="purchase" module="purchaserequest" action="edit">
+              {!["pending", "approved", "rejected"].includes(item.status) && (
+                <Button onClick={() => handleEditClick(item.id)}>Edit</Button>
+              )}
+            </Can>
+
             <Link to={`/${tenantSchema}/purchase/purchase-request`}>
               <Button variant="outlined">Close</Button>
             </Link>
@@ -462,19 +473,26 @@ const PurchaseRequestInfo = () => {
                 {footerConfig.label}
               </p>
             </div>
+
             <div className="rfqStatusDraftFooterBtns">
               {footerConfig.actions.map((action, i) => (
-                <Button
-                  key={i}
-                  variant="contained"
-                  disableElevation
-                  color={action.color}
-                  onClick={action.onClick}
-                  disabled={action.disabled || actionLoading}
-                  sx={{ ml: 1 }}
+                <Can
+                  app="purchase"
+                  module="purchaserequest"
+                  action={action.action}
                 >
-                  {action.text}
-                </Button>
+                  <Button
+                    key={i}
+                    variant="contained"
+                    disableElevation
+                    color={action.color}
+                    onClick={action.onClick}
+                    disabled={action.disabled || actionLoading}
+                    sx={{ ml: 1 }}
+                  >
+                    {action.text}
+                  </Button>
+                </Can>
               ))}
             </div>
           </div>

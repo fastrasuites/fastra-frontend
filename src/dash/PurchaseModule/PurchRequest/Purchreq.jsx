@@ -195,7 +195,7 @@ export default function Purchreq() {
 
               <Box className="secondary-bar" aria-label="Secondary navigation">
                 <div className="secondary-bar__left">
-                  <Can app="purchase" module="purchase_request" action="create">
+                  <Can app="purchase" module="purchaserequest" action="create">
                     <Link to={`purchase-request/new`}>
                       <Button
                         variant="contained"

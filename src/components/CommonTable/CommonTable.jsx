@@ -20,6 +20,7 @@ import { Search } from "@mui/icons-material";
 import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
 import { Link, useHistory } from "react-router-dom";
+import Can from "../Access/Can";
 
 const CommonTable = ({
   // Data & Configuration
@@ -98,14 +99,20 @@ const CommonTable = ({
       <Box display="flex" flexWrap="wrap" justifyContent="space-between" mb={2}>
         <Box display="flex" alignItems="center" gap={2}>
           {actionButton && (
-            <Button
-              variant="contained"
-              component={actionButton.link ? Link : Button}
-              to={actionButton.link}
-              onClick={actionButton.onClick}
+            <Can
+              app={actionButton.app}
+              module={actionButton.module}
+              action={actionButton.action}
             >
-              {actionButton.text}
-            </Button>
+              <Button
+                variant="contained"
+                component={actionButton.link ? Link : Button}
+                to={actionButton.link}
+                onClick={actionButton.onClick}
+              >
+                {actionButton.text}
+              </Button>
+            </Can>
           )}
           {searchable && (
             <TextField

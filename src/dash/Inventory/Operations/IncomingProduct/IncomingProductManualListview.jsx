@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { act, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Box, Button, Paper, Typography } from "@mui/material";
 import CommonTable from "../../../../components/CommonTable/CommonTable";
@@ -40,6 +40,15 @@ const IncomingProductManualListview = () => {
     }, 500);
     return () => clearTimeout(debounce);
   }, [searchQuery, getIncomingProductList]);
+
+  console.log("Incoming Product List:", incomingProductList);
+
+  const cleanedIncomingProductList = incomingProductList.map((item) => ({
+    ...item,
+    destination_location:
+      item.destination_location_details?.location_name || "N/A",
+    source_location: item.source_location_details?.location_name || "N/A",
+  }));
 
   const columns = [
     { id: "incoming_product_id", label: "Incoming Product ID" },
@@ -133,8 +142,8 @@ const IncomingProductManualListview = () => {
         columns={columns}
         rows={
           searchQuery === ""
-            ? incomingProductList
-            : incomingProductList.filter((item) =>
+            ? cleanedIncomingProductList
+            : cleanedIncomingProductList.filter((item) =>
                 Object.values(item).some((v) =>
                   String(v).toLowerCase().includes(searchQuery.toLowerCase())
                 )
@@ -145,7 +154,7 @@ const IncomingProductManualListview = () => {
         onSearchChange={setSearchQuery}
         paginated
         page={page}
-        totalPages={Math.ceil(incomingProductList.length / 5)}
+        totalPages={Math.ceil(cleanedIncomingProductList.length / 5)}
         onPageChange={setPage}
         viewModes={["list", "grid"]}
         viewMode={viewMode}
@@ -159,14 +168,17 @@ const IncomingProductManualListview = () => {
         }
         onSelectAll={() =>
           setSelectedRows((prev) =>
-            prev.length === incomingProductList.length
+            prev.length === cleanedIncomingProductList.length
               ? []
-              : incomingProductList.map((r) => r.requestId)
+              : cleanedIncomingProductList.map((r) => r.requestId)
           )
         }
         actionButton={{
           text: "New Incoming Product",
           link: `/${tenantSchemaName}/inventory/operations/creat-incoming-product`,
+          action: "create",
+          app: "inventory",
+          module: "incomingproduct",
         }}
         gridRenderItem={renderGridItem}
         path={`/${tenantSchemaName}/inventory/operations/incoming-product`}

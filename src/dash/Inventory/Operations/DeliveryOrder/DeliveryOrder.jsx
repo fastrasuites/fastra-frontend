@@ -165,6 +165,9 @@ const DeliveryOrder = () => {
         actionButton={{
           text: "New Delivery Order",
           link: `/${tenantSchema}/inventory/operations/delivery-order/create-delivery-order`,
+          action: "create",
+          app: "inventory",
+          module: "deliveryorder",
         }}
         columns={columns}
         rows={filteredRows}

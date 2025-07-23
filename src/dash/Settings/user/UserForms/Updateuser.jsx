@@ -604,6 +604,8 @@ const UpdateUser = () => {
     }
   }
 
+  console.log(state.imageFile);
+
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -640,7 +642,8 @@ const UpdateUser = () => {
       formData.append("email_notifications", state.emailNotification);
 
       // Append image file if exists
-      if (state.imageFile) {
+      if (state.imageFile instanceof File) {
+        console.log("I am a file", state.imageFile);
         formData.append("user_image_image", state.imageFile);
       }
 
@@ -656,6 +659,11 @@ const UpdateUser = () => {
       Object.values(state.accessGroups).forEach((code) => {
         if (code) formData.append("access_codes", code);
       });
+
+      // log the formData for debugging
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value instanceof File ? value.name : value);
+      }
 
       try {
         const res = await patchUser(id, formData);

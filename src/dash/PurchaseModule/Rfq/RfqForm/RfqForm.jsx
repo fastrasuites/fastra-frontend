@@ -16,6 +16,7 @@ import RfqBasicInfoFieldsConvertToRFQ from "./RFQBasisInfoConvert";
 import RfqItemsTable from "./RfqItemsTable";
 
 import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
+import Can from "../../../../components/Access/Can";
 
 const RfqForm = () => {
   const {
@@ -269,9 +270,11 @@ const RfqForm = () => {
               {isEdit ? "Save Changes" : "Save Draft"}
             </Button>
             {!isEdit && (
-              <Button variant="contained" onClick={saveAndShare}>
-                Save & Send
-              </Button>
+              <Can app="purchase" module="requestforquotation" action="create">
+                <Button variant="contained" onClick={saveAndShare}>
+                  Save & Send
+                </Button>
+              </Can>
             )}
           </div>
         </form>

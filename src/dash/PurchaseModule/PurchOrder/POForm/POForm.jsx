@@ -13,6 +13,7 @@ import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
 import { useRFQ } from "../../../../context/RequestForQuotation";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import POBasicInfoFieldsConverToPO from "./POBasicInforCoverToPO";
+import Can from "../../../../components/Access/Can";
 
 const DEFAULT_FORM = {
   vendor: null,
@@ -441,13 +442,15 @@ const POForm = () => {
               <Button variant="outlined" type="submit" disabled={submitting}>
                 {isEdit ? "Save Changes" : "Save Draft"}
               </Button>
-              <Button
-                variant="contained"
-                onClick={saveAndSend}
-                disabled={submitting}
-              >
-                Save &amp; Send
-              </Button>
+              <Can app="purchase" module="purchaseorder" action="edit">
+                <Button
+                  variant="contained"
+                  onClick={saveAndSend}
+                  disabled={submitting}
+                >
+                  Save &amp; Send
+                </Button>
+              </Can>
             </div>
           </div>
         </form>

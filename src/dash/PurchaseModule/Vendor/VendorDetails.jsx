@@ -5,6 +5,7 @@ import { usePurchase } from "../../../context/PurchaseContext";
 import { Box, Button, Typography } from "@mui/material";
 
 import fallbackImg from "../../../assets/images/fallback-user.png";
+import Can from "../../../components/Access/Can";
 
 export default function VendorDetails() {
   const { fetchSingleVendors, singleVendors } = usePurchase();
@@ -21,11 +22,13 @@ export default function VendorDetails() {
 
   return (
     <Box p={2} pr={10}>
-      <Link to="new">
-        <Button variant="contained" disableElevation sx={{ mb: 2 }}>
-          New Vendor
-        </Button>
-      </Link>
+      <Can app="purchase" module="vendor" action="create">
+        <Link to="new">
+          <Button variant="contained" disableElevation sx={{ mb: 2 }}>
+            New Vendor
+          </Button>
+        </Link>
+      </Can>
 
       <Box
         bgcolor="white"
@@ -38,9 +41,18 @@ export default function VendorDetails() {
           <Typography variant="h5" color="#3B7CED" fontSize="20px">
             Basic Information
           </Typography>
-          <Button variant="text" onClick={() => window.history.back()}>
-            Close
-          </Button>
+          <Box display={"flex"} gap={2}>
+            <Button variant="text" onClick={() => window.history.back()}>
+              Close
+            </Button>
+            <Can app="purchase" module="vendor" action="edit">
+              <Link to={`edit/${id}`}>
+                <Button variant="contained" disableElevation>
+                  Edit
+                </Button>
+              </Link>
+            </Can>
+          </Box>
         </Box>
 
         <div className="vendet3">

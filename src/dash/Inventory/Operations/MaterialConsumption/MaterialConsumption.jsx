@@ -27,12 +27,16 @@ const columns = [
           sx={{
             width: 8,
             height: 8,
-            borderRadius: '50%',
+            borderRadius: "50%",
             backgroundColor: getStatusColor(status),
             mr: 1,
           }}
         />
-        <Typography variant="caption" fontSize={12} color={getStatusColor(status)}>
+        <Typography
+          variant="caption"
+          fontSize={12}
+          color={getStatusColor(status)}
+        >
           {status}
         </Typography>
       </Box>
@@ -42,9 +46,27 @@ const columns = [
 
 // Sample data (move to context or props in real use)
 const materialConsumptionData = [
-  { id: "MC001", location: "Location 1", date_created: "4 Apr 2024 - 4:48 PM", date_closed: "4 Apr 2024 - 4:48 PM", status: "Done" },
-  { id: "MC002", location: "Location 2", date_created: "4 Apr 2024 - 4:48 PM", date_closed: "4 Apr 2024 - 4:48 PM", status: "Done" },
-  { id: "MC003", location: "Location 3", date_created: "4 Apr 2024 - 4:48 PM", date_closed: "4 Apr 2024 - 4:48 PM", status: "Draft" },
+  {
+    id: "MC001",
+    location: "Location 1",
+    date_created: "4 Apr 2024 - 4:48 PM",
+    date_closed: "4 Apr 2024 - 4:48 PM",
+    status: "Done",
+  },
+  {
+    id: "MC002",
+    location: "Location 2",
+    date_created: "4 Apr 2024 - 4:48 PM",
+    date_closed: "4 Apr 2024 - 4:48 PM",
+    status: "Done",
+  },
+  {
+    id: "MC003",
+    location: "Location 3",
+    date_created: "4 Apr 2024 - 4:48 PM",
+    date_closed: "4 Apr 2024 - 4:48 PM",
+    status: "Draft",
+  },
 ];
 
 export default function MaterialConsumption() {
@@ -61,9 +83,7 @@ export default function MaterialConsumption() {
     if (!searchQuery) return materialConsumptionData;
     const q = searchQuery.toLowerCase();
     return materialConsumptionData.filter((row) =>
-      Object.values(row).some((val) =>
-        String(val).toLowerCase().includes(q)
-      )
+      Object.values(row).some((val) => String(val).toLowerCase().includes(q))
     );
   }, [searchQuery]);
 
@@ -75,9 +95,7 @@ export default function MaterialConsumption() {
 
   const handleSelectAll = useCallback(() => {
     setSelectedRows((prev) =>
-      prev.length === filteredRows.length
-        ? []
-        : filteredRows.map((r) => r.id)
+      prev.length === filteredRows.length ? [] : filteredRows.map((r) => r.id)
     );
   }, [filteredRows]);
 
@@ -108,6 +126,9 @@ export default function MaterialConsumption() {
         actionButton={{
           text: "Create Consumption",
           link: `/${tenantSchema}/inventory/operations/material-consumption/create-material-consumption`,
+          action: "create",
+          app: "inventory",
+          module: "materialconsumption",
         }}
         gridRenderItem={(item) => (
           <Box
@@ -135,11 +156,15 @@ export default function MaterialConsumption() {
                 sx={{
                   width: 8,
                   height: 8,
-                  borderRadius: '50%',
+                  borderRadius: "50%",
                   bgcolor: getStatusColor(item.status),
                 }}
               />
-              <Typography variant="caption" fontSize={12} color={getStatusColor(item.status)}>
+              <Typography
+                variant="caption"
+                fontSize={12}
+                color={getStatusColor(item.status)}
+              >
                 {item.status}
               </Typography>
             </Box>
