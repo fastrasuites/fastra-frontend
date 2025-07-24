@@ -41,6 +41,8 @@ export const TenantProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("tenantData");
     localStorage.removeItem("permissions");
+    localStorage.removeItem("onboardingStep");
+    localStorage.removeItem("fromStepModals"); 
     setTenantData(null);
     setPermissions({});
   };

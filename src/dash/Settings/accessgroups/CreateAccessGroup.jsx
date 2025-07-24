@@ -39,9 +39,9 @@ const CreateAccessGroup = () => {
   const totalPages = 2;
 
   const location = useLocation();
-  const fromStepModal =
-    location.state?.fromStepModal ||
-    localStorage.getItem("fromStepModal") === "true";
+  const fromStepModals =
+    location.state?.fromStepModals ||
+    localStorage.getItem("fromStepModals") === "true";
 
   const [formData, setFormData] = useState({
     groupName: "",
@@ -110,10 +110,10 @@ const CreateAccessGroup = () => {
 
       // Move to the thurd step for first time users
 
-      if (fromStepModal) {
-        localStorage.removeItem("fromStepModal");
+      if (fromStepModals) {
+        localStorage.removeItem("fromStepModals");
         history.push(`/${tenant_schema_name}/dashboard`, {
-          fromStepModal: true,
+          fromStepModals: true,
         });
       } else {
         // Navigate to view page only if not in onboarding flow

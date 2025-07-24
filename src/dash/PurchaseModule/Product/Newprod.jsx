@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import "./Newprod.css";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { Grid, TextField } from "@mui/material";
 import styled from "styled-components";
 import PurchaseHeader from "../PurchaseHeader";
@@ -34,6 +34,9 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
   const [savedUnits, setSavedUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const { createProduct } = usePurchase();
+  const location = useLocation();
+
+  const openForm = location.state?.openForm;
 
   // Fetch saved units
   useEffect(() => {
@@ -110,14 +113,16 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
       });
       history.push(`/${tenant_schema_name}/purchase/product`);
 
-      if (fromPurchaseModuleWizard) {
+     
+      if (openForm) {
+        console.log(" I am in here")
         const saved =
           JSON.parse(localStorage.getItem(WIZARD_STORAGE_KEY)) || {};
         saved.currentStep = 3;
         saved.hidden = false;
         localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(saved));
 
-        history.push(`/${tenant_schema_name}/purchase`);
+        history.push(`/${tenant_schema_name}/purchase/purchase-request`);
       }
     } catch (err) {
       console.error("Submission error:", err);

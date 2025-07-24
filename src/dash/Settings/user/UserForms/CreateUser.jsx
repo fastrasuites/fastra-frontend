@@ -455,9 +455,9 @@ const CreateUser = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const location = useLocation();
-  const fromStepModal =
-    location.state?.fromStepModal ||
-    localStorage.getItem("fromStepModal") === "true";
+  const fromStepModals =
+    location.state?.fromStepModals ||
+    localStorage.getItem("fromStepModals") === "true";
   const {
     createUser,
     getAccessGroups,
@@ -631,11 +631,11 @@ const CreateUser = () => {
             timer: 2000,
           });
 
-          if (fromStepModal) {
-            localStorage.removeItem("fromStepModal");
+          if (fromStepModals) {
+            localStorage.removeItem("fromStepModals");
             localStorage.removeItem("onboardingStep")
             history.push(`/${tenant_schema_name}/dashboard`, {
-              fromStepModal: false,
+              fromStepModals: false,
             });
           } else {
             setTimeout(() => {
@@ -657,7 +657,7 @@ const CreateUser = () => {
         setIsSubmitting(false);
       }
     },
-    [state, createUser, history, tenant_schema_name, fromStepModal]
+    [state, createUser, history, tenant_schema_name, fromStepModals]
   );
 
   if (isLoading) {

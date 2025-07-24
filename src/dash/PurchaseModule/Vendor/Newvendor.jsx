@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { useTenant } from "../../../context/TenantContext";
+import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
@@ -21,6 +22,9 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
   const history = useHistory();
   const tenantSchema = useTenant().tenantData?.tenant_schema_name;
   const { createVendor } = usePurchase();
+  const location = useLocation()
+
+  const fromPurchaseWizard = location.state?.openForm
 
   const [formState, setFormState] = useState({
     vendor_name: "",
@@ -104,14 +108,14 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
         showConfirmButton: false,
       });
 
-      if (fromPurchaseModuleWizard) {
+      if (fromPurchaseWizard) {
         const wizardState = JSON.parse(
           localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
         );
         wizardState.currentStep = 4;
         wizardState.hidden = false;
         localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
-        history.push(`/${tenantSchema}/purchase/vendor`);
+        history.push(`/${tenantSchema}/purchase/purchase-request`);
       } else {
         history.goBack();
       }

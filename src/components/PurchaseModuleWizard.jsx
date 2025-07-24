@@ -26,9 +26,9 @@ const PurchaseModuleWizard = ({ open, onClose, step }) => {
         { openForm: true }
       );
     } else if (step === 2) {
-      history.push(`/${tenant_schema_name}/product`, { openForm: true });
+      history.push(`/${tenant_schema_name}/purchase/product/new`, { openForm: true });
     } else if (step === 3) {
-      history.push(`/${tenant_schema_name}/vendor`, { openForm: true });
+      history.push(`/${tenant_schema_name}/purchase/vendor/new`, { openForm: true });
     } else {
       onClose();
     }

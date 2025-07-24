@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo} from "react";
 import { FaBars, FaTimes, FaBell } from "react-icons/fa";
 import SearchIcon from "../image/search.svg";
 import "./Dashboard.css";
@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  
 
   const { tenantData, updateTenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
@@ -34,32 +35,61 @@ export default function Dashboard() {
     [tenant_schema_name, access_token, refresh_token]
   );
 
-  useEffect(() => {
-    
+  /*useEffect(() => {
     const currentStep = parseInt(localStorage.getItem("onboardingStep") || "0");
-
-    if (!tenantData.isOnboarded) {
-      localStorage.setItem("fromStepModal", "true");
-      setStep(currentStep + 1); // ensures step = 1 if onboardingStep = 0
+  
+    const alreadyFromStepModal = localStorage.getItem("fromStepModals");
+    if (!tenantData.isOnboarded && !showModal && !alreadyFromStepModal) {
+      setStep(currentStep + 1);
       setShowModal(true);
+      localStorage.setItem("fromStepModals", "true");
     }
-  }, [tenantData.isOnboarded]);
+  }, [tenantData.isOnboarded, showModal]);*/
+
+
+
+  useEffect(() => {
+    const currentStep = parseInt(localStorage.getItem("onboardingStep") || "0");
+    const alreadyFromStepModal = localStorage.getItem("fromStepModals");
+
+    if (
+        typeof tenantData.isOnboarded === "boolean" &&
+        !tenantData.isOnboarded //&& !alreadyFromStepModal
+    ) {
+        console.log("Triggering onboarding modal");
+        setStep(currentStep + 1);
+        setShowModal(true);
+        localStorage.setItem("fromStepModals", "true");
+    }
+}, [tenantData.isOnboarded]);
+
+
+useEffect(() => {
+  console.log({
+      showModal,
+      isOnboarded: tenantData.isOnboarded,
+      onboardingStep: localStorage.getItem("onboardingStep"),
+      fromStepModals: localStorage.getItem("fromStepModals"),
+  });
+}, [tenantData.isOnboarded, showModal]);
+
+
 
   const handleNextStep = async() => {
     setShowModal(false);
     if (step === 1) {
       localStorage.setItem("onboardingStep", "1");
       history.push(`/${tenant_schema_name}/settings/company/new`, {
-        fromStepModal: true,
+        fromStepModals: true,
       });
-      localStorage.setItem("fromStepModal", "true");
+      /*localStorage.setItem("fromStepModals", "true");*/
     } else if (step === 2) {
       console.log("Routing to accessgroups/new");
       localStorage.setItem("onboardingStep", "2");
       history.push(`/${tenant_schema_name}/settings/accessgroups/new`, {
-        fromStepModal: true,
+        fromStepModals: true,
       });
-      localStorage.setItem("fromStepModal", "true");
+      /*localStorage.setItem("fromStepModals", "true");*/
     } else if (step === 3) {
       console.log("Completing onboarding, routing to user/new");
       localStorage.setItem("onboardingStep", "3");
@@ -71,7 +101,7 @@ export default function Dashboard() {
       }
       console.log("Tenant Schema Name: ", tenant_schema_name);
       history.push(`/${tenant_schema_name}/settings/user/new`, {
-        fromStepModal: true,
+        fromStepModals: true,
       });
     }
   };
@@ -121,11 +151,28 @@ export default function Dashboard() {
 };
 
 
-  const handleSkip = async () => {
+const handleSkipOnboarding = async (actionSource) => {
+  setShowModal(false);
+
+  // Mark onboarding as completed in local storage
+  localStorage.setItem("onboardingStep", "3");
+  localStorage.removeItem("fromStepModals");
+
+  // If skip originated from onboarding context, complete backend onboarding
+  if (actionSource === "onboarding") {
+    try {
+      await completeOnboarding();
+    } catch (error) {
+      console.error("Error completing onboarding during skip:", error);
+    }
+  }
+};
+
+  /*const handleSkip = async () => {
     setShowModal(false);
     localStorage.setItem("onboardingStep", "3");
     await completeOnboarding()
-  };
+  };*/
 
   const handleSearch = () => {};
 
@@ -192,7 +239,7 @@ export default function Dashboard() {
 
       <StepModal
         open={showModal}
-        onClose={handleSkip}
+        onClose={() => handleSkipOnboarding("onboarding")}
         step={step}
         onNextStep={handleNextStep}
       />

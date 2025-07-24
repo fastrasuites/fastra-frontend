@@ -493,9 +493,9 @@ const CompanyForm = () => {
   const { updateCompany, getCompany, company: companyDetails } = useCompany();
   const initialCompanyDataRef = useRef(null);
   const location = useLocation();
-  const fromStepModal =
-    location.state?.fromStepModal ||
-    localStorage.getItem("fromStepModal") === "true";
+  const fromStepModals =
+    location.state?.fromStepModals ||
+    localStorage.getItem("fromStepModals") === "true";
 
   const history = useHistory();
   const tenant_schema_name = tenantData?.tenant_schema_name;
@@ -682,8 +682,8 @@ const CompanyForm = () => {
             showConfirmButton: false,
           });
 
-          if (fromStepModal) {
-            localStorage.removeItem("fromStepModal");
+          if (fromStepModals) {
+            localStorage.removeItem("fromStepModals");
             history.push(`/${tenant_schema_name}/dashboard`);
           }
         } else {
