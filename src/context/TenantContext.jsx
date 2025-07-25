@@ -4,6 +4,8 @@ import { AccessProvider } from "./Access/AccessContext";
 
 const TenantContext = createContext();
 
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
+
 export const TenantProvider = ({ children }) => {
   const [tenantData, setTenantData] = useState(() => {
     const storedData = localStorage.getItem("tenantData");
@@ -24,8 +26,15 @@ export const TenantProvider = ({ children }) => {
       setPermissions(perms);
       localStorage.setItem("permissions", JSON.stringify(perms));
     }
-  };
 
+    const userId = data?.user?.id;
+    const wizardStateKey = `purchaseWizardState_${userId}`;
+    const savedWizardState = localStorage.getItem(wizardStateKey);
+    if (savedWizardState) {
+      localStorage.setItem("purchaseWizardState", savedWizardState);
+      localStorage.removeItem(wizardStateKey); // optional cleanup
+    }
+  };
 
   /**
    * NEW: update specific keys in tenantData while syncing localStorage
@@ -39,16 +48,29 @@ export const TenantProvider = ({ children }) => {
   };
 
   const logout = () => {
+    const userId = tenantData?.user?.id;
+    const wizardStateKey = `purchaseWizardState_${userId}`;
+
+    const wizardState = localStorage.getItem(WIZARD_STORAGE_KEY);
+    if (wizardState && userId) {
+      localStorage.setItem(wizardStateKey, wizardState);
+    }
+
     localStorage.removeItem("tenantData");
     localStorage.removeItem("permissions");
     localStorage.removeItem("onboardingStep");
-    localStorage.removeItem("fromStepModals"); 
+    localStorage.removeItem("fromStepModals");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem(WIZARD_STORAGE_KEY); // only this is correct
+
     setTenantData(null);
     setPermissions({});
   };
 
   return (
-    <TenantContext.Provider value={{ tenantData, permissions, login, logout, updateTenantData }}>
+    <TenantContext.Provider
+      value={{ tenantData, permissions, login, logout, updateTenantData }}
+    >
       <AccessProvider permissions={permissions}>{children}</AccessProvider>
     </TenantContext.Provider>
   );

@@ -123,8 +123,10 @@ export const PurchaseProvider = ({ children }) => {
           headers: { "Content-type": "multipart/form-data" },
         });
         setVendors((prev) => [...prev, response.data]);
+        return { success: true, data: response.data };
       } catch (err) {
         setError(err);
+        console.error("Error: ", err);
       }
     },
     [client]
@@ -194,6 +196,7 @@ export const PurchaseProvider = ({ children }) => {
       try {
         const response = await client.post("/purchase/products/", newProduct);
         setProducts((prev) => [...prev, response.data]);
+        return { success: true, data: response.data };
       } catch (err) {
         console.error(err);
         setError(err);

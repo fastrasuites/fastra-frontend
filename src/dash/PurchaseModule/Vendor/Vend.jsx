@@ -53,16 +53,6 @@ export default function Vend() {
     return () => clearTimeout(debounce);
   }, [searchQuery, fetchVendors]);
 
-  useEffect(() => {
-    if (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Failed to load vendors",
-        text: error?.message || "An unexpected error occurred.",
-      });
-    }
-  }, [error]);
-
   const handleCardClick = (item) => {
     history.push(`/${tenant}/purchase/vendor/${item.id}`);
   };

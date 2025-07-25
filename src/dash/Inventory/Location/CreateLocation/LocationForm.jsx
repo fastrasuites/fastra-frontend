@@ -21,6 +21,7 @@ import { useTenant } from "../../../../context/TenantContext";
 import Asteriks from "../../../../components/Asterisk";
 import { useUser } from "../../../../context/Settings/UserContext";
 
+const WIZARD_STORAGE_KEY = "purchaseWizardState";
 const STORAGE_KEY = "draftLocationForm";
 const LOCATION_TYPES = [
   { value: "internal", label: "Internal" },
@@ -40,8 +41,8 @@ const initialFormState = {
 
 const LocationForm = () => {
   const history = useHistory();
-  const { state } = useLocation(initialFormState);
-  const fromWizard = state?.openForm === true;
+  const routerLocation = useLocation();
+  const fromPurchaseModuleWizard = routerLocation.state?.openForm === true;
 
   const { tenantData } = useTenant();
   const tenantSchema = tenantData?.tenant_schema_name;
@@ -186,11 +187,16 @@ const LocationForm = () => {
         });
         resetForm();
         getLocationList();
-        if (fromWizard) {
-          history.push({
-            pathname: `/${tenantSchema}/purchase`,
-            state: { step: 2, preservedWizard: true },
-          });
+        if (fromPurchaseModuleWizard) {
+          const wizardState = JSON.parse(
+            localStorage.getItem(WIZARD_STORAGE_KEY) || {}
+          );
+          const updatedState = { ...wizardState, currentStep: 2 };
+          localStorage.setItem(
+            WIZARD_STORAGE_KEY,
+            JSON.stringify(updatedState)
+          );
+          history.push(`/${tenantSchema}/purchase/purchase-request`);
         }
       }
     } catch (err) {

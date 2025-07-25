@@ -3,9 +3,8 @@ import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import "./Newprod.css";
 import { useHistory, useLocation } from "react-router-dom";
-import { Grid, TextField } from "@mui/material";
+import { Grid, TextField, Button } from "@mui/material";
 import styled from "styled-components";
-import PurchaseHeader from "../PurchaseHeader";
 import { getTenantClient } from "../../../services/apiService";
 import { useTenant } from "../../../context/TenantContext";
 import Swal from "sweetalert2";
@@ -13,7 +12,7 @@ import { usePurchase } from "../../../context/PurchaseContext";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
-export default function Newprod({ fromPurchaseModuleWizard }) {
+export default function Newprod() {
   const history = useHistory();
   const [formState, setFormState] = useState({
     name: "",
@@ -36,7 +35,9 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
   const { createProduct } = usePurchase();
   const location = useLocation();
 
-  const openForm = location.state?.openForm;
+  const fromPurchaseModuleWizard = location.state?.openForm;
+
+  console.log("fromPurchaseModuleWizard: ", fromPurchaseModuleWizard);
 
   // Fetch saved units
   useEffect(() => {
@@ -100,30 +101,37 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
       );
       payload.append("total_quantity_Purchased", formState.totalQtyPurchased);
 
-      // for(const [key, value] of payload.entries()){
+      // for (const [key, value] of payload.entries()) {
       // }
       setError(null);
 
-      await createProduct(payload);
+      const response = await createProduct(payload);
+      console.log("Full response:", response);
+
+      const id = response?.data?.id;
+      if (!id) {
+        console.warn("Product ID not returned:", response?.data);
+        throw new Error("Product creation failed: No ID returned.");
+      }
 
       Swal.fire({
         icon: "success",
         title: "Product Created",
         text: "Your new product has been saved successfully.",
       });
-      history.push(`/${tenant_schema_name}/purchase/product`);
 
-     
-      if (openForm) {
-        console.log(" I am in here")
-        const saved =
+      if (fromPurchaseModuleWizard) {
+        const wizardState =
           JSON.parse(localStorage.getItem(WIZARD_STORAGE_KEY)) || {};
-        saved.currentStep = 3;
-        saved.hidden = false;
-        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(saved));
+        const updatedState = { ...wizardState, currentStep: 3, hidden: false };
+
+        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
 
         history.push(`/${tenant_schema_name}/purchase/purchase-request`);
+        return;
       }
+
+      history.push(`/${tenant_schema_name}/purchase/product/${id}`);
     } catch (err) {
       console.error("Submission error:", err);
       Swal.fire({
@@ -178,14 +186,15 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
             <form className="newpform" onSubmit={handleSubmit}>
               <div className="newp3a">
                 <p style={{ fontSize: "20px" }}>Basic Information</p>
-                <button
-                  type="button"
-                  className="newp3but"
+
+                <Button
+                  variant="text"
+                  // color="secondary"
                   onClick={() => window.history.back()}
-                  style={{ marginTop: "1rem" }}
+                  sx={{ mt: 2 }}
                 >
-                  Cancel
-                </button>
+                  Close
+                </Button>
               </div>
 
               <Grid container spacing={3}>
@@ -303,10 +312,15 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
                 </Grid>
               </Grid>
               <hr
-                style={{ border: "1.2px solid #E2E6E9", marginTop: "32px" }}
+                style={{ border: "1.2px solid #E2E6E9", marginBlock: "32px" }}
               />
 
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                variant="contained"
+                sx={{ display: "inline", alignSelf: "flex-start" }}
+                type="submit"
+                disabled={isSubmitting}
+              >
                 Create Product
               </Button>
 
@@ -318,21 +332,3 @@ export default function Newprod({ fromPurchaseModuleWizard }) {
     </div>
   );
 }
-
-const Button = styled.button`
-  padding: 8px 24px 8px 24px;
-  border-radius: 4px;
-  opacity: 0px;
-  background: #3b7ced;
-  border: solid 1px #3b7ced;
-  display: inline-flex;
-  width: max-content;
-  cursor: pointer;
-  margin-top: 32px;
-
-  font-size: 16px;
-  font-weight: 400;
-  // line-height: 19.41px;
-  // text-align: center;
-  color: #ffffff;
-`;

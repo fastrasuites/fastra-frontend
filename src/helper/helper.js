@@ -91,3 +91,8 @@ export const formatApiDate = (dateString) => {
   };
   return new Date(dateString).toLocaleString("en-GB", options);
 };
+
+export const transformProductCategory = (param) => {
+  let str = param.includes("-") ? param.split("-").join(" ") : param;
+  return str.slice(0, 1).toUpperCase() + str.slice(1);
+};

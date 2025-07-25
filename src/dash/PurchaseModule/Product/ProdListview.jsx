@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useTenant } from "../../../context/TenantContext";
 import { useHistory } from "react-router-dom";
+import { transformProductCategory } from "../../../helper/helper";
 
 const ProdListview = ({ items, loading = false }) => {
   const [selected, setSelected] = React.useState([]);
@@ -152,7 +153,9 @@ const ProdListview = ({ items, loading = false }) => {
                   >
                     {item.product_name}
                   </TableCell>
-                  <TableCell>{item.product_category}</TableCell>
+                  <TableCell>
+                    {transformProductCategory(item.product_category)}
+                  </TableCell>
                   <TableCell>{item.available_product_quantity}</TableCell>
                   <TableCell sx={{ color: "#3b7ced" }}>
                     {item.product_description}

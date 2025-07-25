@@ -19,6 +19,7 @@ import { Link, useHistory } from "react-router-dom";
 import Can from "../../../components/Access/Can";
 import UploadIcon from "../../../image/cloud-download.svg";
 import UploadMedia from "../../../components/UploadMedia";
+import { transformProductCategory } from "../../../helper/helper";
 
 export default function Prod() {
   const { products, fetchProducts } = usePurchase();
@@ -159,7 +160,7 @@ export default function Prod() {
                 </Typography>
                 <Typography>{product?.product_category}</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {product.category}
+                  {transformProductCategory(product.category)}
                 </Typography>
                 <Typography variant="caption">
                   Qty: {product?.available_product_quantity}

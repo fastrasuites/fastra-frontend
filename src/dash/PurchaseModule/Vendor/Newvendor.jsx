@@ -18,13 +18,13 @@ import Swal from "sweetalert2";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
-export default function Newvendor({ fromPurchaseModuleWizard = false }) {
+export default function Newvendor() {
   const history = useHistory();
   const tenantSchema = useTenant().tenantData?.tenant_schema_name;
   const { createVendor } = usePurchase();
-  const location = useLocation()
+  const location = useLocation();
 
-  const fromPurchaseWizard = location.state?.openForm
+  const fromPurchaseModuleWizard = location.state?.openForm;
 
   const [formState, setFormState] = useState({
     vendor_name: "",
@@ -71,7 +71,7 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
   const handleCancel = () => {
     if (fromPurchaseModuleWizard) {
       // Return to wizard step
-      history.push(`/${tenantSchema}/purchase`);
+      history.push(`/${tenantSchema}/purchase/purchase-request`);
     } else {
       history.goBack();
     }
@@ -98,7 +98,8 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
     }
 
     try {
-      await createVendor(payload);
+      const response = await createVendor(payload);
+      const id = response.data?.id;
 
       Swal.fire({
         icon: "success",
@@ -108,15 +109,15 @@ export default function Newvendor({ fromPurchaseModuleWizard = false }) {
         showConfirmButton: false,
       });
 
-      if (fromPurchaseWizard) {
+      if (fromPurchaseModuleWizard) {
         const wizardState = JSON.parse(
           localStorage.getItem(WIZARD_STORAGE_KEY) || "{}"
         );
-        wizardState.currentStep = 4;
-        wizardState.hidden = false;
-        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
+        const updatedState = { ...wizardState, currentStep: 4, hidden: false };
+        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
         history.push(`/${tenantSchema}/purchase/purchase-request`);
       } else {
+        // history.push(`/${tenantSchema}/purchase/vendor/${id}`);
         history.goBack();
       }
     } catch (err) {
