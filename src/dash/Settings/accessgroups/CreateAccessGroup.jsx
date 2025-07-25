@@ -267,12 +267,12 @@ const CreateAccessGroup = () => {
                   <TableRow>
                     {[
                       "Access right",
+                      "Create",
                       "View",
                       "Edit",
-                      "Approve",
-                      "Create",
-                      "Reject",
                       "Delete",
+                      "Approve",
+                      "Reject",
                     ].map((label, index) => (
                       <TableCell
                         key={index}

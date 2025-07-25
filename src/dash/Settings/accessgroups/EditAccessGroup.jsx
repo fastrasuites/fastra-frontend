@@ -43,6 +43,9 @@ const EditAccessGroup = () => {
     isLoading,
   } = useAccessGroups();
 
+  console.log("accessGroups: ", accessGroups);
+  console.log("accessRights: ", accessRights);
+  console.log("modules: ", modules);
   // Find group by access_code
   const group = accessGroups.find((g) => g.access_code === id);
   const access_code = group?.access_code;
