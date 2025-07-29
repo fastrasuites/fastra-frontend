@@ -217,7 +217,7 @@ export default function IncomingProductInfo() {
   }
 
   const supplier = vendors.find((v) => v.id === incoming.supplier);
-
+  console.log(incoming);
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -274,7 +274,7 @@ export default function IncomingProductInfo() {
           <Box>
             <Typography mb={1}>ID</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {incoming.id}
+              {incoming.incoming_product_id}
             </Typography>
           </Box>
           <Box>
@@ -290,13 +290,13 @@ export default function IncomingProductInfo() {
           <Box>
             <Typography mb={1}>Source Location</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {incoming.source_location}
+              {incoming.source_location_details?.location_name}
             </Typography>
           </Box>
           <Box>
             <Typography mb={1}>Destination Location</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {incoming.destination_location}
+              {incoming.destination_location_details?.location_name}
             </Typography>
           </Box>
           <Box>
@@ -349,7 +349,7 @@ export default function IncomingProductInfo() {
                     {row.expected_quantity}
                   </TableCell>
                   <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                    {row?.product?.unit_of_measure[1]}
+                    {row?.product?.unit_of_measure_details?.unit_name}
                   </TableCell>
                   <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
                     {row.quantity_received}

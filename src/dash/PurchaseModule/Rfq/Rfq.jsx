@@ -19,12 +19,14 @@ import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import Swal from "sweetalert2";
+import RfqGrid from "./RfqGrid";
 
 export default function Rfq() {
   const [searchQuery, setSearchQuery] = useState("");
   const [quotationsData, setQuotationsData] = useState([]);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
+  const [loading, setLoading] = useState(false);
 
   const itemsPerPage = 10;
   const totalPages = Math.ceil(quotationsData.length / itemsPerPage);
@@ -49,10 +51,12 @@ export default function Rfq() {
   // Fetch RFQ List
   const fetchRFQs = useCallback(async () => {
     try {
+      setLoading(true);
       const { success, data } = await getRFQList(searchQuery);
       if (success) {
         setQuotationsData(data);
         localStorage.setItem("quotationsData", JSON.stringify(data));
+        setLoading(false);
       }
 
       if (searchQuery && (!data || data.length === 0)) {
@@ -217,27 +221,12 @@ export default function Rfq() {
           </div>
 
           {viewMode === "grid" ? (
-            <div className="rfqStatusCards">
-              {paginatedRFQs.map((item) => (
-                <div
-                  key={item.id}
-                  className="rfqStatusCard"
-                  onClick={() => handleSelectRFQ(item.id)}
-                >
-                  <p className="cardid">{extractRFQID(item.url)}</p>
-                  <p className="cardate">{formatDate(item.expiry_date)}</p>
-                  <p className="vendname">
-                    {item.vendor_details?.company_name}
-                  </p>
-                  <p
-                    className="status"
-                    style={{ color: getStatusColor(item.status) }}
-                  >
-                    {item.status}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <RfqGrid
+              quotations={paginatedRFQs}
+              handleClick={handleSelectRFQ}
+              statusColor={getStatusColor}
+              formatDate={formatDate}
+            />
           ) : (
             <div className="rfq5">
               <RListView
@@ -245,6 +234,7 @@ export default function Rfq() {
                 onCardClick={handleSelectRFQ}
                 getStatusColor={getStatusColor}
                 onDeleteSelected={handleDeleteSelected}
+                loading={loading}
               />
             </div>
           )}

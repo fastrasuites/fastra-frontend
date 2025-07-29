@@ -157,8 +157,7 @@ const PurchaseOrderInfo = () => {
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
-          {row?.product_details?.unit_of_measure_details?.unit_category ||
-            "N/A"}
+          {row?.product_details?.unit_of_measure_details?.unit_name || "N/A"}
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
@@ -166,7 +165,7 @@ const PurchaseOrderInfo = () => {
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
-          {row.get_total_price || "N/A"}
+          {row.estimated_unit_price * row.qty || "N/A"}
           <Box />
         </TableCell>
       </TableRow>

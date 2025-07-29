@@ -20,8 +20,9 @@ import {
   extractPermissions,
   getPermissionsByApp,
 } from "../helper/extractPermissions";
+import { Box } from "@mui/material";
 
-const Card = ({ name, description, link, hasAccess = false }) => {
+const Card = ({ name, description, link }) => {
   let icon;
   switch (name) {
     case "Account":
@@ -70,67 +71,17 @@ const Card = ({ name, description, link, hasAccess = false }) => {
       icon = null;
       break;
   }
-  let icon2;
-  switch (name) {
-    case "Account":
-      icon2 = dots;
-      break;
-    case "Purchase":
-      icon2 = dots;
-      break;
-    case "Sales":
-      icon2 = dots;
-      break;
-    case "Inventory":
-      icon2 = dots;
-      break;
-    case "HR":
-      icon2 = dots;
-      break;
-    case "Project Costing":
-      icon2 = dots;
-      break;
-    case "CRM":
-      icon2 = dots;
-      break;
-    case "Contact":
-      icon2 = dots;
-      break;
-    case "Planning":
-      icon2 = dots;
-      break;
-    case "Manufacturing":
-      icon2 = dots;
-      break;
-    case "Logistics":
-      icon2 = dots;
-      break;
-    case "Reports":
-      icon2 = dots;
-      break;
-    case "App":
-      icon2 = dots;
-      break;
-    case "Settings":
-      icon2 = dots;
-      break;
-    default:
-      icon2 = null;
-      break;
-  }
+
+  const icon2 = dots;
 
   return (
-    <Link
-      to={link}
-      className="card"
-      style={{ visibility: hasAccess ? "visible" : "hidden" }}
-    >
+    <Link to={link} className="card">
       {icon && <img src={icon} alt={name} />}
       <div className="cardtext">
         <h3 className="cardhed">{name}</h3>
         <p className="cardesc">{description}</p>
       </div>
-      {icon2 && <img src={icon2} alt={name} />}
+      {icon2 && <img src={icon2} alt={`${name} menu`} />}
     </Link>
   );
 };
@@ -240,17 +191,18 @@ const DashCard = () => {
     // },
   ];
   return (
-    <div className="cardlist">
-      {fastra.map((fastra, index) => (
-        <Card
-          key={index}
-          name={fastra.name}
-          description={fastra.description}
-          link={fastra.link}
-          hasAccess={fastra.hasAccess}
-        />
-      ))}
-    </div>
+    <Box mt={4} display={"grid"} gridTemplateColumns={"1fr 1fr 1fr"} gap={4}>
+      {fastra
+        .filter((item) => item.hasAccess)
+        .map((fastra, index) => (
+          <Card
+            key={index}
+            name={fastra.name}
+            description={fastra.description}
+            link={fastra.link}
+          />
+        ))}
+    </Box>
   );
 };
 

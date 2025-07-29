@@ -95,7 +95,7 @@ const Orderlistview = ({
           {formatDate(item?.date_created)}
         </TableCell>
         <TableCell sx={cellStyle(index)}>
-          {item?.vendor?.company_name}
+          {item?.vendor_details?.company_name}
         </TableCell>
         <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -124,6 +124,8 @@ const Orderlistview = ({
   if (items.length === 0) {
     return <p>No items available. Please fill the form to add items.</p>;
   }
+
+  console.log(items);
 
   return (
     <Box sx={{ width: "100%", mt: 3 }}>

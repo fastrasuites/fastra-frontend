@@ -191,14 +191,13 @@ const PurchaseRequestInfo = () => {
               </TableCell>
               <TableCell sx={cellStyle(idx)}>{row.qty ?? "N/A"}</TableCell>
               <TableCell sx={cellStyle(idx)}>
-                {row.product_details.unit_of_measure_details.unit_category ||
-                  "N/A"}
+                {row.product_details.unit_of_measure_details.unit_name || "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>
                 {row.estimated_unit_price || "N/A"}
               </TableCell>
               <TableCell sx={cellStyle(idx)}>
-                {row.total_price || "N/A"}
+                {row.estimated_unit_price * row.qty || "N/A"}
               </TableCell>
             </TableRow>
           ))
@@ -293,6 +292,7 @@ const PurchaseRequestInfo = () => {
     );
   }
 
+  console.log(item);
   return (
     <div className="rfqStatus">
       {/* Header */}

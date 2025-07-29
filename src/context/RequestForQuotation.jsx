@@ -64,7 +64,7 @@ export const RFQProvider = ({ children }) => {
         return { success: true, data: response.data };
       } catch (err) {
         setError(err);
-        return { success: false, message: Promise.reject(err) };
+        return err;
       } finally {
         setIsLoading(false);
       }

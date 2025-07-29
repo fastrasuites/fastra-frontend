@@ -59,7 +59,7 @@ const IncomingProductBasicInputs = ({
     formData.location || null
   );
 
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
   const { vendors, fetchVendors } = usePurchase();
   const { purchaseOrderList, getApprovedPurchaseOrderList } =
     usePurchaseOrder();
@@ -68,8 +68,16 @@ const IncomingProductBasicInputs = ({
     // fetch vendors and purchase orders if not already done
     fetchVendors();
     getApprovedPurchaseOrderList();
-    getLocationList();
-  }, [fetchVendors, getApprovedPurchaseOrderList, getLocationList]);
+    getActiveLocationList();
+  }, [fetchVendors, getApprovedPurchaseOrderList, getActiveLocationList]);
+
+  // console.log(activeLocationList);
+  useEffect(() => {
+    if (activeLocationList && activeLocationList.length <= 1) {
+      console.log(activeLocationList);
+      handleInputChange("location", activeLocationList[0]);
+    }
+  }, [activeLocationList, handleInputChange]);
 
   const handleReceiptChange = (e, newVal) => {
     setSelectedReceipt(newVal);
@@ -105,7 +113,9 @@ const IncomingProductBasicInputs = ({
   };
 
   // Find the supplier source location with code "SUPP"
-  const sourceLocObj = locationList.find((loc) => loc.location_code === "SUPP");
+  const sourceLocObj = activeLocationList.find(
+    (loc) => loc.location_code === "SUPP"
+  );
 
   return (
     <>
@@ -176,10 +186,10 @@ const IncomingProductBasicInputs = ({
           />
         </Box>
 
-        {locationList.length <= 1 ? (
+        {activeLocationList.length <= 1 ? (
           <Box flex={1}>
             <label>Destination Location {REQUIRED_ASTERISK}</label>
-            <p>{formData.location?.id || ""}</p>
+            <p>{activeLocationList[0]?.location_name || ""}</p>
           </Box>
         ) : (
           <Box flex={1}>
@@ -188,7 +198,9 @@ const IncomingProductBasicInputs = ({
             </label>
             <Autocomplete
               disablePortal
-              options={Array.isArray(locationList) ? locationList : []}
+              options={
+                Array.isArray(activeLocationList) ? activeLocationList : []
+              }
               value={selectedLocation}
               getOptionLabel={(opt) => opt.id || ""}
               isOptionEqualToValue={(opt, val) => opt.id === val?.id}
@@ -380,10 +392,10 @@ const CreateIncomingProduct = () => {
       setFormData={setFormData}
       rowConfig={rowConfig}
       isEdit={false}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmitValidated}
       submitBtnText={incomingProductLoading ? "Submitting..." : "Validate"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={handleSubmitValidated}
+      onSubmitAsDone={handleSubmit}
       isLoading={incomingProductLoading}
     />
   );
