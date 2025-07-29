@@ -17,6 +17,7 @@ import { Search } from "lucide-react";
 import Swal from "sweetalert2";
 import Can from "../../../components/Access/Can";
 import { useTenant } from "../../../context/TenantContext";
+import PurchaseRequestGrid from "./PurchaseRequestGrid";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
@@ -298,31 +299,18 @@ export default function Purchreq() {
           )}
 
           {viewMode === "grid" ? (
-            <div className="rfqStatusCards">
-              {purchaseRequestData.map((item) => (
-                <div
-                  className="rfqStatusCard"
-                  key={item?.id}
-                  onClick={() => handleCardClick(item)}
-                >
-                  <p className="cardid">{extractRFQID(item?.url)}</p>
-                  <p className="cardate">{formatDate(item.date_created)}</p>
-                  <p className="vendname">{item?.vendor?.company_name}</p>
-                  <p className="cardid">{item?.purpose}</p>
-                  <p
-                    className="status"
-                    style={{ color: getStatusColor(item.status) }}
-                  >
-                    {item.status}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <PurchaseRequestGrid
+              quotations={purchaseRequestData}
+              handleCardClick={handleSelectedRequest}
+              formatDate={formatDate}
+              statusColor={getStatusColor}
+            />
           ) : (
             <ListView
               items={purchaseRequestData}
               onCardClick={handleSelectedRequest}
               getStatusColor={getStatusColor}
+              loading={loading}
             />
           )}
         </div>

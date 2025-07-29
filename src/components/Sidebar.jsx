@@ -1,17 +1,17 @@
-import React, { useEffect } from "react";
+// import React, { useEffect } from "react";
 import { useTenant } from "../context/TenantContext";
 import { Link } from "react-router-dom";
 import "./sidebar.css";
 import arrowLeft from "../image/sidebar/arrow-left.svg";
 import home from "../image/sidebar/home.svg";
-import accounts from "../image/sidebar/accounts.svg";
+// import accounts from "../image/sidebar/accounts.svg";
 import purchase from "../image/sidebar/purchase.svg";
-import sales from "../image/sidebar/sales.svg";
+// import sales from "../image/sidebar/sales.svg";
 import inventory from "../image/sidebar/inventory.svg";
-import hr from "../image/sidebar/hr.svg";
-import logistics from "../image/sidebar/logistics.svg";
-import contacts from "../image/sidebar/contacts.svg";
-import apps from "../image/sidebar/apps.svg";
+// import hr from "../image/sidebar/hr.svg";
+// import logistics from "../image/sidebar/logistics.svg";
+// import contacts from "../image/sidebar/contacts.svg";
+// import apps from "../image/sidebar/apps.svg";
 import settings from "../image/sidebar/settings.svg";
 import {
   extractPermissions,
@@ -32,9 +32,6 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
     Object.keys(getPermissionsByApp("inventory", permissionsMap)).length > 0;
   const settingsPermissions =
     Object.keys(getPermissionsByApp("settings", permissionsMap)).length > 0;
-  const handleReload = () => {
-    window.location.reload();
-  };
 
   return (
     <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
@@ -66,15 +63,16 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           <span>Accounts</span>
         </Link> */}
 
-        <Link
-          to={`/${tenant_schema_name}/purchase`}
-          className="sidebar-item"
-          onClick={handleCloseSidebar}
-          style={{ visibility: purchasePermissions ? "visible" : "hidden" }}
-        >
-          <img src={purchase} alt="Purchase" className="sidebar-icon" />
-          <span>Purchase</span>
-        </Link>
+        {purchasePermissions && (
+          <Link
+            to={`/${tenant_schema_name}/purchase`}
+            className="sidebar-item"
+            onClick={handleCloseSidebar}
+          >
+            <img src={purchase} alt="Purchase" className="sidebar-icon" />
+            <span>Purchase</span>
+          </Link>
+        )}
 
         {/* <Link
           to={`/${tenant_schema_name}/sales`}
@@ -88,18 +86,16 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           <span>Sales</span>
         </Link> */}
 
-        <Link
-          to={`/${tenant_schema_name}/inventory/operations`}
-          className="sidebar-item"
-          // onClick={handleCloseSidebar}
-          onClick={() => {
-            handleCloseSidebar();
-          }}
-          style={{ visibility: inventoryPermissions ? "visible" : "hidden" }}
-        >
-          <img src={inventory} alt="Inventory" className="sidebar-icon" />
-          <span>Inventory</span>
-        </Link>
+        {inventoryPermissions && (
+          <Link
+            to={`/${tenant_schema_name}/inventory/operations`}
+            className="sidebar-item"
+            onClick={handleCloseSidebar}
+          >
+            <img src={inventory} alt="Inventory" className="sidebar-icon" />
+            <span>Inventory</span>
+          </Link>
+        )}
 
         {/* <Link
           to={`/${tenant_schema_name}/hr`}
@@ -151,17 +147,16 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           <span>Apps</span>
         </Link> */}
 
-        <Link
-          to={`/${tenant_schema_name}/settings`}
-          className="sidebar-item"
-          onClick={() => {
-            handleCloseSidebar();
-          }}
-          style={{ visibility: settingsPermissions ? "visible" : "hidden" }}
-        >
-          <img src={settings} alt="Settings" className="sidebar-icon" />
-          <span>Settings</span>
-        </Link>
+        {settingsPermissions && (
+          <Link
+            to={`/${tenant_schema_name}/settings`}
+            className="sidebar-item"
+            onClick={handleCloseSidebar}
+          >
+            <img src={settings} alt="Settings" className="sidebar-icon" />
+            <span>Settings</span>
+          </Link>
+        )}
       </div>
     </div>
   );

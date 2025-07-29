@@ -1,5 +1,5 @@
 // src/dash/PurchaseModule/PurchOrder/POForm/POBasicInfoFields.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Autocomplete, TextField, Box, Typography } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
@@ -30,6 +30,12 @@ const POBasicInfoFieldsConverToPO = ({
 }) => {
   const { tenantData } = useTenant();
   const tenantName = tenantData?.tenant_schema_name || "";
+
+  useEffect(() => {
+    if (locationList.length <= 1) {
+      handleInputChange("destination_location", locationList[0]);
+    }
+  }, [locationList, handleInputChange]);
   // Resolve selected objects
   const selectedRfq =
     rfqList.find((r) => r.url === formData.rfq?.url) || formData.rfq || null;
@@ -37,7 +43,6 @@ const POBasicInfoFieldsConverToPO = ({
     locationList.find((l) => l.id === formData.destination_location?.id) ||
     formData.destination_location ||
     null;
-
   return (
     <div className="rfqBasicInfoField">
       {/* Top row: ID (if editing), Date, Created By */}
@@ -117,20 +122,24 @@ const POBasicInfoFieldsConverToPO = ({
         {/* Destination Location */}
         <div className="rfqBasicInfoFields1SelectFields" style={{ flex: 1 }}>
           <label style={labelStyle}>Destination Location</label>
-          <Autocomplete
-            disablePortal
-            options={locationList}
-            value={selectedLocation}
-            getOptionLabel={(option) => option.location_name || ""}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            onChange={(_, value) =>
-              handleInputChange("destination_location", value)
-            }
-            renderInput={(params) => (
-              <TextField {...params} placeholder="Select Location" />
-            )}
-            sx={{ width: "100%" }}
-          />
+          {locationList.length <= 1 ? (
+            <Typography>{locationList[0].location_name || "N/A"}</Typography>
+          ) : (
+            <Autocomplete
+              disablePortal
+              options={locationList}
+              value={selectedLocation}
+              getOptionLabel={(option) => option.location_name || ""}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              onChange={(_, value) =>
+                handleInputChange("destination_location", value)
+              }
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Select Location" />
+              )}
+              sx={{ width: "100%" }}
+            />
+          )}
         </div>
       </div>
 

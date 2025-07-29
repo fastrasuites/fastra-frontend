@@ -40,7 +40,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
   const [selectedLocation, setSelectedLocation] = useState(
     formData.location || null
   );
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
 
   const { purchaseOrderList, getApprovedPurchaseOrderList } =
     usePurchaseOrder();
@@ -51,7 +51,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
   }, [getApprovedPurchaseOrderList]);
 
   useEffect(() => {
-    getLocationList();
+    getActiveLocationList();
   }, []);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
     handleInputChange("location", newVal);
   };
 
-  const sourceObj = locationList.find((l) => l.location_code === "SUPP");
+  const sourceObj = activeLocationList.find((l) => l.location_code === "SUPP");
 
   const selectedPO = getSelectedOption(
     formData.relatedPO,
@@ -157,9 +157,9 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
           <label style={{ marginBottom: 6, display: "flex" }}>
             Destination Location
           </label>
-          {formData.location && locationList.length > 1 ? (
+          {formData.location && activeLocationList.length > 1 ? (
             <Autocomplete
-              options={locationList}
+              options={activeLocationList}
               value={selectedLocation}
               getOptionLabel={(opt) => opt.location_name}
               onChange={handleLocationChange}

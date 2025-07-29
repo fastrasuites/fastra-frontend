@@ -170,13 +170,13 @@ export default function ConvertPoToIncomingProduct() {
   const { products, fetchProducts, vendors, fetchVendors } = usePurchase();
   const { isLoading, createIncomingProduct } = useIncomingProduct();
   const { getApprovedPurchaseOrderList } = usePurchaseOrder();
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
 
   useEffect(() => {
     fetchProducts();
     fetchVendors();
     getApprovedPurchaseOrderList();
-    getLocationList();
+    getActiveLocationList();
   }, []);
 
   useEffect(() => {
@@ -186,8 +186,8 @@ export default function ConvertPoToIncomingProduct() {
   }, [vendors]);
 
   const sourceLocObj = useMemo(
-    () => locationList.find((loc) => loc.location_code === "SUPP"),
-    [locationList]
+    () => activeLocationList.find((loc) => loc.location_code === "SUPP"),
+    [activeLocationList]
   );
 
   useEffect(() => {
@@ -300,6 +300,7 @@ export default function ConvertPoToIncomingProduct() {
       label: "Expected QTY",
       field: "available_product_quantity",
       type: "number",
+      disabled: true,
     },
     {
       label: "Unit of Measure",

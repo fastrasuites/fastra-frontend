@@ -194,8 +194,8 @@ const ScrapForm = () => {
 
   const handleSubmit = async (filledFormData) => {
     const items = filledFormData.items.map((item) => ({
-      product: item.product.url,
-      adjusted_quantity: item.qty_received,
+      product: item.product.id,
+      scrap_quantity: item.qty_received,
     }));
     try {
       const createdScrap = await createScrap({
@@ -227,8 +227,8 @@ const ScrapForm = () => {
 
   const handleSubmitValidate = async (filledFormData) => {
     const items = filledFormData.items.map((item) => ({
-      product: item.product.url,
-      adjusted_quantity: item.qty_received,
+      product: item.product.id,
+      scrap_quantity: item.qty_received,
     }));
 
     try {

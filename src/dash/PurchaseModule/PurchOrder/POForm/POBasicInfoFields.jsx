@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Autocomplete,
   TextField,
@@ -37,6 +37,12 @@ const POBasicInfoFields = ({
     currencies.find((c) => c.url === formData?.rfq?.currency?.url) ||
     formData?.rfq?.currency ||
     null;
+
+  useEffect(() => {
+    if (locationList.length <= 1) {
+      handleInputChange("destination_location", locationList[0]);
+    }
+  }, [locationList, handleInputChange]);
 
   return (
     <div className="rfqBasicInfoField">
@@ -96,20 +102,24 @@ const POBasicInfoFields = ({
         {/* Destination Location Autocomplete */}
         <div className="rfqBasicInfoFields1SelectFields" style={{ flex: 1 }}>
           <label style={labelStyle}>Destination Location</label>
-          <Autocomplete
-            disablePortal
-            options={locationList}
-            value={selectedLocation}
-            getOptionLabel={(option) => option.location_name || ""}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            onChange={(_, value) =>
-              handleInputChange("destination_location", value)
-            }
-            renderInput={(params) => (
-              <TextField {...params} placeholder="Select Location" />
-            )}
-            sx={{ width: "100%" }}
-          />
+          {locationList.length <= 1 ? (
+            <Typography>{locationList[0].location_name || "N/A"}</Typography>
+          ) : (
+            <Autocomplete
+              disablePortal
+              options={locationList}
+              value={selectedLocation}
+              getOptionLabel={(option) => option.location_name || ""}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              onChange={(_, value) =>
+                handleInputChange("destination_location", value)
+              }
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Select Location" />
+              )}
+              sx={{ width: "100%" }}
+            />
+          )}
         </div>
       </div>
 

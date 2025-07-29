@@ -308,7 +308,7 @@ export default function StockAdjustmentInfo() {
               handleSubmitAsDone(id);
             }}
           >
-            Validate
+            Done
           </Button>
         )}
       </Box>
