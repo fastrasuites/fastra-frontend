@@ -65,6 +65,7 @@ const PRItemRow = ({ row, index, handleRowChange, products }) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
+          disabled
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>
@@ -82,7 +83,7 @@ const PRItemRow = ({ row, index, handleRowChange, products }) => {
       </TableCell>
       <TableCell sx={cellStyle(index)}>
         <TextField
-          value={row?.product?.unit_of_measure_details?.unit_category || ""}
+          value={row?.product?.unit_of_measure_details?.unit_name || ""}
           variant="standard"
           sx={{
             width: "100%",

@@ -286,6 +286,8 @@ const CreatePRForm = () => {
     }
   };
 
+  console.log("products", products);
+  console.log("formData.items", formData.items);
   // ─── Render ────────────────────────────────────────────────
   return (
     <div className="RfqForm">

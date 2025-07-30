@@ -27,7 +27,7 @@ const PRItemsTable = ({ items, handleRowChange, products }) => {
     return (
       <TableRow>
         <TableCell
-          colSpan={6}
+          // colSpan={6}
           align="center"
           sx={{ color: "#7a8a98", fontSize: "12px" }}
         >

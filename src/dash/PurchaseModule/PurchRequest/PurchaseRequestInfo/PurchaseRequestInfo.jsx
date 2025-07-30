@@ -11,6 +11,8 @@ import {
   TableRow,
   CircularProgress,
   Box,
+  Grid,
+  Typography,
 } from "@mui/material";
 
 import autosaveIcon from "../../../../image/autosave.svg";
@@ -20,6 +22,20 @@ import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import Can from "../../../../components/Access/Can";
+
+const textStyle = {
+  backgroundColor: "#fff",
+  color: "#7a8a98",
+  fontSize: 12,
+  // padding: "8px 12px",
+  // border: "1px solid #eee",
+};
+
+const labelStyle = {
+  ...textStyle,
+  fontWeight: "bold",
+  // backgroundColor: "#f5f5f5",
+};
 
 // Style constants
 const cellStyle = (index) => ({
@@ -265,7 +281,7 @@ const PurchaseRequestInfo = () => {
           label: "Drafted",
           actions: [
             {
-              text: "Send to Approval",
+              text: "Send for Approval",
               onClick: () => handleStatusChange("pending"),
               disabled: actionLoading,
               action: "edit",
@@ -334,104 +350,58 @@ const PurchaseRequestInfo = () => {
         </div>
 
         {/* Status */}
-        <div className="rfqStatusInfo">
-          <p>Status</p>
-          <p
+        <Box>
+          <Typography>Status</Typography>
+          <Typography
             style={{
               color: statusColor(item.status),
               textTransform: "capitalize",
             }}
           >
             {item.status}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Details */}
-        <TableContainer
-          component={Paper}
-          sx={{ boxShadow: "none", border: "none" }}
-        >
-          <Table>
-            <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Requesting Location ID</TableCell>
-                <TableCell>Date</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody sx={{ borderBottom: "1px solid #E2E6E9" }}>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {extractRFQID(item.url) || "N/A"}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {singleLocation?.location_name}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {formatDate(item.date_created) || "N/A"}
-                </TableCell>
-              </TableRow>
-            </TableBody>
+        <Paper elevation={0}>
+          <Grid container spacing={2}>
+            {/* Row 1: ID | Location ID | Date */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography sx={labelStyle}>ID</Typography>
+              <Typography sx={textStyle}>
+                {extractRFQID(item.url) || "N/A"}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography sx={labelStyle}>Requesting Location ID</Typography>
+              <Typography sx={textStyle}>
+                {singleLocation?.location_name || "N/A"}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography sx={labelStyle}>Date</Typography>
+              <Typography sx={textStyle}>
+                {formatDate(item.date_created) || "N/A"}
+              </Typography>
+            </Grid>
 
-            {/* Purpose/Vendor */}
-            <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
-              <TableRow>
-                <TableCell>Requester</TableCell>
-                <TableCell>Purpose</TableCell>
-                <TableCell>Vendor</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {requester || "N/A"}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {item.purpose || "N/A"}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {item.vendor_details?.company_name || "N/A"}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
+            {/* Row 2: Requester | Purpose | Vendor */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography sx={labelStyle}>Requester</Typography>
+              <Typography sx={textStyle}>{requester || "N/A"}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography sx={labelStyle}>Purpose</Typography>
+              <Typography sx={textStyle}>{item.purpose || "N/A"}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Typography sx={labelStyle}>Vendor</Typography>
+              <Typography sx={textStyle}>
+                {item.vendor_details?.company_name || "N/A"}
+              </Typography>
+            </Grid>
+          </Grid>
+        </Paper>
 
         {/* Items */}
         <p className="rfqContent">Purchase Request Items</p>
