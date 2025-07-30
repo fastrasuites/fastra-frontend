@@ -134,7 +134,8 @@ const CreatePRForm = () => {
     currency: formData.currency,
     purpose: formData.purpose,
     vendor: formData.vendor,
-    requesting_location: formData.requesting_location,
+    requesting_location:
+      formData.requesting_location.id || formData.requesting_location,
     is_hidden: false,
     items: formData.items.map((item) => ({
       id: item.id,

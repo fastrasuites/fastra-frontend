@@ -48,6 +48,12 @@ const PRBasicInfoFields = ({
     );
   }, [formData.requesting_location, locationList]);
 
+  useEffect(() => {
+    if (locationList.length <= 1) {
+      handleInputChange("requesting_location", locationList[0]);
+    }
+  }, [locationList]);
+
   return (
     <div className="rfqBasicInfoField">
       <div className="rfqBasicInfoFields1">
@@ -109,18 +115,22 @@ const PRBasicInfoFields = ({
           <label style={{ marginBottom: 6, display: "block" }}>
             Requesting Location {REQUIRED_ASTERISK}
           </label>
-          <Autocomplete
-            disablePortal
-            options={locationList}
-            value={selectedLocation}
-            getOptionLabel={(option) => option.location_name || ""}
-            isOptionEqualToValue={(opt, val) => opt.id === val?.id}
-            onChange={(e, value) => {
-              setSelectedLocation(value);
-              handleInputChange("requesting_location", value?.id || "");
-            }}
-            renderInput={(params) => <TextField {...params} />}
-          />
+          {locationList.length <= 1 ? (
+            <Typography>{locationList[0]?.location_name || "N/A"}</Typography>
+          ) : (
+            <Autocomplete
+              disablePortal
+              options={locationList}
+              value={selectedLocation}
+              getOptionLabel={(option) => option.location_name || ""}
+              isOptionEqualToValue={(opt, val) => opt.id === val?.id}
+              onChange={(e, value) => {
+                setSelectedLocation(value);
+                handleInputChange("requesting_location", value?.id || "");
+              }}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          )}
         </div>
 
         {/* Select Vendor */}
