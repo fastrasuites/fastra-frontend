@@ -82,7 +82,7 @@ const PRItemRow = ({ row, index, handleRowChange, products }) => {
       </TableCell>
       <TableCell sx={cellStyle(index)}>
         <TextField
-          value={row?.product?.unit_of_measure_details?.unit_category || ""}
+          value={row?.product?.unit_of_measure_details?.unit_name || ""}
           variant="standard"
           sx={{
             width: "100%",

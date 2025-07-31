@@ -17,6 +17,7 @@ import { useTenant } from "../../../context/TenantContext";
 import { useCustomLocation } from "../../../context/Inventory/LocationContext";
 import CommonTable from "../../../components/CommonTable/CommonTable";
 import LocationStep from "./LocationStep";
+import Can from "../../../components/Access/Can";
 
 const locationTypes = [
   {
@@ -99,14 +100,16 @@ function Location() {
     <Box sx={{ p: 3 }}>
       {/* Header Section */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Button
-          component={Link}
-          to={`/${tenantData?.tenant_schema_name}/inventory/location/create-inventory-location`}
-          variant="contained"
-          startIcon={<LocationOnIcon />}
-        >
-          Create Location
-        </Button>
+        <Can app="inventory" module="location" action="create">
+          <Button
+            component={Link}
+            to={`/${tenantData?.tenant_schema_name}/inventory/location/create-inventory-location`}
+            variant="contained"
+            startIcon={<LocationOnIcon />}
+          >
+            Create Location
+          </Button>
+        </Can>
       </Box>
 
       {/* Location Types Table */}

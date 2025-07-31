@@ -105,6 +105,7 @@ export const IncomingProductProvider = ({ children }) => {
           supplier: Number(formData.supplier),
           source_location: formData.source_location,
           destination_location: formData.destination_location,
+          user_choice: formData.user_choice,
           incoming_product_items: formData.incoming_product_items,
           status: formData.status,
           is_validated: formData.is_validated ?? true,

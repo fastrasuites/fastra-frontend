@@ -33,7 +33,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       currency,
       payment_terms,
       purchase_policy,
-      delivery_terms,
       items,
       is_hidden,
     } = info;
@@ -42,7 +41,6 @@ export const PurchaseOrderProvider = ({ children }) => {
       !!payment_terms &&
       !!vendor &&
       !!purchase_policy &&
-      !!delivery_terms &&
       !!currency &&
       !!status &&
       !!items &&

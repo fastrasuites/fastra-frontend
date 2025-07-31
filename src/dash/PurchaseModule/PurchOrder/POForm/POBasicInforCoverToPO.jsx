@@ -123,7 +123,7 @@ const POBasicInfoFieldsConverToPO = ({
         <div className="rfqBasicInfoFields1SelectFields" style={{ flex: 1 }}>
           <label style={labelStyle}>Destination Location</label>
           {locationList.length <= 1 ? (
-            <Typography>{locationList[0].location_name || "N/A"}</Typography>
+            <Typography>{locationList[0]?.location_name || "N/A"}</Typography>
           ) : (
             <Autocomplete
               disablePortal
@@ -210,7 +210,7 @@ const POBasicInfoFieldsConverToPO = ({
       {/* Row 5: Delivery Terms */}
       <div className="rfqBasicInfoFields2" style={{ marginBottom: 24 }}>
         <div style={{ flex: 1 }}>
-          <label style={labelStyle}>Delivery Terms {REQUIRED_ASTERISK}</label>
+          <label style={labelStyle}>Delivery Terms</label>
           <TextField
             fullWidth
             value={

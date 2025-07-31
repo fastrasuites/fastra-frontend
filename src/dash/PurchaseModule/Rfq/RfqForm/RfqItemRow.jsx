@@ -54,9 +54,7 @@ const RfqItemRow = ({ row, index }) => {
       </TableCell>
       <TableCell sx={cellStyle(index)}>
         <TextField
-          value={
-            row.product_details.unit_of_measure_details.unit_category || ""
-          }
+          value={row.product_details.unit_of_measure_details.unit_name || ""}
           variant="standard"
           sx={{
             width: "100%",

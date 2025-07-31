@@ -11,7 +11,13 @@ import {
 } from "@mui/material";
 import DynamicItemRow from "./DynamicItemRow";
 
-const DynamicItemsTable = ({ items, handleRowChange, handleRemoveRow, rowConfig }) => {
+const DynamicItemsTable = ({
+  items,
+  handleRowChange,
+  handleRemoveRow,
+  rowConfig,
+  setMax,
+}) => {
   const headers = rowConfig.map((cfg) => cfg.label);
 
   const renderedRows = useMemo(() => {
@@ -24,6 +30,7 @@ const DynamicItemsTable = ({ items, handleRowChange, handleRemoveRow, rowConfig 
           handleRowChange={handleRowChange}
           handleRemoveRow={handleRemoveRow}
           rowConfig={rowConfig}
+          setMax={setMax}
         />
       ));
     }
@@ -41,19 +48,29 @@ const DynamicItemsTable = ({ items, handleRowChange, handleRemoveRow, rowConfig 
   }, [items, handleRowChange, handleRemoveRow, rowConfig, headers.length]);
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: "none", borderRadius: "10px" }}>
+    <TableContainer
+      component={Paper}
+      sx={{ boxShadow: "none", borderRadius: "10px" }}
+    >
       <Table sx={{ "& .MuiTableCell-root": { border: "none" } }}>
         <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
           <TableRow>
             {headers.map((header, index) => (
               <TableCell
                 key={index}
-                sx={{ color: "#7a8a98", fontSize: "14px", fontWeight: 500, p: 1 }}
+                sx={{
+                  color: "#7a8a98",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  p: 1,
+                }}
               >
                 {header}
               </TableCell>
             ))}
-            <TableCell sx={{ color: "#7a8a98", fontSize: "14px", fontWeight: 500, p: 1 }}>
+            <TableCell
+              sx={{ color: "#7a8a98", fontSize: "14px", fontWeight: 500, p: 1 }}
+            >
               {/* Actions */}
             </TableCell>
           </TableRow>

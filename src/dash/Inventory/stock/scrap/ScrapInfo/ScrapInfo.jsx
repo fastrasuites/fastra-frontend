@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
-import { scraps } from "../../../data/incomingProductData";
 import {
   Box,
   Button,
@@ -18,7 +17,6 @@ import { useTenant } from "../../../../../context/TenantContext";
 import { useScrap } from "../../../../../context/Inventory/Scrap";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import { usePurchase } from "../../../../../context/PurchaseContext";
-import { extractId } from "../../../../../helper/helper";
 
 // Status‐to‐color mapping extracted for reuse and easy maintenance
 const STATUS_COLOR = {
@@ -59,14 +57,13 @@ const ScrapInfo = () => {
     setLoading(true);
     try {
       const { data: raw } = await getSingleScrap(id);
+      console.log(raw);
       const { data: location } = await getSingleLocation(
-        extractId(raw.warehouse_location)
+        raw.warehouse_location
       );
       const items = await Promise.all(
         raw.scrap_items.map(async (item) => {
-          const { data: product } = await fetchSingleProduct(
-            extractId(item.product)
-          );
+          const { data: product } = await fetchSingleProduct(item.product);
           return {
             ...item,
             product,
@@ -103,10 +100,10 @@ const ScrapInfo = () => {
       </Box>
     );
 
-  if (error || !scrap)
+  if (error && !scrap)
     return (
       <Box p={4} textAlign="center">
-        <Typography variant="h6">Adjustment not found</Typography>
+        <Typography variant="h6">Scrap not found</Typography>
         <Link to={`/${tenant_schema_name}/inventory/stock/scrap`}>
           <Button variant="outlined" sx={{ mt: 2 }}>
             Back to List
@@ -126,9 +123,7 @@ const ScrapInfo = () => {
           </Button>
         </Link>
         <Box display="flex" gap={4}>
-          <Link
-            to={`/${tenant_schema_name}/inventory/stock/scrap`}
-          >
+          <Link to={`/${tenant_schema_name}/inventory/stock/scrap`}>
             <Button variant="outlined" size="large" disableElevation>
               Close
             </Button>
@@ -160,7 +155,10 @@ const ScrapInfo = () => {
 
         {/* Status row */}
         <InfoRow label="Status">
-          <Typography color={getStatusColor(scrap.status)} textTransform={"capitalize"}>
+          <Typography
+            color={getStatusColor(scrap.status)}
+            textTransform={"capitalize"}
+          >
             {scrap.status.toUpperCase()}
           </Typography>
         </InfoRow>
@@ -191,7 +189,7 @@ const ScrapInfo = () => {
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                {["Product Name", "Scrap Quantity", "Adjusted Quantity"].map(
+                {["Product Name", "Scrap Quantity", "Scrap Quantity"].map(
                   (text) => (
                     <TableCell
                       key={text}

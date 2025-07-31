@@ -38,6 +38,8 @@ const UserInfo = () => {
     fetchUserData();
   }, [getSingleUser, id]);
 
+  console.log(singleUser);
+
   const handleResetPassword = async () => {
     if (!singleUser?.email) {
       Swal.fire({

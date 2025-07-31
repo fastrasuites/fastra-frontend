@@ -51,6 +51,8 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
     handleInputChange("location", newValue);
   };
 
+  console.log(formData);
+
   return (
     <div className="stockbasicInformationInputs">
       <div className="formLabelAndValue">
@@ -119,28 +121,24 @@ const EditStockAdjustment = () => {
   const { id } = useParams();
 
   // Transform products with UOM structure
-  const transformProducts = (products) =>
-    products.map((prod) => ({
+  const transformProducts = (list) =>
+    list.map((prod) => ({
       ...prod,
-      unit_of_measure: Array.isArray(prod.unit_of_measure)
-        ? {
-            url: prod.unit_of_measure[0],
-            unit_category: prod.unit_of_measure[1],
-          }
-        : prod.unit_of_measure,
+      unit_of_measure: {
+        url: prod.unit_of_measure,
+        unit_category: prod?.unit_of_measure_details?.unit_name,
+        unit_name: prod?.unit_of_measure_details?.unit_name,
+      },
     }));
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  console.log(location.state);
   // Initialize form data when products/locations load
   useEffect(() => {
-    if (
-      location?.state?.StockAdjustment &&
-      products.length &&
-      locationList.length
-    ) {
+    if (location?.state?.StockAdjustment && products.length && locationList) {
       const adj = location.state.StockAdjustment;
       // Map adjustment items to form items
       const items = adj.stock_adjustment_items.map((item) => {
@@ -188,7 +186,7 @@ const EditStockAdjustment = () => {
       field: "unit_of_measure",
       type: "text",
       disabled: true,
-      transform: (val) => val?.unit_category || "",
+      transform: (val) => val?.unit_name || "",
     },
     {
       label: "Current Quantity",
@@ -255,7 +253,8 @@ const EditStockAdjustment = () => {
       status: filledData.status || null,
       is_hidden: false,
       items: filledData.items.map((item) => ({
-        product: item.product.url,
+        id: item?.id,
+        product: item.product,
         adjusted_quantity: item.qty_received,
       })),
     };

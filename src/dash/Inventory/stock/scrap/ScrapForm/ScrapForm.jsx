@@ -149,8 +149,8 @@ const ScrapForm = () => {
       ...prod,
       unit_of_measure: {
         url: prod.unit_of_measure,
-        unit_category: prod?.unit_of_measure_details?.unit_category,
-        unit_name: prod?.unit_of_measure_details?.unit_category,
+        unit_category: prod?.unit_of_measure_details?.unit_name,
+        unit_name: prod?.unit_of_measure_details?.unit_name,
       },
     }));
 
@@ -177,7 +177,7 @@ const ScrapForm = () => {
       transform: (value) => value || 0,
     },
     {
-      label: "Adjusted Quantity",
+      label: "Scrap Quantity",
       field: "qty_received",
       type: "number",
     },
@@ -227,7 +227,7 @@ const ScrapForm = () => {
 
   const handleSubmitValidate = async (filledFormData) => {
     const items = filledFormData.items.map((item) => ({
-      product: item.product.id,
+      product: item.product,
       scrap_quantity: item.qty_received,
     }));
 
@@ -270,10 +270,14 @@ const ScrapForm = () => {
       setFormData={setFormData}
       rowConfig={rowConfig}
       isEdit={false}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmitValidate}
       submitBtnText="Validate"
       autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={handleSubmitValidate}
+      onSubmitAsDone={handleSubmit}
+      setMax={{
+        field: "qty_received",
+        limit: "available_product_quantity",
+      }}
     />
   );
 };
