@@ -148,7 +148,6 @@ const POForm = () => {
       return "Destination Location is required.";
     if (!payload.purchase_policy) return "Purchase Policy is required.";
     if (!payload.payment_terms) return "Payment Term is required.";
-    if (!payload.delivery_terms) return "Delivery Term is required.";
     if (!payload.items || payload.items.length === 0)
       return "At least one product item is required.";
     if (hasDuplicateProducts(payload.items))

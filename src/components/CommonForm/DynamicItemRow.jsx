@@ -2,6 +2,7 @@
 import React from "react";
 import { Autocomplete, TableCell, TableRow, TextField } from "@mui/material";
 import { X } from "lucide-react";
+import Swal from "sweetalert2";
 
 // Utility function to style table cells uniformly
 const cellStyle = (index) => ({
@@ -16,6 +17,7 @@ const DynamicItemRow = ({
   handleRowChange,
   handleRemoveRow,
   rowConfig,
+  setMax,
 }) => {
   // Render a table cell based on field type defined in rowConfig
 
@@ -63,7 +65,39 @@ const DynamicItemRow = ({
             type={type}
             variant="standard"
             value={transform ? transform(value) : value || ""}
-            onChange={(e) => handleRowChange(index, field, e.target.value)}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+
+              if (type === "number") {
+                if (inputValue === "") {
+                  handleRowChange(index, field, null); // empty input = null
+                  return;
+                }
+
+                const numericValue = parseInt(inputValue, 10);
+
+                if (!isNaN(numericValue)) {
+                  if (setMax && field === setMax.field) {
+                    const limit = row.product[setMax.limit];
+
+                    if (numericValue <= limit) {
+                      handleRowChange(index, field, numericValue); // send number
+                    } else {
+                      Swal.fire({
+                        icon: "warning",
+                        title: "Limit Exceeded",
+                        text: `You cannot enter more than ${limit}.`,
+                        confirmButtonColor: "#3085d6",
+                      });
+                    }
+                  } else {
+                    handleRowChange(index, field, numericValue); // send number
+                  }
+                }
+              } else {
+                handleRowChange(index, field, inputValue); // send string for text types
+              }
+            }}
             disabled={disabled}
             sx={{
               width: "100%",

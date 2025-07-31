@@ -121,7 +121,7 @@ const NewStockAdjustment = () => {
       ...prod,
       unit_of_measure: {
         url: prod.unit_of_measure,
-        unit_category: prod?.unit_of_measure_details?.unit_category,
+        unit_category: prod?.unit_of_measure_details?.unit_name,
         unit_name: prod?.unit_of_measure_details?.unit_category,
       },
     }));

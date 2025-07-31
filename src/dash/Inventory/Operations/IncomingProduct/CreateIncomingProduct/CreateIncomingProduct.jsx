@@ -239,7 +239,7 @@ const CreateIncomingProduct = () => {
 
   const transformProducts = (list) =>
     list.map((prod) => {
-      const unit_category = prod?.unit_of_measure_details?.unit_category;
+      const unit_category = prod?.unit_of_measure_details?.unit_name;
       return {
         ...prod,
         unit_of_measure: {
@@ -290,6 +290,7 @@ const CreateIncomingProduct = () => {
       related_po: filledFormData.related_po?.id,
       source_location: filledFormData.source_location,
       status: filledFormData.status,
+      user_choice: {},
       is_hidden: false,
       supplier: filledFormData.suppliersName?.id || null,
       incoming_product_items: filledFormData.items.map((item) => ({
@@ -340,6 +341,7 @@ const CreateIncomingProduct = () => {
       related_po: filledFormData.related_po?.id,
       source_location: filledFormData.source_location,
       status: "validated",
+      user_choice: {},
       is_hidden: false,
       supplier: filledFormData.suppliersName?.id || null,
       incoming_product_items: filledFormData.items.map((item) => ({

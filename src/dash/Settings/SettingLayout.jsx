@@ -26,10 +26,10 @@ const SettingsLayout = () => {
 
       <Switch>
         {/* Redirect /settings → /settings/apk */}
-        <Redirect exact from={path} to={`${path}/apk`} />
+        <Redirect exact from={path} to={`${path}/company`} />
 
         {/* Settings sections */}
-        <Route exact path={`${path}/apk`} component={Apk} />
+        {/* <Route exact path={`${path}/apk`} component={Ap} /> */}
         <Route exact path={`${path}/company`} component={Company} />
         <Route
           exact

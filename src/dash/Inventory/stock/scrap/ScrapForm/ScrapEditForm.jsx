@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, Box, TextField } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import "./ScrapForm.css";
@@ -65,7 +65,7 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
           <label>ID</label>
           <p>{formData.id}</p>
         </div>
-        <div>
+        <Box width={300}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Adjustment Type
           </label>
@@ -79,7 +79,7 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
             )}
             sx={{ width: "100%", mb: 2 }}
           />
-        </div>
+        </Box>
         <div className="formLabelAndValue">
           <label>Date</label>
           <p>{formData.date}</p>
@@ -132,16 +132,18 @@ const ScrapEditForm = () => {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
-
   useEffect(() => {
     const scrap = location.state?.Scrap;
     if (scrap && products.length && locationList.length) {
       const items = scrap.scrap_items.map((item) => ({
         ...item,
         product: item?.product,
-        unit_of_measure: item.product?.unit_of_measure
-          ? { unit_category: item.product.unit_of_measure[1] }
-          : { unit_category: item?.unit_of_measure },
+        unit_of_measure: {
+          url: item.product.unit_of_measure,
+          unit_category: item.product?.unit_of_measure_details?.unit_name,
+          unit_name: item.product?.unit_of_measure_details?.unit_name,
+        },
+
         available_product_quantity: item?.product?.available_product_quantity,
         qty_received: item.adjusted_quantity,
       }));
@@ -166,21 +168,15 @@ const ScrapEditForm = () => {
     }
   }, [location.state, products, locationList]);
 
-  const transformProducts = useCallback(
-    (products) =>
-      products.map((prod) => {
-        const [url, unit_category] = prod.unit_of_measure;
-        return {
-          ...prod,
-          unit_of_measure: {
-            url,
-            unit_category,
-            unit_name: unit_category,
-          },
-        };
-      }),
-    []
-  );
+  const transformProducts = (list) =>
+    list.map((prod) => ({
+      ...prod,
+      unit_of_measure: {
+        url: prod.unit_of_measure,
+        unit_category: prod?.unit_of_measure_details?.unit_name,
+        unit_name: prod?.unit_of_measure_details?.unit_name,
+      },
+    }));
 
   const memoizedProducts = useMemo(
     () => transformProducts(products),
@@ -201,16 +197,17 @@ const ScrapEditForm = () => {
         field: "unit_of_measure",
         type: "text",
         disabled: true,
-        transform: (value) => value.unit_category || "",
+        transform: (value) => value.unit_name || "",
       },
       {
         label: "Current Quantity",
         field: "available_product_quantity",
         type: "number",
+        disabled: true,
         transform: (value) => value || "",
       },
       {
-        label: "Adjusted Quantity",
+        label: "Scrap Quantity",
         field: "qty_received",
         type: "number",
       },
@@ -234,8 +231,9 @@ const ScrapEditForm = () => {
   const handleSubmit = useCallback(
     async (filledFormData, status = "draft") => {
       const items = filledFormData.items.map((item) => ({
-        product: item.product.url,
-        adjusted_quantity: item.qty_received,
+        id: parseInt(item?.id),
+        product: parseInt(item.product?.id),
+        scrap_quantity: parseInt(item?.scrap_quantity),
       }));
 
       try {
@@ -278,7 +276,11 @@ const ScrapEditForm = () => {
       onSubmit={(data) => handleSubmit(data, "done")}
       submitBtnText="Validate"
       autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={(data) => handleSubmit(data, "done")}
+      onSubmitAsDone={(data) => handleSubmit(data)}
+      setMax={{
+        field: "qty_received",
+        limit: "available_product_quantity",
+      }}
     />
   );
 };

@@ -25,6 +25,7 @@ const CommonForm = ({
   showSaveButton = true,
   primaryButtonVariant = "outlined",
   onSubmitAsDone,
+  setMax = null,
 }) => {
   // Update a single field in formData
   const handleInputChange = useCallback(
@@ -136,6 +137,7 @@ const CommonForm = ({
             handleRowChange={handleRowChange}
             handleRemoveRow={handleRemoveRow}
             rowConfig={rowConfig}
+            setMax={setMax}
           />
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
             <Button variant="outlined" onClick={handleAddRow}>

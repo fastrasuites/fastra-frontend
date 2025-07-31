@@ -71,10 +71,15 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
 
   return (
     <>
-      <div className="receiptTypeAndID">
-        <div>
+      <Box
+        display={"flex"}
+        gap={"50px"}
+        justifyContent={"space-between"}
+        pr={60}
+      >
+        <div className="formLabelAndValue">
           <label>Receipt Type {REQUIRED_ASTERISK}</label>
-          <Autocomplete
+          {/* <Autocomplete
             options={RECEIPT_TYPES}
             value={selectedReceipt}
             getOptionLabel={(opt) => opt.label || ""}
@@ -85,7 +90,8 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
             renderInput={(params) => (
               <TextField {...params} placeholder="Select receipt type" />
             )}
-          />
+          /> */}
+          <p>Vendor Receipt</p>
         </div>
 
         <div className="formLabelAndValue">
@@ -97,7 +103,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
           <label>Receipt Date {REQUIRED_ASTERISK}</label>
           <p>{formData.receiptDate}</p>
         </div>
-      </div>
+      </Box>
 
       <Box className="supplierNameAndLocation" mt={2} display="flex" gap={2}>
         <Box flex={1}>
@@ -171,12 +177,14 @@ export default function ConvertPoToIncomingProduct() {
   const { isLoading, createIncomingProduct } = useIncomingProduct();
   const { getApprovedPurchaseOrderList } = usePurchaseOrder();
   const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const { locationList, getLocationList } = useCustomLocation();
 
   useEffect(() => {
     fetchProducts();
     fetchVendors();
     getApprovedPurchaseOrderList();
     getActiveLocationList();
+    getLocationList();
   }, []);
 
   useEffect(() => {
@@ -186,9 +194,11 @@ export default function ConvertPoToIncomingProduct() {
   }, [vendors]);
 
   const sourceLocObj = useMemo(
-    () => activeLocationList.find((loc) => loc.location_code === "SUPP"),
-    [activeLocationList]
+    () => locationList.find((loc) => loc.location_code === "SUPP"),
+    [locationList]
   );
+
+  console.log(sourceLocObj);
 
   useEffect(() => {
     const incoming = location.state?.po;
@@ -199,9 +209,8 @@ export default function ConvertPoToIncomingProduct() {
         qty_received: it.quantity_received,
         unit_of_measure: {
           unit_category:
-            it?.product_details?.unit_of_measure_details?.unit_category,
-          unit_name:
-            it?.product_details?.unit_of_measure_details?.unit_category,
+            it?.product_details?.unit_of_measure_details?.unit_name,
+          unit_name: it?.product_details?.unit_of_measure_details?.unit_name,
         },
       }));
 
@@ -229,7 +238,7 @@ export default function ConvertPoToIncomingProduct() {
   const handleSubmit = async () => {
     const payload = {
       destination_location: formData?.relatedPO?.destination_location,
-      receipt_type: formData.receiptType,
+      receipt_type: "vendor_receipt",
       source_location: sourceLocObj?.id,
       status: formData.status,
       is_hidden: false,
@@ -241,6 +250,8 @@ export default function ConvertPoToIncomingProduct() {
         quantity_received: Number(item.qty_received),
       })),
     };
+
+    console.log(payload);
     try {
       const res = await createIncomingProduct(payload);
       Swal.fire({
@@ -277,7 +288,7 @@ export default function ConvertPoToIncomingProduct() {
 
   const transformProducts = (list) =>
     list.map((prod) => {
-      const unit_category = prod?.unit_of_measure_details?.unit_category;
+      const unit_category = prod?.unit_of_measure_details?.unit_name;
       return {
         ...prod,
         unit_of_measure: {

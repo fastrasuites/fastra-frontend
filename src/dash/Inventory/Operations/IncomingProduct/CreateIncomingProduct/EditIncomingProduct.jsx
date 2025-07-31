@@ -249,9 +249,11 @@ export default function EditIncomingProduct() {
       source_location: data.source_location,
       related_po: data.relatedPO,
       status: data.status,
+      user_choice: {},
       is_hidden: false,
       supplier: data.suppliersName?.id || null,
       incoming_product_items: data.items.map((it) => ({
+        id: it.id,
         product: it.product.id,
         expected_quantity: Number(it.available_product_quantity),
         quantity_received: Number(it.qty_received),
