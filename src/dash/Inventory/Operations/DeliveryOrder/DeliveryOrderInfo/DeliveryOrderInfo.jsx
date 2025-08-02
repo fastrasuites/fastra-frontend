@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useHistory } from "react-router-dom";
 import { useDeliveryOrder } from "../../../../../context/Inventory/DeliveryOrderContext";
 import { useTenant } from "../../../../../context/TenantContext";
 import {
@@ -50,6 +50,7 @@ const FormGroup = ({ label, children }) => {
 };
 
 const DeliveryOrderInfo = () => {
+  const history = useHistory();
   const { id } = useParams();
   const orderId = Number(id);
 
@@ -146,24 +147,16 @@ const DeliveryOrderInfo = () => {
         cancelButtonText: "Cancel",
       });
       if (!result.isConfirmed) return;
-      const response = await deleteDeliveryOrder(orderId);
-      if (response.success) {
-        Swal.fire({
-          title: "Deleted",
-          text: "Delivery order has been deleted successfully.",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.href = `/${tenant_schema_name}/inventory/operations/delivery-order`;
-        });
-      } else {
-        Swal.fire({
-          title: "Error",
-          text: "Failed to delete delivery order.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      }
+      await deleteDeliveryOrder(orderId);
+      Swal.fire({
+        title: "Deleted",
+        text: "Delivery order has been deleted successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order`
+      );
     } catch (error) {
       Swal.fire({
         title: "Error",
@@ -189,6 +182,9 @@ const DeliveryOrderInfo = () => {
             icon: "success",
             confirmButtonText: "Proceed",
           });
+          // history.push(
+          //   `/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/`
+          // );
         } else {
           Swal.fire({
             title: "Waiting: Not enough stock",
@@ -196,6 +192,9 @@ const DeliveryOrderInfo = () => {
             icon: "info",
             confirmButtonText: "OK",
           });
+          // history.push(
+          //   `/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/`
+          // );
         }
       } else if (status === "ready") {
         const response = await confirmDeliveryOrder(orderId);
@@ -223,6 +222,11 @@ const DeliveryOrderInfo = () => {
         icon: "error",
         confirmButtonText: "OK",
       });
+    } finally {
+      getSingleDeliveryOrder(orderId); // Refresh the delivery order data
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/`
+      );
     }
   };
 
@@ -257,14 +261,18 @@ const DeliveryOrderInfo = () => {
             Product Information
           </Typography>
           <Box display="flex" gap={2}>
-            <Button
-              variant="text"
-              size="large"
-              disableElevation
-              onClick={() => window.history.back()}
+            <Link
+              to={`/${tenant_schema_name}/inventory/operations/delivery-order`}
             >
-              Close
-            </Button>
+              <Button
+                variant="text"
+                size="large"
+                disableElevation
+                // onClick={() => window.history.back()}
+              >
+                Close
+              </Button>
+            </Link>
 
             <Button onClick={handleDelete}>Delete</Button>
 
@@ -375,8 +383,8 @@ const DeliveryOrderInfo = () => {
                     <TableCell>{row.quantity_to_deliver}</TableCell>
                     <TableCell>{row.unit_price}</TableCell>
                     <TableCell>
-                      {row.product_details.unit_of_measure_details
-                        .unit_category || "Unit of measure"}
+                      {row.product_details.unit_of_measure_details.unit_name ||
+                        "Unit of measure"}
                     </TableCell>
                     <TableCell>{row.total_price}</TableCell>
                   </TableRow>

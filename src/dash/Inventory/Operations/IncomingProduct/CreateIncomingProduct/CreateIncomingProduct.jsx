@@ -97,9 +97,8 @@ const IncomingProductBasicInputs = ({
       available_product_quantity: it.qty,
       qty_received: it.quantity_received,
       unit_of_measure: {
-        unit_category:
-          it?.product_details?.unit_of_measure_details?.unit_category,
-        unit_name: it?.product_details?.unit_of_measure_details?.unit_category,
+        unit_category: it?.product_details?.unit_of_measure_details?.unit_name,
+        unit_name: it?.product_details?.unit_of_measure_details?.unit_name,
       },
     }));
 
@@ -181,7 +180,7 @@ const IncomingProductBasicInputs = ({
             onChange={handleSupplierChange}
             sx={{ width: "100%", mb: 2 }}
             renderInput={(params) => (
-              <TextField {...params} placeholder="Select supplier" />
+              <TextField {...params} placeholder="Select supplier" required />
             )}
           />
         </Box>

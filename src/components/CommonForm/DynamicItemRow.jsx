@@ -29,6 +29,7 @@ const DynamicItemRow = ({
       case "autocomplete":
         return (
           <Autocomplete
+            fullWidth
             options={options || []}
             getOptionLabel={getOptionLabel || ((option) => option || "")}
             value={value || null}
@@ -53,6 +54,7 @@ const DynamicItemRow = ({
                   },
                   "& .MuiInputBase-input": { color: "#A9B3BC" },
                 }}
+                fullWidth
               />
             )}
           />

@@ -271,7 +271,7 @@ const EditDeliveryOrderForm = () => {
           },
           unit_of_measure: {
             unit_category:
-              item?.product_details?.unit_of_measure_details?.unit_category,
+              item?.product_details?.unit_of_measure_details?.unit_name,
           },
           quantity_to_deliver: item.quantity_to_deliver,
           unit_price: item.unit_price,

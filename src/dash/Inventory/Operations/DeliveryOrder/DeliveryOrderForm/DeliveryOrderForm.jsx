@@ -231,7 +231,7 @@ const DeliveryOrderForm = () => {
       unit_of_measure: {
         url: prod.unit_of_measure,
         unit_category: prod?.unit_of_measure_details?.unit_category,
-        unit_name: prod?.unit_of_measure_details?.unit_category,
+        unit_name: prod?.unit_of_measure_details?.unit_name,
       },
     }));
 
@@ -254,7 +254,7 @@ const DeliveryOrderForm = () => {
       field: "unit_of_measure",
       type: "text",
       disabled: true,
-      transform: (value) => value?.unit_category || "",
+      transform: (value) => value?.unit_name || "",
     },
     {
       label: "Unit Price",
