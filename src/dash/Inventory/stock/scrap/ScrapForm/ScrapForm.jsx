@@ -227,7 +227,7 @@ const ScrapForm = () => {
 
   const handleSubmitValidate = async (filledFormData) => {
     const items = filledFormData.items.map((item) => ({
-      product: item.product,
+      product: item.product.id,
       scrap_quantity: item.qty_received,
     }));
 
@@ -271,6 +271,7 @@ const ScrapForm = () => {
       rowConfig={rowConfig}
       isEdit={false}
       onSubmit={handleSubmitValidate}
+      saveAsSubmitBtnText="Save to draft"
       submitBtnText="Validate"
       autofillRow={["unit_of_measure", "available_product_quantity"]}
       onSubmitAsDone={handleSubmit}

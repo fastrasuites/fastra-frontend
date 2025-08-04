@@ -13,15 +13,20 @@ import {
   Box,
   Grid,
   Typography,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import autosaveIcon from "../../../../image/autosave.svg";
 import approvedIcon from "../../../../../src/image/icons/approved-rfq.svg";
-import { extractRFQID, formatDate } from "../../../../helper/helper";
+import { extractRFQID, formatDate, parsePRId } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import Can from "../../../../components/Access/Can";
+import Swal from "sweetalert2";
 
 const textStyle = {
   backgroundColor: "#fff",
@@ -69,24 +74,69 @@ const PurchaseRequestInfo = () => {
     updatePurchaseRequest,
   } = usePurchase();
 
-  const { getSingleLocation, singleLocation } = useCustomLocation();
+  const { getSingleLocation } = useCustomLocation();
 
   const tenantSchema = tenantData?.tenant_schema_name;
   const { id } = useParams();
   const history = useHistory();
 
   // State
-  const [item, setItem] = useState({});
+  const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [navigation, setNavigation] = useState({
+    nextId: null,
+    prevId: null,
+    loading: false,
+  });
 
-  // Placeholder notification hooks (plug in your toast library)
+  // Placeholder notification hooks
   const showError = useCallback((msg) => {
-    // e.g. enqueueSnackbar(msg, { variant: "error" });
-    console.error(msg);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      html: msg || "An unknown error occurred.",
+    });
   }, []);
+
   const showSuccess = useCallback((msg) => {
-    // e.g. enqueueSnackbar(msg, { variant: "success" });
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: msg,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }, []);
+
+  // Load adjacent PR IDs
+  const loadAdjacentIds = useCallback(async (currentId) => {
+    try {
+      setNavigation((prev) => ({ ...prev, loading: true }));
+
+      const parsed = parsePRId(currentId);
+      if (!parsed) return;
+
+      const { prefix, number } = parsed;
+      const nextId = `${prefix}${String(number + 1).padStart(
+        String(number).length,
+        "0"
+      )}`;
+      const prevId =
+        number > 1
+          ? `${prefix}${String(number - 1).padStart(
+              String(number).length,
+              "0"
+            )}`
+          : null;
+
+      setNavigation({ nextId, prevId, loading: false });
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setNavigation((prev) => ({ ...prev, loading: false }));
+    }
   }, []);
 
   // Centralized data loader
@@ -96,143 +146,176 @@ const PurchaseRequestInfo = () => {
       const res = await fetchSinglePurchaseRequest(id);
       if (res.success) {
         setItem(res.data);
+
+        // Load adjacent IDs after successful fetch
+        loadAdjacentIds(id);
       } else {
+        console.error(res);
         showError("Failed to load purchase request.");
       }
     } catch (err) {
-      showError("An error occurred while fetching data.");
-      console.error(err);
+      showError(err.message || "An error occurred while fetching data.");
     } finally {
       setLoading(false);
     }
-  }, [fetchSinglePurchaseRequest, id, showError]);
+  }, [fetchSinglePurchaseRequest, id, showError, loadAdjacentIds]);
 
-  const requester =
-    item?.requester_details?.user?.first_name &&
-    item?.requester_details?.user?.last_name
-      ? `${item?.requester_details?.user?.first_name} ${item?.requester_details?.user?.last_name}`
-      : item?.requester_details?.user?.username;
+  // Load location data
+  const loadLocation = useCallback(
+    async (locationId) => {
+      if (!locationId) return;
+
+      setLocationLoading(true);
+      try {
+        const locationData = await getSingleLocation(locationId);
+        setLocation(locationData);
+      } catch (err) {
+        console.error("Location fetch error:", err);
+        setLocation(null);
+      } finally {
+        setLocationLoading(false);
+      }
+    },
+    [getSingleLocation]
+  );
+
+  const requester = useMemo(() => {
+    if (!item) return "N/A";
+    const user = item?.requester_details?.user;
+    return user
+      ? `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+          user.username
+      : "N/A";
+  }, [item]);
 
   useEffect(() => {
     loadPurchaseRequest();
   }, [loadPurchaseRequest]);
 
   useEffect(() => {
-    if (item.requesting_location) {
-      getSingleLocation(item.requesting_location);
+    if (item?.requesting_location) {
+      loadLocation(item.requesting_location);
     }
-  }, [getSingleLocation, item.requesting_location]);
+  }, [item, loadLocation]);
 
   // Unified status-change handler
   const handleStatusChange = useCallback(
     async (newStatus) => {
+      if (!item) return;
+
       setActionLoading(true);
 
-      // build payload
       const prId = extractRFQID(item.url);
+      if (!prId) {
+        showError("Invalid purchase request ID");
+        setActionLoading(false);
+        return;
+      }
+
       const payload = {
-        //   vendor: item.vendor?.url || item.vendor,
-        //   currency: item.currency?.url || item.currency,
         status: newStatus,
-        // purpose: item.purpose,
-        // items: (item.items || []).map((it) => ({
-        //   product: it.product.url,
-        //   description: it.description,
-        //   qty: Number(it.qty) || 0,
-        //   unit_of_measure: it.unit_of_measure?.url || it.unit_of_measure?.[0],
-        //   estimated_unit_price: it.estimated_unit_price,
-        // })),
-        // is_hidden: item.is_hidden,
+        // Include other necessary fields here
       };
 
       try {
-        const actionName = statusActions[newStatus];
-        if (!actionName) throw new Error("Unknown action");
+        const actionMap = {
+          approve: approvePurchaseRequest,
+          reject: rejectPurchaseRequest,
+          pending: pendingPurchaseRequest,
+          draft: updatePurchaseRequest,
+        };
 
-        // call the appropriate context method
-        await {
-          approvePurchaseRequest,
-          rejectPurchaseRequest,
-          pendingPurchaseRequest,
-          updatePurchaseRequest,
-        }[actionName](payload, prId);
+        const action = actionMap[newStatus];
+        if (!action) throw new Error(`Unknown action: ${newStatus}`);
 
-        showSuccess(`Successfully set status to "${newStatus}"`);
+        await action(payload, prId);
+
+        showSuccess(`Purchase request status updated to ${newStatus}`);
         await loadPurchaseRequest();
       } catch (err) {
-        showError(`Could not ${newStatus} request.`);
-        console.error(err);
+        showError(err.message || `Could not ${newStatus} request.`);
       } finally {
         setActionLoading(false);
       }
     },
-    [
-      item,
-      approvePurchaseRequest,
-      rejectPurchaseRequest,
-      pendingPurchaseRequest,
-      updatePurchaseRequest,
-      loadPurchaseRequest,
-      showError,
-      showSuccess,
-    ]
+    [item, showError, showSuccess, loadPurchaseRequest]
   );
 
   // Convert to RFQ
   const handleConvertToRFQ = useCallback(() => {
+    if (!item) return;
+
     history.push({
       pathname: `/${tenantSchema}/purchase/request-for-quotations/new`,
       state: { rfq: item, isConvertToRFQ: true },
     });
   }, [history, tenantSchema, item]);
 
-  const handleEditClick = (id) => {
+  const handleEditClick = useCallback(() => {
+    if (!item) return;
+
     history.push({
-      pathname: `/${tenantSchema}/purchase/purchase-request/${id}/edit`,
+      pathname: `/${tenantSchema}/purchase/purchase-request/${item.id}/edit`,
       state: { pr: item, edit: true },
     });
-  };
+  }, [history, tenantSchema, item]);
 
-  // Render items table rows
-  const renderedRows = useMemo(
-    () =>
-      (item.items || []).length
-        ? item.items.map((row, idx) => (
-            <TableRow key={row.url || idx}>
-              <TableCell sx={cellStyle(idx)}>
-                {row.product_details?.product_name || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.description || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>{row.qty ?? "N/A"}</TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.product_details.unit_of_measure_details.unit_name || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.estimated_unit_price || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.estimated_unit_price * row.qty || "N/A"}
-              </TableCell>
-            </TableRow>
-          ))
-        : [
-            <TableRow key="empty">
-              <TableCell
-                colSpan={6}
-                align="center"
-                sx={{ color: "#7a8a98", fontSize: 12 }}
-              >
-                No items available
-              </TableCell>
-            </TableRow>,
-          ],
-    [item.items]
+  const handleNavigate = useCallback(
+    (newId) => {
+      if (!newId) return;
+
+      history.push(`/${tenantSchema}/purchase/purchase-request/${newId}/`);
+    },
+    [history, tenantSchema]
   );
+  console.log(location);
+  // Render items table rows
+  const renderedRows = useMemo(() => {
+    if (!item?.items) return null;
+
+    if (item.items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell
+            colSpan={6}
+            align="center"
+            sx={{ color: "#7a8a98", fontSize: 12, py: 4 }}
+          >
+            No items available
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return item.items.map((row, idx) => {
+      const uom = row.product_details?.unit_of_measure_details?.unit_name;
+      const price = parseFloat(row.estimated_unit_price || 0);
+      const qty = parseInt(row.qty || 0, 10);
+      const total = price * qty;
+
+      return (
+        <TableRow key={row.url || idx}>
+          <TableCell sx={cellStyle(idx)}>
+            {row.product_details?.product_name || "N/A"}
+          </TableCell>
+          <TableCell sx={cellStyle(idx)}>{row.description || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(idx)}>{qty || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(idx)}>{uom || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(idx)}>
+            {price ? price.toFixed(2) : "N/A"}
+          </TableCell>
+          <TableCell sx={cellStyle(idx)}>
+            {total ? total.toFixed(2) : "N/A"}
+          </TableCell>
+        </TableRow>
+      );
+    });
+  }, [item]);
 
   // Footer configuration
   const footerConfig = useMemo(() => {
+    if (!item) return null;
+
     const st = item.status;
     switch (st) {
       case "approved":
@@ -246,6 +329,7 @@ const PurchaseRequestInfo = () => {
               text: "Convert to RFQ",
               onClick: handleConvertToRFQ,
               disabled: actionLoading,
+              action: "create",
             },
           ],
         };
@@ -270,11 +354,7 @@ const PurchaseRequestInfo = () => {
       case "rejected":
         return {
           label: "Rejected",
-          actions: [
-            {
-              action: "reject",
-            },
-          ],
+          actions: [],
         };
       case "draft":
         return {
@@ -291,9 +371,9 @@ const PurchaseRequestInfo = () => {
       default:
         return null;
     }
-  }, [item.status, handleConvertToRFQ, handleStatusChange, actionLoading]);
+  }, [item, handleConvertToRFQ, handleStatusChange, actionLoading]);
 
-  if (loading) {
+  if (loading || !item) {
     return (
       <Box
         sx={{
@@ -308,7 +388,6 @@ const PurchaseRequestInfo = () => {
     );
   }
 
-  console.log(item);
   return (
     <div className="rfqStatus">
       {/* Header */}
@@ -329,6 +408,48 @@ const PurchaseRequestInfo = () => {
             />
           </div>
         </div>
+
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={1}
+          backgroundColor="white"
+          border="1px solid #E2E6E9"
+          borderRadius="4px"
+          paddingY={0.5}
+          paddingX={1}
+        >
+          <Tooltip title="Previous Purchase Request">
+            <span>
+              <IconButton
+                onClick={() => handleNavigate(navigation.prevId)}
+                disabled={!navigation.prevId || navigation.loading}
+              >
+                <ArrowBackIosIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Box
+            sx={{
+              width: "2px",
+              backgroundColor: "#E2E6E9",
+              alignSelf: "stretch",
+              borderRadius: "1px",
+            }}
+          />
+
+          <Tooltip title="Next Purchase Request">
+            <span>
+              <IconButton
+                onClick={() => handleNavigate(navigation.nextId)}
+                disabled={!navigation.nextId || navigation.loading}
+              >
+                <ArrowForwardIosIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
       </div>
 
       {/* Content */}
@@ -339,7 +460,9 @@ const PurchaseRequestInfo = () => {
           <div className="editCancel">
             <Can app="purchase" module="purchaserequest" action="edit">
               {!["pending", "approved", "rejected"].includes(item.status) && (
-                <Button onClick={() => handleEditClick(item.id)}>Edit</Button>
+                <Button onClick={handleEditClick} disabled={actionLoading}>
+                  Edit
+                </Button>
               )}
             </Can>
 
@@ -363,45 +486,59 @@ const PurchaseRequestInfo = () => {
         </Box>
 
         {/* Details */}
-        <Paper elevation={0}>
-          <Grid container spacing={2}>
-            {/* Row 1: ID | Location ID | Date */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography sx={labelStyle}>ID</Typography>
-              <Typography sx={textStyle}>
-                {extractRFQID(item.url) || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography sx={labelStyle}>Requesting Location ID</Typography>
-              <Typography sx={textStyle}>
-                {singleLocation?.location_name || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography sx={labelStyle}>Date</Typography>
-              <Typography sx={textStyle}>
-                {formatDate(item.date_created) || "N/A"}
-              </Typography>
-            </Grid>
+        <TableContainer
+          component={Paper}
+          sx={{ boxShadow: "none", border: "none" }}
+        >
+          <Table>
+            <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Requesting Location</TableCell>
+                <TableCell>Date</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody sx={{ borderBottom: "1px solid #E2E6E9" }}>
+              <TableRow>
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {extractRFQID(item.url) || "N/A"}
+                </TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {locationLoading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    location?.data?.location_name || "N/A"
+                  )}
+                </TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {formatDate(item.date_created) || "N/A"}
+                </TableCell>
+              </TableRow>
+            </TableBody>
 
-            {/* Row 2: Requester | Purpose | Vendor */}
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography sx={labelStyle}>Requester</Typography>
-              <Typography sx={textStyle}>{requester || "N/A"}</Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography sx={labelStyle}>Purpose</Typography>
-              <Typography sx={textStyle}>{item.purpose || "N/A"}</Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Typography sx={labelStyle}>Vendor</Typography>
-              <Typography sx={textStyle}>
-                {item.vendor_details?.company_name || "N/A"}
-              </Typography>
-            </Grid>
-          </Grid>
-        </Paper>
+            {/* Purpose/Vendor */}
+            <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
+              <TableRow>
+                <TableCell>Requester</TableCell>
+                <TableCell>Purpose</TableCell>
+                <TableCell>Vendor</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {requester}
+                </TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {item.purpose || "N/A"}
+                </TableCell>
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {item.vendor_details?.company_name || "N/A"}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         {/* Items */}
         <p className="rfqContent">Purchase Request Items</p>
@@ -447,12 +584,12 @@ const PurchaseRequestInfo = () => {
             <div className="rfqStatusDraftFooterBtns">
               {footerConfig.actions.map((action, i) => (
                 <Can
+                  key={i}
                   app="purchase"
                   module="purchaserequest"
                   action={action.action}
                 >
                   <Button
-                    key={i}
                     variant="contained"
                     disableElevation
                     color={action.color}
@@ -460,7 +597,11 @@ const PurchaseRequestInfo = () => {
                     disabled={action.disabled || actionLoading}
                     sx={{ ml: 1 }}
                   >
-                    {action.text}
+                    {actionLoading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      action.text
+                    )}
                   </Button>
                 </Can>
               ))}

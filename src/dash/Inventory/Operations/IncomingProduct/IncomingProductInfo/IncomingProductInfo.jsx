@@ -11,8 +11,12 @@ import {
   TableRow,
   Typography,
   CircularProgress,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import { Link, useHistory, useParams } from "react-router-dom";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Swal from "sweetalert2";
 
 import { useIncomingProduct } from "../../../../../context/Inventory/IncomingProduct";
@@ -20,8 +24,8 @@ import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useTenant } from "../../../../../context/TenantContext";
 
 const getStatusColor = (status) => {
-  const s = status != null ? String(status) : "";
-  switch (s.toLowerCase()) {
+  const s = status != null ? String(status).toLowerCase() : "";
+  switch (s) {
     case "validated":
       return "#2ba24c";
     case "draft":
@@ -33,33 +37,91 @@ const getStatusColor = (status) => {
   }
 };
 
+// Function to parse prefixed IDs (e.g., "SUPPIN00010")
+const parsePrefixedId = (id) => {
+  if (!id) return null;
+
+  // Extract prefix and numeric part
+  const match = id.match(/^([A-Za-z]+)(\d+)$/);
+  if (!match) return null;
+
+  const prefix = match[1];
+  const numericPart = match[2];
+  const number = parseInt(numericPart, 10);
+
+  return {
+    prefix,
+    number,
+    totalLength: numericPart.length, // To preserve zero padding
+  };
+};
+
+// Function to generate next/prev IDs
+const generateAdjacentId = (baseId, increment) => {
+  const parts = parsePrefixedId(baseId);
+  if (!parts) return null;
+
+  const newNumber = parts.number + increment;
+  if (newNumber < 1) return null; // No negative IDs
+
+  // Format number with original zero padding
+  const formattedNumber = String(newNumber).padStart(parts.totalLength, "0");
+  return `${parts.prefix}${formattedNumber}`;
+};
+
 export default function IncomingProductInfo() {
   const { id } = useParams();
   const { tenantData } = useTenant();
   const schema = tenantData?.tenant_schema_name;
   const history = useHistory();
 
-  // context hooks
+  // Context hooks
   const { getSingleIncomingProduct, updateIncomingProductStatus } =
     useIncomingProduct();
   const { fetchVendors, vendors, fetchSingleProduct } = usePurchase();
 
-  // local state
+  // Local state
   const [incoming, setIncoming] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [navigation, setNavigation] = useState({
+    nextId: null,
+    prevId: null,
+    loading: false,
+  });
 
-  // load data exactly like StockAdjustmentInfo
+  // Enhanced error handling
+  const showError = useCallback((msg) => {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: msg,
+      timer: 3000,
+    });
+  }, []);
+
+  const showSuccess = useCallback((msg) => {
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: msg,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }, []);
+
+  // Load data with error handling
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      // fetch the raw incoming product
+      // Fetch the raw incoming product
       const { data: raw } = await getSingleIncomingProduct(id);
 
-      // fetch all vendors (so we can look up supplier name later)
+      // Fetch all vendors
       await fetchVendors();
 
-      // enrich each item with full product info
+      // Enrich each item with full product info
       const items = await Promise.all(
         (raw.incoming_product_items || []).map(async (item) => {
           const { data: product } = await fetchSingleProduct(item.product);
@@ -75,130 +137,99 @@ export default function IncomingProductInfo() {
         incoming_product_items: items,
       });
       setError(null);
+
+      // Load adjacent IDs after successful data load
+      const parts = parsePrefixedId(id);
+      if (parts) {
+        setNavigation({
+          nextId: generateAdjacentId(id, 1),
+          prevId: generateAdjacentId(id, -1),
+          loading: false,
+        });
+      }
     } catch (e) {
       console.error(e);
-      setError(e);
+      setError(e.response.data.detail || "Failed to load incoming product");
+      showError(e.response.data.detail || "Failed to load incoming product");
     } finally {
       setLoading(false);
     }
-  }, [id, getSingleIncomingProduct, fetchVendors, fetchSingleProduct]);
+  }, [
+    id,
+    getSingleIncomingProduct,
+    fetchVendors,
+    fetchSingleProduct,
+    showError,
+  ]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // navigate to edit screen
-  const handleEdit = () => {
-    history.push(
-      `/${schema}/inventory/operations/incoming-product/${id}/edit`,
-      {
-        incoming,
-      }
-    );
-  };
-
-  const refactoredIncoming_product_items = incoming?.incoming_product_items.map(
-    (item) => {
-      return {
-        expected_quantity: item?.expected_quantity,
-        id: item?.id,
-        incoming_product: item?.incoming_product,
-        product: item?.product?.id,
-      };
-    }
+  // Handle navigation
+  const handleNavigate = useCallback(
+    (newId) => {
+      if (!newId) return;
+      history.push(`/${schema}/inventory/operations/incoming-product/${newId}`);
+    },
+    [history, schema]
   );
 
-  // mark as validated
-  const handleValidate = async () => {
-    const payload = {
-      // incoming_product_items: refactoredIncoming_product_items,
-      status: "validated",
-      is_hidden: false,
-      is_validated: true,
-      can_edit: false,
-
-      // receipt_type: incoming?.receipt_type,
-      // related_po: incoming?.related_po || null,
-      // supplier: parseInt(incoming?.supplier),
-      // source_location: incoming?.source_location,
-      // destination_location: incoming?.destination_location,
-      // incoming_product_items: item?.incoming_product_items,
-    };
-
-    try {
-      await updateIncomingProductStatus(id, payload);
-      Swal.fire({
-        icon: "success",
-        title: "Validated",
-        text: "Incoming product has been validated.",
-      });
+  useEffect(() => {
+    if (id) {
       loadData();
-    } catch (err) {
-      console.error("Validation error:", err);
-      if (err.validation) {
-        Swal.fire({
-          icon: "error",
-          title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.message || "Failed to validate incoming product",
-        });
-      }
     }
-  };
+  }, [id, loadData]);
 
-  const handleCancel = async () => {
-    const payload = {
-      status: "canceled",
-      // incoming_product_items: refactoredIncoming_product_items,
-      is_hidden: false,
-      is_validated: true,
-      can_edit: false,
-      // receipt_type: incoming?.receipt_type,
-      // related_po: incoming?.related_po || null,
-      // supplier: parseInt(incoming?.supplier),
-      // source_location: incoming?.source_location,
-      // destination_location: incoming?.destination_location,
-    };
+  // Navigate to edit screen
+  const handleEdit = useCallback(() => {
+    history.push(
+      `/${schema}/inventory/operations/incoming-product/${id}/edit`,
+      { incoming }
+    );
+  }, [history, schema, id, incoming]);
 
-    try {
-      await updateIncomingProductStatus(id, payload);
-      Swal.fire({
-        icon: "success",
-        title: "Cancelled",
-        text: "Incoming product has been cancelled.",
-      });
-      loadData();
-    } catch (err) {
-      console.error("Validation error:", err);
-      if (err.validation) {
-        Swal.fire({
-          icon: "error",
-          title: "Validation Cancel Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.message || "Failed to cancel incoming product",
-        });
+  // Handle status changes
+  const handleStatusChange = useCallback(
+    async (newStatus) => {
+      if (!incoming) return;
+
+      setActionLoading(true);
+      try {
+        const payload = {
+          status: newStatus,
+          is_hidden: false,
+          is_validated: newStatus === "validated",
+          can_edit: false,
+        };
+
+        await updateIncomingProductStatus(id, payload);
+        showSuccess(`Incoming product has been ${newStatus}`);
+        await loadData();
+      } catch (err) {
+        console.error("Status change error:", err);
+        if (err.validation) {
+          showError(Object.values(err.validation).join("<br>"));
+        } else {
+          showError(err.message || `Failed to ${newStatus} incoming product`);
+        }
+      } finally {
+        setActionLoading(false);
       }
-    }
-  };
+    },
+    [
+      incoming,
+      id,
+      updateIncomingProductStatus,
+      showSuccess,
+      showError,
+      loadData,
+    ]
+  );
 
   if (loading) {
     return (
       <Box p={4} textAlign="center">
-        <CircularProgress />
+        <CircularProgress size={64} />
+        <Typography variant="h6" mt={2}>
+          Loading incoming product details...
+        </Typography>
       </Box>
     );
   }
@@ -206,38 +237,93 @@ export default function IncomingProductInfo() {
   if (error || !incoming) {
     return (
       <Box p={4} textAlign="center">
-        <Typography variant="h6">Incoming product not found</Typography>
-        <Link to={`/${schema}/inventory/operations`}>
-          <Button variant="outlined" sx={{ mt: 2 }}>
-            Back to List
-          </Button>
-        </Link>
+        <Typography variant="h6" color="error">
+          {error || "Incoming product not found"}
+        </Typography>
+        <Button
+          variant="outlined"
+          sx={{ mt: 2 }}
+          onClick={() => history.push(`/${schema}/inventory/operations`)}
+        >
+          Back to List
+        </Button>
       </Box>
     );
   }
 
   const supplier = vendors.find((v) => v.id === incoming.supplier);
-  console.log(incoming);
+
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
+      {/* Header with navigation */}
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Link to={`/${schema}/inventory/operations/creat-incoming-product`}>
           <Button variant="contained" size="large" disableElevation>
             New Incoming Product
           </Button>
         </Link>
-        <Box display="flex" gap={2}>
-          <Link to={`/${schema}/inventory/operations`}>
-            <Button size="large" disableElevation>
-              Close
-            </Button>
-          </Link>
+
+        <Box display="flex" alignItems="center" gap={2}>
+          {/* Navigation controls */}
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={1}
+            bgcolor="white"
+            border="1px solid #E2E6E9"
+            borderRadius={1}
+            py={0.5}
+            px={1}
+          >
+            <Tooltip title="Previous Incoming Product">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.prevId)}
+                  disabled={!navigation.prevId}
+                  size="small"
+                >
+                  <ArrowBackIosIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Box
+              sx={{
+                width: "2px",
+                bgcolor: "#E2E6E9",
+                alignSelf: "stretch",
+                borderRadius: "1px",
+              }}
+            />
+
+            <Tooltip title="Next Incoming Product">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.nextId)}
+                  disabled={!navigation.nextId}
+                  size="small"
+                >
+                  <ArrowForwardIosIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+
+          <Button
+            size="large"
+            disableElevation
+            onClick={() => history.push(`/${schema}/inventory/operations`)}
+          >
+            Close
+          </Button>
+
           {incoming.status === "draft" && (
             <Button
               variant="contained"
               size="large"
               disableElevation
               onClick={handleEdit}
+              disabled={actionLoading}
             >
               Edit
             </Button>
@@ -245,6 +331,7 @@ export default function IncomingProductInfo() {
         </Box>
       </Box>
 
+      {/* Main content */}
       <Box
         p={3}
         display="grid"
@@ -274,7 +361,7 @@ export default function IncomingProductInfo() {
           <Box>
             <Typography mb={1}>ID</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {incoming.incoming_product_id}
+              {incoming.incoming_product_id || "N/A"}
             </Typography>
           </Box>
           <Box>
@@ -284,25 +371,27 @@ export default function IncomingProductInfo() {
               color="#7A8A98"
               sx={{ textTransform: "capitalize" }}
             >
-              {incoming.receipt_type.replace(/_/g, " ")}
+              {incoming.receipt_type
+                ? incoming.receipt_type.replace(/_/g, " ")
+                : "N/A"}
             </Typography>
           </Box>
           <Box>
             <Typography mb={1}>Source Location</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {incoming.source_location_details?.location_name}
+              {incoming.source_location_details?.location_name || "N/A"}
             </Typography>
           </Box>
           <Box>
             <Typography mb={1}>Destination Location</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {incoming.destination_location_details?.location_name}
+              {incoming.destination_location_details?.location_name || "N/A"}
             </Typography>
           </Box>
           <Box>
             <Typography mb={1}>Name of Supplier</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {supplier?.company_name}
+              {supplier?.company_name || "N/A"}
             </Typography>
           </Box>
         </Box>
@@ -336,31 +425,44 @@ export default function IncomingProductInfo() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {incoming.incoming_product_items.map((row, idx) => (
-                <TableRow
-                  key={idx}
-                  hover
-                  sx={{ "&:nth-of-type(odd)": { bgcolor: "#f5f5f5" } }}
-                >
-                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}>
-                    {row.product.product_name}
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                    {row.expected_quantity}
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                    {row?.product?.unit_of_measure_details?.unit_name}
-                  </TableCell>
-                  <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                    {row.quantity_received}
+              {incoming.incoming_product_items?.length > 0 ? (
+                incoming.incoming_product_items.map((row, idx) => (
+                  <TableRow
+                    key={idx}
+                    hover
+                    sx={{ "&:nth-of-type(odd)": { bgcolor: "#f5f5f5" } }}
+                  >
+                    <TableCell
+                      sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}
+                    >
+                      {row.product?.product_name || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                      {row.expected_quantity || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                      {row.product?.unit_of_measure_details?.unit_name || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                      {row.quantity_received || "N/A"}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                    <Typography variant="body2" color="textSecondary">
+                      No items found
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       </Box>
 
+      {/* Footer actions */}
       <Box display="flex" justifyContent="space-between" mr={4}>
         <Typography
           variant="body1"
@@ -376,17 +478,19 @@ export default function IncomingProductInfo() {
               color="error"
               size="large"
               disableElevation
-              onClick={handleCancel}
+              onClick={() => handleStatusChange("canceled")}
+              disabled={actionLoading}
             >
-              Cancel
+              {actionLoading ? <CircularProgress size={24} /> : "Cancel"}
             </Button>
             <Button
               variant="contained"
               size="large"
               disableElevation
-              onClick={handleValidate}
+              onClick={() => handleStatusChange("validated")}
+              disabled={actionLoading}
             >
-              Validate
+              {actionLoading ? <CircularProgress size={24} /> : "Validate"}
             </Button>
           </Box>
         )}

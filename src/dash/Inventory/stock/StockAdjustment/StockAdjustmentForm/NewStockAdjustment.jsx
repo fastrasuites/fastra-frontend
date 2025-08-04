@@ -247,9 +247,10 @@ const NewStockAdjustment = () => {
       handleInputChange={handleInputChange}
       rowConfig={rowConfig}
       isEdit={false}
-      onSubmit={(data) => handleSubmitBase(data, "draft")}
-      onSubmitAsDone={(data) => handleSubmitBase(data, "done")}
-      submitBtnText={stockLoading ? "Submitting..." : "Send to Draft"}
+      onSubmit={(data) => handleSubmitBase(data, "done")}
+      onSubmitAsDone={(data) => handleSubmitBase(data, "draft")}
+      saveAsSubmitBtnText="Send to Draft"
+      submitBtnText={stockLoading ? "Submitting..." : "Validate"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
     />
   );

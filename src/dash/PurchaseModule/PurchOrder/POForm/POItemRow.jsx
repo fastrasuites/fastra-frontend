@@ -42,7 +42,7 @@ const RfqItemRow = ({ row, index, handleRowChange, isConversion }) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
-          disabled={isConversion}
+          disabled={true}
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>
@@ -56,7 +56,6 @@ const RfqItemRow = ({ row, index, handleRowChange, isConversion }) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
-          disabled={isConversion}
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>
@@ -84,7 +83,6 @@ const RfqItemRow = ({ row, index, handleRowChange, isConversion }) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
-          disabled={isConversion}
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>

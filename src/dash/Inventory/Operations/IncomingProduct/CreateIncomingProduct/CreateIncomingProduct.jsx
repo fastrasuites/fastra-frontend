@@ -11,6 +11,7 @@ import { useIncomingProduct } from "../../../../../context/Inventory/IncomingPro
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import Swal from "sweetalert2";
 import { usePurchaseOrder } from "../../../../../context/PurchaseOrderContext.";
+import BackorderModal from "../../../../../components/ui/BackorderModal";
 
 // Receipt types array (UI remains the same)
 const receiptTypes = [
@@ -220,6 +221,7 @@ const CreateIncomingProduct = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
+  const [openModal, setOpenModal] = useState(false);
   const { isLoading: incomingProductLoading, createIncomingProduct } =
     useIncomingProduct();
   const { products, fetchProducts } = usePurchase();
@@ -297,9 +299,56 @@ const CreateIncomingProduct = () => {
         expected_quantity: Number(item.available_product_quantity),
         quantity_received: Number(item.qty_received),
       })),
-      //  is_validated: true,
       can_edit: true,
     };
+
+    // Check for quantity overflow
+    const hasOverReceivedItem = payload.incoming_product_items.some(
+      (item) => item.quantity_received > item.expected_quantity
+    );
+
+    if (hasOverReceivedItem) {
+      Swal.fire({
+        // title: "OOPS!",
+        html: `
+       
+        <h1 class="swal-title">OPPS!</h1>
+    <div class="swal-line-container">
+      <div class="swal-line1"></div>
+      <div class="swal-line2"></div>
+    </div>
+    <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+    <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+  `,
+        // icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        customClass: {
+          popup: "custom-swal-popup",
+          title: "custom-swal-title",
+          confirmButton: "custom-swal-confirm-btn",
+          cancelButton: "custom-swal-cancel-btn",
+          htmlContainer: "custom-swal-html",
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          payload.user_choice = {
+            backorder: true,
+          };
+          const res = await createIncomingProduct(payload);
+          Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: "Incoming product created successfully",
+          });
+          navigateToDetail(res.data.incoming_product_id);
+        }
+      });
+
+      return; // Stop submission
+    }
+
     try {
       const res = await createIncomingProduct(payload);
       Swal.fire({
@@ -315,7 +364,7 @@ const CreateIncomingProduct = () => {
 
       if (errorData) {
         const messages = Object.values(errorData)
-          .flat() // flatten arrays of messages
+          .flat()
           .map((msg) => `<p>${msg}</p>`)
           .join("");
 
@@ -333,6 +382,7 @@ const CreateIncomingProduct = () => {
       }
     }
   };
+
   const handleSubmitValidated = async (filledFormData) => {
     const payload = {
       destination_location: filledFormData.location?.id,
@@ -349,7 +399,7 @@ const CreateIncomingProduct = () => {
         quantity_received: Number(item.qty_received),
       })),
     };
-
+    console.log(payload);
     try {
       const res = await createIncomingProduct(payload);
       Swal.fire({
@@ -385,20 +435,24 @@ const CreateIncomingProduct = () => {
   };
 
   return (
-    <CommonForm
-      basicInformationTitle="Product Information"
-      basicInformationInputs={IncomingProductBasicInputs}
-      formTitle="New Incoming Product"
-      formData={formData}
-      setFormData={setFormData}
-      rowConfig={rowConfig}
-      isEdit={false}
-      onSubmit={handleSubmitValidated}
-      submitBtnText={incomingProductLoading ? "Submitting..." : "Validate"}
-      autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={handleSubmit}
-      isLoading={incomingProductLoading}
-    />
+    <div>
+      <CommonForm
+        basicInformationTitle="Product Information"
+        basicInformationInputs={IncomingProductBasicInputs}
+        formTitle="New Incoming Product"
+        formData={formData}
+        setFormData={setFormData}
+        rowConfig={rowConfig}
+        isEdit={false}
+        onSubmit={handleSubmitValidated}
+        submitBtnText={incomingProductLoading ? "Submitting..." : "Validate"}
+        saveAsSubmitBtnText="Save to Draft"
+        autofillRow={["unit_of_measure", "available_product_quantity"]}
+        onSubmitAsDone={handleSubmit}
+        isLoading={incomingProductLoading}
+      />
+      {openModal && <BackorderModal />}
+    </div>
   );
 };
 

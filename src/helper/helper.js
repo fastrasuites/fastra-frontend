@@ -96,3 +96,36 @@ export const transformProductCategory = (param) => {
   let str = param.includes("-") ? param.split("-").join(" ") : param;
   return str.slice(0, 1).toUpperCase() + str.slice(1);
 };
+
+// helper.js
+export const parsePRId = (input) => {
+  if (!input) return null;
+
+  // Match formats like PR123, PR000123, etc.
+  const match = input.match(/^(PR)(0*)([1-9]\d*)$/i);
+  if (!match) return null;
+
+  const [, prefix, zeros, numberPart] = match;
+  return {
+    prefix: prefix + zeros,
+    number: parseInt(numberPart, 10),
+    fullPrefix: prefix,
+    zeroPadding: zeros,
+  };
+};
+
+export const parseRFQId = (input) => {
+  if (!input) return null;
+
+  // Match formats like RQF123, PR000123, etc.
+  const match = input.match(/^(RFQ)(0*)([1-9]\d*)$/i);
+  if (!match) return null;
+
+  const [, prefix, zeros, numberPart] = match;
+  return {
+    prefix: prefix + zeros,
+    number: parseInt(numberPart, 10),
+    fullPrefix: prefix,
+    zeroPadding: zeros,
+  };
+};

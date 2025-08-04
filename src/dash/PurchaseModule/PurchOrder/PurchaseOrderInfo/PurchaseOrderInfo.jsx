@@ -13,18 +13,21 @@ import {
   TextField,
   CircularProgress,
   Typography,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
-import autosave from "../../../../image/autosave.svg";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import approved from "../../../../../src/image/icons/approved-rfq.svg";
 import "../PoStatusModal.css";
 import "../../Rfq/RfqStatusModal.css";
-import { Bounce, toast } from "react-toastify";
 import { useHistory, useParams } from "react-router-dom";
 import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 import { useTenant } from "../../../../context/TenantContext";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import Can from "../../../../components/Access/Can";
+import Swal from "sweetalert2";
 
 // Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
@@ -35,20 +38,18 @@ const cellStyle = (index) => ({
 });
 
 const statusColorMap = {
-  Completed: "#2ba24c",
-  Awaiting: "#f0b501",
-  Cancelled: "#e43e2b",
+  completed: "#2ba24c",
+  awaiting: "#f0b501",
+  cancelled: "#e43e2b",
   default: "#3B7CED",
 };
-const statusColor = (s) =>
-  statusColorMap[s.charAt(0).toUpperCase() + s.slice(1)] ||
-  statusColorMap.default;
 
 const PurchaseOrderInfo = () => {
   const { id } = useParams();
   const history = useHistory();
   const { tenantData } = useTenant();
-  const tenant_schema_name = tenantData?.tenant_schema_name;
+  const tenantSchema = tenantData?.tenant_schema_name;
+
   const {
     getPurchaseOrderById,
     updatePurchaseOrder,
@@ -61,61 +62,130 @@ const PurchaseOrderInfo = () => {
   const [item, setItem] = useState({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [navigation, setNavigation] = useState({
+    nextId: null,
+    prevId: null,
+    loading: false,
+  });
 
-  const showError = useCallback((msg, err) => console.error(msg, err), []);
-  const showSuccess = useCallback(
-    (msg) => toast.success(msg, { transition: Bounce }),
-    []
-  );
+  const statusColor = (s) => statusColorMap[s] || statusColorMap.default;
 
-  const handleConvertToInventory = () => {
-    history.push({
-      pathname: `/${tenant_schema_name}/inventory/operations/incoming-product/inventory-conversion`,
-      state: { po: item },
+  const showError = useCallback((msg) => {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: msg,
     });
-  };
+  }, []);
+
+  const showSuccess = useCallback((msg) => {
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: msg,
+      showConfirmButton: false,
+    });
+  }, []);
+
+  // Load adjacent PO IDs
+  const loadAdjacentIds = useCallback((currentId) => {
+    try {
+      setNavigation((prev) => ({ ...prev, loading: true }));
+
+      // Extract numeric portion from ID (works for formats like PO123, PO00123, etc.)
+      const numericMatch = currentId.match(/\d+/);
+      if (!numericMatch) return;
+
+      const numericStr = numericMatch[0];
+      const numericValue = parseInt(numericStr, 10);
+      const prefix = currentId.substring(0, currentId.indexOf(numericStr));
+
+      // Preserve zero padding
+      const nextId = `${prefix}${String(numericValue + 1).padStart(
+        numericStr.length,
+        "0"
+      )}`;
+      const prevId =
+        numericValue > 1
+          ? `${prefix}${String(numericValue - 1).padStart(
+              numericStr.length,
+              "0"
+            )}`
+          : null;
+
+      setNavigation({ nextId, prevId, loading: false });
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setNavigation((prev) => ({ ...prev, loading: false }));
+    }
+  }, []);
 
   // Load Purchase Order data
   const loadPO = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getPurchaseOrderById(id);
-      if (res.success) setItem(res.data);
-      else showError("Failed to load Purchase Order.");
+      if (res.success) {
+        setItem(res.data);
+        loadAdjacentIds(id);
+      } else {
+        showError(res.message || "Failed to load purchase order");
+        history.push(`/${tenantSchema}/purchase/purchase-order`);
+      }
     } catch (err) {
-      showError("Error fetching Purchase Order.", err);
+      showError(err.message || "Error loading purchase order details");
     } finally {
       setLoading(false);
     }
-  }, [getPurchaseOrderById, id, showError]);
+  }, [getPurchaseOrderById, id, showError, history, tenantSchema]);
 
   useEffect(() => {
     loadPO();
   }, [loadPO]);
 
+  // Load location data when item changes
   useEffect(() => {
-    if (item.destination_location) {
-      getSingleLocation(item?.destination_location);
+    if (item?.destination_location) {
+      getSingleLocation(item.destination_location);
     }
-  }, [getSingleLocation, item]);
+  }, [item, getSingleLocation]);
 
   // Handle status change actions
   const handleStatusChange = useCallback(
-    async (actionKey) => {
+    async (newStatus) => {
+      if (!item) return;
+
       setActionLoading(true);
       try {
-        const result = await updatePurchaseOrder({ status: actionKey }, id);
-        if (result.success) showSuccess(`Status set to ${actionKey}`);
-        else showError(`Failed to ${actionKey} purchase order.`);
-        loadPO();
+        const actionMap = {
+          completed: updatePurchaseOrder,
+          cancelled: updatePurchaseOrder,
+          awaiting: updatePurchaseOrder,
+        };
+
+        const action = actionMap[newStatus];
+        if (!action) {
+          throw new Error(`Invalid status action: ${newStatus}`);
+        }
+
+        const result = await action({ status: newStatus }, id);
+        if (result.success) {
+          showSuccess(`Purchase order status updated to ${newStatus}`);
+          await loadPO();
+        } else {
+          showError(
+            result.message || `Failed to update status to ${newStatus}`
+          );
+        }
       } catch (err) {
-        showError(`Error during ${actionKey}`, err);
+        showError(err.message || `Error during status update`);
       } finally {
         setActionLoading(false);
       }
     },
     [
       item,
+      id,
       loadPO,
       showError,
       showSuccess,
@@ -123,6 +193,25 @@ const PurchaseOrderInfo = () => {
       updatePurchaseReject,
       updatePurchaseApproved,
     ]
+  );
+
+  // Handle navigation to inventory conversion
+  const handleConvertToInventory = useCallback(() => {
+    if (!item) return;
+
+    history.push({
+      pathname: `/${tenantSchema}/inventory/operations/incoming-product/inventory-conversion`,
+      state: { po: item },
+    });
+  }, [history, tenantSchema, item]);
+
+  // Navigation handler
+  const handleNavigate = useCallback(
+    (newId) => {
+      if (!newId || navigation.loading) return;
+      history.push(`/${tenantSchema}/purchase/purchase-order/${newId}`);
+    },
+    [history, tenantSchema, navigation.loading]
   );
 
   //   // Navigate to inventory conversion
@@ -222,7 +311,7 @@ const PurchaseOrderInfo = () => {
           label: "Drafted",
           actions: [
             {
-              text: "Set to Pending",
+              text: "Send to Approval",
               onClick: () => handleStatusChange("awaiting"),
               action: ["purchase", "purchaseorder", "edit"],
             },
@@ -250,20 +339,68 @@ const PurchaseOrderInfo = () => {
   return (
     <div className="rfqStatus">
       <div className="rfqHeader">
-        <div className="rfqHeaderLeft">
-          <Typography
-            variant="contained"
-            disableElevation
-            fontSize={"24px"}
-            fontWeight={500}
-          >
-            New Purchase Order
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          width="100%"
+        >
+          <Typography variant="h5" fontWeight={500}>
+            Purchase Order Details
           </Typography>
-          <div className="rfqAutosave">
-            <p>Autosave</p>
-            <img src={autosave} alt="Autosave icon" />
-          </div>
-        </div>
+
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={1}
+            bgcolor="white"
+            border="1px solid #E2E6E9"
+            borderRadius={1}
+            py={0.5}
+            px={1}
+          >
+            <Tooltip title="Previous Purchase Order">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.prevId)}
+                  disabled={!navigation.prevId || navigation.loading}
+                  size="small"
+                >
+                  {navigation.loading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <ArrowBackIosIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Box
+              sx={{
+                width: "2px",
+                bgcolor: "#E2E6E9",
+                alignSelf: "stretch",
+                borderRadius: "1px",
+              }}
+            />
+
+            <Tooltip title="Next Purchase Order">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.nextId)}
+                  disabled={!navigation.nextId || navigation.loading}
+                  size="small"
+                >
+                  {navigation.loading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <ArrowForwardIosIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        </Box>
       </div>
 
       <div className="rfqStatusContent">
@@ -275,7 +412,7 @@ const PurchaseOrderInfo = () => {
                 <Button
                   onClick={() =>
                     history.push({
-                      pathname: `/${tenant_schema_name}/purchase/purchase-order/${extractRFQID(
+                      pathname: `/${tenantSchema}/purchase/purchase-order/${extractRFQID(
                         item.url
                       )}/edit`,
                       state: {
@@ -305,7 +442,12 @@ const PurchaseOrderInfo = () => {
                 </Button>
               </Can>
             )}
-            <Button variant="outlined" onClick={() => history.goBack()}>
+            <Button
+              variant="outlined"
+              onClick={() =>
+                history.push(`/${tenantSchema}/purchase/purchase-order`)
+              }
+            >
               Close
             </Button>
           </div>
@@ -383,7 +525,7 @@ const PurchaseOrderInfo = () => {
                       fontSize: 12,
                     }}
                   >
-                    {tenant_schema_name}
+                    {tenantSchema}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -481,7 +623,7 @@ const PurchaseOrderInfo = () => {
                   "Description",
                   "Qty",
                   "Unit of Measure",
-                  "Estimated Unit Price",
+                  "Actual Unit Price",
                   "Total Price",
                 ].map((head) => (
                   <TableCell
