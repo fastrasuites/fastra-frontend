@@ -127,6 +127,8 @@ export const PurchaseProvider = ({ children }) => {
       } catch (err) {
         setError(err);
         console.error("Error: ", err);
+        return err;
+        throw new Error(err);
       }
     },
     [client]
