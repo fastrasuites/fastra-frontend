@@ -16,6 +16,7 @@ const CommonForm = ({
   setFormData,
   onSubmit,
   submitBtnText = "Save",
+  saveAsSubmitBtnText = "Done",
   autofillRow = [
     "product_name",
     "product_description",
@@ -161,7 +162,7 @@ const CommonForm = ({
                   disableElevation
                   onClick={handleSubmitAsDone}
                 >
-                  {/* {submitBtnText} */} Done
+                  {/* {submitBtnText} */} {saveAsSubmitBtnText}
                 </Button>
               )}
 

@@ -240,6 +240,7 @@ export default function ConvertPoToIncomingProduct() {
       destination_location: formData?.relatedPO?.destination_location,
       receipt_type: "vendor_receipt",
       source_location: sourceLocObj?.id,
+      user_choice: {},
       status: formData.status,
       is_hidden: false,
       related_po: formData?.relatedPO?.id,
@@ -337,7 +338,7 @@ export default function ConvertPoToIncomingProduct() {
       rowConfig={rowConfig}
       isEdit={false}
       onSubmit={handleSubmit}
-      submitBtnText={isLoading ? "Submitting..." : "Validate"}
+      submitBtnText={isLoading ? "Submitting..." : "Save to Draft"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
     />
   );

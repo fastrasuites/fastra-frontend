@@ -98,13 +98,27 @@ const POForm = () => {
 
   const handleRowChange = useCallback((idx, field, value) => {
     setFormData((prev) => {
-      const items = [...prev.items];
-      items[idx] = { ...items[idx], [field]: value };
+      if (!prev.rfq?.items) return prev;
+
+      const updatedItems = [...prev.rfq.items];
+      updatedItems[idx] = {
+        ...updatedItems[idx],
+        [field]: value,
+      };
+
+      // Handle product field special case
       if (field === "product" && value?.product_description) {
-        items[idx].description = value.product_description;
-        items[idx].unit_of_measure = value.unit_of_measure;
+        updatedItems[idx].description = value.product_description;
+        updatedItems[idx].unit_of_measure = value.unit_of_measure;
       }
-      return { ...prev, items };
+
+      return {
+        ...prev,
+        rfq: {
+          ...prev.rfq,
+          items: updatedItems,
+        },
+      };
     });
   }, []);
 
@@ -424,7 +438,7 @@ const POForm = () => {
           )}
 
           <POItemsTable
-            items={formData?.rfq?.items}
+            items={formData?.rfq?.items || []}
             handleRowChange={handleRowChange}
             products={products}
             isConversion={!!conversionRFQ?.items?.length}

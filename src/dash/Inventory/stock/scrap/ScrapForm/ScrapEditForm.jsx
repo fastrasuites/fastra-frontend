@@ -272,11 +272,11 @@ const ScrapEditForm = () => {
       formData={formData}
       setFormData={setFormData}
       rowConfig={rowConfig}
-      isEdit={false}
-      onSubmit={(data) => handleSubmit(data, "done")}
+      isEdit={true}
+      onSubmit={(data) => handleSubmit(data)}
       submitBtnText="Validate"
       autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={(data) => handleSubmit(data)}
+      // onSubmitAsDone={(data) => handleSubmit(data)}
       setMax={{
         field: "qty_received",
         limit: "available_product_quantity",

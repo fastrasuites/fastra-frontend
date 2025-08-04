@@ -254,7 +254,7 @@ const EditStockAdjustment = () => {
       is_hidden: false,
       items: filledData.items.map((item) => ({
         id: item?.id,
-        product: item.product,
+        product: item.product.id,
         adjusted_quantity: item.qty_received,
       })),
     };
@@ -303,7 +303,7 @@ const EditStockAdjustment = () => {
       status: "done",
       is_hidden: false,
       items: filledData.items.map((item) => ({
-        product: item.product.url,
+        product: item.product.id,
         adjusted_quantity: item.qty_received,
       })),
     };
@@ -353,9 +353,10 @@ const EditStockAdjustment = () => {
       rowConfig={rowConfig}
       isEdit={true}
       onSubmit={handleSubmit}
+      // saveAsSubmitBtnText="Sa"
       submitBtnText={stockLoading ? "Submitting..." : "Validate"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={handleSubmitAsDone}
+      // onSubmitAsDone={handleSubmitAsDone}
     />
   );
 };
