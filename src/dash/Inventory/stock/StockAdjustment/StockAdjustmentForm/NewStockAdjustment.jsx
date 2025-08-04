@@ -204,7 +204,7 @@ const NewStockAdjustment = () => {
       status,
       is_hidden: false,
       items: filledData.items.map((item) => ({
-        product: item.product.url,
+        product: item.product.id,
         adjusted_quantity: item.qty_received,
       })),
     };

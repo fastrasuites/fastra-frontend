@@ -182,9 +182,6 @@ const DeliveryOrderInfo = () => {
             icon: "success",
             confirmButtonText: "Proceed",
           });
-          // history.push(
-          //   `/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/`
-          // );
         } else {
           Swal.fire({
             title: "Waiting: Not enough stock",
@@ -192,13 +189,9 @@ const DeliveryOrderInfo = () => {
             icon: "info",
             confirmButtonText: "OK",
           });
-          // history.push(
-          //   `/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/`
-          // );
         }
       } else if (status === "ready") {
         const response = await confirmDeliveryOrder(orderId);
-        // Access status from response.data
         if (response.data?.status === "done") {
           Swal.fire({
             title: "Successful",
@@ -242,7 +235,7 @@ const DeliveryOrderInfo = () => {
         </Link>
       </Box>
 
-      {/* Deliver y order details */}
+      {/* Delivery order details */}
       <Box
         p={2}
         bgcolor="white"
