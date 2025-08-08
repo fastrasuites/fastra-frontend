@@ -15,10 +15,12 @@ import {
   TableRow,
   Typography,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import Swal from "sweetalert2";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
+import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 
 const tableColumns = [
   "Product Name",
@@ -60,6 +62,8 @@ const DeliveryOrderInfo = () => {
   const {
     getSingleDeliveryOrder,
     singleDeliveryOrder,
+    deliveryOrderList,
+    getDeliveryOrderList,
     checkDeliveryOrderAvailability,
     confirmDeliveryOrder,
     error,
@@ -68,6 +72,38 @@ const DeliveryOrderInfo = () => {
   } = useDeliveryOrder();
 
   const { getSingleLocation, singleLocation } = useCustomLocation();
+
+  // Fetch delivery orders if not already loaded.
+  useEffect(() => {
+    if (!deliveryOrderList || deliveryOrderList.length === 0) {
+      getDeliveryOrderList();
+    }
+  }, [deliveryOrderList, getDeliveryOrderList]);
+
+  // Find the current order position in the list
+  const currentOrderIndex = useMemo(() => {
+    if (!deliveryOrderList || deliveryOrderList.length === 0) return -1;
+    return deliveryOrderList.findIndex((order) => order?.id === orderId);
+  }, [deliveryOrderList, orderId]);
+
+  // Navigaition handlers
+  const handlePrevOrder = () => {
+    if (currentOrderIndex > 0) {
+      const prevOrder = deliveryOrderList[currentOrderIndex - 1];
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order/${prevOrder?.id}`
+      );
+    }
+  };
+
+  const handleNextOrder = () => {
+    if (currentOrderIndex !== deliveryOrderList.length - 1) {
+      const nextOrder = deliveryOrderList[currentOrderIndex + 1];
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order/${nextOrder?.id}`
+      );
+    }
+  };
 
   useEffect(() => {
     if (singleDeliveryOrder?.source_location) {
@@ -225,7 +261,7 @@ const DeliveryOrderInfo = () => {
 
   return (
     <Box p={4} display="grid" gap={4}>
-      <Box display="flex" gap={3}>
+      <Box display="flex" justifyContent="space-between" gap={3}>
         <Link
           to={`/${tenant_schema_name}/inventory/operations/delivery-order/create-delivery-order`}
         >
@@ -233,6 +269,32 @@ const DeliveryOrderInfo = () => {
             New Delivery Order
           </Button>
         </Link>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Typography>
+            {currentOrderIndex === -1
+              ? "Order not in list"
+              : `${currentOrderIndex + 1} of ${deliveryOrderList?.length}`}
+          </Typography>
+          <Box
+            border="1px solid #E2E6E9"
+            borderRadius={1}
+            display="flex"
+            gap={2}
+          >
+            <IconButton
+              onClick={handlePrevOrder}
+              disabled={currentOrderIndex <= 0}
+            >
+              <FaCaretLeft />
+            </IconButton>
+            <IconButton
+              onClick={handleNextOrder}
+              disabled={currentOrderIndex >= deliveryOrderList?.length - 1}
+            >
+              <FaCaretRight />
+            </IconButton>
+          </Box>
+        </Box>
       </Box>
 
       {/* Delivery order details */}
