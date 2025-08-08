@@ -89,8 +89,11 @@ const RFQInfo = () => {
         history.push(`/${tenantSchema}/purchase/request-for-quotations`);
       }
     } catch (err) {
-      showError(err.response.data.detail || "Error loading RFQ details");
-      console.error("RFQ load error:", err);
+      if (err?.response?.status === 403) {
+        setItem("FORBIDDEN");
+      } else {
+        showError(err.response.data.detail || "Error loading RFQ details");
+      }
     } finally {
       setLoading(false);
     }
@@ -309,7 +312,7 @@ const RFQInfo = () => {
               ),
               onClick: () => handleStatusChange("pending"),
               color: "primary",
-              action: ["requestforquotation", "approve"],
+              action: ["requestforquotation", "edit"],
             },
           ],
         };
@@ -318,17 +321,40 @@ const RFQInfo = () => {
     }
   }, [item, handleConvertToPO, handleStatusChange, actionLoading]);
 
-  if (loading || !item) {
+  if (loading) {
     return (
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          height: "70vh",
+          height: 300,
         }}
       >
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (item === "FORBIDDEN") {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: 400,
+          color: "red",
+          fontWeight: "bold",
+          fontSize: 24,
+          textAlign: "center",
+          px: 2,
+        }}
+      >
+        You do not have permission to view this page.
+        <br />
+        Please request access from the admin.
       </Box>
     );
   }

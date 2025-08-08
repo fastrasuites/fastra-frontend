@@ -231,6 +231,56 @@ export const PurchaseOrderProvider = ({ children }) => {
     }
   }, [client]);
 
+  const getPurchaseOrderUnrelatedList = useCallback(async () => {
+    if (!client) {
+      const clientError =
+        "API client is not available. Please check tenant configuration.";
+      setError(clientError);
+      return Promise.reject(new Error(clientError));
+    }
+    try {
+      setIsLoading(true);
+      const response = await client.get(
+        "/purchase/purchase-order/get_unrelated_po/"
+      );
+      const rawData = response.data;
+      setError(null);
+      setPurchaseOrderList(rawData);
+      return { success: true, data: rawData };
+    } catch (err) {
+      console.error("Error fetching purchase order list:", err);
+      setError(err);
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
+  const getPurchaseOrderUnrelatedListForForm = useCallback(async () => {
+    if (!client) {
+      const clientError =
+        "API client is not available. Please check tenant configuration.";
+      setError(clientError);
+      return Promise.reject(new Error(clientError));
+    }
+    try {
+      setIsLoading(true);
+      const response = await client.get(
+        "/purchase/purchase-order/get_unrelated_po/?form=true"
+      );
+      const rawData = response.data;
+      setError(null);
+      setPurchaseOrderList(rawData);
+      return { success: true, data: rawData };
+    } catch (err) {
+      console.error("Error fetching purchase order list:", err);
+      setError(err);
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   const getApprovedPurchaseOrderList = useCallback(async () => {
     if (!client) {
       const clientError =
@@ -293,6 +343,8 @@ export const PurchaseOrderProvider = ({ children }) => {
       updatePurchaseReject,
       updatePurchaseApproved,
       getPurchaseOrderList,
+      getPurchaseOrderUnrelatedList,
+      getPurchaseOrderUnrelatedListForForm,
       getApprovedPurchaseOrderList,
       getPurchaseOrderById,
       singlePurchaseOrder,
@@ -309,6 +361,9 @@ export const PurchaseOrderProvider = ({ children }) => {
       updatePurchaseReject,
       updatePurchaseApproved,
       getPurchaseOrderList,
+      getPurchaseOrderUnrelatedList,
+      getPurchaseOrderUnrelatedListForForm,
+
       getApprovedPurchaseOrderList,
       getPurchaseOrderById,
       singlePurchaseOrder,

@@ -29,7 +29,7 @@ export default function PurchaseOrder() {
   const tenant_schema_name = tenantData?.tenant_schema_name;
 
   const itemsPerPage = 10;
-  const { getPurchaseOrderList } = usePurchaseOrder();
+  const { getPurchaseOrderList, error, isLoading } = usePurchaseOrder();
 
   // Load purchase orders from localStorage on mount
   useEffect(() => {
@@ -41,34 +41,18 @@ export default function PurchaseOrder() {
 
   // Fetch purchase orders when the refresh flag changes
   const fetchPurchaseOrders = useCallback(async () => {
-    try {
-      const { success, data } = await getPurchaseOrderList();
-      if (success) {
-        setPurchaseOrderData(data);
-        localStorage.setItem("purchaseOrderData", JSON.stringify(data));
-      }
-      // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      toast.error("Failed to load purchase orders.");
+    const { success, data } = await getPurchaseOrderList();
+    if (success) {
+      setPurchaseOrderData(data);
+      localStorage.setItem("purchaseOrderData", JSON.stringify(data));
     }
   }, [getPurchaseOrderList]);
 
   useEffect(() => {
-    const toastId = "purchaseOrdersPromise";
-
-    if (!toast.isActive(toastId)) {
-      const purchaseOrdersPromise = fetchPurchaseOrders();
-      toast.promise(
-        purchaseOrdersPromise,
-        {
-          pending: "Loading purchase orders...",
-          success: "Purchase orders loaded successfully",
-          error: "Failed to load purchase orders.",
-        },
-        { toastId }
-      );
-    }
+    fetchPurchaseOrders();
   }, [fetchPurchaseOrders]);
+
+  console.log(error);
 
   // Reset to first page on search query change
   useEffect(() => {
@@ -306,6 +290,8 @@ export default function PurchaseOrder() {
               items={paginatedPurchaseOrders}
               onCardClick={handleCardClick}
               getStatusColor={getStatusColor}
+              error={error}
+              isLoading={isLoading}
             />
           )}
         </div>

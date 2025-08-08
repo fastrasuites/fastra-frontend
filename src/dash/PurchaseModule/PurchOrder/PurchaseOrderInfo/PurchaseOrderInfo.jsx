@@ -659,9 +659,9 @@ const PurchaseOrderInfo = () => {
                   app={action.action[0]}
                   module={action.action[1]}
                   action={action.action[2]}
+                  key={idx}
                 >
                   <Button
-                    key={idx}
                     variant="contained"
                     disableElevation
                     color={action.color}

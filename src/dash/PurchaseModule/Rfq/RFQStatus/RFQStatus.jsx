@@ -4,11 +4,12 @@ import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa6";
 import { IoGrid } from "react-icons/io5";
 import RfqGrid from "../RfqGrid";
 import RListView from "../RListView";
-import { Button } from "@mui/material";
+import { Button, CircularProgress, Typography } from "@mui/material";
 import { Search } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import { formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
+import Swal from "sweetalert2";
 
 const statusColor = (status) => {
   const formattedStatus = `${status[0].toUpperCase()}${status.slice(1)}`;
@@ -23,8 +24,10 @@ const statusColor = (status) => {
       return "#3B7CED";
   }
 };
+
 const RFQStatus = () => {
   const location = useLocation();
+  const history = useHistory();
   const { status: selectedStatus, quotationsData } = location.state || {};
   const [quotations, setQuotations] = useState([]);
   const [page, setPage] = useState(1);
@@ -32,6 +35,9 @@ const RFQStatus = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const itemsPerPage = 10;
 
@@ -42,38 +48,49 @@ const RFQStatus = () => {
   };
 
   useEffect(() => {
-    if (selectedStatus[0] && selectedStatus[0].length) {
-      setQuotations(() =>
-        quotationsData.filter((item) => item.status === selectedStatus)
-      );
-    }
-  }, [selectedStatus]);
+    const loadQuotations = async () => {
+      setLoading(true);
+      try {
+        if (!quotationsData || !selectedStatus || selectedStatus.length === 0) {
+          throw new Error("Request failed with status code 403");
+        }
+
+        const filtered = quotationsData.filter(
+          (item) => item.status === selectedStatus
+        );
+        setQuotations(filtered);
+
+        if (filtered.length === 0 && searchQuery) {
+          Swal.fire({
+            icon: "info",
+            title: "No results found",
+            text: "Try a different search term.",
+          });
+        }
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadQuotations();
+  }, [selectedStatus, quotationsData, searchQuery]);
+
+  const isForbidden = error?.message === "Request failed with status code 403";
 
   const filteredQuotations = quotations.filter((item) => {
     if (!searchQuery) return true;
     const lowercasedQuery = searchQuery.toLowerCase().trim();
 
-    // 1. Price search (using actual existing field)
     const totalPrice = item?.total_price?.toString().toLowerCase() || "";
-
-    // 2. Date search (using existing date fields)
     const createdDate = formatDate(item.date_created).toLowerCase();
     const updatedDate = formatDate(item.date_updated).toLowerCase();
-
-    // 3. Status search
     const status = item?.status?.toLowerCase() || "";
-
-    // 4. Currency search (corrected path)
     const currencyName =
       item?.currency_details?.currency_name?.toLowerCase() || "";
-
-    // 5. Purchase ID search (using actual ID field)
     const purchaseID = item?.id?.toLowerCase() || "";
-
-    // 6. Vendor search
     const vendor = item.vendor_details?.company_name?.toLowerCase() || "";
-
-    // 7. Search within items array
     const itemSearch =
       item.items?.some(
         (i) =>
@@ -82,8 +99,6 @@ const RFQStatus = () => {
             ?.toLowerCase()
             .includes(lowercasedQuery)
       ) || false;
-
-    // 8. Purpose field search
     const purpose = item.purpose?.toLowerCase() || "";
 
     return (
@@ -121,6 +136,26 @@ const RFQStatus = () => {
     setViewMode(mode);
   };
 
+  if (isForbidden) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          height: "80vh",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
+          flexDirection: "column",
+          padding: "2rem",
+        }}
+      >
+        <Typography variant="h4" color="error" fontWeight="bold">
+          You do not have permission to view this page.
+        </Typography>
+      </div>
+    );
+  }
+
   return (
     <div className="rfqStatus">
       <div className="rfqStatusCancel">
@@ -132,6 +167,7 @@ const RFQStatus = () => {
           Cancel
         </Button>
       </div>
+
       <div className="rfqHeader">
         <div className="rfqHeaderContent">
           <h2 className="rfqHeaderTitle">{selectedStatus}</h2>
@@ -157,7 +193,7 @@ const RFQStatus = () => {
               className="lr"
               onClick={() => handlePageChange(page - 1)}
             />
-            <div className="stroke"></div>
+            <div className="stroke" />
             <FaCaretRight
               className="lr"
               onClick={() => handlePageChange(page + 1)}
@@ -168,7 +204,7 @@ const RFQStatus = () => {
               className={`toggle ${viewMode === "grid" ? "active" : ""}`}
               onClick={() => toggleViewMode("grid")}
             />
-            <div className="stroke"></div>
+            <div className="stroke" />
             <FaBars
               className={`toggle ${viewMode === "list" ? "active" : ""}`}
               onClick={() => toggleViewMode("list")}
@@ -176,7 +212,12 @@ const RFQStatus = () => {
           </div>
         </div>
       </div>
-      {viewMode === "grid" ? (
+
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "2rem" }}>
+          <CircularProgress />
+        </div>
+      ) : viewMode === "grid" ? (
         <RfqGrid
           quotations={paginatedRequestsForQuotations}
           handleClick={handleClick}

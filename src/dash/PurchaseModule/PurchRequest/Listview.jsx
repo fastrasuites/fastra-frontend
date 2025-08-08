@@ -11,6 +11,7 @@ import {
   Button,
   Box,
   Skeleton,
+  Typography,
 } from "@mui/material";
 import PropTypes from "prop-types";
 import { extractRFQID, formatDate } from "../../../helper/helper";
@@ -30,7 +31,7 @@ const getStatusCellStyle = (index, getStatusColor, status) => ({
 
 const renderSkeletonRows = (count = 5) =>
   Array.from({ length: count }).map((_, index) => (
-    <TableRow key={index}>
+    <TableRow key={`skeleton-${index}`}>
       {Array.from({ length: 7 }).map((__, i) => (
         <TableCell key={i}>
           <Skeleton variant="text" width={`${60 + i * 5}%`} />
@@ -45,8 +46,13 @@ const ListView = ({
   getStatusColor,
   onDeleteSelected,
   loading,
+  error,
 }) => {
   const [selected, setSelected] = useState([]);
+
+  const isForbidden = error?.message === "Request failed with status code 403";
+  const showEmpty = !loading && !error && items.length === 0;
+  const showError = !loading && error && !isForbidden;
 
   const handleSelectAll = useCallback(
     (event) => {
@@ -86,7 +92,9 @@ const ListView = ({
           requester_details?.user?.first_name &&
           requester_details?.user?.last_name
             ? `${requester_details.user.first_name} ${requester_details.user.last_name}`
-            : requester_details?.user?.username;
+            : requester_details?.user?.username || "Unknown";
+
+        const vendor = vendor_details?.company_name || "Unknown";
 
         return (
           <TableRow
@@ -107,14 +115,14 @@ const ListView = ({
               />
             </TableCell>
             <TableCell sx={getCellStyle(index)}>
-              {formatDate(date_created)}
+              {formatDate(date_created) || "—"}
             </TableCell>
             <TableCell sx={getCellStyle(index)}>{extractRFQID(id)}</TableCell>
             <TableCell sx={getCellStyle(index)}>{requester}</TableCell>
+            <TableCell sx={getCellStyle(index)}>{vendor}</TableCell>
             <TableCell sx={getCellStyle(index)}>
-              {vendor_details?.company_name}
+              {pr_total_price ?? "—"}
             </TableCell>
-            <TableCell sx={getCellStyle(index)}>{pr_total_price}</TableCell>
             <TableCell sx={getStatusCellStyle(index, getStatusColor, status)}>
               <Box display="flex" alignItems="center">
                 <Box
@@ -126,7 +134,9 @@ const ListView = ({
                     mr: 1,
                   }}
                 />
-                <span style={{ textTransform: "capitalize" }}>{status}</span>
+                <span style={{ textTransform: "capitalize" }}>
+                  {status || "Unknown"}
+                </span>
               </Box>
             </TableCell>
           </TableRow>
@@ -134,6 +144,17 @@ const ListView = ({
       }),
     [items, selected, handleSelect, onCardClick, getStatusColor]
   );
+
+  // 🚫 If user has no permission
+  if (isForbidden) {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          You do not have permission to view the purchase request list.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: "100%", mt: 3 }}>
@@ -182,19 +203,30 @@ const ListView = ({
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
-            {loading ? (
-              renderSkeletonRows()
-            ) : items.length > 0 ? (
-              renderedRows
-            ) : (
+            {loading && renderSkeletonRows()}
+
+            {showError && (
               <TableRow>
                 <TableCell colSpan={7} align="center">
-                  No purchase request available. Please fill the form to add a
-                  purchase request.
+                  <Typography variant="body2" color="error">
+                    An error occurred while loading the purchase requests.
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}
+
+            {showEmpty && (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No purchase requests available. Please fill out the form to
+                  add one.
+                </TableCell>
+              </TableRow>
+            )}
+
+            {!loading && !showError && !showEmpty && renderedRows}
           </TableBody>
         </Table>
       </TableContainer>
@@ -208,6 +240,7 @@ ListView.propTypes = {
   getStatusColor: PropTypes.func.isRequired,
   onDeleteSelected: PropTypes.func,
   loading: PropTypes.bool,
+  error: PropTypes.object,
 };
 
 export default ListView;

@@ -62,15 +62,15 @@ const IncomingProductBasicInputs = ({
 
   const { activeLocationList, getActiveLocationList } = useCustomLocation();
   const { vendors, fetchVendors } = usePurchase();
-  const { purchaseOrderList, getApprovedPurchaseOrderList } =
+  const { purchaseOrderList, getPurchaseOrderUnrelatedList } =
     usePurchaseOrder();
 
   useEffect(() => {
     // fetch vendors and purchase orders if not already done
     fetchVendors();
-    getApprovedPurchaseOrderList();
+    getPurchaseOrderUnrelatedList();
     getActiveLocationList();
-  }, [fetchVendors, getApprovedPurchaseOrderList, getActiveLocationList]);
+  }, [fetchVendors, getPurchaseOrderUnrelatedList, getActiveLocationList]);
 
   // console.log(activeLocationList);
   useEffect(() => {
@@ -153,7 +153,6 @@ const IncomingProductBasicInputs = ({
         <Box flex={1}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Purchase Order
-            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -223,8 +222,11 @@ const CreateIncomingProduct = () => {
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
   const [openModal, setOpenModal] = useState(false);
-  const { isLoading: incomingProductLoading, createIncomingProduct } =
-    useIncomingProduct();
+  const {
+    isLoading: incomingProductLoading,
+    createIncomingProduct,
+    createIncomingProductBackOrder,
+  } = useIncomingProduct();
   const { products, fetchProducts } = usePurchase();
   const { getLocationList } = useCustomLocation();
 
@@ -292,7 +294,6 @@ const CreateIncomingProduct = () => {
       related_po: filledFormData.related_po?.id,
       source_location: filledFormData.source_location,
       status: filledFormData.status,
-      user_choice: {},
       is_hidden: false,
       supplier: filledFormData.suppliersName?.id || null,
       incoming_product_items: filledFormData.items.map((item) => ({
@@ -303,84 +304,185 @@ const CreateIncomingProduct = () => {
       can_edit: true,
     };
 
-    // Check for quantity overflow
-    const hasOverReceivedItem = payload.incoming_product_items.some(
-      (item) => item.quantity_received > item.expected_quantity
-    );
-
-    if (hasOverReceivedItem) {
-      Swal.fire({
-        // title: "OOPS!",
-        html: `
-       
-        <h1 class="swal-title">OPPS!</h1>
-    <div class="swal-line-container">
-      <div class="swal-line1"></div>
-      <div class="swal-line2"></div>
-    </div>
-    <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
-    <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
-  `,
-        // icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes",
-        cancelButtonText: "No",
-        customClass: {
-          popup: "custom-swal-popup",
-          title: "custom-swal-title",
-          confirmButton: "custom-swal-confirm-btn",
-          cancelButton: "custom-swal-cancel-btn",
-          htmlContainer: "custom-swal-html",
-        },
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          payload.user_choice = {
-            backorder: true,
-          };
-          const res = await createIncomingProduct(payload);
-          Swal.fire({
-            icon: "success",
-            title: "Success",
-            text: "Incoming product created successfully",
-          });
-          navigateToDetail(res.data.incoming_product_id);
-        }
-      });
-
-      return; // Stop submission
-    }
+    // const hasUnderReceivedItem = payload.incoming_product_items.some(
+    //   (item) => item.quantity_received < item.expected_quantity
+    // );
 
     try {
       const res = await createIncomingProduct(payload);
+
+      // Show success message
       Swal.fire({
         icon: "success",
         title: "Success",
         text: "Incoming product created successfully",
       });
+
+      // if (hasUnderReceivedItem) {
+      //   const result = await Swal.fire({
+      //     html: `
+      //     <h1 class="swal-title">OOPS!</h1>
+      //     <div class="swal-line-container">
+      //       <div class="swal-line1"></div>
+      //       <div class="swal-line2"></div>
+      //     </div>
+      //     <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+      //     <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+      //   `,
+      //     showCancelButton: true,
+      //     confirmButtonText: "Yes",
+      //     cancelButtonText: "No",
+      //     customClass: {
+      //       popup: "custom-swal-popup",
+      //       title: "custom-swal-title",
+      //       confirmButton: "custom-swal-confirm-btn",
+      //       cancelButton: "custom-swal-cancel-btn",
+      //       htmlContainer: "custom-swal-html",
+      //     },
+      //   });
+
+      //   if (result.isConfirmed) {
+      //     const backorderPayload = {
+      //       response: true,
+      //       incoming_product: res.data.incoming_product_id,
+      //     };
+
+      //     await createIncomingProductBackOrder(backorderPayload);
+
+      //     Swal.fire({
+      //       icon: "success",
+      //       title: "Success",
+      //       text: "Backorder created successfully",
+      //     });
+      //   }
+      // }
+
       navigateToDetail(res.data.incoming_product_id);
     } catch (err) {
       console.error(err);
 
-      const errorData = err?.response?.data;
+      const detailRaw = err?.response?.data?.detail?.toString?.() || "";
 
-      if (errorData) {
-        const messages = Object.values(errorData)
+      // Try to extract backorder-related info
+      const jsonMatch = detailRaw.match(/string='(.*?)'/);
+      const codeMatch = detailRaw.match(/code='(.*?)'/);
+
+      const backorderCode = codeMatch?.[1];
+      let IP_ID = null;
+
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          IP_ID = parsed?.IP_ID;
+        } catch (parseErr) {
+          console.warn("Failed to parse embedded JSON:", parseErr);
+        }
+      }
+
+      // Handle backorder_required
+      if (backorderCode === "backorder_required" && IP_ID) {
+        const result = await Swal.fire({
+          html: `
+        <h1 class="swal-title">OOPS!</h1>
+        <div class="swal-line-container">
+          <div class="swal-line1"></div>
+          <div class="swal-line2"></div>
+        </div>
+        <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+        <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+      `,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          customClass: {
+            popup: "custom-swal-popup",
+            title: "custom-swal-title",
+            confirmButton: "custom-swal-confirm-btn",
+            cancelButton: "custom-swal-cancel-btn",
+            htmlContainer: "custom-swal-html",
+          },
+        });
+
+        if (result.isConfirmed) {
+          try {
+            const backorderPayload = {
+              response: true,
+              incoming_product: IP_ID,
+            };
+
+            await createIncomingProductBackOrder(backorderPayload);
+
+            await Swal.fire({
+              icon: "success",
+              title: "Success",
+              text: "Backorder created successfully",
+            });
+          } catch (backorderErr) {
+            console.error("Backorder creation failed:", backorderErr);
+            await Swal.fire({
+              icon: "error",
+              title: "Backorder Error",
+              text: backorderErr.message || "Failed to create backorder.",
+            });
+          }
+        } else {
+          // User clicked "No"
+          const backorderPayload = {
+            response: false,
+            incoming_product: IP_ID,
+          };
+
+          try {
+            await createIncomingProductBackOrder(backorderPayload);
+
+            await Swal.fire({
+              icon: "info",
+              title: "Acknowledged",
+              text: "Backorder not created as per your choice.",
+            });
+          } catch (backorderErr) {
+            console.error(
+              "Error sending backorder decline response:",
+              backorderErr
+            );
+            await Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: backorderErr.message || "Failed to process your decision.",
+            });
+          }
+        }
+
+        return; // Stop here so other handlers don't run
+      }
+
+      // Handle known validation error format (object with field errors)
+      const detailData = err?.response?.data?.detail;
+      if (
+        detailData &&
+        typeof detailData === "object" &&
+        !Array.isArray(detailData)
+      ) {
+        const messages = Object.values(detailData)
           .flat()
           .map((msg) => `<p>${msg}</p>`)
           .join("");
 
-        Swal.fire({
+        await Swal.fire({
           icon: "error",
           title: "Validation Error",
-          html: messages || "An unknown error occurred.",
+          html: messages || "An unknown validation error occurred.",
         });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: err.message || "Something went wrong",
-        });
+
+        return;
       }
+
+      // Fallback error message
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err?.message || "Something went wrong. Please try again.",
+      });
     }
   };
 

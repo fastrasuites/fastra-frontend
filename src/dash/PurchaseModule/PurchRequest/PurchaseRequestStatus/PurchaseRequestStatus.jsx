@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa6";
 import { IoGrid } from "react-icons/io5";
-import { Button } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { Search } from "lucide-react";
 import PurchaseRequestGrid from "../PurchaseRequestGrid";
 import ListView from "../Listview";
@@ -42,7 +42,7 @@ const PurchaseRequestStatus = () => {
   const [viewMode, setViewMode] = useState("list");
   const [searchInput, setSearchInput] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const { fetchPurchaseRequests } = usePurchase();
+  const { fetchPurchaseRequests, error } = usePurchase();
 
   const debouncedQuery = useDebounce(searchInput, 300);
   const { state } = useLocation();
@@ -75,14 +75,15 @@ const PurchaseRequestStatus = () => {
     return () => clearTimeout(debounce);
   }, [fetchPurchaseRequests, searchInput]);
 
-  // Pagination with page validation
+  // Check if it's a 403 permission error
+  const isForbidden = error?.message === "Request failed with status code 403";
+
   const pageCount = Math.max(1, Math.ceil(quotations.length / itemsPerPage));
   const paginatedQuotations = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return quotations.slice(start, start + itemsPerPage);
   }, [quotations, currentPage]);
 
-  // Reset to first page when search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedQuery]);
@@ -99,6 +100,27 @@ const PurchaseRequestStatus = () => {
       `/${tenant_schema_name}/purchase/purchase-request/${item?.id}`
     );
   };
+
+  // 🚫 Show full-page permission denied message
+  if (isForbidden) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          height: "80vh",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
+          flexDirection: "column",
+          padding: "2rem",
+        }}
+      >
+        <Typography variant="h4" color="error" fontWeight="bold">
+          You do not have permission to view this page.
+        </Typography>
+      </div>
+    );
+  }
 
   return (
     <div className="rfqStatus">
@@ -185,6 +207,8 @@ const PurchaseRequestStatus = () => {
             searchTerm={debouncedQuery}
             matches={paginatedQuotations.matches}
             onCardClick={handleSelectedRequest}
+            loading={loading}
+            error={error}
           />
         </div>
       )}

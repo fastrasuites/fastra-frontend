@@ -35,8 +35,13 @@ const RListView = ({
   getStatusColor,
   onDeleteSelected,
   loading = false,
+  error,
 }) => {
   const [selected, setSelected] = useState([]);
+
+  const isForbidden = error?.message === "Request failed with status code 403";
+  const showEmpty = !loading && !error && items.length === 0;
+  const showError = !loading && error && !isForbidden;
 
   const handleSelectAll = useCallback(
     (event) => {
@@ -126,6 +131,28 @@ const RListView = ({
     ));
   }, [items, selected, handleSelect, onCardClick, getStatusColor, loading]);
 
+  // === Error Handling ===
+  if (isForbidden) {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          You do not have permission to view this page. <br />
+          <strong>Request access from an administrator.</strong>
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (showError) {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          An unexpected error occurred. Please try again later.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ width: "100%", mt: 3 }}>
       {!loading && selected.length > 0 && (
@@ -170,12 +197,13 @@ const RListView = ({
                 )}
               </TableCell>
               <TableCell>PR ID</TableCell>
-              <TableCell>RPQ ID</TableCell>
+              <TableCell>RFQ ID</TableCell>
               <TableCell>Vendor</TableCell>
               <TableCell>Amount</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
             {renderedRows}
             {!loading && items.length === 0 && (
@@ -205,6 +233,7 @@ RListView.propTypes = {
   getStatusColor: PropTypes.func.isRequired,
   onDeleteSelected: PropTypes.func,
   loading: PropTypes.bool,
+  error: PropTypes.object,
 };
 
 export default RListView;

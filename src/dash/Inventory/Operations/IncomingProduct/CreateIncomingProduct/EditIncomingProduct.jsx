@@ -42,13 +42,13 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
   );
   const { activeLocationList, getActiveLocationList } = useCustomLocation();
 
-  const { purchaseOrderList, getApprovedPurchaseOrderList } =
+  const { purchaseOrderList, getPurchaseOrderUnrelatedListForForm } =
     usePurchaseOrder();
 
   // Ensure RFQ list is loaded
   useEffect(() => {
-    getApprovedPurchaseOrderList();
-  }, [getApprovedPurchaseOrderList]);
+    getPurchaseOrderUnrelatedListForForm();
+  }, [getPurchaseOrderUnrelatedListForForm]);
 
   useEffect(() => {
     getActiveLocationList();
@@ -194,12 +194,17 @@ export default function EditIncomingProduct() {
     is_hidden: true,
   });
   const { getLocationList, locationList } = useCustomLocation();
-  const { products, fetchProducts, vendors, fetchVendors } = usePurchase();
+  const { products, fetchProductsForForm, vendors, fetchVendorsForForm } =
+    usePurchase();
   const { isLoading, updateIncomingProduct } = useIncomingProduct();
 
   // Fetch lookups
   useEffect(() => {
-    Promise.all([fetchProducts(), fetchVendors(), getLocationList()]).then(
+    Promise.all([
+      fetchProductsForForm(),
+      fetchVendorsForForm(),
+      getLocationList(),
+    ]).then(
       // eslint-disable-next-line no-unused-vars
       ([prodRes, vendRes, locRes]) => {
         setFormData((f) => ({ ...f, suppliers: vendRes }));
@@ -220,7 +225,8 @@ export default function EditIncomingProduct() {
         available_product_quantity: it.expected_quantity,
         qty_received: it.quantity_received,
         unit_of_measure: {
-          unit_category: it.product?.unit_of_measure_details.unit_category,
+          unit_category:
+            it.product_details?.unit_of_measure_details.unit_category,
         },
       }));
       const sup = vendors.find((v) => v.id === incoming.supplier) || null;
@@ -243,38 +249,40 @@ export default function EditIncomingProduct() {
   }, [location.state, products, vendors, locationList]);
 
   const handleSubmit = async (data) => {
+    console.log(data);
     const payload = {
-      destination_location: data.location.id,
+      destination_location: data?.location?.id,
       receipt_type: data.receiptType,
       source_location: data.source_location,
       related_po: data.relatedPO,
       status: data.status,
-      user_choice: {},
       is_hidden: false,
       supplier: data.suppliersName?.id || null,
-      incoming_product_items: data.items.map((it) => ({
-        id: it.id,
-        product: it.product.id,
-        expected_quantity: Number(it.available_product_quantity),
-        quantity_received: Number(it.qty_received),
+      incoming_product_items: data?.items.map((it) => ({
+        id: it?.id,
+        product: it?.product,
+        expected_quantity: Number(it?.available_product_quantity),
+        quantity_received: Number(it?.qty_received),
       })),
     };
-    try {
-      const res = await updateIncomingProduct(id, payload);
 
-      Swal.fire("Success", "Record saved", "success");
-      history.push(
-        `/${tenant_schema_name}/inventory/operations/incoming-product/${res.incoming_product_id}`
-      );
-    } catch (e) {
-      console.error(e);
-      const html = e.validation
-        ? Object.values(e.validation)
-            .map((m) => `<p>${m}</p>`)
-            .join("")
-        : e.message;
-      Swal.fire({ icon: "error", title: "Error", html });
-    }
+    console.log(payload);
+    // try {
+    //   const res = await updateIncomingProduct(id, payload);
+
+    //   Swal.fire("Success", "Record saved", "success");
+    //   history.push(
+    //     `/${tenant_schema_name}/inventory/operations/incoming-product/${res.incoming_product_id}`
+    //   );
+    // } catch (e) {
+    //   console.error(e);
+    //   const html = e.validation
+    //     ? Object.values(e.validation)
+    //         .map((m) => `<p>${m}</p>`)
+    //         .join("")
+    //     : e.message;
+    //   Swal.fire({ icon: "error", title: "Error", html });
+    // }
   };
 
   const transformProducts = (list) =>

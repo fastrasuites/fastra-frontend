@@ -20,7 +20,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useTenant } from "../../../../../context/TenantContext";
 import { useScrap } from "../../../../../context/Inventory/Scrap";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
-import { usePurchase } from "../../../../../context/PurchaseContext";
+// import { usePurchase } from "../../../../../context/PurchaseContext";
 import Swal from "sweetalert2";
 
 // Status-to-color mapping
@@ -74,7 +74,7 @@ const ScrapInfo = () => {
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const { getSingleScrap, updateScrap } = useScrap();
   const { getSingleLocation } = useCustomLocation();
-  const { fetchSingleProduct } = usePurchase();
+  // const { fetchSingleProduct } = usePurchase();
 
   const [scrap, setScrap] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -117,10 +117,10 @@ const ScrapInfo = () => {
 
       const items = await Promise.all(
         raw.scrap_items.map(async (item) => {
-          const { data: product } = await fetchSingleProduct(item.product);
+          // const { data: product } = await fetchSingleProduct(item.product);
           return {
             ...item,
-            product,
+            // product,
           };
         })
       );
@@ -148,7 +148,7 @@ const ScrapInfo = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, getSingleScrap, getSingleLocation, fetchSingleProduct, showError]);
+  }, [id, getSingleScrap, getSingleLocation, showError]);
 
   useEffect(() => {
     if (id) {
@@ -178,7 +178,6 @@ const ScrapInfo = () => {
         items,
         status: "done",
       };
-      console.log(payload);
       // Add your validation logic here
       // await validateScrap(id);
       await updateScrap(payload, id);
@@ -200,7 +199,7 @@ const ScrapInfo = () => {
     [history, tenant_schema_name]
   );
 
-  // console.log(scrap);
+  console.log(scrap);
 
   if (loading) {
     return (
@@ -385,7 +384,7 @@ const ScrapInfo = () => {
                     <TableCell
                       sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}
                     >
-                      {row.product?.product_name || "N/A"}
+                      {row.product_details?.product_name || "N/A"}
                     </TableCell>
                     <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
                       {row.scrap_quantity || "N/A"}

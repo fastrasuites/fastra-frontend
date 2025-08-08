@@ -198,6 +198,7 @@ const NewStockAdjustment = () => {
   };
 
   const handleSubmitBase = async (filledData, status = "draft") => {
+    console.log(filledData?.notes);
     const cleanData = {
       warehouse_location: filledData?.location?.id,
       notes: filledData?.notes,

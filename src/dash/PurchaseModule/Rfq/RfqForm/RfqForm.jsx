@@ -21,12 +21,12 @@ import Can from "../../../../components/Access/Can";
 const RfqForm = () => {
   const {
     products,
-    fetchProducts,
+    fetchProductsForForm,
     vendors,
     currencies,
     fetchCurrencies,
     fetchVendors,
-    fetchApprovedPurchaseRequests,
+    fetchApprovedPurchaseRequestsForForm,
     purchaseRequests,
   } = usePurchase();
 
@@ -64,8 +64,8 @@ const RfqForm = () => {
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
-    fetchProducts();
-    fetchApprovedPurchaseRequests();
+    fetchProductsForForm();
+    fetchApprovedPurchaseRequestsForForm();
   }, []);
 
   useEffect(() => {
@@ -281,7 +281,7 @@ const RfqForm = () => {
               {isEdit ? "Save Changes" : "Save Draft"}
             </Button>
             {!isEdit && (
-              <Can app="purchase" module="requestforquotation" action="create">
+              <Can app="purchase" module="requestforquotation" action="edit">
                 <Button
                   variant="contained"
                   onClick={saveAndShare}

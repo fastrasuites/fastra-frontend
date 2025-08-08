@@ -31,7 +31,8 @@ export default function Purchreq() {
   // const { tenantData } = useTenant();
   // console.log(tenantData);
 
-  const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
+  const { fetchSinglePurchaseRequest, fetchPurchaseRequests, error } =
+    usePurchase();
   const history = useHistory();
 
   const [wizardState, setWizardState] = useState(() => {
@@ -311,6 +312,7 @@ export default function Purchreq() {
               onCardClick={handleSelectedRequest}
               getStatusColor={getStatusColor}
               loading={loading}
+              error={error}
             />
           )}
         </div>

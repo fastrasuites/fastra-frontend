@@ -102,6 +102,22 @@ export const PurchaseProvider = ({ children }) => {
     [client]
   );
 
+  const fetchVendorsForForm = useCallback(
+    async (searchTerm = "") => {
+      try {
+        const params = searchTerm ? { search: searchTerm } : {};
+        const response = await client.get("/purchase/vendors/?form=true", {
+          params,
+        });
+        setVendors(response.data);
+        return response.data;
+      } catch (err) {
+        setError(err);
+      }
+    },
+    [client]
+  );
+
   const fetchVendors = useCallback(
     async (searchTerm = "") => {
       try {
@@ -169,6 +185,22 @@ export const PurchaseProvider = ({ children }) => {
       try {
         const params = searchTerm ? { search: searchTerm } : {};
         const response = await client.get("/purchase/products/", { params });
+        setProducts(response.data);
+      } catch (err) {
+        console.error(err);
+        setError(err);
+      }
+    },
+    [client]
+  );
+
+  const fetchProductsForForm = useCallback(
+    async (searchTerm = "") => {
+      try {
+        const params = searchTerm ? { search: searchTerm } : {};
+        const response = await client.get("/purchase/products/?form=true", {
+          params,
+        });
         setProducts(response.data);
       } catch (err) {
         console.error(err);
@@ -246,6 +278,19 @@ export const PurchaseProvider = ({ children }) => {
     try {
       const response = await client.get(
         "/purchase/purchase-request/approved_list/"
+      );
+      setPurchaseRequests(response.data);
+      return { success: true, data: response.data };
+    } catch (err) {
+      setError(err);
+      return { success: false, err };
+    }
+  }, [client]);
+
+  const fetchApprovedPurchaseRequestsForForm = useCallback(async () => {
+    try {
+      const response = await client.get(
+        "/purchase/purchase-request/approved_list/?form=true"
       );
       setPurchaseRequests(response.data);
       return { success: true, data: response.data };
@@ -404,14 +449,17 @@ export const PurchaseProvider = ({ children }) => {
       uploadFile,
       downloadExcelTemplate,
       fetchVendors,
+      fetchVendorsForForm,
       fetchSingleVendors,
       createVendor,
       updateVendor,
       fetchProducts,
+      fetchProductsForForm,
       fetchSingleProduct,
       createProduct,
       fetchPurchaseRequests,
       fetchApprovedPurchaseRequests,
+      fetchApprovedPurchaseRequestsForForm,
       createPurchaseRequest,
       updatePurchaseRequest,
       submitPurchaseRequest,
@@ -435,14 +483,17 @@ export const PurchaseProvider = ({ children }) => {
       uploadFile,
       downloadExcelTemplate,
       fetchVendors,
+      fetchVendorsForForm,
       fetchSingleVendors,
       createVendor,
       updateVendor,
       fetchProducts,
+      fetchProductsForForm,
       fetchSingleProduct,
       createProduct,
       fetchPurchaseRequests,
       fetchApprovedPurchaseRequests,
+      fetchApprovedPurchaseRequestsForForm,
       createPurchaseRequest,
       updatePurchaseRequest,
       submitPurchaseRequest,

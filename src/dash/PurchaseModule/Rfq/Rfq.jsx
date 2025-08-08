@@ -32,7 +32,7 @@ export default function Rfq() {
   const totalPages = Math.ceil(quotationsData.length / itemsPerPage);
 
   const history = useHistory();
-  const { getRFQList, deleteRFQ } = useRFQ();
+  const { getRFQList, deleteRFQ, error } = useRFQ();
   const { tenantData } = useTenant();
   const tenantSchema = tenantData?.tenant_schema_name;
 
@@ -93,6 +93,8 @@ export default function Rfq() {
       return acc;
     }, {});
   }, [quotationsData]);
+
+  console.log(error);
 
   const handleViewChange = (mode) => setViewMode(mode);
   const handlePageChange = (newPage) => {
@@ -235,6 +237,7 @@ export default function Rfq() {
                 getStatusColor={getStatusColor}
                 onDeleteSelected={handleDeleteSelected}
                 loading={loading}
+                error={error}
               />
             </div>
           )}

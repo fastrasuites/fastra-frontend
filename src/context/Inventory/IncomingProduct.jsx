@@ -105,7 +105,6 @@ export const IncomingProductProvider = ({ children }) => {
           supplier: Number(formData.supplier),
           source_location: formData.source_location,
           destination_location: formData.destination_location,
-          user_choice: formData.user_choice,
           incoming_product_items: formData.incoming_product_items,
           status: formData.status,
           is_validated: formData.is_validated ?? true,
@@ -130,6 +129,28 @@ export const IncomingProductProvider = ({ children }) => {
     [client]
   );
 
+  const createIncomingProductBackOrder = useCallback(
+    async (formData) => {
+      if (!client) throw new Error("API client not initialized.");
+
+      setIsLoading(true);
+      try {
+        const { data } = await client.post(
+          "/inventory/create-back-order/",
+          formData
+        );
+        setError(null);
+
+        return { success: true, data };
+      } catch (err) {
+        setError(err.message || "Failed to create incoming product");
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
   const updateIncomingProduct = useCallback(
     async (id, formData) => {
       if (!client) throw new Error("API client not initialized.");
@@ -202,6 +223,7 @@ export const IncomingProductProvider = ({ children }) => {
       getIncomingProductList,
       getSingleIncomingProduct,
       createIncomingProduct,
+      createIncomingProductBackOrder,
       updateIncomingProduct,
       updateIncomingProductStatus,
     }),
@@ -213,6 +235,7 @@ export const IncomingProductProvider = ({ children }) => {
       getIncomingProductList,
       getSingleIncomingProduct,
       createIncomingProduct,
+      createIncomingProductBackOrder,
       updateIncomingProduct,
       updateIncomingProductStatus,
     ]

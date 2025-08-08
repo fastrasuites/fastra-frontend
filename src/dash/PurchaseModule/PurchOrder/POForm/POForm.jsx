@@ -42,16 +42,20 @@ const POForm = () => {
 
   const {
     products,
-    fetchProducts,
+    fetchProductsForForm,
     vendors,
     currencies,
     fetchCurrencies,
     fetchVendors,
-    fetchPurchaseRequests,
     purchaseRequests,
   } = usePurchase();
-  const { approvedGetRFQList, rfqList, isLoading: isRfqLoading } = useRFQ();
-  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const {
+    approvedGetRFQListForForm,
+    rfqList,
+    isLoading: isRfqLoading,
+  } = useRFQ();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
   const { createPurchaseOrder, updatePurchaseOrder } = usePurchaseOrder();
 
   const formUse = edit ? "Edit Purchase Order" : "Create Purchase Order";
@@ -75,17 +79,15 @@ const POForm = () => {
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
-    fetchProducts();
-    fetchPurchaseRequests();
-    approvedGetRFQList();
-    getActiveLocationList();
+    fetchProductsForForm();
+    approvedGetRFQListForForm();
+    getActiveLocationListForForm();
   }, [
     fetchVendors,
     fetchCurrencies,
-    fetchProducts,
-    fetchPurchaseRequests,
-    approvedGetRFQList,
-    getActiveLocationList,
+    fetchProductsForForm,
+    approvedGetRFQListForForm,
+    getActiveLocationListForForm,
   ]);
 
   useEffect(() => {

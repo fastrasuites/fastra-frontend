@@ -123,7 +123,70 @@ export const LocationProvider = ({ children }) => {
     [client]
   );
 
+  const getLocationListForForm = useCallback(
+    async (searchTerm = "") => {
+      if (!client) {
+        const errMsg =
+          "API client not available. Please check tenant configuration.";
+        console.error(errMsg);
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params = searchTerm ? { search: searchTerm } : {};
+
+        const response = await client.get("/inventory/location/", {
+          params,
+        });
+        const data = response.data;
+        setLocationList(data);
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        console.error("Error fetching location list:", err);
+        setError(err.message || "Failed to fetch locations");
+        return Promise.reject(err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
   const getActiveLocationList = useCallback(async () => {
+    if (!client) {
+      const errMsg =
+        "API client not available. Please check tenant configuration.";
+      console.error(errMsg);
+      setError(errMsg);
+      return Promise.reject(new Error(errMsg));
+    }
+
+    setIsLoading(true);
+    console.log("Axios base URL", client.defaults.baseURL);
+
+    try {
+      const response = await client.get(
+        "/inventory/location/get_active_locations/"
+      );
+      const data = response.data;
+      setActiveLocationList(data);
+      setError(null);
+      return { success: true, data };
+    } catch (err) {
+      console.error("Error fetching location list:", err);
+      setError(err.message || "Failed to fetch active locations");
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
+  const getActiveLocationListForForm = useCallback(async () => {
     if (!client) {
       const errMsg =
         "API client not available. Please check tenant configuration.";
@@ -216,6 +279,8 @@ export const LocationProvider = ({ children }) => {
       setSingleLocation,
       getLocationList,
       getActiveLocationList,
+      getActiveLocationListForForm,
+      getLocationListForForm,
       getSingleLocation,
       createLocation,
       isLoading,
@@ -231,6 +296,8 @@ export const LocationProvider = ({ children }) => {
       singleLocation,
       getLocationList,
       getActiveLocationList,
+      getActiveLocationListForForm,
+      getLocationListForForm,
       getSingleLocation,
       createLocation,
       isLoading,

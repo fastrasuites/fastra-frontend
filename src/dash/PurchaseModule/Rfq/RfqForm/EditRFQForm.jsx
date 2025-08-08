@@ -17,18 +17,18 @@ import RfqBasicInfoFieldsConvertToRFQ from "./RFQBasisInfoConvert";
 const EditRfqForm = () => {
   const {
     products,
-    fetchProducts,
+    fetchProductsForForm,
     vendors,
     currencies,
     fetchCurrencies,
     fetchVendors,
-    fetchApprovedPurchaseRequests,
+    fetchApprovedPurchaseRequestsForForm,
     purchaseRequests,
   } = usePurchase();
 
   const { updateRFQ } = useRFQ();
   const { state } = useLocation();
-  const { rfq = {}, edit = false, isConvertToRFQ } = state || {};
+  const { rfq = {}, edit = false } = state || {};
 
   const formUse = edit ? "Edit RFQ" : "Create RFQ";
   const quotation = rfq || {};
@@ -63,13 +63,13 @@ const EditRfqForm = () => {
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
-    fetchProducts();
-    fetchApprovedPurchaseRequests();
+    fetchProductsForForm();
+    fetchApprovedPurchaseRequestsForForm();
   }, [
     fetchVendors,
     fetchCurrencies,
-    fetchProducts,
-    fetchApprovedPurchaseRequests,
+    fetchProductsForForm,
+    fetchApprovedPurchaseRequestsForForm,
   ]);
 
   useEffect(() => {

@@ -91,7 +91,7 @@ export const RFQProvider = ({ children }) => {
         setError(null);
         return { success: true, data: response.data };
       } catch (err) {
-        setError(err?.response?.data?.detail || err.message);
+        setError(err);
         return err;
       } finally {
         setIsLoading(false);
@@ -111,6 +111,29 @@ export const RFQProvider = ({ children }) => {
       setIsLoading(true);
       const response = await client.get(
         "/purchase/request-for-quotation/approved_list/"
+      );
+      setRfqList(response.data);
+      setError(null);
+      return { success: true, data: response.data };
+    } catch (err) {
+      setError(err);
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
+  const approvedGetRFQListForForm = useCallback(async () => {
+    if (!client) {
+      const errMsg =
+        "API client is not available. Please check tenant configuration.";
+      setError(errMsg);
+      return Promise.reject(new Error(errMsg));
+    }
+    try {
+      setIsLoading(true);
+      const response = await client.get(
+        "/purchase/request-for-quotation/approved_list/?form=true"
       );
       setRfqList(response.data);
       setError(null);
@@ -315,6 +338,7 @@ export const RFQProvider = ({ children }) => {
       pendingRFQ,
       deleteRFQ,
       approvedGetRFQList,
+      approvedGetRFQListForForm,
       singleRFQ,
       error,
       rfqList,
@@ -330,6 +354,7 @@ export const RFQProvider = ({ children }) => {
       pendingRFQ,
       deleteRFQ,
       approvedGetRFQList,
+      approvedGetRFQListForForm,
       singleRFQ,
       error,
       rfqList,

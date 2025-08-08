@@ -26,9 +26,9 @@ const CreatePRForm = () => {
   const isEdit = edit ? "Edit Purchase Request" : "Create Purchase Request";
 
   const {
-    fetchProducts,
+    fetchProductsForForm,
     products,
-    fetchVendors,
+    fetchVendorsForForm,
     vendors,
     fetchCurrencies,
     currencies,
@@ -38,7 +38,8 @@ const CreatePRForm = () => {
     updatePurchaseRequest,
   } = usePurchase();
 
-  const { getActiveLocationList, activeLocationList } = useCustomLocation();
+  const { getActiveLocationListForForm, activeLocationList } =
+    useCustomLocation();
   const { tenantData } = useTenant();
   const examps = useCanAccess();
   const { tenant_schema_name: tenantSchemaName } = tenantData;
@@ -51,7 +52,7 @@ const CreatePRForm = () => {
     purpose: pr.purpose || "",
     currency: pr.currency || "",
     vendor: pr.vendor || "",
-    requesting_location: pr.requesting_location || "",
+    requesting_location: pr.requesting_location_details || "",
     status: pr.status || "draft",
     is_hidden: pr.is_hidden ?? true,
     items: (pr.items || []).map((item) => ({
@@ -64,11 +65,11 @@ const CreatePRForm = () => {
 
   // ─── Load Required Data ─────────────────────────────────────
   useEffect(() => {
-    fetchVendors();
+    fetchVendorsForForm();
     fetchCurrencies();
-    fetchProducts();
+    fetchProductsForForm();
     fetchPurchaseRequests();
-    getActiveLocationList();
+    getActiveLocationListForForm();
   }, []);
 
   useEffect(() => {
@@ -339,7 +340,7 @@ const CreatePRForm = () => {
               <Button variant="outlined" type="submit">
                 {edit ? "Save Changes" : "Save"}
               </Button>
-              <Can app="purchase" module="purchaserequest" action="update">
+              <Can app="purchase" module="purchaserequest" action="edit">
                 <Button variant="contained" onClick={saveAndSubmit}>
                   Save & Send
                 </Button>

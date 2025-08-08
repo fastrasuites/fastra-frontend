@@ -38,8 +38,9 @@ const POBasicInfoFields = ({
     formData?.rfq?.currency ||
     null;
 
+  console.log(formData);
   useEffect(() => {
-    if (locationList.length <= 1) {
+    if (locationList.length === 1) {
       handleInputChange("destination_location", locationList[0]);
     }
   }, [locationList, handleInputChange]);
@@ -103,7 +104,7 @@ const POBasicInfoFields = ({
         <div className="rfqBasicInfoFields1SelectFields" style={{ flex: 1 }}>
           <label style={labelStyle}>Destination Location</label>
           {locationList.length <= 1 ? (
-            <Typography>{locationList[0].location_name || "N/A"}</Typography>
+            <Typography>{locationList[0]?.location_name || "N/A"}</Typography>
           ) : (
             <Autocomplete
               disablePortal

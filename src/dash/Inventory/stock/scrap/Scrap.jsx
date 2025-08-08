@@ -190,6 +190,9 @@ function Scrap() {
         actionButton={{
           text: "New Scrap",
           link: `/${tenant_schema_name}/inventory/stock/scrap/create-scrap`,
+          action: "create",
+          app: "inventory",
+          module: "scrap",
         }}
         gridRenderItem={renderGridItem}
         path={`/${tenant_schema_name}/inventory/stock/scrap`}

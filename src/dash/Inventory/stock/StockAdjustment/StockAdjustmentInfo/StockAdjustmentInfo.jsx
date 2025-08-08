@@ -20,7 +20,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjustment";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
-import { usePurchase } from "../../../../../context/PurchaseContext";
+// import { usePurchase } from "../../../../../context/PurchaseContext";
 import Swal from "sweetalert2";
 
 // Safely normalize status to a string before lowercasing
@@ -79,7 +79,7 @@ export default function StockAdjustmentInfo() {
   const { getSingleStockAdjustment, updateStockAdjustmentToDone } =
     useStockAdjustment();
   const { getSingleLocation } = useCustomLocation();
-  const { fetchSingleProduct } = usePurchase();
+  // const { fetchSingleProduct } = usePurchase();
   const history = useHistory();
 
   const [stock, setStock] = useState(null);
@@ -123,10 +123,10 @@ export default function StockAdjustmentInfo() {
 
       const items = await Promise.all(
         raw.stock_adjustment_items.map(async (item) => {
-          const { data: product } = await fetchSingleProduct(item.product);
+          // const { data: product } = await fetchSingleProduct(item.product);
           return {
             ...item,
-            product,
+            // product,
           };
         })
       );
@@ -158,7 +158,7 @@ export default function StockAdjustmentInfo() {
     id,
     getSingleStockAdjustment,
     getSingleLocation,
-    fetchSingleProduct,
+    // fetchSingleProduct,
     showError,
   ]);
 
@@ -383,10 +383,11 @@ export default function StockAdjustmentInfo() {
                     <TableCell
                       sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}
                     >
-                      {row.product?.product_name || "N/A"}
+                      {row.product_details?.product_name || "N/A"}
                     </TableCell>
                     <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                      {row.product?.unit_of_measure_details?.unit_name || "N/A"}
+                      {row.product_details?.unit_of_measure_details
+                        ?.unit_name || "N/A"}
                     </TableCell>
                     <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
                       {row.product?.current_quantity || 0}

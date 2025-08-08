@@ -20,8 +20,8 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Swal from "sweetalert2";
 
 import { useIncomingProduct } from "../../../../../context/Inventory/IncomingProduct";
-import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useTenant } from "../../../../../context/TenantContext";
+import Can from "../../../../../components/Access/Can";
 
 const getStatusColor = (status) => {
   const s = status != null ? String(status).toLowerCase() : "";
@@ -78,7 +78,7 @@ export default function IncomingProductInfo() {
   // Context hooks
   const { getSingleIncomingProduct, updateIncomingProductStatus } =
     useIncomingProduct();
-  const { fetchVendors, vendors, fetchSingleProduct } = usePurchase();
+  // const { fetchVendors, vendors, fetchSingleProduct } = usePurchase();
 
   // Local state
   const [incoming, setIncoming] = useState(null);
@@ -119,15 +119,15 @@ export default function IncomingProductInfo() {
       const { data: raw } = await getSingleIncomingProduct(id);
 
       // Fetch all vendors
-      await fetchVendors();
+      // await fetchVendors();
 
       // Enrich each item with full product info
       const items = await Promise.all(
         (raw.incoming_product_items || []).map(async (item) => {
-          const { data: product } = await fetchSingleProduct(item.product);
+          // const { data: product } = await fetchSingleProduct(item.product);
           return {
             ...item,
-            product,
+            // product,
           };
         })
       );
@@ -157,8 +157,8 @@ export default function IncomingProductInfo() {
   }, [
     id,
     getSingleIncomingProduct,
-    fetchVendors,
-    fetchSingleProduct,
+    // fetchVendors,
+    // fetchSingleProduct,
     showError,
   ]);
 
@@ -251,19 +251,23 @@ export default function IncomingProductInfo() {
     );
   }
 
-  const supplier = vendors.find((v) => v.id === incoming.supplier);
+  // const supplier = vendors.find((v) => v.id === incoming.supplier);
 
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
       {/* Header with navigation */}
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <Link to={`/${schema}/inventory/operations/creat-incoming-product`}>
-          <Button variant="contained" size="large" disableElevation>
-            New Incoming Product
-          </Button>
-        </Link>
+        <div>
+          <Can app="purchase" module="incomingproduct" action="create">
+            <Link to={`/${schema}/inventory/operations/creat-incoming-product`}>
+              <Button variant="contained" size="large" disableElevation>
+                New Incoming Product
+              </Button>
+            </Link>
+          </Can>
+        </div>
 
-        <Box display="flex" alignItems="center" gap={2}>
+        <Box display="flex" alignItems="center" gap={2} justifySelf={"end"}>
           {/* Navigation controls */}
           <Box
             display="flex"
@@ -318,15 +322,17 @@ export default function IncomingProductInfo() {
           </Button>
 
           {incoming.status === "draft" && (
-            <Button
-              variant="contained"
-              size="large"
-              disableElevation
-              onClick={handleEdit}
-              disabled={actionLoading}
-            >
-              Edit
-            </Button>
+            <Can app="inventory" module="incomingproduct" action="edit">
+              <Button
+                variant="contained"
+                size="large"
+                disableElevation
+                onClick={handleEdit}
+                disabled={actionLoading}
+              >
+                Edit
+              </Button>
+            </Can>
           )}
         </Box>
       </Box>
@@ -391,7 +397,7 @@ export default function IncomingProductInfo() {
           <Box>
             <Typography mb={1}>Name of Supplier</Typography>
             <Typography variant="body2" color="#7A8A98">
-              {supplier?.company_name || "N/A"}
+              {incoming?.supplier_details?.company_name || "N/A"}
             </Typography>
           </Box>
         </Box>
@@ -435,13 +441,14 @@ export default function IncomingProductInfo() {
                     <TableCell
                       sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}
                     >
-                      {row.product?.product_name || "N/A"}
+                      {row.product_details?.product_name || "N/A"}
                     </TableCell>
                     <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
                       {row.expected_quantity || "N/A"}
                     </TableCell>
                     <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                      {row.product?.unit_of_measure_details?.unit_name || "N/A"}
+                      {row.product_details?.unit_of_measure_details
+                        ?.unit_name || "N/A"}
                     </TableCell>
                     <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
                       {row.quantity_received || "N/A"}
@@ -483,15 +490,17 @@ export default function IncomingProductInfo() {
             >
               {actionLoading ? <CircularProgress size={24} /> : "Cancel"}
             </Button>
-            <Button
-              variant="contained"
-              size="large"
-              disableElevation
-              onClick={() => handleStatusChange("validated")}
-              disabled={actionLoading}
-            >
-              {actionLoading ? <CircularProgress size={24} /> : "Validate"}
-            </Button>
+            <Can app="inventory" module="incomingproduct" action="approve">
+              <Button
+                variant="contained"
+                size="large"
+                disableElevation
+                onClick={() => handleStatusChange("validated")}
+                disabled={actionLoading}
+              >
+                {actionLoading ? <CircularProgress size={24} /> : "Validate"}
+              </Button>
+            </Can>
           </Box>
         )}
       </Box>

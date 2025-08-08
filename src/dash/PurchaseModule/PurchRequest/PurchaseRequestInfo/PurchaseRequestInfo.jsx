@@ -130,15 +130,17 @@ const PurchaseRequestInfo = () => {
       const res = await fetchSinglePurchaseRequest(id);
       if (res.success) {
         setItem(res.data);
-
-        // Load adjacent IDs after successful fetch
         loadAdjacentIds(id);
       } else {
         console.error(res);
         showError("Failed to load purchase request.");
       }
     } catch (err) {
-      showError(err.message || "An error occurred while fetching data.");
+      if (err?.response?.status === 403) {
+        setItem("FORBIDDEN");
+      } else {
+        showError(err.message || "An error occurred while fetching data.");
+      }
     } finally {
       setLoading(false);
     }
@@ -357,7 +359,7 @@ const PurchaseRequestInfo = () => {
     }
   }, [item, handleConvertToRFQ, handleStatusChange, actionLoading]);
 
-  if (loading || !item) {
+  if (loading) {
     return (
       <Box
         sx={{
@@ -370,6 +372,33 @@ const PurchaseRequestInfo = () => {
         <CircularProgress />
       </Box>
     );
+  }
+
+  if (item === "FORBIDDEN") {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: 400,
+          color: "red",
+          fontWeight: "bold",
+          fontSize: 24,
+          textAlign: "center",
+          px: 2,
+        }}
+      >
+        You do not have permission to view this page.
+        <br />
+        Please request access from the admin.
+      </Box>
+    );
+  }
+
+  if (!item) {
+    return null;
   }
 
   return (
