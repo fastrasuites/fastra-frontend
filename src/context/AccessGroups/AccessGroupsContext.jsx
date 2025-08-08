@@ -121,7 +121,7 @@ export function AccessGroupsProvider({ children }) {
       const response = await client.get(`/users/access-group-right/`);
 
       const groupsMap = {};
-      response.data.forEach((item) => {
+      response?.data.forEach((item) => {
         if (!groupsMap[item.access_code]) {
           groupsMap[item.access_code] = {
             access_code: item.access_code,
@@ -151,7 +151,7 @@ export function AccessGroupsProvider({ children }) {
       });
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
-      Swal.fire("Error", "Failed to fetch access groups", "error");
+      // Swal.fire("Error", "Failed to fetch access groups", "error");
       throw error;
     }
   }, [client, state.accessRights]);

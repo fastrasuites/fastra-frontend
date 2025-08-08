@@ -11,6 +11,8 @@ import {
   TableRow,
   CircularProgress,
   Box,
+  Grid,
+  Typography,
   IconButton,
   Tooltip,
 } from "@mui/material";
@@ -25,6 +27,20 @@ import { usePurchase } from "../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import Can from "../../../../components/Access/Can";
 import Swal from "sweetalert2";
+
+const textStyle = {
+  backgroundColor: "#fff",
+  color: "#7a8a98",
+  fontSize: 12,
+  // padding: "8px 12px",
+  // border: "1px solid #eee",
+};
+
+const labelStyle = {
+  ...textStyle,
+  fontWeight: "bold",
+  // backgroundColor: "#f5f5f5",
+};
 
 // Style constants
 const cellStyle = (index) => ({
@@ -347,7 +363,7 @@ const PurchaseRequestInfo = () => {
           label: "Drafted",
           actions: [
             {
-              text: "Send to Approval",
+              text: "Send for Approval",
               onClick: () => handleStatusChange("pending"),
               disabled: actionLoading,
               action: "edit",
@@ -486,17 +502,17 @@ const PurchaseRequestInfo = () => {
         </div>
 
         {/* Status */}
-        <div className="rfqStatusInfo">
-          <p>Status</p>
-          <p
+        <Box>
+          <Typography>Status</Typography>
+          <Typography
             style={{
               color: statusColor(item.status),
               textTransform: "capitalize",
             }}
           >
             {item.status}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Details */}
         <TableContainer

@@ -46,7 +46,13 @@ const INITIAL_STATE = [
     count: 0,
     href: "/inventory/operations/internal-transfer",
   },
-  { id: "returns", text: "Returns", color: "#d3a006", count: 0 },
+  {
+    id: "returns",
+    text: "Returns",
+    color: "#d3a006",
+    count: 0,
+    href: "/inventory/operations/delivery-order",
+  },
   {
     id: "manufacturing-returns",
     text: "Manufacturing Returns",

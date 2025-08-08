@@ -140,7 +140,11 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
               handleInputChange("suppliersName", newValue || null)
             }
             renderInput={(params) => (
-              <TextField {...params} placeholder="Select supplier" />
+              <TextField
+                {...params}
+                placeholder="Select supplier"
+                required="true"
+              />
             )}
           />
         </Box>

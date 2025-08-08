@@ -4,10 +4,13 @@ import { useTenant } from "../../../context/TenantContext";
 import {
   Box,
   Button,
+  capitalize,
   Grid,
   IconButton,
   InputBase,
+  Tooltip,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 
 import { FaThList } from "react-icons/fa";
@@ -17,14 +20,17 @@ import SearchIcon from "../../../image/search.svg";
 import ProdListview from "./ProdListview";
 import { Link, useHistory } from "react-router-dom";
 import Can from "../../../components/Access/Can";
-import UploadIcon from "../../../image/cloud-download.svg";
 import UploadMedia from "../../../components/UploadMedia";
 import { transformProductCategory } from "../../../helper/helper";
+import { UploadFile } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 
 export default function Prod() {
   const { products, fetchProducts } = usePurchase();
   const { tenantData } = useTenant();
   const history = useHistory();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
@@ -43,8 +49,11 @@ export default function Prod() {
     };
   }, [fetchProducts, searchQuery]);
 
-  const handleCloseUploadMedia = () => {
+  const handleCloseUploadMedia = async () => {
     setOpenUploadMedia(false);
+    setLoading(true);
+    await fetchProducts();
+    setLoading(false);
   };
 
   return (
@@ -91,17 +100,32 @@ export default function Prod() {
           </Box>
           <Box>
             <Can app="purchase" module="product" action="create">
-              <IconButton onClick={() => setOpenUploadMedia(true)}>
-                <img
-                  src={UploadIcon}
-                  alt="Upload"
-                  title="Create Products via excelFile upload"
-                />
-              </IconButton>
+              {isSmallScreen ? (
+                <Tooltip title="Create Bulk Products via Excel">
+                  <IconButton
+                    onClick={() => setOpenUploadMedia(true)}
+                    size="large"
+                    color="primary"
+                  >
+                    <UploadFile />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Button
+                  onClick={() => setOpenUploadMedia(true)}
+                  startIcon={<UploadFile />}
+                  size="medium"
+                  color="primary"
+                  sx={{ textTransform: "capitalize" }}
+                >
+                  Upload Products
+                </Button>
+              )}
             </Can>
           </Box>
         </Box>
         {/* UploadMedia (Excel) for bulk uplaod products or vendor*/}
+
         {openUploadMedia && (
           <UploadMedia
             endpoint="purchase/products/download-template/"

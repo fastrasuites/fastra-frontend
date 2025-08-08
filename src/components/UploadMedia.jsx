@@ -12,6 +12,9 @@ import uploadIcon from "../image/upload.svg";
 import ExcelFileIcon from "../image/Excel-file-icon.svg";
 import ErrorIcon from "../image/error-icon.svg";
 import { usePurchase } from "../context/PurchaseContext";
+import Swal from "sweetalert2";
+import { useTenant } from "../context/TenantContext";
+import { useHistory } from "react-router-dom";
 
 const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
   const { uploadFile, downloadExcelTemplate } = usePurchase();
@@ -20,6 +23,9 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const history = useHistory();
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
 
   const validTypes = [
     "application/vnd.ms-excel",
@@ -68,44 +74,6 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
     validateFile(droppedFile);
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (file) {
-  //     try {
-  //       await uploadFile(file, uploadfileEndpoint);
-  //       setFile(null);
-  //       onClose();
-  //     } catch (error) {
-  //       console.error("Upload failed:", error);
-
-  //       const responseData = error.response?.data;
-  //       const message = responseData?.message || "Failed to upload the file.";
-  //       const errorDetails = responseData?.errors;
-
-  //       const formattedErrors = Array.isArray(errorDetails)
-  //         ? errorDetails
-  //             .map((errObj) => {
-  //               const row = errObj.row ?? "Unknown row";
-  //               const errors = Array.isArray(errObj.errors)
-  //                 ? errObj.errors.join("; ")
-  //                 : String(errObj.errors);
-  //               return `Row ${row}: ${errors}`;
-  //             })
-  //             .join("\n")
-  //         : "";
-
-  //       const fullMessage = formattedErrors
-  //         ? `${message}\n\n${formattedErrors}`
-  //         : message;
-
-  //       console.log("Parsed error message:", fullMessage);
-  //       setErrorMessage(fullMessage);
-  //       setShowErrorPopup(true);
-  //     }
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -113,8 +81,14 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
       setIsUploading(true); // Start loading
       try {
         await uploadFile(file, uploadfileEndpoint);
-        setFile(null);
         onClose();
+        Swal.fire({
+          icon: "success",
+          title: "Successful",
+          text: "Items uploaded successfully",
+        });
+
+        setFile(null);
       } catch (error) {
         console.error("Upload failed:", error);
 
@@ -176,36 +150,64 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
       >
         {showErrorPopup ? (
           <Box textAlign="center">
+            {/* header */}
             <Box mb={2} display="flex" justifyContent="center">
-              <img src={ErrorIcon} alt="File upload failed" width={32} />
+              <img src={ErrorIcon} alt="File upload failed" width={40} />
             </Box>
-            <Typography color="error" component="div">
-              ERROR! <br />
-              {errorMessage.split("\n").map((line, index) => (
-                <div key={index}>{line}</div>
-              ))}
+
+            <Typography variant="h6" color="error" gutterBottom>
+              Upload Failed
             </Typography>
 
-            <Typography sx={{ my: 2 }}>
-              Click{" "}
-              <a
-                href="#"
-                onClick={handleDownloadTemplate}
-                style={{ color: "red" }}
-              >
-                here to download the acceptable format,
-              </a>{" "}
-              edit appropriately and re-upload to continue.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Please try again to complete the request.
-            </Typography>
-            <Button
-              onClick={handleTryAgain}
-              variant="contained"
-              sx={{ mt: 2 }}
-              color="error"
+            {/* scrollable error list */}
+            <Box
+              sx={{
+                maxHeight: 220, // 👈 tune for your modal height
+                overflowY: "auto",
+                border: "1px solid #f3dede",
+                borderRadius: 1,
+                p: 1.5,
+                mb: 2,
+                textAlign: "left",
+                bgcolor: "#fff7f7",
+                "&::-webkit-scrollbar": { width: 6 },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#e57373",
+                  borderRadius: 3,
+                },
+              }}
             >
+              {errorMessage.split("\n").map((line, idx) => (
+                <Typography
+                  key={idx}
+                  variant="body2"
+                  sx={{
+                    fontFamily: "monospace",
+                    whiteSpace: "pre-wrap",
+                    borderLeft: "3px solid #e57373",
+                    pl: 1,
+                    mb: 0.5,
+                  }}
+                >
+                  {line}
+                </Typography>
+              ))}
+            </Box>
+
+            {/* helper text + actions */}
+            <Typography variant="body2" mb={2}>
+              Download the&nbsp;
+              <Box
+                component="span"
+                sx={{ color: "primary.main", cursor: "pointer" }}
+                onClick={handleDownloadTemplate}
+              >
+                correct template
+              </Box>
+              , fix the highlighted rows, and try again.
+            </Typography>
+
+            <Button variant="contained" color="error" onClick={handleTryAgain}>
               Try Again
             </Button>
           </Box>
@@ -287,7 +289,7 @@ const UploadMedia = ({ onClose, endpoint, uploadfileEndpoint }) => {
             </Box>
 
             <Typography variant="body2" color="text.secondary" mb={1}>
-              Only supports .xls and .csv files under 5MB.
+              Only supports .xlsx and .csv files under 5MB.
             </Typography>
             {errorMessage && (
               <Typography color="error" mb={1}>

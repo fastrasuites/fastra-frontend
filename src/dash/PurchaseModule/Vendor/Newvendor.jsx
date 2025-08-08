@@ -121,10 +121,27 @@ export default function Newvendor() {
         history.goBack();
       }
     } catch (err) {
+      console.error(err);
+      let errorMessage = "Please try again later.";
+
+      if (err.response?.data) {
+        const data = err.response.data;
+
+        if (data.non_field_errors?.length) {
+          errorMessage = data.non_field_errors[0];
+        } else if (typeof data.detail === "string") {
+          errorMessage = data.detail;
+        } else if (typeof data.message === "string") {
+          errorMessage = data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
       Swal.fire({
         icon: "error",
         title: "Submission Failed",
-        text: err.message || "Please try again later.",
+        text: errorMessage,
       });
     } finally {
       setIsSubmitting(false);

@@ -43,6 +43,8 @@ const POBasicInfoFieldsConverToPO = ({
     locationList.find((l) => l.id === formData.destination_location?.id) ||
     formData.destination_location ||
     null;
+
+  console.log("formData", formData);
   return (
     <div className="rfqBasicInfoField">
       {/* Top row: ID (if editing), Date, Created By */}

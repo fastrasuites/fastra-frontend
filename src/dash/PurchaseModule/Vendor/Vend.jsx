@@ -10,6 +10,8 @@ import {
   InputBase,
   Drawer,
   Button,
+  Tooltip,
+  useMediaQuery,
 } from "@mui/material";
 import Listview from "./Listview";
 import VendorDetails from "./VendorDetails";
@@ -17,9 +19,10 @@ import Swal from "sweetalert2";
 import { usePurchase } from "../../../context/PurchaseContext";
 import { Link, useHistory } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
-import UploadIcon from "../../../image/cloud-download.svg";
 import UploadMedia from "../../../components/UploadMedia";
 import Can from "../../../components/Access/Can";
+import { UploadFile } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 
 export default function Vend() {
   const [openUploadMedia, setOpenUploadMedia] = useState();
@@ -29,6 +32,8 @@ export default function Vend() {
   const [loading, setLoading] = useState(false);
   const tenant = useTenant().tenantData.tenant_schema_name;
   const history = useHistory();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const { fetchVendors, vendors, error } = usePurchase();
   const data = Array.isArray(vendors) ? vendors : [];
@@ -57,8 +62,11 @@ export default function Vend() {
     history.push(`/${tenant}/purchase/vendor/${item.id}`);
   };
 
-  const handleCloseUploadMedia = () => {
+  const handleCloseUploadMedia = async () => {
     setOpenUploadMedia(false);
+    setLoading(true);
+    await fetchVendors();
+    setLoading(false);
   };
   return (
     <div>
@@ -120,14 +128,29 @@ export default function Vend() {
                   />
                 </Box>
                 <Box>
-                  {/* IconButton to show modal (UploadMedia.jsx) to create products from excel file */}
-                  <IconButton onClick={() => setOpenUploadMedia(true)}>
-                    <img
-                      src={UploadIcon}
-                      alt="Upload"
-                      title="Create Vendor via excelFile upload"
-                    />
-                  </IconButton>
+                  {/* IconButton to show modal (UploadMedia.jsx) to create vendors from excel file */}
+
+                  {isSmallScreen ? (
+                    <Tooltip title="Create Bulk Vendors via Excel">
+                      <IconButton
+                        onClick={() => setOpenUploadMedia(true)}
+                        size="large"
+                        color="primary"
+                      >
+                        <UploadFile />
+                      </IconButton>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      startIcon={<UploadFile />}
+                      onClick={() => setOpenUploadMedia(true)}
+                      size="medium"
+                      color="primary"
+                      sx={{ textTransform: "capitalize" }}
+                    >
+                      Upload Vendors
+                    </Button>
+                  )}
                 </Box>
               </Grid>
 
