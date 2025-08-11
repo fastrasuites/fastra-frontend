@@ -28,11 +28,12 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedAdjustment, setSelectedAdjustment] = useState(
     formData.adjustmentType
   );
-  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
 
   useEffect(() => {
-    getActiveLocationList();
-  }, [getActiveLocationList]);
+    getActiveLocationListForForm();
+  }, [getActiveLocationListForForm]);
 
   useEffect(() => {
     if (activeLocationList.length <= 1 && activeLocationList[0]) {
@@ -137,20 +138,30 @@ const ScrapForm = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
-  const { products, fetchProducts } = usePurchase();
+  // const { products, fetchProducts } = usePurchase();
+  const { getLocationProducts, locationProducts } = useCustomLocation();
   const { createScrap } = useScrap();
 
+  console.log(formData);
+  const locationId = formData?.location?.id;
+
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (locationId) {
+      getLocationProducts(locationId);
+    }
+  }, [locationId, getLocationProducts]);
 
   const transformProducts = (list) =>
     list.map((prod) => ({
       ...prod,
+      available_product_quantity: prod?.quantity,
+      id: prod?.product_id,
+      product_name: prod?.product_name,
+      product_description: prod?.product_name,
       unit_of_measure: {
-        url: prod.unit_of_measure,
-        unit_category: prod?.unit_of_measure_details?.unit_name,
-        unit_name: prod?.unit_of_measure_details?.unit_name,
+        unit_name: prod?.product_unit_of_measure,
+        url: prod?.product_unit_of_measure,
+        unit_category: prod?.product_unit_of_measure,
       },
     }));
 
@@ -159,7 +170,7 @@ const ScrapForm = () => {
       label: "Product Name",
       field: "product",
       type: "autocomplete",
-      options: transformProducts(products),
+      options: transformProducts(locationProducts),
       getOptionLabel: (option) => option.product_name || "",
     },
     {

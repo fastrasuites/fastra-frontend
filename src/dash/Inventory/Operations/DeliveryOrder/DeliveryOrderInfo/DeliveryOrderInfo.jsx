@@ -21,6 +21,7 @@ import { formatDate } from "../../../../../helper/helper";
 import Swal from "sweetalert2";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
+import Can from "../../../../../components/Access/Can";
 
 const tableColumns = [
   "Product Name",
@@ -65,6 +66,7 @@ const DeliveryOrderInfo = () => {
     deliveryOrderList,
     getDeliveryOrderList,
     checkDeliveryOrderAvailability,
+
     confirmDeliveryOrder,
     error,
     isLoading,
@@ -332,13 +334,15 @@ const DeliveryOrderInfo = () => {
             <Button onClick={handleDelete}>Delete</Button>
 
             {(status === "draft" || status === "waiting") && (
-              <Link
-                to={`/${tenant_schema_name}/inventory/operations/delivery-order/${id}/edit`}
-              >
-                <Button variant="contained" size="large" disableElevation>
-                  Edit
-                </Button>
-              </Link>
+              <Can app="inventory" module="deliveryorder" action="edit">
+                <Link
+                  to={`/${tenant_schema_name}/inventory/operations/delivery-order/${id}/edit`}
+                >
+                  <Button variant="contained" size="large" disableElevation>
+                    Edit
+                  </Button>
+                </Link>
+              </Can>
             )}
           </Box>
         </Box>
@@ -454,20 +458,24 @@ const DeliveryOrderInfo = () => {
             {transformStatus(status)}
           </Typography>
           {status !== "done" && (
-            <Button variant="contained" onClick={handleSubmit}>
-              {status === "draft" || status === "waiting"
-                ? "Check Availability"
-                : status === "ready"
-                ? "Proceed"
-                : ""}
-            </Button>
+            <Can app="inventory" module="deliveryorder" action="approve">
+              <Button variant="contained" onClick={handleSubmit}>
+                {status === "draft" || status === "waiting"
+                  ? "Check Availability"
+                  : status === "ready"
+                  ? "Proceed"
+                  : ""}
+              </Button>
+            </Can>
           )}
           {status === "done" && (
-            <Link
-              to={`/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/return`}
-            >
-              <Button>Return</Button>
-            </Link>
+            <Can app="inventory" module="deliveryorderreturn" action="create">
+              <Link
+                to={`/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/return`}
+              >
+                <Button>Return</Button>
+              </Link>
+            </Can>
           )}
         </Box>
       </Box>

@@ -82,6 +82,26 @@ export const UserProvider = ({ children }) => {
     [client]
   );
 
+  const getUserListForForm = useCallback(async () => {
+    if (!client) {
+      setError("API client not initialized.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { data: rawData } = await client.get(
+        `/users/tenant-users/?basic=true`
+      );
+      setUserList(rawData);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to load users");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   const getGroups = useCallback(async () => {
     if (!client) {
       setError("API client not initialized.");
@@ -310,6 +330,7 @@ export const UserProvider = ({ children }) => {
       isLoading,
       error,
       getUserList,
+      getUserListForForm,
       getSingleUser,
       createUser,
       updateUser,
@@ -327,6 +348,7 @@ export const UserProvider = ({ children }) => {
       isLoading,
       error,
       getUserList,
+      getUserListForForm,
       getSingleUser,
       createUser,
       updateUser,

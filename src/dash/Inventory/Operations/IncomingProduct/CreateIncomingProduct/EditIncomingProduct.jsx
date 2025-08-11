@@ -267,22 +267,173 @@ export default function EditIncomingProduct() {
     };
 
     console.log(payload);
-    // try {
-    //   const res = await updateIncomingProduct(id, payload);
+    try {
+      const res = await updateIncomingProduct(id, payload);
 
-    //   Swal.fire("Success", "Record saved", "success");
-    //   history.push(
-    //     `/${tenant_schema_name}/inventory/operations/incoming-product/${res.incoming_product_id}`
-    //   );
-    // } catch (e) {
-    //   console.error(e);
-    //   const html = e.validation
-    //     ? Object.values(e.validation)
-    //         .map((m) => `<p>${m}</p>`)
-    //         .join("")
-    //     : e.message;
-    //   Swal.fire({ icon: "error", title: "Error", html });
-    // }
+      Swal.fire("Success", "Record saved", "success");
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/incoming-product/${res.incoming_product_id}`
+      );
+    } catch (e) {
+      console.error(e);
+      const html = e.validation
+        ? Object.values(e.validation)
+            .map((m) => `<p>${m}</p>`)
+            .join("")
+        : e.message;
+      Swal.fire({ icon: "error", title: "Error", html });
+    }
+
+    try {
+      const res = await updateIncomingProduct(id, payload);
+
+      // Show success message
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Incoming product created successfully",
+      });
+
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/incoming-product/${res.incoming_product_id}`
+      );
+    } catch (err) {
+      console.error(err);
+
+      if (
+        Array.isArray(err?.response?.data?.non_field_errors) &&
+        err.response.data.non_field_errors.length > 0
+      ) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.response.data.non_field_errors[0],
+        });
+        return;
+      }
+
+      const detailRaw = err?.response?.data?.detail?.toString?.() || "";
+
+      // Try to extract backorder-related info
+      const jsonMatch = detailRaw.match(/string='(.*?)'/);
+      const codeMatch = detailRaw.match(/code='(.*?)'/);
+
+      const backorderCode = codeMatch?.[1];
+      let IP_ID = null;
+
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          IP_ID = parsed?.IP_ID;
+        } catch (parseErr) {
+          console.warn("Failed to parse embedded JSON:", parseErr);
+        }
+      }
+
+      // Handle backorder_required
+      if (backorderCode === "backorder_required" && IP_ID) {
+        const result = await Swal.fire({
+          html: `
+            <h1 class="swal-title">OOPS!</h1>
+            <div class="swal-line-container">
+              <div class="swal-line1"></div>
+              <div class="swal-line2"></div>
+            </div>
+            <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+            <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+          `,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          customClass: {
+            popup: "custom-swal-popup",
+            title: "custom-swal-title",
+            confirmButton: "custom-swal-confirm-btn",
+            cancelButton: "custom-swal-cancel-btn",
+            htmlContainer: "custom-swal-html",
+          },
+        });
+
+        if (result.isConfirmed) {
+          try {
+            const backorderPayload = {
+              response: true,
+              incoming_product: IP_ID,
+            };
+
+            await createIncomingProductBackOrder(backorderPayload);
+
+            await Swal.fire({
+              icon: "success",
+              title: "Success",
+              text: "Backorder created successfully",
+            });
+          } catch (backorderErr) {
+            console.error("Backorder creation failed:", backorderErr);
+            await Swal.fire({
+              icon: "error",
+              title: "Backorder Error",
+              text: backorderErr.message || "Failed to create backorder.",
+            });
+          }
+        } else {
+          // User clicked "No"
+          const backorderPayload = {
+            response: false,
+            incoming_product: IP_ID,
+          };
+
+          try {
+            await createIncomingProductBackOrder(backorderPayload);
+
+            await Swal.fire({
+              icon: "info",
+              title: "Acknowledged",
+              text: "Backorder not created as per your choice.",
+            });
+          } catch (backorderErr) {
+            console.error(
+              "Error sending backorder decline response:",
+              backorderErr
+            );
+            await Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: backorderErr.message || "Failed to process your decision.",
+            });
+          }
+        }
+
+        return;
+      }
+
+      // Handle known validation error format (object with field errors)
+      const detailData = err?.response?.data?.detail;
+      if (
+        detailData &&
+        typeof detailData === "object" &&
+        !Array.isArray(detailData)
+      ) {
+        const messages = Object.values(detailData)
+          .flat()
+          .map((msg) => `<p>${msg}</p>`)
+          .join("");
+
+        await Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: messages || "An unknown validation error occurred.",
+        });
+
+        return;
+      }
+
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err?.message || "Something went wrong. Please try again.",
+      });
+    }
   };
 
   const transformProducts = (list) =>

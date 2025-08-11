@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import {
   Box,
   Button,
@@ -13,74 +13,146 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
+  Skeleton,
 } from "@mui/material";
 import { Link, useHistory, useParams } from "react-router-dom";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Swal from "sweetalert2";
-
 import { useIncomingProduct } from "../../../../../context/Inventory/IncomingProduct";
 import { useTenant } from "../../../../../context/TenantContext";
 import Can from "../../../../../components/Access/Can";
 
-const getStatusColor = (status) => {
-  const s = status != null ? String(status).toLowerCase() : "";
-  switch (s) {
-    case "validated":
-      return "#2ba24c";
-    case "draft":
-      return "#158fec";
-    case "canceled":
-      return "#e43e2b";
-    default:
-      return "#9e9e9e";
-  }
+// Status color mapping
+const STATUS_COLORS = {
+  validated: "#2ba24c",
+  draft: "#158fec",
+  canceled: "#e43e2b",
+  default: "#9e9e9e",
 };
 
-// Function to parse prefixed IDs (e.g., "SUPPIN00010")
+// Helper function to get status color
+const getStatusColor = (status) =>
+  STATUS_COLORS[(status || "").toLowerCase()] || STATUS_COLORS.default;
+
+// Helper function to parse prefixed IDs
 const parsePrefixedId = (id) => {
   if (!id) return null;
-
-  // Extract prefix and numeric part
   const match = id.match(/^([A-Za-z]+)(\d+)$/);
   if (!match) return null;
 
   const prefix = match[1];
   const numericPart = match[2];
-  const number = parseInt(numericPart, 10);
-
   return {
     prefix,
-    number,
-    totalLength: numericPart.length, // To preserve zero padding
+    number: parseInt(numericPart, 10),
+    totalLength: numericPart.length,
   };
 };
 
-// Function to generate next/prev IDs
+// Helper function to generate adjacent IDs
 const generateAdjacentId = (baseId, increment) => {
   const parts = parsePrefixedId(baseId);
-  if (!parts) return null;
+  if (!parts || parts.number + increment < 1) return null;
 
-  const newNumber = parts.number + increment;
-  if (newNumber < 1) return null; // No negative IDs
+  return `${parts.prefix}${String(parts.number + increment).padStart(
+    parts.totalLength,
+    "0"
+  )}`;
+};
 
-  // Format number with original zero padding
-  const formattedNumber = String(newNumber).padStart(parts.totalLength, "0");
-  return `${parts.prefix}${formattedNumber}`;
+// Component for navigation controls
+const NavigationControls = ({
+  prevId,
+  nextId,
+  onNavigate,
+  onClose,
+  tenantSchema,
+}) => (
+  <Box display="flex" alignItems="center" gap={2}>
+    <Box
+      display="flex"
+      alignItems="center"
+      gap={1}
+      bgcolor="white"
+      border="1px solid #E2E6E9"
+      borderRadius={1}
+      py={0.5}
+      px={1}
+    >
+      <Tooltip title="Previous Incoming Product">
+        <IconButton
+          onClick={() => onNavigate(prevId)}
+          disabled={!prevId}
+          size="small"
+        >
+          <ArrowBackIosIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+
+      <Box sx={{ width: "2px", bgcolor: "#E2E6E9", alignSelf: "stretch" }} />
+
+      <Tooltip title="Next Incoming Product">
+        <IconButton
+          onClick={() => onNavigate(nextId)}
+          disabled={!nextId}
+          size="small"
+        >
+          <ArrowForwardIosIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </Box>
+
+    <Button size="large" disableElevation onClick={onClose}>
+      Close
+    </Button>
+  </Box>
+);
+
+// Component for product info table
+const ProductTable = ({ items, columns, emptyMessage }) => {
+  if (!items || items.length === 0) {
+    return (
+      <TableRow>
+        <TableCell colSpan={columns.length} align="center" sx={{ py: 4 }}>
+          <Typography variant="body2" color="textSecondary">
+            {emptyMessage}
+          </Typography>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  return items.map((row, idx) => (
+    <TableRow
+      key={`${row.id}-${idx}`}
+      hover
+      sx={{ "&:nth-of-type(odd)": { bgcolor: "#f5f5f5" } }}
+    >
+      {columns.map(({ key, render }) => (
+        <TableCell key={key} sx={{ fontSize: "14px", color: "#7A8A98" }}>
+          {render(row)}
+        </TableCell>
+      ))}
+    </TableRow>
+  ));
 };
 
 export default function IncomingProductInfo() {
   const { id } = useParams();
   const { tenantData } = useTenant();
-  const schema = tenantData?.tenant_schema_name;
+  const schema = tenantData?.tenant_schema_name || "";
   const history = useHistory();
 
   // Context hooks
-  const { getSingleIncomingProduct, updateIncomingProductStatus } =
-    useIncomingProduct();
-  // const { fetchVendors, vendors, fetchSingleProduct } = usePurchase();
+  const {
+    getSingleIncomingProduct,
+    updateIncomingProductStatus,
+    getIncomingProductBackOrder,
+    backOrder,
+  } = useIncomingProduct();
 
-  // Local state
+  // State management
   const [incoming, setIncoming] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -88,96 +160,71 @@ export default function IncomingProductInfo() {
   const [navigation, setNavigation] = useState({
     nextId: null,
     prevId: null,
-    loading: false,
   });
+  const [tab, setTab] = useState("current");
+  const [backOrderLoading, setBackOrderLoading] = useState(false);
 
-  // Enhanced error handling
-  const showError = useCallback((msg) => {
+  // Alert helpers
+  const showAlert = useCallback((icon, title, text) => {
     Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: msg,
-      timer: 3000,
+      icon,
+      title,
+      text,
+      timer: icon === "error" ? 3000 : 2000,
+      ...(icon !== "error" && { showConfirmButton: false }),
     });
   }, []);
 
-  const showSuccess = useCallback((msg) => {
-    Swal.fire({
-      icon: "success",
-      title: "Success",
-      text: msg,
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  }, []);
-
-  // Load data with error handling
+  // Data loader
   const loadData = useCallback(async () => {
     setLoading(true);
+    setError(null);
+
     try {
-      // Fetch the raw incoming product
-      const { data: raw } = await getSingleIncomingProduct(id);
+      const { data } = await getSingleIncomingProduct(id);
+      setIncoming(data);
 
-      // Fetch all vendors
-      // await fetchVendors();
-
-      // Enrich each item with full product info
-      const items = await Promise.all(
-        (raw.incoming_product_items || []).map(async (item) => {
-          // const { data: product } = await fetchSingleProduct(item.product);
-          return {
-            ...item,
-            // product,
-          };
-        })
-      );
-
-      setIncoming({
-        ...raw,
-        incoming_product_items: items,
-      });
-      setError(null);
-
-      // Load adjacent IDs after successful data load
+      // Generate adjacent IDs
       const parts = parsePrefixedId(id);
       if (parts) {
         setNavigation({
           nextId: generateAdjacentId(id, 1),
           prevId: generateAdjacentId(id, -1),
-          loading: false,
         });
       }
     } catch (e) {
-      console.error(e);
-      setError(e.response.data.detail || "Failed to load incoming product");
-      showError(e.response.data.detail || "Failed to load incoming product");
+      const errorMsg =
+        e.response?.data?.detail || "Failed to load incoming product";
+      setError(errorMsg);
+      showAlert("error", "Error", errorMsg);
     } finally {
       setLoading(false);
     }
-  }, [
-    id,
-    getSingleIncomingProduct,
-    // fetchVendors,
-    // fetchSingleProduct,
-    showError,
-  ]);
+  }, [id, getSingleIncomingProduct, showAlert]);
+
+  // Back order loader
+  const loadBackOrder = useCallback(async () => {
+    if (!id) return;
+
+    setBackOrderLoading(true);
+    try {
+      await getIncomingProductBackOrder(id);
+    } catch (e) {
+      console.error("Failed to load back order:", e);
+    } finally {
+      setBackOrderLoading(false);
+    }
+  }, [id, getIncomingProductBackOrder]);
 
   // Handle navigation
   const handleNavigate = useCallback(
-    (newId) => {
-      if (!newId) return;
-      history.push(`/${schema}/inventory/operations/incoming-product/${newId}`);
-    },
+    (newId) =>
+      newId &&
+      history.push(`/${schema}/inventory/operations/incoming-product/${newId}`),
     [history, schema]
   );
 
-  useEffect(() => {
-    if (id) {
-      loadData();
-    }
-  }, [id, loadData]);
-
-  // Navigate to edit screen
+  // Handle edit
   const handleEdit = useCallback(() => {
     history.push(
       `/${schema}/inventory/operations/incoming-product/${id}/edit`,
@@ -200,29 +247,66 @@ export default function IncomingProductInfo() {
         };
 
         await updateIncomingProductStatus(id, payload);
-        showSuccess(`Incoming product has been ${newStatus}`);
+        showAlert(
+          "success",
+          "Success",
+          `Incoming product has been ${newStatus}`
+        );
         await loadData();
       } catch (err) {
-        console.error("Status change error:", err);
-        if (err.validation) {
-          showError(Object.values(err.validation).join("<br>"));
-        } else {
-          showError(err.message || `Failed to ${newStatus} incoming product`);
-        }
+        const errorMsg =
+          err.response?.data?.detail ||
+          `Failed to ${newStatus} incoming product`;
+        showAlert("error", "Error", errorMsg);
       } finally {
         setActionLoading(false);
       }
     },
-    [
-      incoming,
-      id,
-      updateIncomingProductStatus,
-      showSuccess,
-      showError,
-      loadData,
-    ]
+    [incoming, id, updateIncomingProductStatus, showAlert, loadData]
   );
 
+  // Load data on mount
+  useEffect(() => {
+    if (id) {
+      loadData();
+      loadBackOrder();
+    }
+  }, [id, loadData, loadBackOrder]);
+
+  // Reset tab when ID changes
+  useEffect(() => {
+    setTab("current");
+  }, [id]);
+
+  // Table columns configuration
+  const tableColumns = useMemo(
+    () => [
+      {
+        key: "product",
+        label: "Product Name",
+        render: (row) => row.product_details?.product_name || "N/A",
+      },
+      {
+        key: "expected",
+        label: "Expected QTY",
+        render: (row) => row.expected_quantity || "N/A",
+      },
+      {
+        key: "uom",
+        label: "Unit of Measure",
+        render: (row) =>
+          row.product_details?.unit_of_measure_details?.unit_name || "N/A",
+      },
+      {
+        key: "received",
+        label: "Qty Received",
+        render: (row) => row.quantity_received || "N/A",
+      },
+    ],
+    []
+  );
+
+  // Loading state
   if (loading) {
     return (
       <Box p={4} textAlign="center">
@@ -234,6 +318,7 @@ export default function IncomingProductInfo() {
     );
   }
 
+  // Error state
   if (error || !incoming) {
     return (
       <Box p={4} textAlign="center">
@@ -251,11 +336,13 @@ export default function IncomingProductInfo() {
     );
   }
 
-  // const supplier = vendors.find((v) => v.id === incoming.supplier);
+  // Back order data
+  const hasBackOrder = Boolean(backOrder?.data?.backorder_id);
+  const hasBackOrderItems = backOrder?.data?.backorder_items?.length > 0;
 
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
-      {/* Header with navigation */}
+      {/* Header Section */}
       <Box display="flex" justifyContent="space-between" mb={2}>
         <div>
           <Can app="purchase" module="incomingproduct" action="create">
@@ -267,59 +354,14 @@ export default function IncomingProductInfo() {
           </Can>
         </div>
 
-        <Box display="flex" alignItems="center" gap={2} justifySelf={"end"}>
-          {/* Navigation controls */}
-          <Box
-            display="flex"
-            alignItems="center"
-            gap={1}
-            bgcolor="white"
-            border="1px solid #E2E6E9"
-            borderRadius={1}
-            py={0.5}
-            px={1}
-          >
-            <Tooltip title="Previous Incoming Product">
-              <span>
-                <IconButton
-                  onClick={() => handleNavigate(navigation.prevId)}
-                  disabled={!navigation.prevId}
-                  size="small"
-                >
-                  <ArrowBackIosIcon fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-
-            <Box
-              sx={{
-                width: "2px",
-                bgcolor: "#E2E6E9",
-                alignSelf: "stretch",
-                borderRadius: "1px",
-              }}
-            />
-
-            <Tooltip title="Next Incoming Product">
-              <span>
-                <IconButton
-                  onClick={() => handleNavigate(navigation.nextId)}
-                  disabled={!navigation.nextId}
-                  size="small"
-                >
-                  <ArrowForwardIosIcon fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
-
-          <Button
-            size="large"
-            disableElevation
-            onClick={() => history.push(`/${schema}/inventory/operations`)}
-          >
-            Close
-          </Button>
+        <Box display="flex" alignItems="center" gap={2}>
+          <NavigationControls
+            prevId={navigation.prevId}
+            nextId={navigation.nextId}
+            onNavigate={handleNavigate}
+            onClose={() => history.push(`/${schema}/inventory/operations`)}
+            tenantSchema={schema}
+          />
 
           {incoming.status === "draft" && (
             <Can app="inventory" module="incomingproduct" action="edit">
@@ -330,14 +372,14 @@ export default function IncomingProductInfo() {
                 onClick={handleEdit}
                 disabled={actionLoading}
               >
-                Edit
+                {actionLoading ? <CircularProgress size={24} /> : "Edit"}
               </Button>
             </Can>
           )}
         </Box>
       </Box>
 
-      {/* Main content */}
+      {/* Main Content */}
       <Box
         p={3}
         display="grid"
@@ -349,6 +391,7 @@ export default function IncomingProductInfo() {
           Product Information
         </Typography>
 
+        {/* Status Indicator */}
         <Box>
           <Typography>Status</Typography>
           <Typography color={getStatusColor(incoming.status)}>
@@ -356,120 +399,120 @@ export default function IncomingProductInfo() {
           </Typography>
         </Box>
 
+        {/* Product Metadata */}
         <Box
           display="grid"
-          gridTemplateColumns={"1fr 1fr 1fr 1fr 1fr"}
-          justifyContent={"space-between"}
-          gap={1}
+          gridTemplateColumns="repeat(auto-fill, minmax(200px, 1fr))"
+          justifyContent="space-between"
+          gap={3}
           borderBottom="1px solid #E2E6E9"
           pb={3}
         >
-          <Box>
-            <Typography mb={1}>ID</Typography>
-            <Typography variant="body2" color="#7A8A98">
-              {incoming.incoming_product_id || "N/A"}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography mb={1}>Receipt Type</Typography>
-            <Typography
-              variant="body2"
-              color="#7A8A98"
-              sx={{ textTransform: "capitalize" }}
-            >
-              {incoming.receipt_type
-                ? incoming.receipt_type.replace(/_/g, " ")
-                : "N/A"}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography mb={1}>Source Location</Typography>
-            <Typography variant="body2" color="#7A8A98">
-              {incoming.source_location_details?.location_name || "N/A"}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography mb={1}>Destination Location</Typography>
-            <Typography variant="body2" color="#7A8A98">
-              {incoming.destination_location_details?.location_name || "N/A"}
-            </Typography>
-          </Box>
-          <Box>
-            <Typography mb={1}>Name of Supplier</Typography>
-            <Typography variant="body2" color="#7A8A98">
-              {incoming?.supplier_details?.company_name || "N/A"}
-            </Typography>
-          </Box>
+          <InfoItem label="ID" value={incoming.incoming_product_id} />
+          <InfoItem
+            label="Receipt Type"
+            value={incoming.receipt_type?.replace(/_/g, " ")}
+            capitalize
+          />
+          <InfoItem
+            label="Source Location"
+            value={incoming.source_location_details?.location_name}
+          />
+          <InfoItem
+            label="Destination Location"
+            value={incoming.destination_location_details?.location_name}
+          />
+          <InfoItem
+            label="Supplier"
+            value={incoming.supplier_details?.company_name}
+          />
         </Box>
 
-        <TableContainer
-          component={Paper}
-          elevation={0}
-          sx={{ borderRadius: 2, border: "1px solid #E2E6E9", bgcolor: "#fff" }}
-        >
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                {[
-                  "Product Name",
-                  "Expected QTY",
-                  "Unit of Measure",
-                  "Qty Received",
-                ].map((text) => (
-                  <TableCell
-                    key={text}
-                    sx={{
-                      fontWeight: 500,
-                      color: "#7A8A98",
-                      fontSize: "14px",
-                      p: 3,
-                    }}
-                  >
-                    {text}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {incoming.incoming_product_items?.length > 0 ? (
-                incoming.incoming_product_items.map((row, idx) => (
-                  <TableRow
-                    key={idx}
-                    hover
-                    sx={{ "&:nth-of-type(odd)": { bgcolor: "#f5f5f5" } }}
-                  >
-                    <TableCell
-                      sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}
-                    >
-                      {row.product_details?.product_name || "N/A"}
-                    </TableCell>
-                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                      {row.expected_quantity || "N/A"}
-                    </TableCell>
-                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                      {row.product_details?.unit_of_measure_details
-                        ?.unit_name || "N/A"}
-                    </TableCell>
-                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
-                      {row.quantity_received || "N/A"}
-                    </TableCell>
+        {/* Back Order Info */}
+        {hasBackOrder && (
+          <Box>
+            <Typography mb={1}>Back Order of:</Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                textDecoration: "underline",
+                color: "#E43D2B",
+                fontStyle: "italic",
+              }}
+            >
+              {backOrder.data.backorder_id}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Table Section */}
+        <Box>
+          {hasBackOrderItems && (
+            <Box display="flex" gap={2} mb={2}>
+              <TabButton
+                active={tab === "current"}
+                onClick={() => setTab("current")}
+              >
+                Current Receipt
+              </TabButton>
+              <TabButton
+                active={tab === "backorder"}
+                onClick={() => setTab("backorder")}
+              >
+                Back Order
+              </TabButton>
+            </Box>
+          )}
+
+          <TableContainer
+            component={Paper}
+            elevation={0}
+            sx={{
+              borderRadius: 2,
+              border: "1px solid #E2E6E9",
+              bgcolor: "#fff",
+              minHeight: 300,
+            }}
+          >
+            {backOrderLoading ? (
+              <TableSkeleton columns={tableColumns} />
+            ) : (
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    {tableColumns.map(({ key, label }) => (
+                      <TableCell
+                        key={key}
+                        sx={{
+                          fontWeight: 500,
+                          color: "#7A8A98",
+                          fontSize: "14px",
+                          p: 3,
+                        }}
+                      >
+                        {label}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                    <Typography variant="body2" color="textSecondary">
-                      No items found
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                </TableHead>
+                <TableBody>
+                  <ProductTable
+                    items={
+                      tab === "current"
+                        ? incoming.incoming_product_items
+                        : backOrder?.data?.backorder_items
+                    }
+                    columns={tableColumns}
+                    emptyMessage="No items found"
+                  />
+                </TableBody>
+              </Table>
+            )}
+          </TableContainer>
+        </Box>
       </Box>
 
-      {/* Footer actions */}
+      {/* Footer Actions */}
       <Box display="flex" justifyContent="space-between" mr={4}>
         <Typography
           variant="body1"
@@ -478,28 +521,26 @@ export default function IncomingProductInfo() {
         >
           {incoming.status}
         </Typography>
+
         {incoming.status === "draft" && (
           <Box display="flex" gap={2}>
-            <Button
-              variant="contained"
-              color="error"
-              size="large"
-              disableElevation
-              onClick={() => handleStatusChange("canceled")}
-              disabled={actionLoading}
-            >
-              {actionLoading ? <CircularProgress size={24} /> : "Cancel"}
-            </Button>
-            <Can app="inventory" module="incomingproduct" action="approve">
-              <Button
-                variant="contained"
-                size="large"
-                disableElevation
-                onClick={() => handleStatusChange("validated")}
-                disabled={actionLoading}
+            <Can app="inventory" module="incomingproduct" action="reject">
+              <ActionButton
+                color="error"
+                onClick={() => handleStatusChange("canceled")}
+                loading={actionLoading}
               >
-                {actionLoading ? <CircularProgress size={24} /> : "Validate"}
-              </Button>
+                Cancel
+              </ActionButton>
+            </Can>
+
+            <Can app="inventory" module="incomingproduct" action="approve">
+              <ActionButton
+                onClick={() => handleStatusChange("validated")}
+                loading={actionLoading}
+              >
+                Validate
+              </ActionButton>
             </Can>
           </Box>
         )}
@@ -507,3 +548,54 @@ export default function IncomingProductInfo() {
     </Box>
   );
 }
+
+// Helper Components
+const InfoItem = ({ label, value, capitalize = false }) => (
+  <Box>
+    <Typography mb={1}>{label}</Typography>
+    <Typography
+      variant="body2"
+      color="#7A8A98"
+      sx={capitalize ? { textTransform: "capitalize" } : {}}
+    >
+      {value || "N/A"}
+    </Typography>
+  </Box>
+);
+
+const TabButton = ({ children, active, onClick }) => (
+  <Button
+    variant={active ? "contained" : "outlined"}
+    disableElevation
+    onClick={onClick}
+  >
+    {children}
+  </Button>
+);
+
+const ActionButton = ({ children, color, onClick, loading }) => (
+  <Button
+    variant="contained"
+    color={color}
+    size="large"
+    disableElevation
+    onClick={onClick}
+    disabled={loading}
+  >
+    {loading ? <CircularProgress size={24} color="inherit" /> : children}
+  </Button>
+);
+
+const TableSkeleton = ({ columns }) => (
+  <>
+    {Array.from({ length: 5 }).map((_, idx) => (
+      <TableRow key={idx}>
+        {columns.map((col) => (
+          <TableCell key={col.key}>
+            <Skeleton variant="text" />
+          </TableCell>
+        ))}
+      </TableRow>
+    ))}
+  </>
+);

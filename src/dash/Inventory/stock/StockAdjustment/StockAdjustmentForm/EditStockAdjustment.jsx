@@ -22,12 +22,13 @@ const defaultFormData = {
 
 // Renders the top form section
 const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
-  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
   const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
-    getActiveLocationList();
-  }, [getActiveLocationList]);
+    getActiveLocationListForForm();
+  }, [getActiveLocationListForForm]);
 
   useEffect(() => {
     if (activeLocationList.length <= 1 && activeLocationList[0]) {
@@ -113,46 +114,41 @@ const EditStockAdjustment = () => {
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
   const location = useLocation();
-  const { products, fetchProducts } = usePurchase();
-  const { locationList } = useCustomLocation(); // Get locationList here
-  const { isLoading: stockLoading, updateStockAdjustment } =
-    useStockAdjustment();
+  const { getLocationProducts, locationProducts } = useCustomLocation();
+
+  const { activeLocationList } = useCustomLocation(); // Get locationList here
+  const {
+    isLoading: stockLoading,
+    updateStockAdjustment,
+    singleAdjustment,
+    getSingleStockAdjustment,
+  } = useStockAdjustment();
 
   const { id } = useParams();
 
-  // Transform products with UOM structure
-  const transformProducts = (list) =>
-    list.map((prod) => ({
-      ...prod,
-      unit_of_measure: {
-        url: prod.unit_of_measure,
-        unit_category: prod?.unit_of_measure_details?.unit_name,
-        unit_name: prod?.unit_of_measure_details?.unit_name,
-      },
-    }));
-
   useEffect(() => {
-    fetchProducts();
+    getSingleStockAdjustment();
   }, []);
 
-  console.log(location.state);
+  console.log(singleAdjustment);
   // Initialize form data when products/locations load
   useEffect(() => {
-    if (location?.state?.StockAdjustment && products.length && locationList) {
+    if (location?.state?.StockAdjustment && activeLocationList) {
       const adj = location.state.StockAdjustment;
       // Map adjustment items to form items
       const items = adj.stock_adjustment_items.map((item) => {
         return {
           ...item,
-          product: item?.product,
-          unit_of_measure: item.product?.unit_of_measure_details,
-          available_product_quantity: item?.product?.available_product_quantity,
+          product: item?.product_details,
+          unit_of_measure: item.product_details?.unit_of_measure_details,
+          available_product_quantity:
+            item?.product_details?.available_product_quantity,
           qty_received: item.adjusted_quantity,
         };
       });
 
       // Find matching location object
-      const locationObj = locationList.find(
+      const locationObj = activeLocationList.find(
         (loc) => loc.url === adj.warehouse_location
       );
 
@@ -168,17 +164,40 @@ const EditStockAdjustment = () => {
         is_hidden: adj.is_hidden || false,
       });
     }
-  }, [location.state, products, locationList]); // Re-run when these update
+  }, [location.state, activeLocationList]); // Re-run when these update
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const locationId = formData?.location?.id;
+
+  useEffect(() => {
+    if (locationId) {
+      getLocationProducts(locationId);
+    }
+  }, [locationId, getLocationProducts]);
+
+  const transformProducts = (list) =>
+    list.map((prod) => ({
+      ...prod,
+      available_product_quantity: prod?.quantity,
+      id: prod?.product_id,
+      product_name: prod?.product_name,
+      product_description: prod?.product_name,
+      unit_of_measure: {
+        unit_name: prod?.product_unit_of_measure,
+        url: prod?.product_unit_of_measure,
+        unit_category: prod?.product_unit_of_measure,
+      },
+    }));
+
   const rowConfig = [
     {
       label: "Product Name",
       field: "product",
       type: "autocomplete",
-      options: transformProducts(products),
+      options: transformProducts(locationProducts),
       getOptionLabel: (opt) => opt?.product_name || "",
     },
     {

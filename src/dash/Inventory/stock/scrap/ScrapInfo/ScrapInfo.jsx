@@ -22,6 +22,7 @@ import { useScrap } from "../../../../../context/Inventory/Scrap";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 // import { usePurchase } from "../../../../../context/PurchaseContext";
 import Swal from "sweetalert2";
+import Can from "../../../../../components/Access/Can";
 
 // Status-to-color mapping
 const STATUS_COLOR = {
@@ -299,15 +300,17 @@ const ScrapInfo = () => {
           </Button>
 
           {scrap.status === "draft" && (
-            <Button
-              variant="contained"
-              size="large"
-              disableElevation
-              onClick={handleNavigateToEdit}
-              disabled={actionLoading}
-            >
-              Edit
-            </Button>
+            <Can app="inventory" module="scrap" action="edit">
+              <Button
+                variant="contained"
+                size="large"
+                disableElevation
+                onClick={handleNavigateToEdit}
+                disabled={actionLoading}
+              >
+                Edit
+              </Button>
+            </Can>
           )}
         </Box>
       </Box>
@@ -419,15 +422,17 @@ const ScrapInfo = () => {
           {scrap.status}
         </Typography>
         {scrap.status === "draft" && (
-          <Button
-            variant="contained"
-            size="large"
-            disableElevation
-            onClick={handleValidate}
-            disabled={actionLoading}
-          >
-            {actionLoading ? <CircularProgress size={24} /> : "Validate"}
-          </Button>
+          <Can app="inventory" module="scrap" action="approve">
+            <Button
+              variant="contained"
+              size="large"
+              disableElevation
+              onClick={handleValidate}
+              disabled={actionLoading}
+            >
+              {actionLoading ? <CircularProgress size={24} /> : "Validate"}
+            </Button>
+          </Can>
         )}
       </Box>
     </Box>

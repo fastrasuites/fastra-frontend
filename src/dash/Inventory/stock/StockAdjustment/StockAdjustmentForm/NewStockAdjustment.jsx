@@ -4,7 +4,6 @@ import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import "./NewStockAdjustment.css";
 import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjustment";
-import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import Swal from "sweetalert2";
 import { useTenant } from "../../../../../context/TenantContext";
@@ -25,10 +24,11 @@ const defaultFormData = {
 // ---------- COMPONENT: Basic Form Inputs ----------
 const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
 
   useEffect(() => {
-    getActiveLocationList();
+    getActiveLocationListForForm();
   }, []);
 
   useEffect(() => {
@@ -104,13 +104,20 @@ const NewStockAdjustment = () => {
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
 
-  const { products, fetchProducts } = usePurchase();
+  const { getLocationProducts, locationProducts } = useCustomLocation();
   const { isLoading: stockLoading, createStockAdjustment } =
     useStockAdjustment();
 
+  const locationId = formData?.source_location?.id;
+  console.log(formData);
+
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (locationId) {
+      getLocationProducts(locationId);
+    }
+  }, [getLocationProducts, locationId]);
+
+  console.log(locationProducts);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -119,10 +126,14 @@ const NewStockAdjustment = () => {
   const transformProducts = (list) =>
     list.map((prod) => ({
       ...prod,
+      available_product_quantity: prod?.quantity,
+      id: prod?.product_id,
+      product_name: prod?.product_name,
+      product_description: prod?.product_name,
       unit_of_measure: {
-        url: prod.unit_of_measure,
-        unit_category: prod?.unit_of_measure_details?.unit_name,
-        unit_name: prod?.unit_of_measure_details?.unit_category,
+        unit_name: prod?.product_unit_of_measure,
+        url: prod?.product_unit_of_measure,
+        unit_category: prod?.product_unit_of_measure,
       },
     }));
 
@@ -131,7 +142,7 @@ const NewStockAdjustment = () => {
       label: "Product Name",
       field: "product",
       type: "autocomplete",
-      options: transformProducts(products),
+      options: transformProducts(locationProducts),
       getOptionLabel: (opt) => opt?.product_name || "",
     },
     {

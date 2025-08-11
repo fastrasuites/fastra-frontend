@@ -1,29 +1,24 @@
-import React, { act, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Box, Button, Paper, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Typography } from "@mui/material";
 import CommonTable from "../../../../components/CommonTable/CommonTable";
 import { useTenant } from "../../../../context/TenantContext";
 import { useIncomingProduct } from "../../../../context/Inventory/IncomingProduct";
-// import { mockData } from "../../data/incomingProductData";
-// import { getStatusColor } from '../../utils';
 
 const getStatusColor = (status) => {
-  switch (status) {
+  switch (status.toLowerCase()) {
     case "validated":
-    case "Validated":
       return "#2ba24c";
     case "draft":
-    case "Drafted":
       return "#158fec";
-    case "Cancelled":
-    case "Cancel":
+    case "cancelled":
+    case "cancel":
       return "#e43e2b";
     default:
       return "#9e9e9e";
   }
 };
 
-const IncomingProductManualListview = () => {
+const IncomingProductManualListview = ({ selectedLocation }) => {
   const { tenantData } = useTenant();
   const tenantSchemaName = tenantData?.tenant_schema_name;
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,14 +29,14 @@ const IncomingProductManualListview = () => {
   const { incomingProductList, getIncomingProductList, isLoading } =
     useIncomingProduct();
 
+  console.log(selectedLocation);
+
   useEffect(() => {
     const debounce = setTimeout(() => {
-      getIncomingProductList(searchQuery);
+      getIncomingProductList(searchQuery, selectedLocation);
     }, 500);
     return () => clearTimeout(debounce);
-  }, [searchQuery, getIncomingProductList]);
-
-  console.log("Incoming Product List:", incomingProductList);
+  }, [searchQuery, getIncomingProductList, selectedLocation]);
 
   const cleanedIncomingProductList = incomingProductList.map((item) => ({
     ...item,
@@ -53,7 +48,6 @@ const IncomingProductManualListview = () => {
   const columns = [
     { id: "incoming_product_id", label: "Incoming Product ID" },
     { id: "receipt_type", label: "Receipt Type" },
-    // { id: "dateCreated", label: "Date Created" },
     { id: "source_location", label: "Source Location" },
     { id: "destination_location", label: "Destination Location" },
     {
@@ -83,7 +77,6 @@ const IncomingProductManualListview = () => {
     },
   ];
 
-  // Grid item renderer
   const renderGridItem = (item) => (
     <Box
       key={item.requestId}
@@ -101,13 +94,8 @@ const IncomingProductManualListview = () => {
       gap="16px"
     >
       <Typography variant="subtitle2">{item.id}</Typography>
-      <Typography
-        variant="body2"
-        color={"textSecondary"}
-        fontSize={12}
-        sx={{ textTransform: "capitalize" }}
-      >
-        {item.receipt_type.split("_").join(" ")}
+      <Typography variant="body2" color={"textSecondary"} fontSize={12}>
+        {item.receipt_type?.replace(/_/g, " ")}
       </Typography>
       <Typography variant="body2" color={"textSecondary"} fontSize={12}>
         {item.source_location}
@@ -136,6 +124,7 @@ const IncomingProductManualListview = () => {
       </Box>
     </Box>
   );
+
   return (
     <Box>
       <CommonTable

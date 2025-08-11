@@ -99,7 +99,7 @@ const InventoryHeader = () => {
   }
 
   // Configuration
-  if (hasPermission("inventory:locationconfiguration:view")) {
+  if (hasPermission("inventory:multilocation:view")) {
     menuItems.push({
       label: "Configuration",
       link: `/${tenant_schema_name}/inventory/location-configuration`,

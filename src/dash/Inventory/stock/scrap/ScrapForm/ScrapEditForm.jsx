@@ -28,11 +28,12 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedAdjustment, setSelectedAdjustment] = useState(
     formData.adjustmentType
   );
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
 
   useEffect(() => {
-    getLocationList();
-  }, [getLocationList]);
+    getActiveLocationListForForm();
+  }, [getActiveLocationListForForm]);
 
   useEffect(() => {
     setSelectedLocation(formData.location);
@@ -90,9 +91,9 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
           </label>
           <Autocomplete
             disablePortal
-            options={locationList}
+            options={activeLocationList}
             value={selectedLocation}
-            getOptionLabel={(option) => option.name || option.id || ""}
+            getOptionLabel={(option) => option?.name || option?.id || ""}
             isOptionEqualToValue={(option, value) => option?.id === value?.id}
             onChange={handleLocationChange}
             renderInput={(params) => (
@@ -122,65 +123,80 @@ const ScrapEditForm = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
-  const { products, fetchProducts } = usePurchase();
-  const { updateScrap } = useScrap();
-
-  const location = useLocation();
-  const { locationList } = useCustomLocation();
+  const { updateScrap, singleScrap, getSingleScrap } = useScrap();
+  const { getLocationProducts, locationProducts } = useCustomLocation();
+  const { activeLocationList } = useCustomLocation();
   const { id } = useParams();
 
+  // Fetch scrap details
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    getSingleScrap(id);
+  }, [id, getSingleScrap]);
+
   useEffect(() => {
-    const scrap = location.state?.Scrap;
-    if (scrap && products.length && locationList.length) {
-      const items = scrap.scrap_items.map((item) => ({
-        ...item,
-        product: item?.product,
-        unit_of_measure: {
-          url: item.product.unit_of_measure,
-          unit_category: item.product?.unit_of_measure_details?.unit_name,
-          unit_name: item.product?.unit_of_measure_details?.unit_name,
-        },
+    if (singleScrap) {
+      const items = singleScrap.scrap_items.map((item) => {
+        const prod = item.product_details || {};
+        return {
+          ...item,
+          product: prod,
+          unit_of_measure: {
+            url: prod.unit_of_measure,
+            unit_category: prod?.unit_of_measure_details?.unit_category,
+            unit_name: prod?.unit_of_measure_details?.unit_name,
+          },
+          available_product_quantity: prod?.available_product_quantity,
+          qty_received: item.scrap_quantity,
+        };
+      });
 
-        available_product_quantity: item?.product?.available_product_quantity,
-        qty_received: item.adjusted_quantity,
-      }));
-
-      const locationObj = locationList.find(
-        (loc) => loc.url === scrap.warehouse_location
-      );
+      const locationObj =
+        activeLocationList.find(
+          (loc) => loc.id === singleScrap.warehouse_location
+        ) || singleScrap.warehouse_location_details;
 
       setFormData({
         ...defaultFormData,
-        id: scrap.id,
+        id: singleScrap.id,
         adjustmentType:
-          scrap.adjustment_type[0].toUpperCase() +
-          scrap.adjustment_type.slice(1),
-        date: formatDate(scrap.date ? new Date(scrap.date) : Date.now()),
-        location: locationObj || scrap.warehouse_location,
+          singleScrap.adjustment_type?.[0]?.toUpperCase() +
+          singleScrap.adjustment_type?.slice(1),
+        date: formatDate(
+          singleScrap.date ? new Date(singleScrap.date) : Date.now()
+        ),
+        location: locationObj,
         items,
-        notes: scrap.notes || "",
-        status: scrap.status || "draft",
-        is_hidden: scrap.is_hidden || false,
+        notes: singleScrap.notes || "",
+        status: singleScrap.status || "draft",
+        is_hidden: singleScrap.is_hidden || false,
       });
     }
-  }, [location.state, products, locationList]);
+  }, [singleScrap, activeLocationList]);
+  const locationId = formData?.location?.id;
+
+  useEffect(() => {
+    if (locationId) {
+      getLocationProducts(locationId);
+    }
+  }, [locationId, getLocationProducts]);
 
   const transformProducts = (list) =>
     list.map((prod) => ({
       ...prod,
+      available_product_quantity: prod?.quantity,
+      id: prod?.product_id,
+      product_name: prod?.product_name,
+      product_description: prod?.product_name,
       unit_of_measure: {
-        url: prod.unit_of_measure,
-        unit_category: prod?.unit_of_measure_details?.unit_name,
-        unit_name: prod?.unit_of_measure_details?.unit_name,
+        unit_name: prod?.product_unit_of_measure,
+        url: prod?.product_unit_of_measure,
+        unit_category: prod?.product_unit_of_measure,
       },
     }));
 
   const memoizedProducts = useMemo(
-    () => transformProducts(products),
-    [products, transformProducts]
+    () => transformProducts(locationProducts),
+    [locationProducts]
   );
 
   const rowConfig = useMemo(
@@ -190,14 +206,14 @@ const ScrapEditForm = () => {
         field: "product",
         type: "autocomplete",
         options: memoizedProducts,
-        getOptionLabel: (option) => option.product_name || "",
+        getOptionLabel: (option) => option?.product_name || "",
       },
       {
         label: "Unit of Measure",
         field: "unit_of_measure",
         type: "text",
         disabled: true,
-        transform: (value) => value.unit_name || "",
+        transform: (value) => value?.unit_name || "",
       },
       {
         label: "Current Quantity",
@@ -232,8 +248,8 @@ const ScrapEditForm = () => {
     async (filledFormData, status = "draft") => {
       const items = filledFormData.items.map((item) => ({
         id: parseInt(item?.id),
-        product: parseInt(item.product?.id),
-        scrap_quantity: parseInt(item?.scrap_quantity),
+        product: parseInt(item?.product?.id),
+        scrap_quantity: parseFloat(item?.qty_received),
       }));
 
       try {
@@ -276,7 +292,6 @@ const ScrapEditForm = () => {
       onSubmit={(data) => handleSubmit(data)}
       submitBtnText="Validate"
       autofillRow={["unit_of_measure", "available_product_quantity"]}
-      // onSubmitAsDone={(data) => handleSubmit(data)}
       setMax={{
         field: "qty_received",
         limit: "available_product_quantity",

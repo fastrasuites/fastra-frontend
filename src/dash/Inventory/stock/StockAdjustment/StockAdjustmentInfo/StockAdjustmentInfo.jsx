@@ -22,6 +22,7 @@ import { useStockAdjustment } from "../../../../../context/Inventory/StockAdjust
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 // import { usePurchase } from "../../../../../context/PurchaseContext";
 import Swal from "sweetalert2";
+import Can from "../../../../../components/Access/Can";
 
 // Safely normalize status to a string before lowercasing
 const getStatusColor = (status) => {
@@ -236,13 +237,15 @@ export default function StockAdjustmentInfo() {
     <Box p={4} display="grid" gap={4} mr={4}>
       {/* Header with navigation */}
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <Link
-          to={`/${schema}/inventory/stock/stock-adjustment/create-stock-adjustment`}
-        >
-          <Button variant="contained" size="large" disableElevation>
-            Stock Adjustment
-          </Button>
-        </Link>
+        <Can app="inventory" module="stockadjustment" action="create">
+          <Link
+            to={`/${schema}/inventory/stock/stock-adjustment/create-stock-adjustment`}
+          >
+            <Button variant="contained" size="large" disableElevation>
+              Stock Adjustment
+            </Button>
+          </Link>
+        </Can>
 
         <Box display="flex" alignItems="center" gap={2}>
           {/* Navigation controls */}
@@ -301,15 +304,17 @@ export default function StockAdjustmentInfo() {
           </Button>
 
           {stock.status === "draft" && (
-            <Button
-              variant="contained"
-              size="large"
-              disableElevation
-              onClick={handleNavigateToEdit}
-              disabled={actionLoading}
-            >
-              Edit
-            </Button>
+            <Can app="inventory" module="stockadjustment" action="edit">
+              <Button
+                variant="contained"
+                size="large"
+                disableElevation
+                onClick={handleNavigateToEdit}
+                disabled={actionLoading}
+              >
+                Edit
+              </Button>
+            </Can>
           )}
         </Box>
       </Box>
@@ -422,15 +427,17 @@ export default function StockAdjustmentInfo() {
           {stock.status}
         </Typography>
         {stock.status === "draft" && (
-          <Button
-            variant="contained"
-            size="large"
-            disableElevation
-            onClick={handleSubmitAsDone}
-            disabled={actionLoading}
-          >
-            {actionLoading ? <CircularProgress size={24} /> : "Validate"}
-          </Button>
+          <Can app="inventory" module="stockadjustment" action="approve">
+            <Button
+              variant="contained"
+              size="large"
+              disableElevation
+              onClick={handleSubmitAsDone}
+              disabled={actionLoading}
+            >
+              {actionLoading ? <CircularProgress size={24} /> : "Validate"}
+            </Button>
+          </Can>
         )}
       </Box>
     </Box>

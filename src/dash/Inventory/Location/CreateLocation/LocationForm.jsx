@@ -47,7 +47,7 @@ const LocationForm = () => {
   const { tenantData } = useTenant();
   const tenantSchema = tenantData?.tenant_schema_name;
 
-  const { getUserList, userList } = useUser();
+  const { getUserListForForm, userList } = useUser();
   const {
     locationList,
     getLocationList,
@@ -75,8 +75,8 @@ const LocationForm = () => {
   useEffect(() => {
     getLocationList();
     getMultiLocation();
-    getUserList();
-  }, [getLocationList, getMultiLocation, getUserList]);
+    getUserListForForm();
+  }, [getLocationList, getMultiLocation, getUserListForForm]);
 
   // Restore saved form state
   useEffect(() => {

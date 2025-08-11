@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { useDeliveryOrder } from "../../../../../context/Inventory/DeliveryOrderContext";
 import {
   Box,
@@ -23,8 +23,10 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./DeliveryOrderReturnForm.css";
 import Asterisk from "../../../../../components/Asterisk";
+import { useTenant } from "../../../../../context/TenantContext";
 
 const DeliveryOrderReturnForm = () => {
+  const { tenantData } = useTenant();
   const { id } = useParams();
   const {
     getSingleDeliveryOrder,
@@ -34,12 +36,16 @@ const DeliveryOrderReturnForm = () => {
     error,
   } = useDeliveryOrder();
 
+  console.log(tenantData);
+
   const [formData, setFormData] = useState({
     date_of_return: new Date().toISOString().split("T")[0],
     reason_for_return: "",
     return_warehouse_location: "",
     items: [],
   });
+
+  const history = useHistory();
 
   // Fetch delivery order and initialize form
   useEffect(() => {
@@ -304,45 +310,52 @@ Thank you.`;
 
     try {
       const response = await createDeliveryOrderReturn(payload);
+      Swal.fire({
+        title: "Return Created Successfully!",
+        icon: "success",
+      });
+      history.push(
+        `/${tenantData?.tenant_schema_name}/inventory/operations/delivery-order-returns`
+      );
 
-      if (response.success) {
-        // Generate PDF
-        const pdf = generatePDF(response.data);
-        const fileName = `Return_${response.data.unique_record_id}.pdf`;
+      // if (response.success) {
+      //   // Generate PDF
+      //   const pdf = generatePDF(response.data);
+      //   const fileName = `Return_${response.data.unique_record_id}.pdf`;
 
-        // Create PDF blob
-        const pdfBlob = pdf.output("blob");
-        const pdfFile = new File([pdfBlob], fileName, {
-          type: "application/pdf",
-        });
+      //   // Create PDF blob
+      //   const pdfBlob = pdf.output("blob");
+      //   const pdfFile = new File([pdfBlob], fileName, {
+      //     type: "application/pdf",
+      //   });
 
-        // Prepare share data
-        const shareData = {
-          title: `Return Document: ${fileName}`,
-          text: `Please find attached the return document for your records.\n\nDocument ID: ${response.data.unique_record_id}\n\nIf the file is not attached automatically, kindly attach the downloaded PDF file manually before sending.`,
-          files: [pdfFile],
-        };
+      //   // Prepare share data
+      //   const shareData = {
+      //     title: `Return Document: ${fileName}`,
+      //     text: `Please find attached the return document for your records.\n\nDocument ID: ${response.data.unique_record_id}\n\nIf the file is not attached automatically, kindly attach the downloaded PDF file manually before sending.`,
+      //     files: [pdfFile],
+      //   };
 
-        // Try using Web Share API first
-        if (navigator.share && navigator.canShare(shareData)) {
-          try {
-            // Download PDF first
-            pdf.save(fileName);
-            await navigator.share(shareData);
-            showSuccessAlert(
-              response.data.unique_record_id,
-              fileName,
-              "shared"
-            );
-          } catch (shareError) {
-            // Fall back to email if sharing fails
-            openEmailClient(response.data.unique_record_id, fileName, pdf);
-          }
-        } else {
-          // Fall back to email for browsers without share support
-          openEmailClient(response.data.unique_record_id, fileName, pdf);
-        }
-      }
+      //   // Try using Web Share API first
+      //   if (navigator.share && navigator.canShare(shareData)) {
+      //     try {
+      //       // Download PDF first
+      //       pdf.save(fileName);
+      //       await navigator.share(shareData);
+      //       showSuccessAlert(
+      //         response.data.unique_record_id,
+      //         fileName,
+      //         "shared"
+      //       );
+      //     } catch (shareError) {
+      //       // Fall back to email if sharing fails
+      //       openEmailClient(response.data.unique_record_id, fileName, pdf);
+      //     }
+      //   } else {
+      //     // Fall back to email for browsers without share support
+      //     openEmailClient(response.data.unique_record_id, fileName, pdf);
+      //   }
+      // }
     } catch (err) {
       console.error("Return creation failed:", err);
 
@@ -367,6 +380,7 @@ Thank you.`;
     }
   };
 
+  console.log(singleDeliveryOrder);
   return (
     <Box p={4} display="grid" gap={4}>
       <Box display="flex" gap={3}>

@@ -54,6 +54,7 @@ const DynamicItemRow = ({
                   },
                   "& .MuiInputBase-input": { color: "#A9B3BC" },
                 }}
+                style={{ width: "190px" }}
                 fullWidth
               />
             )}

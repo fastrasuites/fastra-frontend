@@ -27,6 +27,7 @@ export const IncomingProductProvider = ({ children }) => {
   const { tenantData } = useTenant();
   const [incomingProductList, setIncomingProductList] = useState([]);
   const [singleIncomingProduct, setSingleIncomingProduct] = useState(null);
+  const [backOrder, setBackOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -38,7 +39,7 @@ export const IncomingProductProvider = ({ children }) => {
 
   // Fetch list, optionally with search
   const getIncomingProductList = useCallback(
-    async (search = "") => {
+    async (search = "", location_id = "") => {
       if (!client) {
         setError("API client not initialized.");
         return;
@@ -46,9 +47,12 @@ export const IncomingProductProvider = ({ children }) => {
       setIsLoading(true);
       try {
         const params = search ? { search } : {};
-        const { data } = await client.get("/inventory/incoming-product/", {
-          params,
-        });
+        const { data } = await client.get(
+          `/inventory/incoming-product/?destination_location__id=${location_id}`,
+          {
+            params,
+          }
+        );
         setIncomingProductList(data);
         setError(null);
       } catch (err) {
@@ -151,6 +155,54 @@ export const IncomingProductProvider = ({ children }) => {
     },
     [client]
   );
+
+  const getIncomingProductBackOrder = useCallback(
+    async (incoming_product_id) => {
+      if (!client) throw new Error("API client not initialized.");
+
+      setIsLoading(true);
+      console.log(incoming_product_id);
+      try {
+        const { data } = await client.get(
+          `/inventory/incoming-product/${incoming_product_id}/get_backorder/`
+        );
+        setError(null);
+        setBackOrder({ success: true, data: data });
+
+        return { success: true, data };
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Failed to create incoming product");
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  const editIncomingProductBackOrder = useCallback(
+    async (formData, id) => {
+      if (!client) throw new Error("API client not initialized.");
+
+      setIsLoading(true);
+      try {
+        const { data } = await client.patch(
+          `/inventory/create-back-order/${id}/`,
+          formData
+        );
+        setError(null);
+
+        return { success: true, data };
+      } catch (err) {
+        setError(err.message || "Failed to create incoming product");
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
   const updateIncomingProduct = useCallback(
     async (id, formData) => {
       if (!client) throw new Error("API client not initialized.");
@@ -218,24 +270,30 @@ export const IncomingProductProvider = ({ children }) => {
     () => ({
       incomingProductList,
       singleIncomingProduct,
+      backOrder,
       isLoading,
       error,
       getIncomingProductList,
       getSingleIncomingProduct,
       createIncomingProduct,
       createIncomingProductBackOrder,
+      getIncomingProductBackOrder,
+      editIncomingProductBackOrder,
       updateIncomingProduct,
       updateIncomingProductStatus,
     }),
     [
       incomingProductList,
       singleIncomingProduct,
+      backOrder,
       isLoading,
       error,
       getIncomingProductList,
       getSingleIncomingProduct,
       createIncomingProduct,
       createIncomingProductBackOrder,
+      getIncomingProductBackOrder,
+      editIncomingProductBackOrder,
       updateIncomingProduct,
       updateIncomingProductStatus,
     ]

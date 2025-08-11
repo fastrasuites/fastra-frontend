@@ -332,6 +332,7 @@ const PurchaseRequestInfo = () => {
               onClick: handleConvertToRFQ,
               disabled: actionLoading,
               action: "create",
+              module: "requestforquotation",
             },
           ],
         };
@@ -615,7 +616,9 @@ const PurchaseRequestInfo = () => {
                 <Can
                   key={i}
                   app="purchase"
-                  module="purchaserequest"
+                  module={
+                    action.module ? "requestforquotation" : "purchaserequest"
+                  }
                   action={action.action}
                 >
                   <Button

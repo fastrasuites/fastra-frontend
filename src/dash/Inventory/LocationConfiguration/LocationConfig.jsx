@@ -75,17 +75,6 @@ const LocationConfiguration = () => {
       <div className="configurations">
         <div className="configuration-header">
           <h1>Configuration</h1>
-          <div className="pagination">
-            <span>1-6 of 6</span>
-            <div className="switch-btn">
-              <button className="prev" disabled={isFetching || isLoading}>
-                ◀
-              </button>
-              <button className="next" disabled={isFetching || isLoading}>
-                ▶
-              </button>
-            </div>
-          </div>
         </div>
 
         <Box component="form" className="configuration-form">

@@ -67,8 +67,9 @@ const CommonForm = ({
           (acc, cfg) => {
             acc[cfg.field] = "";
             return acc;
-          },
-          { id: `new-${prev.items.length + 1}` }
+          }
+          // ,
+          // { id: `new-${prev.items.length + 1}` }
         ),
       ],
     }));

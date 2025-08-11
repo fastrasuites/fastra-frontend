@@ -33,10 +33,10 @@ const defaultFormData = {
 const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
 
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
 
   useEffect(() => {
-    getLocationList();
+    getActiveLocationList();
   }, []);
 
   // Sync with parent state upon selection change
@@ -68,7 +68,7 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
                 fullWidth
               />
             </Grid>
-            {locationList.length <= 1 ? (
+            {activeLocationList.length <= 1 ? (
               <Grid item xs={12} sm={6} lg={3}>
                 <Typography>
                   Location <Asterisk />
@@ -90,7 +90,7 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
 
                 <Autocomplete
                   disablePortal
-                  options={locationList}
+                  options={activeLocationList}
                   value={selectedLocation}
                   getOptionLabel={(option) => option?.location_name || ""}
                   isOptionEqualToValue={(option, value) =>
@@ -216,31 +216,40 @@ const DeliveryOrderForm = () => {
   const [formData, setFormData] = useState(defaultFormData);
   const [formErrors, setFormErrors] = useState({});
   const { createDeliveryOrder, isLoading, error } = useDeliveryOrder();
-  const { fetchProducts, products } = usePurchase();
+
+  const { getLocationProducts, locationProducts } = useCustomLocation();
+
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const history = useHistory();
 
+  const locationId = formData.source_location.id;
+
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (locationId) {
+      getLocationProducts(locationId);
+    }
+  }, [getLocationProducts, locationId]);
 
   const transformProducts = (list) =>
     list.map((prod) => ({
       ...prod,
+      id: prod?.product_id,
+      product_name: prod?.product_name,
+      product_description: prod?.product_name,
       unit_of_measure: {
-        url: prod.unit_of_measure,
-        unit_category: prod?.unit_of_measure_details?.unit_category,
-        unit_name: prod?.unit_of_measure_details?.unit_name,
+        unit_name: prod?.product_unit_of_measure,
       },
     }));
+
+  console.log(transformProducts(locationProducts));
 
   const rowConfig = [
     {
       label: "Product Name",
       field: "product",
       type: "autocomplete",
-      options: transformProducts(products),
+      options: transformProducts(locationProducts),
       getOptionLabel: (option) => option?.product_name || "",
     },
     {

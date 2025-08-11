@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   useTheme,
   Box,
@@ -10,7 +10,7 @@ import {
   Alert,
   Typography,
 } from "@mui/material";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import styled from "styled-components";
 import IncomingProductManualListview from "./IncomingProduct/IncomingProductManualListview";
 import inventoryShareStyle from "../inventorySharedStyles";
@@ -18,11 +18,7 @@ import draftIcon from "../../../image/icons/draft.png";
 import { useIncomingProduct } from "../../../context/Inventory/IncomingProduct";
 import { useDeliveryOrder } from "../../../context/Inventory/DeliveryOrderContext";
 import { useCustomLocation } from "../../../context/Inventory/LocationContext";
-import { useCallback } from "react";
 import { useTenant } from "../../../context/TenantContext";
-
-// Constants
-const LOCATION_OPTIONS = ["Suppliers location", "Customers location"];
 
 const INITIAL_STATE = [
   {
@@ -113,8 +109,6 @@ const PendingBox = ({
       backgroundColor: color,
       border: `1.5px solid ${color}`,
     }}
-    role="button"
-    aria-label={`View all ${pendingText}`}
   >
     <img src={icon} alt={`${pendingText} icon`} width={24} height={24} />
     <Typography variant="h4" mt={2}>
@@ -141,40 +135,37 @@ const Operations = () => {
   const [inventoryModule, setInventoryModule] = useState(INITIAL_STATE);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const history = useHistory();
+
   const {
     incomingProductList,
     getIncomingProductList,
     isLoading: isIncomingProductLoading,
   } = useIncomingProduct();
+
   const {
     deliveryOrderList,
     getDeliveryOrderList,
     getDeliveryOrderReturnList,
     deliveryOrderReturnList,
   } = useDeliveryOrder();
-  const { locationList, getLocationList } = useCustomLocation();
 
-  const handleChange = (event) => setSelectedLocation(event.target.value);
-  // Filter incoming products by selected location
-  const filteredIncoming = useMemo(
-    () =>
-      incomingProductList.filter(
-        (item) =>
-          !selectedLocation || item.destination_location === selectedLocation
-      ),
-    [incomingProductList, selectedLocation]
-  );
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+
+  const handleChange = (event) => {
+    setSelectedLocation(event.target.value);
+  };
+
+  console.log(selectedLocation);
 
   const fetchInventoryCounts = useCallback(async () => {
     setIsLoading(true);
     try {
       await Promise.all([
-        getIncomingProductList(),
+        // getIncomingProductList("", selectedLocation),
         getDeliveryOrderList(),
         getDeliveryOrderReturnList(),
-        getLocationList(),
+        getActiveLocationList(),
       ]);
     } catch (err) {
       setError("An error occurred while loading data.");
@@ -183,10 +174,11 @@ const Operations = () => {
       setIsLoading(false);
     }
   }, [
-    getLocationList,
-    getIncomingProductList,
-    getDeliveryOrderReturnList,
+    // getIncomingProductList,
     getDeliveryOrderList,
+    getDeliveryOrderReturnList,
+    getActiveLocationList,
+    // selectedLocation,
   ]);
 
   useEffect(() => {
@@ -221,8 +213,9 @@ const Operations = () => {
           onClick={() => history.push(`/${tenant}${href}`)}
         />
       )),
-    [inventoryModule]
+    [inventoryModule, tenant, history]
   );
+
   return (
     <Box sx={inventoryShareStyle.operationWrapper(theme)}>
       <HeaderContainer>
@@ -252,8 +245,8 @@ const Operations = () => {
               },
             }}
           >
-            <MenuItem value={""}>All location</MenuItem>
-            {locationList.map((location) => (
+            <MenuItem value="">All location</MenuItem>
+            {activeLocationList.map((location) => (
               <MenuItem key={location.id} value={location.id}>
                 {location.location_name}
               </MenuItem>
@@ -277,8 +270,9 @@ const Operations = () => {
           <PendingBoxesContainer>{renderPendingBoxes}</PendingBoxesContainer>
           <Box pt={5}>
             <IncomingProductManualListview
-              incomingProductList={filteredIncoming}
+              incomingProductList={incomingProductList}
               isLoading={isIncomingProductLoading}
+              selectedLocation={selectedLocation}
             />
           </Box>
         </>
