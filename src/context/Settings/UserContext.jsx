@@ -90,7 +90,7 @@ export const UserProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const { data: rawData } = await client.get(
-        `/users/tenant-users/?basic=true`
+        `/users/tenant-users/?form=true`
       );
       setUserList(rawData);
       setError(null);

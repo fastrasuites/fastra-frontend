@@ -408,7 +408,7 @@ export default function IncomingProductInfo() {
           borderBottom="1px solid #E2E6E9"
           pb={3}
         >
-          <InfoItem label="ID" value={incoming.incoming_product_id} />
+          <InfoItem label="ID" value={backOrder.data.backorder_id} />
           <InfoItem
             label="Receipt Type"
             value={incoming.receipt_type?.replace(/_/g, " ")}
@@ -440,7 +440,7 @@ export default function IncomingProductInfo() {
                 fontStyle: "italic",
               }}
             >
-              {backOrder.data.backorder_id}
+              {incoming.incoming_product_id}
             </Typography>
           </Box>
         )}

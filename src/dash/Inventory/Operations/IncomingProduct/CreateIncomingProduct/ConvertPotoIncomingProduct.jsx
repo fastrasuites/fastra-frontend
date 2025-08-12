@@ -9,11 +9,11 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useIncomingProduct } from "../../../../../context/Inventory/IncomingProduct";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import { usePurchase } from "../../../../../context/PurchaseContext";
-import { usePurchaseOrder } from "../../../../../context/PurchaseOrderContext.";
 import Swal from "sweetalert2";
 import "./CreateIncomingProduct.css";
+import { usePurchaseOrder } from "../../../../../context/PurchaseOrderContext.";
 
-// ─── Receipt Type Options ───────────────────────────────────────────────────
+// Receipt Type Options
 const RECEIPT_TYPES = [
   { value: "vendor_receipt", label: "Vendor Receipt" },
   { value: "manufacturing_receipt", label: "Manufacturing Receipt" },
@@ -22,7 +22,7 @@ const RECEIPT_TYPES = [
   { value: "scrap", label: "Scrap" },
 ];
 
-// ─── Helper: Resolve a formValue (object or string) into a matching object from list ──
+// Helper: Resolve formValue to matching object from list
 const getSelectedOption = (formValue, list = [], key) => {
   if (typeof formValue === "object" && formValue !== null) return formValue;
   if (typeof formValue === "string") {
@@ -37,7 +37,6 @@ const REQUIRED_ASTERISK = (
   </Typography>
 );
 
-// ─── Basic Inputs Component ─────────────────────────────────────────────────────
 function IncomingProductBasicInputs({ formData, handleInputChange }) {
   const { getSingleLocation, singleLocation } = useCustomLocation();
   const { purchaseOrderList, getApprovedPurchaseOrderList } =
@@ -71,27 +70,10 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
 
   return (
     <>
-      <Box
-        display={"flex"}
-        gap={"50px"}
-        justifyContent={"space-between"}
-        pr={60}
-      >
+      <Box display="flex" gap="50px" justifyContent="space-between" pr={60}>
         <div className="formLabelAndValue">
           <label>Receipt Type {REQUIRED_ASTERISK}</label>
-          {/* <Autocomplete
-            options={RECEIPT_TYPES}
-            value={selectedReceipt}
-            getOptionLabel={(opt) => opt.label || ""}
-            isOptionEqualToValue={(opt, val) => opt.value === val?.value}
-            onChange={(e, newValue) =>
-              handleInputChange("receiptType", newValue?.value || "")
-            }
-            renderInput={(params) => (
-              <TextField {...params} placeholder="Select receipt type" />
-            )}
-          /> */}
-          <p>Vendor Receipt</p>
+          <p>{selectedReceipt?.label || "Vendor Receipt"}</p>
         </div>
 
         <div className="formLabelAndValue">
@@ -140,11 +122,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
               handleInputChange("suppliersName", newValue || null)
             }
             renderInput={(params) => (
-              <TextField
-                {...params}
-                placeholder="Select supplier"
-                required="true"
-              />
+              <TextField {...params} placeholder="Select supplier" required />
             )}
           />
         </Box>
@@ -158,7 +136,6 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
   );
 }
 
-// ─── Main Component ─────────────────────────────────────────────────────────────
 export default function ConvertPoToIncomingProduct() {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
@@ -179,19 +156,16 @@ export default function ConvertPoToIncomingProduct() {
 
   const { products, fetchProductsForForm, vendors, fetchVendorsForForm } =
     usePurchase();
-
   const { isLoading, createIncomingProduct, createIncomingProductBackOrder } =
     useIncomingProduct();
   const { getApprovedPurchaseOrderList } = usePurchaseOrder();
-  const { activeLocationList, getActiveLocationList } = useCustomLocation();
-  const { locationList, getLocationList } = useCustomLocation();
+  const { locationList, getLocationListForForm } = useCustomLocation();
 
   useEffect(() => {
     fetchProductsForForm();
     fetchVendorsForForm();
     getApprovedPurchaseOrderList();
-    getActiveLocationList();
-    getLocationList();
+    getLocationListForForm();
   }, []);
 
   useEffect(() => {
@@ -205,7 +179,7 @@ export default function ConvertPoToIncomingProduct() {
     [locationList]
   );
 
-  console.log(sourceLocObj);
+  // console.log(location.state.po);
 
   useEffect(() => {
     const incoming = location.state?.po;
@@ -227,6 +201,9 @@ export default function ConvertPoToIncomingProduct() {
       setFormData((prev) => ({
         ...prev,
         receiptDate: formatDate(Date.now()),
+        receiptType: "vendor_receipt",
+        sourceLocation: sourceLocObj,
+        destination_location: incoming.destination_location,
         suppliersName: foundSupplier,
         relatedPO: incoming,
         items: mappedItems,
@@ -242,13 +219,14 @@ export default function ConvertPoToIncomingProduct() {
     }, 1500);
   };
 
+  // console.log(formData);
   const handleSubmit = async (filledFormData, status = "draft") => {
     const payload = {
-      destination_location: filledFormData.location?.id,
+      destination_location: filledFormData.destination_location,
       receipt_type: filledFormData.receiptType,
-      related_po: filledFormData.related_po?.id,
-      source_location: filledFormData.source_location,
-      status: status,
+      related_po: filledFormData.relatedPO?.id,
+      source_location: filledFormData.sourceLocation.id,
+      status,
       is_hidden: false,
       supplier: filledFormData.suppliersName?.id || null,
       incoming_product_items: filledFormData.items.map((item) => ({
@@ -261,14 +239,11 @@ export default function ConvertPoToIncomingProduct() {
 
     try {
       const res = await createIncomingProduct(payload);
-
-      // Show success message
       Swal.fire({
         icon: "success",
         title: "Success",
         text: "Incoming product created successfully",
       });
-
       navigateToDetail(res.data.incoming_product_id);
     } catch (err) {
       console.error(err);
@@ -286,8 +261,6 @@ export default function ConvertPoToIncomingProduct() {
       }
 
       const detailRaw = err?.response?.data?.detail?.toString?.() || "";
-
-      // Try to extract backorder-related info
       const jsonMatch = detailRaw.match(/string='(.*?)'/);
       const codeMatch = detailRaw.match(/code='(.*?)'/);
 
@@ -298,23 +271,20 @@ export default function ConvertPoToIncomingProduct() {
         try {
           const parsed = JSON.parse(jsonMatch[1]);
           IP_ID = parsed?.IP_ID;
-        } catch (parseErr) {
-          console.warn("Failed to parse embedded JSON:", parseErr);
-        }
+        } catch {}
       }
 
-      // Handle backorder_required
       if (backorderCode === "backorder_required" && IP_ID) {
         const result = await Swal.fire({
           html: `
-         <h1 class="swal-title">OOPS!</h1>
-         <div class="swal-line-container">
-           <div class="swal-line1"></div>
-           <div class="swal-line2"></div>
-         </div>
-         <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
-         <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
-       `,
+            <h1 class="swal-title">OOPS!</h1>
+            <div class="swal-line-container">
+              <div class="swal-line1"></div>
+              <div class="swal-line2"></div>
+            </div>
+            <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+            <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+          `,
           showCancelButton: true,
           confirmButtonText: "Yes",
           cancelButtonText: "No",
@@ -329,20 +299,17 @@ export default function ConvertPoToIncomingProduct() {
 
         if (result.isConfirmed) {
           try {
-            const backorderPayload = {
+            await createIncomingProductBackOrder({
               response: true,
               incoming_product: IP_ID,
-            };
-
-            await createIncomingProductBackOrder(backorderPayload);
-
+            });
             await Swal.fire({
               icon: "success",
               title: "Success",
               text: "Backorder created successfully",
             });
+            navigateToDetail(IP_ID);
           } catch (backorderErr) {
-            console.error("Backorder creation failed:", backorderErr);
             await Swal.fire({
               icon: "error",
               title: "Backorder Error",
@@ -350,25 +317,17 @@ export default function ConvertPoToIncomingProduct() {
             });
           }
         } else {
-          // User clicked "No"
-          const backorderPayload = {
-            response: false,
-            incoming_product: IP_ID,
-          };
-
           try {
-            await createIncomingProductBackOrder(backorderPayload);
-
+            await createIncomingProductBackOrder({
+              response: false,
+              incoming_product: IP_ID,
+            });
             await Swal.fire({
               icon: "info",
               title: "Acknowledged",
               text: "Backorder not created as per your choice.",
             });
           } catch (backorderErr) {
-            console.error(
-              "Error sending backorder decline response:",
-              backorderErr
-            );
             await Swal.fire({
               icon: "error",
               title: "Error",
@@ -376,11 +335,9 @@ export default function ConvertPoToIncomingProduct() {
             });
           }
         }
-
         return;
       }
 
-      // Handle known validation error format (object with field errors)
       const detailData = err?.response?.data?.detail;
       if (
         detailData &&
@@ -391,13 +348,11 @@ export default function ConvertPoToIncomingProduct() {
           .flat()
           .map((msg) => `<p>${msg}</p>`)
           .join("");
-
         await Swal.fire({
           icon: "error",
           title: "Validation Error",
           html: messages || "An unknown validation error occurred.",
         });
-
         return;
       }
 
@@ -443,11 +398,7 @@ export default function ConvertPoToIncomingProduct() {
       disabled: true,
       transform: (val) => val.unit_category,
     },
-    {
-      label: "QTY Received",
-      field: "qty_received",
-      type: "number",
-    },
+    { label: "QTY Received", field: "qty_received", type: "number" },
   ];
 
   return (
@@ -459,10 +410,7 @@ export default function ConvertPoToIncomingProduct() {
       setFormData={setFormData}
       rowConfig={rowConfig}
       isEdit={false}
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit(formData, "draft");
-      }}
+      onSubmit={() => handleSubmit(formData, "draft")}
       submitBtnText={isLoading ? "Submitting..." : "Save to Draft"}
       autofillRow={["unit_of_measure", "available_product_quantity"]}
     />
