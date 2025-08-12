@@ -26,11 +26,21 @@ const UserInfo = () => {
   const { tenantData } = useTenant();
   const { id } = useParams();
 
+  console.log("tenantData", tenantData);
   const [navigation, setNavigation] = useState({
     nextId: null,
     prevId: null,
     loading: false,
   });
+
+  // Check if current user is admin
+  const isAdmin = tenantData?.user?.username?.startsWith("admin_");
+  // Automatically switch to Basic Settings tab if not admin
+  useEffect(() => {
+    if (!isAdmin && state.activeTab === 1) {
+      setState((prev) => ({ ...prev, activeTab: 0 }));
+    }
+  }, [isAdmin, state.activeTab]);
 
   // Enhanced error handling
   const showError = useCallback((msg) => {
@@ -268,7 +278,23 @@ const UserInfo = () => {
           >
             Basic Settings
           </Button>
-          <Button
+          {/* Conditionally render Access Rights tab */}
+          {isAdmin && (
+            <Button
+              variant="outlined"
+              color={state.activeTab === 1 ? "primary" : "inherit"}
+              onClick={() => handleTabChange(1)}
+              sx={{
+                borderRadius: "4px 4px 0 0",
+                borderBottom:
+                  state.activeTab === 1 ? "2px solid #3B7CED" : "none",
+                ml: 1,
+              }}
+            >
+              Access Rights
+            </Button>
+          )}
+          {/* <Button
             variant="outlined"
             color={state.activeTab === 1 ? "primary" : "inherit"}
             onClick={() => handleTabChange(1)}
@@ -279,9 +305,22 @@ const UserInfo = () => {
             }}
           >
             Access Rights
-          </Button>
+          </Button> */}
         </Box>
-        <Box>
+
+        {/* Conditionally render Reset Password button */}
+        {isAdmin && (
+          <Box>
+            <Button
+              variant="text"
+              startIcon={<SettingsIcon size={16} />}
+              onClick={handleResetPassword}
+            >
+              Reset password
+            </Button>
+          </Box>
+        )}
+        {/* <Box>
           <Button
             variant="text"
             startIcon={<SettingsIcon size={16} />}
@@ -289,7 +328,7 @@ const UserInfo = () => {
           >
             Reset password
           </Button>
-        </Box>
+        </Box> */}
       </Box>
 
       <Box
@@ -476,7 +515,8 @@ const UserInfo = () => {
         )}
 
         {/* Access Rights Tab */}
-        {state.activeTab === 1 && (
+        {/* {state.activeTab === 1 && ( */}
+        {isAdmin && state.activeTab === 1 && (
           <Box p={4}>
             <Box
               sx={{

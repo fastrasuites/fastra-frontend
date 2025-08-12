@@ -69,3 +69,23 @@
   background: #3b7ced; /* Active link color */
   color: white;
 }
+
+/* 🔹 Overlay behind sidebar */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent dark */
+  z-index: 999; /* Just below the sidebar (which is 1000) */
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Smooth fade-in animation */
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
