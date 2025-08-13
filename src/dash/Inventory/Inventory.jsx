@@ -31,6 +31,8 @@ import EditIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProd
 import ConvertPoToIncomingProduct from "./Operations/IncomingProduct/CreateIncomingProduct/ConvertPotoIncomingProduct";
 import DeliveryOrderReturnForm from "./Operations/DeliveryOrder/DeliveryOrderReturnForm/DeliveryOrderReturnForm";
 import DeliveryOrderReturnList from "./Operations/DeliveryOrder/DeliveryOrderReturnList/DeliveryOrderReturnList";
+import BackOrderList from "./Operations/BackOrder/BackOrderList/BackOrderList";
+import BackOrderDetails from "./Operations/BackOrder/BackOrderDetails/BackOrderDetails";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -127,6 +129,19 @@ const InventoryLayout = () => {
             exact
             component={DeliveryOrderReturnList}
             path={`${path}/operations/delivery-order-returns`}
+          />
+
+          {/* Inventory backOrder Routes */}
+          <Route
+            exact
+            path={`${path}/operations/back-orders`}
+            component={BackOrderList}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/back-orders/:id`}
+            component={BackOrderDetails}
           />
 
           {/* Inventory Location Routes */}

@@ -20,7 +20,7 @@ const UserCard = ({ handleClickOpen, user }) => {
       <button onClick={handleClickOpen} className="icon-and-profile">
         <img
           alt="User Avatar"
-          src={admin}
+          src={user?.user_image ? user?.user_image : admin}
           className="avatar"
           title={`Administrator\ninfo@companyname.com`}
         />
@@ -49,6 +49,8 @@ const ProfileMenuDropdown = () => {
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const user = tenantData?.user;
   const [open, setOpen] = useState(false);
+
+  console.log(tenantData);
 
   const permissionsMap = extractPermissions(tenantData?.user_accesses || {});
   const settingsPermissions = getPermissionsByApp("settings", permissionsMap);

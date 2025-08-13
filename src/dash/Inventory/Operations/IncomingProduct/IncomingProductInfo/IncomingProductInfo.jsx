@@ -408,7 +408,10 @@ export default function IncomingProductInfo() {
           borderBottom="1px solid #E2E6E9"
           pb={3}
         >
-          <InfoItem label="ID" value={backOrder.data.backorder_id} />
+          <InfoItem
+            label="Incoming Product ID"
+            value={incoming?.incoming_product_id}
+          />
           <InfoItem
             label="Receipt Type"
             value={incoming.receipt_type?.replace(/_/g, " ")}
@@ -416,22 +419,22 @@ export default function IncomingProductInfo() {
           />
           <InfoItem
             label="Source Location"
-            value={incoming.source_location_details?.location_name}
+            value={incoming?.source_location_details?.location_name}
           />
           <InfoItem
             label="Destination Location"
-            value={incoming.destination_location_details?.location_name}
+            value={incoming?.destination_location_details?.location_name}
           />
           <InfoItem
             label="Supplier"
-            value={incoming.supplier_details?.company_name}
+            value={incoming?.supplier_details?.company_name}
           />
         </Box>
 
         {/* Back Order Info */}
         {hasBackOrder && (
           <Box>
-            <Typography mb={1}>Back Order of:</Typography>
+            <Typography mb={1}>Back Order ID:</Typography>
             <Typography
               variant="body2"
               sx={{
@@ -440,7 +443,7 @@ export default function IncomingProductInfo() {
                 fontStyle: "italic",
               }}
             >
-              {incoming.incoming_product_id}
+              {backOrder?.data.backorder_id}
             </Typography>
           </Box>
         )}

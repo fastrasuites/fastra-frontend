@@ -43,6 +43,11 @@ const InventoryHeader = () => {
       });
     }
 
+    subItems.push({
+      label: "Back Order",
+      link: `/${tenant_schema_name}/inventory/operations/back-orders`,
+    });
+
     if (subItems.length > 0) {
       menuItems.push({
         label: "Operations",
