@@ -294,18 +294,6 @@ const UserInfo = () => {
               Access Rights
             </Button>
           )}
-          {/* <Button
-            variant="outlined"
-            color={state.activeTab === 1 ? "primary" : "inherit"}
-            onClick={() => handleTabChange(1)}
-            sx={{
-              borderRadius: "4px 4px 0 0",
-              borderBottom:
-                state.activeTab === 1 ? "2px solid #3B7CED" : "none",
-            }}
-          >
-            Access Rights
-          </Button> */}
         </Box>
 
         {/* Conditionally render Reset Password button */}
@@ -320,15 +308,6 @@ const UserInfo = () => {
             </Button>
           </Box>
         )}
-        {/* <Box>
-          <Button
-            variant="text"
-            startIcon={<SettingsIcon size={16} />}
-            onClick={handleResetPassword}
-          >
-            Reset password
-          </Button>
-        </Box> */}
       </Box>
 
       <Box
@@ -515,7 +494,7 @@ const UserInfo = () => {
         )}
 
         {/* Access Rights Tab */}
-        {/* {state.activeTab === 1 && ( */}
+
         {isAdmin && state.activeTab === 1 && (
           <Box p={4}>
             <Box

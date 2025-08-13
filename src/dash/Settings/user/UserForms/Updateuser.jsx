@@ -466,9 +466,21 @@ const UpdateUser = () => {
     getAccessGroups,
     accessGroups: accessGroupRights,
   } = useUser();
+
   const { company, getCompany } = useCompany();
 
   const roles = company?.roles || [];
+
+  // Handlers
+  const handleTabChange = useCallback(
+    (index) => dispatch({ type: ActionTypes.SET_TAB, payload: index }),
+    []
+  );
+
+  const isAdmin = useTenant()?.tenantData.user?.username?.startsWith("admin_");
+  useEffect(() => {
+    if (!isAdmin && state.activeTab === 1) handleTabChange(0);
+  }, [isAdmin, state.activeTab, handleTabChange]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -526,11 +538,6 @@ const UpdateUser = () => {
   }, [singleUser, id]);
 
   // Handlers
-  const handleTabChange = useCallback(
-    (index) => dispatch({ type: ActionTypes.SET_TAB, payload: index }),
-    []
-  );
-
   const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     dispatch({
@@ -743,18 +750,20 @@ const UpdateUser = () => {
         >
           Basic Settings
         </Button>
-        <Button
-          variant="outlined"
-          color={state.activeTab === 1 ? "primary" : "inherit"}
-          onClick={() => handleTabChange(1)}
-          sx={{ borderRadius: "4px 4px 0px 0px" }}
-        >
-          Access Rights
-        </Button>
+        {isAdmin && (
+          <Button
+            variant="outlined"
+            color={state.activeTab === 1 ? "primary" : "inherit"}
+            onClick={() => handleTabChange(1)}
+            sx={{ borderRadius: "4px 4px 0px 0px" }}
+          >
+            Access Rights
+          </Button>
+        )}
       </Box>
 
       <form onSubmit={handleSubmit}>
-        {state.activeTab === 0 ? (
+        {state.activeTab === 0 && (
           <BasicSettingsTab
             state={state}
             handleChange={handleChange}
@@ -765,7 +774,8 @@ const UpdateUser = () => {
             roles={roles}
             companyName={accessGroupRights.tenant_company_name}
           />
-        ) : (
+        )}
+        {isAdmin && state.activeTab === 1 && (
           <AccessRightsTab
             state={state}
             handleChange={handleChange}
