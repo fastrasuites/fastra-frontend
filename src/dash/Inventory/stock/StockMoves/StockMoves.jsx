@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
 import {
   Box,
   TextField,
@@ -18,7 +17,6 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
-import "./StockMoves.css";
 import { useStockMove } from "../../../../context/Inventory/stockMoveContext";
 
 export default function StockMoves() {
@@ -27,36 +25,41 @@ export default function StockMoves() {
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
 
-  // Pull in context values
   const { stockMoveList, getStockMoveList, isLoading, error } = useStockMove();
 
-  // Fetch on mount
+  // Fetch stock moves on mount
   useEffect(() => {
     getStockMoveList();
   }, [getStockMoveList]);
 
-  // Map API data to UI shape
+  // Transform API data to UI-friendly shape
   const stockMoves = useMemo(
     () =>
       stockMoveList.map((item) => ({
-        productName: item.product.product_name,
+        productName: item.product?.product_name || "",
         qty: item.quantity,
-        unitOfMeasure: item.product.unit_of_measure,
+        unitOfMeasure: item.product?.unit_of_measure || "",
         sourceId: item.id,
         dateCreated: new Date(item.date_created).toLocaleString(),
         sourceLocation:
-          item.source_location.location_name || item.source_location.name || "",
+          (item.source_location?.location_name ||
+            item.source_location?.name ||
+            item.source_location ||
+            "") ??
+          "",
         destinationLocation:
-          item.destination_location.location_name ||
-          item.destination_location.name ||
+          (item.destination_location?.location_name ||
+            item.destination_location?.name ||
+            item.destination_location ||
+            "") ??
           "",
       })),
     [stockMoveList]
   );
 
-  const rowsPerPage = 5;
+  const rowsPerPage = 20;
 
-  // Memoized filtered + paged rows
+  // Filtered & paginated rows
   const filteredRows = useMemo(
     () =>
       stockMoves.filter((r) =>
@@ -64,13 +67,13 @@ export default function StockMoves() {
       ),
     [search, stockMoves]
   );
+
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
   const pagedRows = useMemo(
     () => filteredRows.slice((page - 1) * rowsPerPage, page * rowsPerPage),
     [filteredRows, page]
   );
 
-  // Selection logic
   const allOnPageSelected =
     pagedRows.length > 0 &&
     pagedRows.every((r) => selected.includes(r.sourceId));
@@ -86,6 +89,7 @@ export default function StockMoves() {
       ]);
     }
   };
+
   const toggleSelectOne = (id) =>
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -95,7 +99,6 @@ export default function StockMoves() {
     console.log("Clicked:", row);
   };
 
-  // Table headers
   const headers = [
     { key: "productName", label: "Product Name" },
     { key: "qty", label: "QTY" },
@@ -106,7 +109,6 @@ export default function StockMoves() {
     { key: "destinationLocation", label: "Destination Location" },
   ];
 
-  // Styles
   const headerSx = { fontWeight: 500, color: "#7A8A98", fontSize: "14px" };
   const cellSx = (isFirst = false) => ({
     fontSize: "14px",
@@ -114,23 +116,18 @@ export default function StockMoves() {
     fontWeight: 400,
   });
 
-  // Render loading or error if needed
-  if (isLoading) {
-    return <Typography>Loading stock moves...</Typography>;
-  }
-  if (error) {
-    return <Typography color="error">{error}</Typography>;
-  }
+  if (isLoading) return <Typography>Loading stock moves...</Typography>;
+  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
     <Box p={3} mr={3}>
       {/* Toolbar */}
       <Box
         display="flex"
-        flexWrap="wrap"
         justifyContent="space-between"
-        gap={2}
         mb={2}
+        flexWrap="wrap"
+        gap={2}
       >
         <Box display="flex" alignItems="center" gap={2}>
           <Typography variant="h6" fontSize="24px" fontWeight={500}>
@@ -161,7 +158,6 @@ export default function StockMoves() {
           <Typography variant="body2">
             Page {page} of {totalPages}
           </Typography>
-
           <Box
             display="flex"
             alignItems="center"
@@ -205,11 +201,10 @@ export default function StockMoves() {
         </Box>
       </Box>
 
-      {/* Content */}
+      {/* Table / Grid */}
       {viewMode === "list" ? (
         <TableContainer
           component={Paper}
-          elevation={0}
           sx={{
             backgroundColor: "#ffffff",
             borderRadius: 2,
@@ -234,7 +229,6 @@ export default function StockMoves() {
                 ))}
               </TableRow>
             </TableHead>
-
             <TableBody>
               {pagedRows.map((row) => (
                 <TableRow
@@ -254,7 +248,6 @@ export default function StockMoves() {
                       onChange={() => toggleSelectOne(row.sourceId)}
                     />
                   </TableCell>
-
                   <TableCell sx={cellSx(true)}>{row.productName}</TableCell>
                   <TableCell sx={cellSx()}>{row.qty}</TableCell>
                   <TableCell sx={cellSx()}>{row.unitOfMeasure}</TableCell>
@@ -312,8 +305,3 @@ export default function StockMoves() {
     </Box>
   );
 }
-
-// Remember to wrap your App (or parent) with:
-// <StockMoveProvider>
-//   <StockMoves />
-// </StockMoveProvider>

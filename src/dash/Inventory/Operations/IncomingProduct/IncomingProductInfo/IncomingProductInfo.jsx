@@ -148,8 +148,7 @@ export default function IncomingProductInfo() {
   const {
     getSingleIncomingProduct,
     updateIncomingProductStatus,
-    getIncomingProductBackOrder,
-    backOrder,
+    createIncomingProductBackOrder,
   } = useIncomingProduct();
 
   // State management
@@ -161,8 +160,6 @@ export default function IncomingProductInfo() {
     nextId: null,
     prevId: null,
   });
-  const [tab, setTab] = useState("current");
-  const [backOrderLoading, setBackOrderLoading] = useState(false);
 
   // Alert helpers
   const showAlert = useCallback((icon, title, text) => {
@@ -202,20 +199,6 @@ export default function IncomingProductInfo() {
     }
   }, [id, getSingleIncomingProduct, showAlert]);
 
-  // Back order loader
-  const loadBackOrder = useCallback(async () => {
-    if (!id) return;
-
-    setBackOrderLoading(true);
-    try {
-      await getIncomingProductBackOrder(id);
-    } catch (e) {
-      console.error("Failed to load back order:", e);
-    } finally {
-      setBackOrderLoading(false);
-    }
-  }, [id, getIncomingProductBackOrder]);
-
   // Handle navigation
   const handleNavigate = useCallback(
     (newId) =>
@@ -232,10 +215,123 @@ export default function IncomingProductInfo() {
     );
   }, [history, schema, id, incoming]);
 
+  const hasExcessQuantity = (incoming_product_items) => {
+    return incoming_product_items?.some(
+      (item) => Number(item.quantity_received) > Number(item.expected_quantity)
+    );
+  };
+
+  const handleBackorder = useCallback(
+    async (IP_ID) => {
+      const result = await Swal.fire({
+        html: `
+          <h1 class="swal-title">OOPS!</h1>
+          <div class="swal-line-container">
+            <div class="swal-line1"></div>
+            <div class="swal-line2"></div>
+          </div>
+          <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+          <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        customClass: {
+          popup: "custom-swal-popup",
+          title: "custom-swal-title",
+          confirmButton: "custom-swal-confirm-btn",
+          cancelButton: "custom-swal-cancel-btn",
+          htmlContainer: "custom-swal-html",
+        },
+      });
+
+      const backorderPayload = {
+        response: result.isConfirmed,
+        incoming_product: IP_ID,
+      };
+
+      try {
+        await createIncomingProductBackOrder(backorderPayload);
+        await Swal.fire({
+          icon: result.isConfirmed ? "success" : "info",
+          title: result.isConfirmed ? "Success" : "Acknowledged",
+          text: result.isConfirmed
+            ? "Backorder created successfully"
+            : "Backorder not created as per your choice.",
+        });
+        Swal.close();
+      } catch (backorderErr) {
+        console.error("Backorder error:", backorderErr);
+        await Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: backorderErr.message || "Failed to process backorder request.",
+        });
+      }
+    },
+    [createIncomingProductBackOrder]
+  );
+
+  const handleReturn = useCallback(
+    async (IP_ID) => {
+      try {
+        const result = await Swal.fire({
+          html: `
+            <h1 class="swal-title">OOPS!</h1>
+            <div class="swal-line-container">
+              <div class="swal-line1"></div>
+              <div class="swal-line2"></div>
+            </div>
+            <p class="swal-subtext">
+              The received quantity is more than the expected quantity.
+            </p>
+            <p class="swal-question">
+              Do you want to return the extra goods?
+            </p>
+          `,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          customClass: {
+            popup: "custom-swal-popup",
+            title: "custom-swal-title",
+            confirmButton: "custom-swal-confirm-btn",
+            cancelButton: "custom-swal-cancel-btn",
+            htmlContainer: "custom-swal-html",
+          },
+        });
+
+        if (result.isConfirmed) {
+          console.log(incoming?.incoming_product_id);
+          // Navigate to Returns page
+          history.push(
+            `/${schema}/inventory/operations/incoming-product/return/${incoming?.incoming_product_id}`
+          );
+          return;
+        } else {
+          Swal.close();
+        }
+      } catch (err) {
+        console.error("Return process error:", err);
+        await Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.message || "Failed to process return request.",
+        });
+      }
+    },
+    [history, schema, incoming]
+  );
   // Handle status changes
   const handleStatusChange = useCallback(
     async (newStatus) => {
       if (!incoming) return;
+      const moveToReturns = hasExcessQuantity(incoming.incoming_product_items);
+
+      if (moveToReturns) {
+        handleReturn(incoming?.incoming_product_id);
+        return;
+      }
 
       setActionLoading(true);
       try {
@@ -254,6 +350,34 @@ export default function IncomingProductInfo() {
         );
         await loadData();
       } catch (err) {
+        console.error(err);
+
+        const detailRaw = err?.response?.data?.error?.toString?.() || "";
+        console.log(detailRaw);
+        const jsonMatch = detailRaw.match(/string='(.*?)'/);
+        const codeMatch = detailRaw.match(/code='(.*?)'/);
+        const backorderCode = codeMatch?.[1];
+        let IP_ID = null;
+
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            IP_ID = parsed?.IP_ID;
+          } catch (parseErr) {
+            console.warn("JSON parse error:", parseErr);
+          }
+        }
+
+        if (backorderCode === "backorder_required" && IP_ID) {
+          await handleBackorder(IP_ID);
+          return;
+        }
+        console.log(backorderCode);
+        if (backorderCode === "return_required") {
+          await handleReturn(IP_ID);
+          return;
+        }
+
         const errorMsg =
           err.response?.data?.detail ||
           `Failed to ${newStatus} incoming product`;
@@ -269,14 +393,8 @@ export default function IncomingProductInfo() {
   useEffect(() => {
     if (id) {
       loadData();
-      loadBackOrder();
     }
-  }, [id, loadData, loadBackOrder]);
-
-  // Reset tab when ID changes
-  useEffect(() => {
-    setTab("current");
-  }, [id]);
+  }, [id, loadData]);
 
   // Table columns configuration
   const tableColumns = useMemo(
@@ -337,9 +455,7 @@ export default function IncomingProductInfo() {
   }
 
   // Back order data
-  const hasBackOrder = Boolean(backOrder?.data?.backorder_id);
-  const hasBackOrderItems = backOrder?.data?.backorder_items?.length > 0;
-
+  console.log(incoming);
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
       {/* Header Section */}
@@ -409,20 +525,14 @@ export default function IncomingProductInfo() {
           pb={3}
         >
           <InfoItem
-            label="Incoming Product ID"
-            value={incoming?.incoming_product_id}
-          />
-          <InfoItem
             label="Receipt Type"
             value={incoming.receipt_type?.replace(/_/g, " ")}
             capitalize
           />
+          <InfoItem label="ID" value={incoming?.incoming_product_id} />
+
           <InfoItem
-            label="Source Location"
-            value={incoming?.source_location_details?.location_name}
-          />
-          <InfoItem
-            label="Destination Location"
+            label="Location"
             value={incoming?.destination_location_details?.location_name}
           />
           <InfoItem
@@ -431,42 +541,8 @@ export default function IncomingProductInfo() {
           />
         </Box>
 
-        {/* Back Order Info */}
-        {hasBackOrder && (
-          <Box>
-            <Typography mb={1}>Back Order ID:</Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                textDecoration: "underline",
-                color: "#E43D2B",
-                fontStyle: "italic",
-              }}
-            >
-              {backOrder?.data.backorder_id}
-            </Typography>
-          </Box>
-        )}
-
         {/* Table Section */}
         <Box>
-          {hasBackOrderItems && (
-            <Box display="flex" gap={2} mb={2}>
-              <TabButton
-                active={tab === "current"}
-                onClick={() => setTab("current")}
-              >
-                Current Receipt
-              </TabButton>
-              <TabButton
-                active={tab === "backorder"}
-                onClick={() => setTab("backorder")}
-              >
-                Back Order
-              </TabButton>
-            </Box>
-          )}
-
           <TableContainer
             component={Paper}
             elevation={0}
@@ -477,40 +553,32 @@ export default function IncomingProductInfo() {
               minHeight: 300,
             }}
           >
-            {backOrderLoading ? (
-              <TableSkeleton columns={tableColumns} />
-            ) : (
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    {tableColumns.map(({ key, label }) => (
-                      <TableCell
-                        key={key}
-                        sx={{
-                          fontWeight: 500,
-                          color: "#7A8A98",
-                          fontSize: "14px",
-                          p: 3,
-                        }}
-                      >
-                        {label}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <ProductTable
-                    items={
-                      tab === "current"
-                        ? incoming.incoming_product_items
-                        : backOrder?.data?.backorder_items
-                    }
-                    columns={tableColumns}
-                    emptyMessage="No items found"
-                  />
-                </TableBody>
-              </Table>
-            )}
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  {tableColumns.map(({ key, label }) => (
+                    <TableCell
+                      key={key}
+                      sx={{
+                        fontWeight: 500,
+                        color: "#7A8A98",
+                        fontSize: "14px",
+                        p: 3,
+                      }}
+                    >
+                      {label}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <ProductTable
+                  items={incoming.incoming_product_items}
+                  columns={tableColumns}
+                  emptyMessage="No items found"
+                />
+              </TableBody>
+            </Table>
           </TableContainer>
         </Box>
       </Box>

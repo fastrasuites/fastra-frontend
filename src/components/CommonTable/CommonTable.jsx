@@ -55,6 +55,7 @@ const CommonTable = ({
   actionButton,
 
   path = "",
+  disableClick,
   isLoading,
 }) => {
   // const showPagination = paginated && rows.length > 0;
@@ -210,7 +211,9 @@ const CommonTable = ({
                     <TableRow
                       key={row[rowKey]}
                       hover
-                      onClick={(e) => handleRowClick(row, e, path)}
+                      onClick={(e) =>
+                        !disableClick && handleRowClick(row, e, path)
+                      }
                     >
                       {selectable && (
                         <TableCell padding="checkbox">

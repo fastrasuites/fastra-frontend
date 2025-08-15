@@ -27,6 +27,7 @@ export const IncomingProductProvider = ({ children }) => {
   const { tenantData } = useTenant();
   const [incomingProductList, setIncomingProductList] = useState([]);
   const [singleIncomingProduct, setSingleIncomingProduct] = useState(null);
+  const [returnList, setReturnList] = useState([]);
   const [backOrder, setBackOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -54,6 +55,32 @@ export const IncomingProductProvider = ({ children }) => {
           }
         );
         setIncomingProductList(data);
+        setError(null);
+      } catch (err) {
+        setError(err.message || "Failed to fetch incoming products");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  const getIncomingReturnList = useCallback(
+    async (search = "") => {
+      if (!client) {
+        setError("API client not initialized.");
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const params = search ? { search } : {};
+        const { data } = await client.get(
+          `/inventory/return-incoming-product/`,
+          {
+            params,
+          }
+        );
+        setReturnList(data);
         setError(null);
       } catch (err) {
         setError(err.message || "Failed to fetch incoming products");
@@ -148,6 +175,32 @@ export const IncomingProductProvider = ({ children }) => {
         return { success: true, data };
       } catch (err) {
         setError(err.message || "Failed to create incoming product");
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
+  const createIncomingProductReturns = useCallback(
+    async (formData) => {
+      if (!client) throw new Error("API client not initialized.");
+      setIsLoading(true);
+      try {
+        const { data } = await client.post(
+          "/inventory/return-incoming-product/ ", // ✅ Correct endpoint for returns
+          formData
+        );
+
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Failed to create incoming product return"
+        );
         throw err;
       } finally {
         setIsLoading(false);
@@ -270,6 +323,7 @@ export const IncomingProductProvider = ({ children }) => {
     () => ({
       incomingProductList,
       singleIncomingProduct,
+      returnList,
       backOrder,
       isLoading,
       error,
@@ -277,6 +331,8 @@ export const IncomingProductProvider = ({ children }) => {
       getSingleIncomingProduct,
       createIncomingProduct,
       createIncomingProductBackOrder,
+      createIncomingProductReturns,
+      getIncomingReturnList,
       getIncomingProductBackOrder,
       editIncomingProductBackOrder,
       updateIncomingProduct,
@@ -286,12 +342,15 @@ export const IncomingProductProvider = ({ children }) => {
       incomingProductList,
       singleIncomingProduct,
       backOrder,
+      returnList,
       isLoading,
       error,
       getIncomingProductList,
       getSingleIncomingProduct,
       createIncomingProduct,
+      getIncomingReturnList,
       createIncomingProductBackOrder,
+      createIncomingProductReturns,
       getIncomingProductBackOrder,
       editIncomingProductBackOrder,
       updateIncomingProduct,

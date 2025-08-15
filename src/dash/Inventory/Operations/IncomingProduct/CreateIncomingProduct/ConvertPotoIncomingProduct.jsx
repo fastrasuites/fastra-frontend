@@ -68,6 +68,8 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
     "id"
   );
 
+  console.log(formData);
+
   return (
     <>
       <Box display="flex" gap="50px" justifyContent="space-between" pr={60}>
@@ -109,11 +111,11 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
           />
         </Box>
 
-        <Box flex={1}>
+        <Box className="formLabelAndValue" flex={1}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Name of Supplier {REQUIRED_ASTERISK}
           </label>
-          <Autocomplete
+          {/* <Autocomplete
             options={formData.suppliers || []}
             value={selectedSupplier}
             getOptionLabel={(opt) => opt.company_name || ""}
@@ -124,7 +126,8 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
             renderInput={(params) => (
               <TextField {...params} placeholder="Select supplier" required />
             )}
-          />
+          /> */}
+          <p>{formData?.relatedPO?.vendor_details?.company_name}</p>
         </Box>
 
         <Box className="formLabelAndValue" flex={1}>
@@ -228,7 +231,7 @@ export default function ConvertPoToIncomingProduct() {
       source_location: filledFormData.sourceLocation.id,
       status,
       is_hidden: false,
-      supplier: filledFormData.suppliersName?.id || null,
+      supplier: filledFormData.relatedPO.vendor || null,
       incoming_product_items: filledFormData.items.map((item) => ({
         product: item.product.id,
         expected_quantity: Number(item.available_product_quantity),

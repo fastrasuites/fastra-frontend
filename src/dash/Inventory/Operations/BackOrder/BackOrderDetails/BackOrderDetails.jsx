@@ -62,7 +62,13 @@ const generateAdjacentId = (baseId, increment) => {
 
 // Navigation controls (same UX pattern)
 const NavigationControls = ({ prevId, nextId, onNavigate, onClose }) => (
-  <Box display="flex" alignItems="center" gap={2}>
+  <Box
+    display="flex"
+    alignItems="center"
+    justifyContent={"end"}
+    width={"96vw"}
+    gap={2}
+  >
     <Box
       display="flex"
       alignItems="center"
@@ -72,6 +78,7 @@ const NavigationControls = ({ prevId, nextId, onNavigate, onClose }) => (
       borderRadius={1}
       py={0.5}
       px={1}
+      width={"100%"}
     >
       <Tooltip title="Previous Back Order">
         <IconButton
@@ -232,9 +239,7 @@ export default function BackOrderInfo() {
       if (!backOrder) return;
       setActionLoading(true);
       try {
-        await updateBackOrderStatus(backOrder.backorder_id, {
-          status: newStatus,
-        });
+        await updateBackOrderStatus(backOrder.backorder_id, newStatus);
         showAlert("success", "Success", `Back order marked ${newStatus}`);
         await loadData();
       } catch (err) {
@@ -360,16 +365,6 @@ export default function BackOrderInfo() {
     <Box p={4} display="grid" gap={4} mr={4}>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <div>
-          <Can app="inventory" module="backorder" action="create">
-            <Link to={`/${schema}/inventory/operations/create-back-order`}>
-              <Button variant="contained" size="large" disableElevation>
-                New Back Order
-              </Button>
-            </Link>
-          </Can>
-        </div>
-
         <Box display="flex" alignItems="center" gap={2}>
           <NavigationControls
             prevId={navigation.prevId}
@@ -379,22 +374,6 @@ export default function BackOrderInfo() {
           />
 
           {/* Edit / actions area - show edit if draft */}
-          {backOrder.status === "draft" && (
-            <Can app="inventory" module="backorder" action="edit">
-              <Button
-                variant="contained"
-                size="large"
-                disableElevation
-                component={Link}
-                to={{
-                  pathname: `/${schema}/inventory/operations/back-order/${backOrder.backorder_id}/edit`,
-                  state: { backOrder },
-                }}
-              >
-                Edit
-              </Button>
-            </Can>
-          )}
         </Box>
       </Box>
 
@@ -428,12 +407,6 @@ export default function BackOrderInfo() {
           borderBottom="1px solid #E2E6E9"
           pb={3}
         >
-          <InfoItem label="Backorder ID" value={backOrder.backorder_id} />
-
-          <InfoItem
-            label="Date Created"
-            value={formatDate(backOrder.date_created)}
-          />
           <InfoItem
             label="Receipt Type"
             value={(
@@ -450,7 +423,11 @@ export default function BackOrderInfo() {
             }
           />
           <InfoItem
-            label="Destination Location"
+            label="Date Created"
+            value={formatDate(backOrder.date_created)}
+          />
+          <InfoItem
+            label="Location"
             value={
               backOrder?.backorder_of_details?.destination_location_details
                 ?.location_name || backOrder.destination_location
@@ -463,13 +440,8 @@ export default function BackOrderInfo() {
               String(backOrder.supplier || "N/A")
             }
           />
-          <InfoItem
-            label="From Incoming Product"
-            value={
-              backOrder.backorder_of_details?.incoming_product_id ||
-              backOrder.backorder_of
-            }
-          />
+          <div></div>
+          <InfoItem label="Back Order ID" value={backOrder.backorder_id} />
         </Box>
 
         {/* Backorder items */}
@@ -569,40 +541,11 @@ export default function BackOrderInfo() {
                 onClick={() => handleStatusChange("validated")}
                 disabled={actionLoading}
               >
-                {actionLoading ? <CircularProgress size={20} /> : "Validate"}
+                {actionLoading ? <CircularProgress size={20} /> : "Done"}
               </Button>
               {/* </Can> */}
             </>
           )}
-
-          {/* Toggle hidden */}
-          <Can app="inventory" module="backorder" action="edit">
-            <Button
-              variant="outlined"
-              onClick={handleToggleHidden}
-              disabled={actionLoading}
-            >
-              {actionLoading ? (
-                <CircularProgress size={20} />
-              ) : backOrder.is_hidden ? (
-                "Unhide"
-              ) : (
-                "Hide"
-              )}
-            </Button>
-          </Can>
-
-          {/* Soft delete */}
-          <Can app="inventory" module="backorder" action="delete">
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleSoftDelete}
-              disabled={actionLoading}
-            >
-              {actionLoading ? <CircularProgress size={20} /> : "Delete"}
-            </Button>
-          </Can>
         </Box>
       </Box>
     </Box>

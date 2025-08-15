@@ -13,14 +13,18 @@ import {
   extractPermissions,
   getPermissionsByApp,
 } from "../helper/extractPermissions";
-
+//  src={`data:image/png;base64,${singleUser.user_image}`}
 const UserCard = ({ handleClickOpen, user }) => {
   return (
     <div>
       <button onClick={handleClickOpen} className="icon-and-profile">
         <img
           alt="User Avatar"
-          src={user?.user_image ? user?.user_image : admin}
+          src={
+            user?.user_image
+              ? `data:image/png;base64,${user?.user_image}`
+              : admin
+          }
           className="avatar"
           title={`Administrator\ninfo@companyname.com`}
         />

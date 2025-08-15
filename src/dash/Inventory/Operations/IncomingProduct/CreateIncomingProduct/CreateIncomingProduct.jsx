@@ -286,7 +286,7 @@ const CreateIncomingProduct = () => {
           history.push(
             `/${tenant_schema_name}/inventory/operations/incoming-product/${id}`
           ),
-        1500
+        1000
       );
     },
     [history, tenant_schema_name]
@@ -354,6 +354,7 @@ const CreateIncomingProduct = () => {
             ? "Backorder created successfully"
             : "Backorder not created as per your choice.",
         });
+        navigateToDetail(IP_ID);
       } catch (backorderErr) {
         console.error("Backorder error:", backorderErr);
         await Swal.fire({
@@ -364,6 +365,56 @@ const CreateIncomingProduct = () => {
       }
     },
     [createIncomingProductBackOrder]
+  );
+
+  const handleReturn = useCallback(
+    async (IP_ID) => {
+      try {
+        const result = await Swal.fire({
+          html: `
+          <h1 class="swal-title">OOPS!</h1>
+          <div class="swal-line-container">
+            <div class="swal-line1"></div>
+            <div class="swal-line2"></div>
+          </div>
+          <p class="swal-subtext">
+            The received quantity is more than the expected quantity.
+          </p>
+          <p class="swal-question">
+            Do you want to return the extra goods?
+          </p>
+        `,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          customClass: {
+            popup: "custom-swal-popup",
+            title: "custom-swal-title",
+            confirmButton: "custom-swal-confirm-btn",
+            cancelButton: "custom-swal-cancel-btn",
+            htmlContainer: "custom-swal-html",
+          },
+        });
+
+        if (result.isConfirmed) {
+          // Navigate to Returns page
+          history.push(
+            `/${tenant_schema_name}/inventory/operations/incoming-product/return/${IP_ID}`
+          );
+        } else {
+          // Just continue the normal process
+          navigateToDetail(IP_ID);
+        }
+      } catch (err) {
+        console.error("Return process error:", err);
+        await Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.message || "Failed to process return request.",
+        });
+      }
+    },
+    [history, tenant_schema_name, navigateToDetail]
   );
 
   const handleSubmit = useCallback(
@@ -425,6 +476,11 @@ const CreateIncomingProduct = () => {
 
         if (backorderCode === "backorder_required" && IP_ID) {
           await handleBackorder(IP_ID);
+          return;
+        }
+        console.log(backorderCode);
+        if (backorderCode === "return_required") {
+          await handleReturn(IP_ID);
           return;
         }
 

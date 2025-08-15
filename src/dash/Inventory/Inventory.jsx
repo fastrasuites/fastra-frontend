@@ -33,6 +33,9 @@ import DeliveryOrderReturnForm from "./Operations/DeliveryOrder/DeliveryOrderRet
 import DeliveryOrderReturnList from "./Operations/DeliveryOrder/DeliveryOrderReturnList/DeliveryOrderReturnList";
 import BackOrderList from "./Operations/BackOrder/BackOrderList/BackOrderList";
 import BackOrderDetails from "./Operations/BackOrder/BackOrderDetails/BackOrderDetails";
+import ReturnForm from "./Operations/Returns/ReturnForm";
+import ReturnIncomingProductForm from "./Operations/Returns/ReturnForm";
+import ReturnList from "./Operations/Returns/ReturnsList";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -46,20 +49,37 @@ const InventoryLayout = () => {
 
           {/* Inventory Operation Routes */}
           <Route exact path={`${path}/operations`} component={Operations} />
+
           <Route
             exact
             path={`${path}/operations/incoming-product/inventory-conversion`}
             component={ConvertPoToIncomingProduct}
           />
+
+          <Route
+            exact
+            path={`${path}/operations/creat-incoming-product`}
+            component={CreateIncomingProduct}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/incoming-product/return`}
+            component={ReturnList}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/incoming-product/return/:IP_ID`}
+            component={ReturnIncomingProductForm}
+          />
+
           <Route
             exact
             path={`${path}/operations/incoming-product/:id`}
             component={IncomingProductInfo}
           />
-          <Route
-            path={`${path}/operations/creat-incoming-product`}
-            component={CreateIncomingProduct}
-          />
+
           <Route
             exact
             path={`${path}/operations/incoming-product/:id/edit`}

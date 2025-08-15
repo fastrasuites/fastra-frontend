@@ -48,6 +48,11 @@ const InventoryHeader = () => {
       link: `/${tenant_schema_name}/inventory/operations/back-orders`,
     });
 
+    subItems.push({
+      label: "Returns",
+      link: `/${tenant_schema_name}/inventory/operations/incoming-product/return`,
+    });
+
     if (subItems.length > 0) {
       menuItems.push({
         label: "Operations",
