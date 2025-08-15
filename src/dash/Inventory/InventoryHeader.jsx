@@ -43,6 +43,13 @@ const InventoryHeader = () => {
       });
     }
 
+    if (hasPermission("inventory:deliveryorder:view")) {
+      subItems.push({
+        label: "Returns",
+        link: `/${tenant_schema_name}/inventory/operations/delivery-order-returns`,
+      });
+    }
+
     subItems.push({
       label: "Back Order",
       link: `/${tenant_schema_name}/inventory/operations/back-orders`,
