@@ -28,8 +28,9 @@ export default function Purchreq() {
   const [loading, setLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  // const { tenantData } = useTenant();
+  const { tenantData } = useTenant();
   // console.log(tenantData);
+  const isAdmin = (tenantData?.user?.username || "").startsWith("admin_");
 
   const { fetchSinglePurchaseRequest, fetchPurchaseRequests, error } =
     usePurchase();
@@ -37,6 +38,15 @@ export default function Purchreq() {
 
   const [wizardState, setWizardState] = useState(() => {
     const saved = localStorage.getItem(WIZARD_STORAGE_KEY);
+    // Only initialize wizard for admin users
+    if (!isAdmin) {
+      return {
+        hidden: true,
+        currentStep: 1,
+        skipped: false,
+        completed: false,
+      };
+    }
     return saved
       ? JSON.parse(saved)
       : {
@@ -60,7 +70,7 @@ export default function Purchreq() {
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, [wizardState]);
+  }, [wizardState, isAdmin]);
 
   const handleCloseModal = (action) => {
     if (action === "skip") {
@@ -317,11 +327,13 @@ export default function Purchreq() {
           )}
         </div>
       </div>
-      <PurchaseModuleWizard
-        open={!wizardState.hidden}
-        onClose={(action) => handleCloseModal(action)}
-        step={wizardState.currentStep}
-      />
+      {isAdmin && (
+        <PurchaseModuleWizard
+          open={!wizardState.hidden}
+          onClose={(action) => handleCloseModal(action)}
+          step={wizardState.currentStep}
+        />
+      )}
     </Box>
   );
 }
