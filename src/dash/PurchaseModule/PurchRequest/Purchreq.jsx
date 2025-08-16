@@ -17,6 +17,7 @@ import { Search } from "lucide-react";
 import Swal from "sweetalert2";
 import Can from "../../../components/Access/Can";
 import PurchaseRequestGrid from "./PurchaseRequestGrid";
+import { useTenant } from "../../../context/TenantContext";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
