@@ -162,13 +162,26 @@ export const DeliveryOrderProvider = ({ children }) => {
         // Transform items if present
         const payload = { ...deliveryOrderData };
         if (payload.items) {
-          payload.delivery_order_items = payload.items.map((item) => ({
-            id: item.id, // Include for existing items
-            product_item: item.product,
-            quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
-            unit_price: parseFloat(item.unit_price) || 0,
-            total_price: parseFloat(item.total_price) || 0,
-          }));
+          payload.delivery_order_items = payload.items.map((item) => {
+            // id: item.id, // Include for existing items
+            // product_item: item.product,
+            // quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
+            // unit_price: parseFloat(item.unit_price) || 0,
+            // total_price: parseFloat(item.total_price) || 0,
+
+            // Calculate total_price here
+            const quantity = parseInt(item.quantity_to_deliver, 10) || 0;
+            const unitPrice = parseFloat(item.unit_price) || 0;
+            const totalPrice = quantity * unitPrice;
+
+            return {
+              id: item.id,
+              product_item: item.product.id || item.product,
+              quantity_to_deliver: quantity,
+              unit_price: unitPrice,
+              total_price: totalPrice, // Use calculated value
+            };
+          });
           delete payload.items;
         }
 

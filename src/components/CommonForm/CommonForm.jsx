@@ -57,23 +57,45 @@ const CommonForm = ({
     [setFormData]
   );
 
-  // Adding a new row: use the rowConfig to define default values
   const handleAddRow = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        rowConfig.reduce(
-          (acc, cfg) => {
-            acc[cfg.field] = "";
-            return acc;
-          }
-          // ,
-          // { id: `new-${prev.items.length + 1}` }
-        ),
-      ],
-    }));
+    setFormData((prev) => {
+      const newRow = rowConfig.reduce((acc, cfg) => {
+        // Initialize fields with default values
+        let defaultValue = "";
+
+        // For calculated fields, compute initial value
+        if (cfg.value && typeof cfg.value === "function") {
+          defaultValue = cfg.value(acc);
+        }
+
+        acc[cfg.field] = defaultValue;
+        return acc;
+      }, {});
+
+      return {
+        ...prev,
+        items: [...prev.items, newRow],
+      };
+    });
   }, [rowConfig, setFormData]);
+
+  // Adding a new row: use the rowConfig to define default values
+  // const handleAddRow = useCallback(() => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     items: [
+  //       ...prev.items,
+  //       rowConfig.reduce(
+  //         (acc, cfg) => {
+  //           acc[cfg.field] = "";
+  //           return acc;
+  //         }
+  //         // ,
+  //         // { id: `new-${prev.items.length + 1}` }
+  //       ),
+  //     ],
+  //   }));
+  // }, [rowConfig, setFormData]);
 
   // Removing an existing row
   const handleRemoveRow = useCallback(
