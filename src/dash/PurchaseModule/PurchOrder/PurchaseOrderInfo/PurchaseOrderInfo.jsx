@@ -336,6 +336,8 @@ const PurchaseOrderInfo = () => {
       </Box>
     );
   }
+
+  console.log(item);
   return (
     <div className="rfqStatus">
       <div className="rfqHeader">
@@ -525,7 +527,13 @@ const PurchaseOrderInfo = () => {
                       fontSize: 12,
                     }}
                   >
-                    {tenantSchema}
+                    {" "}
+                    {item?.created_by_details.user?.first_name.trim().length <=
+                      0 &&
+                    item?.created_by_details.user?.last_name.trim().length <= 0
+                      ? item?.created_by_details.user?.username
+                      : `${item?.created_by_details?.user?.first_name}
+                    ${item?.created_by_details?.user?.last_name}`}
                   </TableCell>
                 </TableRow>
               </TableBody>

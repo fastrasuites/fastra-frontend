@@ -33,10 +33,11 @@ const defaultFormData = {
 const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
 
-  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
 
   useEffect(() => {
-    getActiveLocationList();
+    getActiveLocationListForForm();
   }, []);
 
   // Sync with parent state upon selection change
@@ -44,6 +45,7 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
     setSelectedLocation(newValue);
     handleInputChange("source_location", newValue);
   };
+
   return (
     <>
       <Box display="flex" flexDirection="column" gap={3}>
@@ -71,9 +73,9 @@ const DeliveryOrderFormBasicInputs = ({ formData, handleInputChange }) => {
             {activeLocationList.length <= 1 ? (
               <Grid item xs={12} sm={6} lg={3}>
                 <Typography>
-                  Location <Asterisk />
+                  Source Location <Asterisk />
                 </Typography>
-                <Typography>{formData.location}</Typography>
+                <Typography>{activeLocationList[0].location_name}</Typography>
               </Grid>
             ) : (
               <Grid item xs={12} sm={6} lg={3}>
@@ -218,12 +220,29 @@ const DeliveryOrderForm = () => {
   const { createDeliveryOrder, isLoading, error } = useDeliveryOrder();
 
   const { getLocationProducts, locationProducts } = useCustomLocation();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
 
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const history = useHistory();
 
   const locationId = formData.source_location.id;
+
+  useEffect(() => {
+    getActiveLocationListForForm();
+  }, [getActiveLocationListForForm]);
+
+  useEffect(() => {
+    if (activeLocationList.length === 1) {
+      setFormData((prev) => ({
+        ...prev,
+        source_location: activeLocationList[0],
+      }));
+    }
+  }, [activeLocationList]);
+
+  console.log(formData);
 
   useEffect(() => {
     if (locationId) {
@@ -241,8 +260,6 @@ const DeliveryOrderForm = () => {
         unit_name: prod?.product_unit_of_measure,
       },
     }));
-
-  console.log(transformProducts(locationProducts));
 
   const rowConfig = [
     {
@@ -356,6 +373,8 @@ const DeliveryOrderForm = () => {
       }
     }
   };
+
+  console.log(activeLocationList);
 
   return (
     <CommonForm

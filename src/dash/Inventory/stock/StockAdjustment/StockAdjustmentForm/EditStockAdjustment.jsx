@@ -73,7 +73,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
       {activeLocationList.length <= 1 ? (
         <div className="formLabelAndValue">
           <label>Location</label>
-          <p>{selectedLocation?.id || "N/A"}</p>
+          <p>{selectedLocation?.location_name || "N/A"}</p>
         </div>
       ) : (
         <Box minWidth={"300px"}>

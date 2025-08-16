@@ -221,7 +221,7 @@ export default function EditIncomingProduct() {
     if (incoming && products.length && vendors.length && locationList.length) {
       const items = incoming.incoming_product_items.map((it) => ({
         ...it,
-        product: it.product,
+        product: it.product_details,
         available_product_quantity: it.expected_quantity,
         qty_received: it.quantity_received,
         unit_of_measure: {
@@ -260,7 +260,7 @@ export default function EditIncomingProduct() {
       supplier: data.suppliersName?.id || null,
       incoming_product_items: data?.items.map((it) => ({
         id: it?.id,
-        product: it?.product,
+        product: it?.product?.id,
         expected_quantity: Number(it?.available_product_quantity),
         quantity_received: Number(it?.qty_received),
       })),

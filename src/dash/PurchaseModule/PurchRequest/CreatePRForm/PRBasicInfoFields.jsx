@@ -53,7 +53,7 @@ const PRBasicInfoFields = ({
       handleInputChange("requesting_location", locationList[0]);
     }
   }, [locationList]);
-
+  console.log(tenantData);
   return (
     <div className="rfqBasicInfoField">
       <div className="rfqBasicInfoFields1">

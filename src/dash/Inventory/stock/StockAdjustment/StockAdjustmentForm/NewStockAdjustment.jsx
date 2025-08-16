@@ -62,7 +62,7 @@ const StockAdjustmentBasicInputs = ({ formData, handleInputChange }) => {
           <label style={{ marginBottom: 6, display: "flex" }}>
             Location <Asterisk />
           </label>
-          <p>{selectedLocation?.id || "N/A"}</p>
+          <p>{selectedLocation?.location_name || "N/A"}</p>
         </div>
       ) : (
         <div>
@@ -107,6 +107,22 @@ const NewStockAdjustment = () => {
   const { getLocationProducts, locationProducts } = useCustomLocation();
   const { isLoading: stockLoading, createStockAdjustment } =
     useStockAdjustment();
+
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
+
+  useEffect(() => {
+    getActiveLocationListForForm();
+  }, [getActiveLocationListForForm]);
+
+  useEffect(() => {
+    if (activeLocationList.length === 1) {
+      setFormData((prev) => ({
+        ...prev,
+        source_location: activeLocationList[0],
+      }));
+    }
+  }, [activeLocationList]);
 
   const locationId = formData?.source_location?.id;
   console.log(formData);

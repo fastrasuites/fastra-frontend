@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { extractPermissions } from "../helper/extractPermissions";
 import { AccessProvider } from "./Access/AccessContext";
+import { getTenantClient } from "../services/apiService";
 
 const TenantContext = createContext();
 
@@ -11,6 +18,16 @@ export const TenantProvider = ({ children }) => {
     const storedData = localStorage.getItem("tenantData");
     return storedData ? JSON.parse(storedData) : null;
   });
+
+  const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
+
+  const client = useMemo(
+    () =>
+      tenantData
+        ? getTenantClient(tenant_schema_name, access_token, refresh_token)
+        : null,
+    [tenantData, tenant_schema_name, access_token, refresh_token]
+  );
 
   const [permissions, setPermissions] = useState(() => {
     const stored = localStorage.getItem("permissions");
@@ -66,7 +83,32 @@ export const TenantProvider = ({ children }) => {
     setTenantData(null);
     setPermissions({});
   };
+  const fetchUserDetails = async () => {
+    const company_name = tenantData?.tenant_company_name;
+    if (company_name) {
+      try {
+        const { data } = await client.get("/company/login-details/");
+        setTenantData((prev) => ({
+          ...prev,
+          user: data.user,
+          user_accesses: data.user_accesses,
+        }));
+        if (data.user_accesses) {
+          const perms = extractPermissions(data.user_accesses);
+          setPermissions(perms);
+          localStorage.setItem("permissions", JSON.stringify(perms));
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
+  useEffect(() => {
+    fetchUserDetails();
+  }, []);
+
+  console.log(tenantData);
   return (
     <TenantContext.Provider
       value={{ tenantData, permissions, login, logout, updateTenantData }}

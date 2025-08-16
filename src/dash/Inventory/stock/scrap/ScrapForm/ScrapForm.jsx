@@ -95,7 +95,7 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
           </label>
           {activeLocationList.length <= 1 ? (
             <Typography color={"gray"}>
-              {selectedLocation?.id || "N/A"}
+              {selectedLocation?.location_name || "N/A"}
             </Typography>
           ) : (
             <Autocomplete

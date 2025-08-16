@@ -370,11 +370,13 @@ const RFQInfo = () => {
           width="100%"
         >
           <Box display="flex" gap={4}>
-            <Link to={`/${tenantSchema}/purchase/request-for-quotations/new`}>
-              <Button variant="contained" disableElevation>
-                New RFQ
-              </Button>
-            </Link>
+            <Can app="purchase" module="requestforquotation" action="create">
+              <Link to={`/${tenantSchema}/purchase/request-for-quotations/new`}>
+                <Button variant="contained" disableElevation>
+                  New RFQ
+                </Button>
+              </Link>
+            </Can>
             <div className="rfqAutosave">
               <p>Autosave</p>
               <img src={autosaveIcon} alt="Autosave" width={20} height={20} />

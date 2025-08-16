@@ -4,7 +4,6 @@ import React, { createContext, useContext } from "react";
 const AccessContext = createContext({});
 
 export const AccessProvider = ({ permissions, children }) => {
-  console.log("AccessProvider Permissions:", permissions);
   return (
     <AccessContext.Provider value={permissions}>
       {children}

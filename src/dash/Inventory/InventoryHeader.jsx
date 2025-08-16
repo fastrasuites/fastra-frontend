@@ -35,6 +35,10 @@ const InventoryHeader = () => {
         link: `/${tenant_schema_name}/inventory/operations`,
       });
     }
+    subItems.push({
+      label: "Incoming Product Returns",
+      link: `/${tenant_schema_name}/inventory/operations/incoming-product/return`,
+    });
 
     if (hasPermission("inventory:deliveryorder:view")) {
       subItems.push({
@@ -45,7 +49,7 @@ const InventoryHeader = () => {
 
     if (hasPermission("inventory:deliveryorder:view")) {
       subItems.push({
-        label: "Returns",
+        label: "Delivery Order Returns",
         link: `/${tenant_schema_name}/inventory/operations/delivery-order-returns`,
       });
     }
@@ -53,11 +57,6 @@ const InventoryHeader = () => {
     subItems.push({
       label: "Back Order",
       link: `/${tenant_schema_name}/inventory/operations/back-orders`,
-    });
-
-    subItems.push({
-      label: "Returns",
-      link: `/${tenant_schema_name}/inventory/operations/incoming-product/return`,
     });
 
     if (subItems.length > 0) {

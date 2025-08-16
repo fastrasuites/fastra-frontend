@@ -93,7 +93,9 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
             disablePortal
             options={activeLocationList}
             value={selectedLocation}
-            getOptionLabel={(option) => option?.name || option?.id || ""}
+            getOptionLabel={(option) =>
+              option?.location_name || option?.id || ""
+            }
             isOptionEqualToValue={(option, value) => option?.id === value?.id}
             onChange={handleLocationChange}
             renderInput={(params) => (

@@ -423,11 +423,13 @@ const PurchaseRequestInfo = () => {
       {/* Header */}
       <div className="rfqHeader">
         <div className="rfqHeaderLeft">
-          <Link to={`/${tenantSchema}/purchase/purchase-request/new`}>
-            <Button variant="contained" disableElevation>
-              New Purchase Request
-            </Button>
-          </Link>
+          <Can app="purchase" module="purchaserequest" action="create">
+            <Link to={`/${tenantSchema}/purchase/purchase-request/new`}>
+              <Button variant="contained" disableElevation>
+                New Purchase Request
+              </Button>
+            </Link>
+          </Can>
           <div className="rfqAutosave">
             <p>Autosave</p>
             <img

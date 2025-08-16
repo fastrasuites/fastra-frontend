@@ -14,9 +14,9 @@ import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import Swal from "sweetalert2";
 import { useDeliveryOrder } from "../../../../../context/Inventory/DeliveryOrderContext";
-import { usePurchase } from "../../../../../context/PurchaseContext";
 import { useParams, useHistory } from "react-router-dom";
 import { useTenant } from "../../../../../context/TenantContext";
+import Asterisk from "../../../../../components/Asterisk";
 
 // ⬇️ CHILD COMPONENT
 const DeliveryOrderFormBasicInputs = ({
@@ -60,29 +60,36 @@ const DeliveryOrderFormBasicInputs = ({
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
             <label>Source Location</label>
-            <Autocomplete
-              disablePortal
-              options={locationList}
-              value={
-                locationList.find(
-                  (loc) =>
-                    loc.location_name ===
-                    formData.source_location?.location_name
-                ) || null
-              }
-              getOptionLabel={(option) => option?.location_name || ""}
-              isOptionEqualToValue={(option, value) => option?.id === value?.id}
-              onChange={handleLocationChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Select Source Location"
-                  size="small"
-                  variant="standard"
-                  fullWidth
-                />
-              )}
-            />
+
+            {locationList.length <= 1 ? (
+              <Typography>{locationList[0].location_name}</Typography>
+            ) : (
+              <Autocomplete
+                disablePortal
+                options={locationList}
+                value={
+                  locationList.find(
+                    (loc) =>
+                      loc.location_name ===
+                      formData.source_location?.location_name
+                  ) || null
+                }
+                getOptionLabel={(option) => option?.location_name || ""}
+                isOptionEqualToValue={(option, value) =>
+                  option?.id === value?.id
+                }
+                onChange={handleLocationChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select Source Location"
+                    size="small"
+                    variant="standard"
+                    fullWidth
+                  />
+                )}
+              />
+            )}
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
             <label>Delivery Address</label>
@@ -171,7 +178,7 @@ const EditDeliveryOrderForm = () => {
 
   const {
     activeLocationList,
-    getActiveLocationList,
+    getActiveLocationListForForm,
     getLocationProducts,
     locationProducts,
   } = useCustomLocation();
@@ -203,7 +210,7 @@ const EditDeliveryOrderForm = () => {
   const locationId = formData.source_location?.id;
 
   useEffect(() => {
-    getActiveLocationList();
+    getActiveLocationListForForm();
     getDeliveryOrderList().then(() => setInitialDataLoaded(true));
   }, []);
 
@@ -288,39 +295,42 @@ const EditDeliveryOrderForm = () => {
       },
     }));
 
-  const rowConfig = [
-    {
-      label: "Product Name",
-      field: "product",
-      type: "autocomplete",
-      options: transformedProducts(locationProducts),
-      getOptionLabel: (option) => option?.product_name || "",
-      isOptionEqualToValue: (option, value) => option?.id === value?.id,
-    },
-    {
-      label: "Quantity to Deliver",
-      field: "quantity_to_deliver",
-      type: "number",
-    },
-    {
-      label: "Unit Price",
-      field: "unit_price",
-      type: "number",
-    },
-    {
-      label: "Unit of Measure",
-      field: "unit_of_measure",
-      type: "text",
-      disabled: true,
-      transform: (value) => value?.unit_category || "",
-    },
-    {
-      label: "Total",
-      field: "total_price",
-      type: "number",
-      disabled: true,
-    },
-  ];
+  const rowConfig = useMemo(
+    () => [
+      {
+        label: "Product Name",
+        field: "product",
+        type: "autocomplete",
+        options: transformedProducts(locationProducts),
+        getOptionLabel: (option) => option?.product_name || "",
+        isOptionEqualToValue: (option, value) => option?.id === value?.id,
+      },
+      {
+        label: "Quantity to Deliver",
+        field: "quantity_to_deliver",
+        type: "number",
+      },
+      {
+        label: "Unit Price",
+        field: "unit_price",
+        type: "number",
+      },
+      {
+        label: "Unit of Measure",
+        field: "unit_of_measure",
+        type: "text",
+        disabled: true,
+        transform: (value) => value?.unit_category || "",
+      },
+      {
+        label: "Total",
+        field: "total_price",
+        type: "number",
+        disabled: true,
+      },
+    ],
+    [locationProducts]
+  );
 
   const handleSubmit = async (filledFormData) => {
     setIsSubmitting(true);

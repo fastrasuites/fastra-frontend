@@ -10,13 +10,12 @@ import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import { usePurchase } from "../../../context/PurchaseContext";
-import { extractRFQID, formatDate } from "../../../helper/helper";
+import { formatDate } from "../../../helper/helper";
 import "../../Inventory/secondaryBar/SecondaryBar.css";
 import { Box, Button } from "@mui/material";
 import { Search } from "lucide-react";
 import Swal from "sweetalert2";
 import Can from "../../../components/Access/Can";
-import { useTenant } from "../../../context/TenantContext";
 import PurchaseRequestGrid from "./PurchaseRequestGrid";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
@@ -28,12 +27,13 @@ export default function Purchreq() {
   const [loading, setLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  // const { tenantData } = useTenant();
-  // console.log(tenantData);
-
   const { fetchSinglePurchaseRequest, fetchPurchaseRequests, error } =
     usePurchase();
   const history = useHistory();
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [wizardState, setWizardState] = useState(() => {
     const saved = localStorage.getItem(WIZARD_STORAGE_KEY);
@@ -53,10 +53,8 @@ export default function Purchreq() {
         setWizardState(JSON.parse(e.newValue));
       }
     };
-
     localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
     window.addEventListener("storage", handleStorageChange);
-
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
@@ -90,6 +88,7 @@ export default function Purchreq() {
 
       if (result.success) {
         setPurchaseRequestData(result.data);
+        setCurrentPage(1); // Reset to first page when search changes
       }
 
       if (searchQuery && (!result || result.data.length === 0)) {
@@ -104,9 +103,15 @@ export default function Purchreq() {
     return () => clearTimeout(debounce);
   }, [fetchPurchaseRequests, searchQuery]);
 
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-  };
+  // Pagination calculations
+  const totalPages = Math.ceil(purchaseRequestData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = purchaseRequestData.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const toggleViewMode = (mode) => setViewMode(mode);
 
   const getStatusColor = (status) => {
     switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
@@ -239,14 +244,22 @@ export default function Purchreq() {
                     aria-label="Pagination"
                   >
                     <p className="secondary-bar__pagination-text">
-                      <span className="visually-hidden">Current page:</span>
-                      1-2 of 2
+                      {purchaseRequestData.length > 0
+                        ? `${startIndex + 1}-${Math.min(
+                            startIndex + itemsPerPage,
+                            purchaseRequestData.length
+                          )} of ${purchaseRequestData.length}`
+                        : "0 of 0"}
                     </p>
                     <div className="secondary-bar__pagination-controls">
                       <button
                         type="button"
                         className="secondary-bar__icon-button"
                         aria-label="Previous page"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
                       >
                         <FaCaretLeft aria-hidden="true" />
                       </button>
@@ -258,6 +271,14 @@ export default function Purchreq() {
                         type="button"
                         className="secondary-bar__icon-button"
                         aria-label="Next page"
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
+                        }
+                        disabled={
+                          currentPage === totalPages || totalPages === 0
+                        }
                       >
                         <FaCaretRight aria-hidden="true" />
                       </button>
@@ -301,14 +322,14 @@ export default function Purchreq() {
 
           {viewMode === "grid" ? (
             <PurchaseRequestGrid
-              quotations={purchaseRequestData}
+              quotations={paginatedData}
               handleCardClick={handleSelectedRequest}
               formatDate={formatDate}
               statusColor={getStatusColor}
             />
           ) : (
             <ListView
-              items={purchaseRequestData}
+              items={paginatedData}
               onCardClick={handleSelectedRequest}
               getStatusColor={getStatusColor}
               loading={loading}

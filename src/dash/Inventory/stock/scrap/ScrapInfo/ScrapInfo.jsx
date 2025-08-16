@@ -165,11 +165,10 @@ const ScrapInfo = () => {
   }, [history, tenant_schema_name, id, scrap]);
 
   const handleValidate = useCallback(async () => {
-    setActionLoading(true);
     try {
       const items = scrap.scrap_items.map((item) => ({
         id: parseInt(item?.id),
-        product: parseInt(item.product?.id),
+        product: parseInt(item.product),
         scrap_quantity: parseInt(item?.scrap_quantity),
       }));
       const payload = {
