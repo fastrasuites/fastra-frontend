@@ -49,13 +49,13 @@ const INITIAL_STATE = [
     count: 0,
     href: "/inventory/operations/delivery-order",
   },
-  {
-    id: "manufacturing-returns",
-    text: "Manufacturing Returns",
-    color: "#593BED",
-    count: 0,
-    href: "/inventory/operations/manufactioning",
-  },
+  // {
+  //   id: "manufacturing-returns",
+  //   text: "Manufacturing Returns",
+  //   color: "#593BED",
+  //   count: 0,
+  //   href: "/inventory/operations/manufactioning",
+  // },
 ];
 
 // Styled Components

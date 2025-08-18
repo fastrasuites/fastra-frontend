@@ -19,8 +19,8 @@ import { useHistory, useParams } from "react-router-dom";
 import { useTenant } from "../../../../context/TenantContext";
 import { useIncomingProduct } from "../../../../context/Inventory/IncomingProduct";
 import { formatDate } from "../../../../helper/helper";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ReturnIncomingProductForm = () => {
   const [formData, setFormData] = useState({
@@ -31,15 +31,15 @@ const ReturnIncomingProductForm = () => {
     items: [],
   });
 
-  const { tenant_schema_name } = useTenant().tenantData || {};
+  const { tenantData } = useTenant() || {};
+  const { tenant_schema_name } = tenantData;
   const history = useHistory();
   const { IP_ID } = useParams();
 
   const [incoming, setIncoming] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [returnData, setReturnData] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const { getSingleIncomingProduct, createIncomingProductReturns } =
     useIncomingProduct();
@@ -57,7 +57,6 @@ const ReturnIncomingProductForm = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
       const { data } = await getSingleIncomingProduct(IP_ID);
       setIncoming(data);
@@ -114,54 +113,27 @@ const ReturnIncomingProductForm = () => {
     });
   };
 
-  const generatePDF = (returnData) => {
+  const generatePDF = (payload) => {
     try {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
 
-      // Title centered
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
       doc.text("Return Incoming Product Report", pageWidth / 2, 18, {
         align: "center",
       });
 
-      // Meta info
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
       const meta = [
-        [
-          "Record ID",
-          returnData?.unique_record_id ??
-            returnData?.id ??
-            formData.order_id ??
-            incoming?.incoming_product_id ??
-            "N/A",
-        ],
-        ["Order ID", returnData?.source_document ?? formData.order_id ?? "N/A"],
-        [
-          "Source Location",
-          returnData?.source_location ??
-            formData.source_location ??
-            incoming?.source_location_details?.location_name ??
-            "N/A",
-        ],
-        [
-          "Date Created",
-          returnData?.date_created ??
-            formData.date_created ??
-            formatDate(incoming?.created_on) ??
-            "N/A",
-        ],
-        [
-          "Reason for Return",
-          returnData?.reason_for_return ?? formData.reason_for_return ?? "N/A",
-        ],
+        ["Order ID", payload.source_document || "N/A"],
+        ["Source Location", formData.source_location || "N/A"],
+        ["Date Created", formData.date_created || formatDate(Date.now())],
+        ["Reason for Return", payload.reason_for_return || "N/A"],
+        ["Returned Date", formatDate(Date.now())],
       ];
 
-      const startY = 28;
-      doc.autoTable({
-        startY,
+      autoTable(doc, {
+        startY: 28,
         head: [["Field", "Value"]],
         body: meta,
         theme: "grid",
@@ -170,16 +142,20 @@ const ReturnIncomingProductForm = () => {
         columnStyles: { 0: { fontStyle: "bold" } },
       });
 
-      const itemsRows = returnData?.return_incoming_product_items?.map((it) => [
-        String(it.returned_product_item ?? it.product ?? ""),
-        String(it.initial_quantity ?? ""),
-        String(it.unit_of_measure ?? ""),
-        String(it.returned_quantity ?? it.quantity_to_be_returned ?? ""),
-      ]);
+      const itemsRows =
+        payload.return_incoming_product_items?.map((it) => [
+          String(it.product ?? ""),
+          String(it.quantity_received ?? ""),
+          String(it.unit_of_measure ?? ""),
+          String(it.quantity_to_be_returned ?? ""),
+        ]) || [];
 
-      const itemsStartY = doc.lastAutoTable.finalY + 6;
+      const itemsStartY =
+        doc.lastAutoTable && doc.lastAutoTable.finalY
+          ? doc.lastAutoTable.finalY + 6
+          : 40;
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: itemsStartY,
         head: [["Product ID", "Initial Qty", "Unit", "Return Qty"]],
         body: itemsRows,
@@ -198,13 +174,7 @@ const ReturnIncomingProductForm = () => {
         { align: "center" }
       );
 
-      const filename = `Return_${
-        returnData?.unique_record_id ??
-        returnData?.id ??
-        formData.order_id ??
-        "Order"
-      }.pdf`;
-
+      const filename = `Return_${payload.source_document || "Order"}.pdf`;
       return { doc, filename };
     } catch (err) {
       console.error("PDF generation failed:", err);
@@ -212,106 +182,9 @@ const ReturnIncomingProductForm = () => {
     }
   };
 
-  const autoDownloadPDF = (doc, filename) => {
-    try {
-      const pdfBlob = doc.output("blob");
-      const url = URL.createObjectURL(pdfBlob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      return true;
-    } catch (err) {
-      console.warn("Auto-download via blob failed, trying doc.save()", err);
-      try {
-        doc.save(filename); // fallback
-        return true;
-      } catch (err2) {
-        console.error("Both download methods failed", err2);
-        return false;
-      }
-    }
-  };
-
-  const handleSendEmail = () => {
-    try {
-      // Get supplier email from API response
-      const supplierEmail =
-        returnData?.source_document_details?.supplier_details?.email || "";
-
-      if (!supplierEmail) {
-        showAlert(
-          "error",
-          "Email Not Found",
-          "Supplier email address is missing in the response"
-        );
-        return;
-      }
-
-      // Get unique identifier for subject line
-      const uniqueId =
-        returnData?.unique_record_id ||
-        returnData?.id ||
-        formData.order_id ||
-        "Order";
-
-      // Create mailto link
-      const subject = `Return Document for ${uniqueId}`;
-      const body = "Hello, please find the return document attached.";
-      const mailtoUrl = `mailto:${supplierEmail}?subject=${encodeURIComponent(
-        subject
-      )}&body=${encodeURIComponent(body)}`;
-
-      // Open default mail client
-      window.location.href = mailtoUrl;
-
-      // Close modal after opening email client
-      setShowEmailModal(false);
-    } catch (error) {
-      console.error("Failed to open email client:", error);
-      showAlert(
-        "error",
-        "Email Error",
-        "Could not open email client. Please try manually."
-      );
-    }
-  };
-
-  const afterSuccessFlow = (responseData) => {
-    setReturnData(responseData);
-
-    // Generate PDF
-    const { doc, filename } = generatePDF(responseData);
-
-    if (!doc || !filename) {
-      showAlert(
-        "warning",
-        "PDF Error",
-        "Could not generate the PDF. The return was created though."
-      );
-      return;
-    }
-
-    // Auto-download PDF
-    const downloadSuccess = autoDownloadPDF(doc, filename);
-
-    if (!downloadSuccess) {
-      showAlert(
-        "warning",
-        "Download Failed",
-        "Automatic download failed. You can generate the PDF again from the page."
-      );
-    }
-
-    // Show email modal after download
-    setShowEmailModal(true);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
 
     const invalidItem = formData.items.find((it) => {
       const rq = Number(it.return_quantity);
@@ -326,39 +199,80 @@ const ReturnIncomingProductForm = () => {
       return;
     }
 
-    const payload = {
-      return_incoming_product_items: formData.items.map((item) => ({
-        product: item.product_id,
-        quantity_received: Number(item.initial_quantity),
-        quantity_to_be_returned: Number(item.return_quantity || 0),
-      })),
-      source_document: formData.order_id,
-      reason_for_return: formData.reason_for_return,
-      returned_date: new Date().toISOString().split("T")[0],
-    };
-
-    let resp;
-    try {
-      resp = await createIncomingProductReturns(payload);
-    } catch (apiErr) {
-      const msg =
-        apiErr?.response?.data?.detail ||
-        apiErr?.message ||
-        "Failed to create return";
-      showAlert("error", "Error", msg);
-      return;
-    }
+    setSubmitting(true);
 
     try {
-      const respData = resp?.data || resp;
-      afterSuccessFlow(respData);
-    } catch (postErr) {
-      console.error("Post-success flow failed:", postErr);
-      showAlert(
-        "warning",
-        "Return created",
-        "The return was created, but there was an issue preparing the email/PDF. You can retry from the page."
+      const isoReturnedDate = new Date(Date.now()).toISOString().split("T")[0];
+
+      const payload = {
+        source_document: formData.order_id,
+        reason_for_return: formData.reason_for_return,
+        returned_date: isoReturnedDate,
+        return_incoming_product_items: formData.items.map((item) => ({
+          product: item.product_id,
+          quantity_received: Number(item.initial_quantity),
+          quantity_to_be_returned: Number(item.return_quantity || 0),
+        })),
+        email_subject: `Return Document for ${formData.order_id}`,
+        email_body: "Please find the attached return document.",
+        supplier_email:
+          incoming?.source_document_details?.supplier_details?.email ||
+          incoming?.supplier_details?.email ||
+          "",
+      };
+
+      // Generate PDF
+      const { doc, filename } = generatePDF(payload);
+      if (!doc) {
+        showAlert("error", "PDF Error", "Could not generate the PDF.");
+        setSubmitting(false);
+        return;
+      }
+
+      const pdfBlob = doc.output("blob");
+      const pdfFile = new File([pdfBlob], filename, {
+        type: "application/pdf",
+      });
+
+      // Build FormData (multipart)
+      const fd = new FormData();
+      fd.append("source_document", payload.source_document);
+      fd.append("reason_for_return", payload.reason_for_return);
+      fd.append("returned_date", payload.returned_date); // YYYY-MM-DD
+      fd.append(
+        "return_incoming_product_items",
+        JSON.stringify(payload.return_incoming_product_items)
       );
+      fd.append("email_subject", payload.email_subject);
+      fd.append("email_body", payload.email_body);
+      fd.append("email_attachment", pdfFile); // single file
+      fd.append("supplier_email", payload.supplier_email);
+
+      // DEBUG: log form keys to confirm file presence (File object will appear)
+      // Remove or comment out in production
+      // eslint-disable-next-line no-console
+      for (const pair of fd.entries()) {
+        console.log("FormData key:", pair[0], "value:", pair[1]);
+      }
+
+      // send using wrapper (await it)
+      const resp = await createIncomingProductReturns(fd);
+
+      // wrapper returns { success: true, data } on success
+      if (resp && resp.success) {
+        showAlert("success", "Submitted", "Return submitted successfully.");
+        history.push(
+          `/${tenant_schema_name}/inventory/operations/incoming-product/return`
+        );
+      } else {
+        // if wrapper doesn't throw but returns other shape
+        throw new Error("Unexpected response from server");
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      showAlert("error", "Error", err.message || "Failed to submit return.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -409,7 +323,7 @@ const ReturnIncomingProductForm = () => {
             <label style={{ marginBottom: 6, display: "flex" }}>
               Date Created <Asterisk />
             </label>
-            <p>{formData.date_created}</p>
+            <p>{formatDate(Date.now())}</p>
           </div>
           <Box>
             <label style={{ marginBottom: 6, display: "flex" }}>
@@ -422,6 +336,7 @@ const ReturnIncomingProductForm = () => {
                 handleInputChange("reason_for_return", e.target.value)
               }
               sx={{ width: "100%" }}
+              required
             />
           </Box>
         </Box>
@@ -522,42 +437,17 @@ const ReturnIncomingProductForm = () => {
           </Paper>
 
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-            <Button variant="contained" disableElevation type="submit">
-              Save
+            <Button
+              variant="contained"
+              disableElevation
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? "Submitting..." : "Save & Submit"}
             </Button>
           </Box>
         </div>
       </form>
-
-      {/* Email Modal */}
-      {showEmailModal && (
-        <div className="email-modal">
-          <div className="email-modal-content">
-            <h3>Return Created Successfully</h3>
-            <p>The return document has been downloaded to your device.</p>
-            <p>Would you like to email it to the supplier?</p>
-
-            <div className="email-modal-buttons">
-              <Button
-                variant="contained"
-                onClick={handleSendEmail}
-                sx={{ mr: 2 }}
-              >
-                Send Me
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  setShowEmailModal(false);
-                  history.goBack();
-                }}
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

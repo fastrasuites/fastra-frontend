@@ -189,8 +189,13 @@ export const IncomingProductProvider = ({ children }) => {
       setIsLoading(true);
       try {
         const { data } = await client.post(
-          "/inventory/return-incoming-product/ ", // ✅ Correct endpoint for returns
-          formData
+          "/inventory/return-incoming-product/",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
 
         setError(null);

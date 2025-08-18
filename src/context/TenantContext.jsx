@@ -108,7 +108,6 @@ export const TenantProvider = ({ children }) => {
     fetchUserDetails();
   }, []);
 
-  console.log(tenantData);
   return (
     <TenantContext.Provider
       value={{ tenantData, permissions, login, logout, updateTenantData }}
