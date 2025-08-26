@@ -17,7 +17,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import { FaCaretLeft, FaCaretRight, FaBars } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
-import { useStockMove } from "../../../../context/Inventory/StockMoveContext_temp";
+import { useStockMove } from "../../../../context/Inventory/StockMoveContext";
 
 export default function StockMoves() {
   const [search, setSearch] = useState("");
