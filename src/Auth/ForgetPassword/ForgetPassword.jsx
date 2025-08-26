@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./ForgetPassword.css";
 import { Box, Button, Typography } from "@mui/material";
 import OtpInput from "../../components/Auth/OtpInput";
+import Swal from "sweetalert2";
 
 // Extract tenant subdomain once on component mount
 const getTenant = () => window.location.hostname.split(".")[0];
@@ -76,6 +77,18 @@ export default function ForgetPassword() {
         { withCredentials: true }
       );
       toast.success(data.detail || "Code sent to your email");
+      if (data.role === "employee") {
+        Swal.fire({
+          icon: "info",
+          title: "Request Sent ✅",
+          text: "Your request for a password reset has been forwarded to your administrator. Your admin will soon send a new password to your email",
+          confirmButtonText: "Okay",
+          confirmButtonColor: "#3085d6",
+        }).then(() => {
+          history.back();
+        });
+        return;
+      }
       setStep(1);
       setTimer(60);
     } catch (err) {
@@ -142,8 +155,7 @@ export default function ForgetPassword() {
                 maxWidth={"500px"}
                 mt={1}
               >
-                Enter your email for the verification proccess,we will send 4
-                digits code to your email.
+                Enter your email for the verification proccess.
               </Typography>
             </Box>
 

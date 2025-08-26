@@ -24,7 +24,9 @@ const Change = () => {
 
   const history = useHistory();
   const { tenantData } = useTenant();
-  const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
+  const { tenant_schema_name, access_token, refresh_token, user } =
+    tenantData || {};
+  const isAdmin = tenantData?.user?.username?.startsWith("admin_");
 
   const client = useMemo(() => {
     return tenant_schema_name && access_token && refresh_token
@@ -64,12 +66,15 @@ const Change = () => {
       const payload = {
         old_password: state.old_password,
         new_password: state.new_password,
+        confirm_password: state.confirm_password,
+        user_id: user?.id,
       };
 
-      const response = await client.post(
-        "company/change-admin-password/",
-        payload
-      );
+      const endpoint = isAdmin
+        ? "company/change-admin-password/"
+        : "users/tenant-users/change-password";
+
+      const response = await client.post(endpoint, payload);
       if (response.status === 200) {
         await Swal.fire({
           icon: "success",
@@ -89,7 +94,7 @@ const Change = () => {
     } catch (err) {
       console.error(err);
       setError(
-        err.response?.data?.error ||
+        err.response?.data?.detail[0] ||
           "Failed to change password. Please try again."
       );
       await Swal.fire({
