@@ -52,3 +52,4 @@ jobs:
           # set-ftp-flags: true       # Uncomment if you have permission issues
           exclude: |
             .well-known/*
+            .ftpquota

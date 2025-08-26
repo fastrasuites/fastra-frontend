@@ -11,7 +11,6 @@
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
-
 </IfModule>
 
 # Caching for static files
@@ -34,3 +33,12 @@
   AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript
 </IfModule>
 
+# --------------------------------------
+# Security: Prevent access to hidden/system files
+# --------------------------------------
+<FilesMatch "^(\.env|\.htaccess|\.htpasswd|\.git|\.svn|\.DS_Store|\.ftpquota)$">
+  Require all denied
+</FilesMatch>
+
+# Block directory listing
+Options -Indexes
