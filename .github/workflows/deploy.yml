@@ -35,8 +35,8 @@ jobs:
         run: npm run build
 
       # Step 5: List build contents (great for debugging)
-      - name: 📁 Show build contents
-        run: ls -la build/
+      - name: 📁 Show dist contents
+        run: ls -la dist/
 
       # Step 6: Deploy the built files to cPanel via FTP
       - name: 📤 Deploy to cPanel
@@ -45,7 +45,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./build/ # The folder React created
+          local-dir: ./dist/ # The folder React created
           server-dir: ./app.fastrasuite.com/ # The target folder on the server
           # The following options are important for a clean deploy
           dangerous-clean-slate: true # Deletes ALL files on the server-dir before uploading
