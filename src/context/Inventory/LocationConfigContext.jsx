@@ -40,7 +40,6 @@ export const LocationConfigProvider = ({ children }) => {
 
       setIsLoading(true);
       try {
-        // console.log(is_activated);
         const response = await client.post(
           "/inventory/configuration/multi-location/",
           {
@@ -78,7 +77,6 @@ export const LocationConfigProvider = ({ children }) => {
         "/inventory/configuration/multi-location/check_status/"
       );
       const data = response.data;
-      console.log(data, "data from multi-location check status");
       setMultiLocationList(data);
       setError(null);
       return { success: true, data };
@@ -102,9 +100,7 @@ export const LocationConfigProvider = ({ children }) => {
       }
 
       setIsLoading(true);
-      console.log(id, is_activated)
       try {
-        // console.log(is_activated);
         const response = await client.patch(
           `/inventory/configuration/multi-location/change_status/`,
           {

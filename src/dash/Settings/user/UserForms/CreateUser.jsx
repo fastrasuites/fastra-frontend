@@ -126,9 +126,9 @@ const AccessRightsSection = ({
         <Button variant="outlined" size="large">
           Access Rights
         </Button>
-        <Button variant="outlined" color="inherit" size="large">
+        {/* <Button variant="outlined" color="inherit" size="large">
           Sessions
-        </Button>
+        </Button> */}
       </Box>
 
       <Typography color="#3B7CED" fontSize="20px">
@@ -186,6 +186,7 @@ const BasicSettingsTab = ({
   handleEndSignature,
   handleUploadSignature,
   roles = [],
+  companyName,
 }) => (
   <Box
     display="flex"
@@ -291,7 +292,9 @@ const BasicSettingsTab = ({
       <Typography color="#3B7CED" fontSize="20px" mb={3}>
         Company Name
       </Typography>
-      <Button variant="outlined">Company name</Button>
+      <Typography c fontSize="16px" mb={3}>
+        {companyName}
+      </Typography>
     </Box>
 
     {/* Preference */}
@@ -452,8 +455,9 @@ const CreateUser = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const location = useLocation();
-  const fromStepModal = location.state?.fromStepModal || localStorage.getItem("fromStepModal") === "true";
-  console.log("step",fromStepModal)
+  const fromStepModals =
+    location.state?.fromStepModals ||
+    localStorage.getItem("fromStepModals") === "true";
   const {
     createUser,
     getAccessGroups,
@@ -593,6 +597,11 @@ const CreateUser = () => {
       formData.append("in_app_notifications", state.inAppNotification);
       formData.append("email_notifications", state.emailNotification);
 
+      // Append image file if exists
+      if (state.imageFile) {
+        formData.append("user_image_image", state.imageFile);
+      }
+
       // Handle signature
       if (state.signature) {
         const signatureFile = dataURLtoFile(state.signature, "signature.png");
@@ -622,18 +631,18 @@ const CreateUser = () => {
             timer: 2000,
           });
 
-          if (fromStepModal) { 
-            console.log("I got here - navigating to dashboard for onboarding step 3");
-            localStorage.removeItem("fromStepModal");
-            history.push(`/${tenant_schema_name}/dashboard`, { fromStepModal: false});
+          if (fromStepModals) {
+            localStorage.removeItem("fromStepModals");
+            localStorage.removeItem("onboardingStep")
+            history.push(`/${tenant_schema_name}/dashboard`, {
+              fromStepModals: false,
+            });
           } else {
-          setTimeout(() => {
-            history.push(
-              `/${tenant_schema_name}/settings/user/${res?.data?.user?.id}`
-            );
-          }, 2000);}
+            setTimeout(() => {
+              window.history.back();
+            }, 2000);
+          }
         } else {
-          console.log(res);
           throw new Error(res?.error || "Failed to create user");
         }
       } catch (error) {
@@ -648,7 +657,7 @@ const CreateUser = () => {
         setIsSubmitting(false);
       }
     },
-    [state, createUser, history, tenant_schema_name,fromStepModal]
+    [state, createUser, history, tenant_schema_name, fromStepModals]
   );
 
   if (isLoading) {
@@ -717,6 +726,7 @@ const CreateUser = () => {
             handleEndSignature={handleEndSignature}
             handleUploadSignature={handleUploadSignature}
             roles={roles}
+            companyName={accessGroupRights.tenant_company_name}
           />
         ) : (
           <AccessRightsTab
@@ -724,7 +734,7 @@ const CreateUser = () => {
             handleChange={handleChange}
             handleImageUpload={handleImageUpload}
             handleAccessGroupChange={handleAccessGroupChange}
-            accessGroupRights={accessGroupRights}
+            accessGroupRights={accessGroupRights.data}
             roles={roles}
           />
         )}

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -10,6 +10,8 @@ import {
   Checkbox,
   Button,
   Box,
+  Typography,
+  Skeleton,
 } from "@mui/material";
 import PropTypes from "prop-types";
 import { extractRFQID } from "../../../helper/helper";
@@ -24,7 +26,6 @@ const cellStyle = (index) => ({
 const statusCellStyle = (index, getStatusColor, status) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
   fontSize: "12px",
-  alignItems: "center",
   color: getStatusColor(status),
 });
 
@@ -33,10 +34,15 @@ const RListView = ({
   onCardClick,
   getStatusColor,
   onDeleteSelected,
+  loading = false,
+  error,
 }) => {
   const [selected, setSelected] = useState([]);
 
-  // Handler to select/deselect all items.
+  const isForbidden = error?.message === "Request failed with status code 403";
+  const showEmpty = !loading && !error && items.length === 0;
+  const showError = !loading && error && !isForbidden;
+
   const handleSelectAll = useCallback(
     (event) => {
       if (event.target.checked) {
@@ -48,7 +54,6 @@ const RListView = ({
     [items]
   );
 
-  // Toggle selection for an individual item.
   const handleSelect = useCallback((event, id) => {
     event.stopPropagation();
     setSelected((prevSelected) =>
@@ -58,7 +63,6 @@ const RListView = ({
     );
   }, []);
 
-  // Delete logic: call the external onDeleteSelected callback and reset selection.
   const handleDeleteSelected = useCallback(() => {
     if (onDeleteSelected && selected.length > 0) {
       onDeleteSelected(selected);
@@ -66,8 +70,19 @@ const RListView = ({
     }
   }, [onDeleteSelected, selected]);
 
-  // Memoize the rendered rows for performance.
-  const renderedRows = React.useMemo(() => {
+  const renderedRows = useMemo(() => {
+    if (loading) {
+      return [...Array(5)].map((_, index) => (
+        <TableRow key={index}>
+          {[...Array(6)].map((__, i) => (
+            <TableCell key={i}>
+              <Skeleton variant="text" width="100%" height={20} />
+            </TableCell>
+          ))}
+        </TableRow>
+      ));
+    }
+
     return items.map((item, index) => (
       <TableRow
         key={item.url}
@@ -76,7 +91,7 @@ const RListView = ({
           cursor: "pointer",
           "&:last-child td, &:last-child th": { border: 0 },
         }}
-        onClick={() => onCardClick && onCardClick(item?.id)}
+        onClick={() => onCardClick?.(item?.id)}
       >
         <TableCell sx={cellStyle(index)} padding="checkbox">
           <Checkbox
@@ -89,50 +104,58 @@ const RListView = ({
         <TableCell sx={cellStyle(index)}>
           {extractRFQID(item.purchase_request)}
         </TableCell>
+        <TableCell sx={cellStyle(index)}>{extractRFQID(item.id)}</TableCell>
         <TableCell sx={cellStyle(index)}>
-          {extractRFQID(item?.id)}
+          {item?.vendor_details?.company_name || "N/A"}
         </TableCell>
         <TableCell sx={cellStyle(index)}>
-          {item?.vendor?.company_name}
+          {item?.rfq_total_price?.toLocaleString() || ""}
         </TableCell>
-        {/* <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item, index) => (
-            <p key={index}>{item?.product?.product_name}</p>
-          ))}
-        </TableCell> */}
-        {/* <TableCell sx={cellStyle(index)}>
-          {item?.items.map((item, index) => (
-            <p key={index}>{item?.qty}</p>
-          ))}
-        </TableCell> */}
-        <TableCell sx={cellStyle(index)}>{item?.rfq_total_price}</TableCell>
-        <TableCell
-          sx={statusCellStyle(index, getStatusColor, item.status)}
-        >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <div
-              style={{
-                width: "6px",
-                height: "6px",
+        <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
+          <Box display="flex" alignItems="center">
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
                 borderRadius: "50%",
                 backgroundColor: getStatusColor(item.status),
-                marginRight: "8px",
+                mr: 1,
               }}
             />
-            {item.status}
-          </div>
+            <span style={{ textTransform: "capitalize" }}>
+              {item.status || "Unknown"}
+            </span>
+          </Box>
         </TableCell>
       </TableRow>
     ));
-  }, [items, selected, handleSelect, onCardClick, getStatusColor]);
+  }, [items, selected, handleSelect, onCardClick, getStatusColor, loading]);
 
-  if (items.length === 0) {
-    return <p>No items available. Please fill the form to add items.</p>;
+  // === Error Handling ===
+  if (isForbidden) {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          You do not have permission to view this page. <br />
+          <strong>Request access from an administrator.</strong>
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (showError) {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          An unexpected error occurred. Please try again later.
+        </Typography>
+      </Box>
+    );
   }
 
   return (
     <Box sx={{ width: "100%", mt: 3 }}>
-      {selected.length > 0 && (
+      {!loading && selected.length > 0 && (
         <Box sx={{ mb: 2, display: "flex", justifyContent: "flex-end" }}>
           <Button
             variant="contained"
@@ -144,40 +167,60 @@ const RListView = ({
           </Button>
         </Box>
       )}
+
       <TableContainer
         component={Paper}
         className="scroll-container"
         sx={{ boxShadow: "none", maxHeight: "70vh" }}
       >
         <Table
+          stickyHeader
           sx={{
             "&.MuiTable-root": { border: "none" },
             "& .MuiTableCell-root": { border: "none" },
           }}
-          stickyHeader
         >
-          <TableHead
-          >
+          <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                <Checkbox
-                  color="primary"
-                  indeterminate={
-                    selected.length > 0 && selected.length < items.length
-                  }
-                  checked={items.length > 0 && selected.length === items.length}
-                  onChange={handleSelectAll}
-                />
+                {!loading && (
+                  <Checkbox
+                    color="primary"
+                    indeterminate={
+                      selected.length > 0 && selected.length < items.length
+                    }
+                    checked={
+                      items.length > 0 && selected.length === items.length
+                    }
+                    onChange={handleSelectAll}
+                  />
+                )}
               </TableCell>
               <TableCell>PR ID</TableCell>
-              <TableCell>RPQ ID</TableCell>
+              <TableCell>RFQ ID</TableCell>
               <TableCell>Vendor</TableCell>
-              {/* <TableCell>Qty</TableCell> */}
               <TableCell>Amount</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>{renderedRows}</TableBody>
+
+          <TableBody>
+            {renderedRows}
+            {!loading && items.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    align="center"
+                    py={2}
+                  >
+                    No items available. Please fill the form to add items.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
         </Table>
       </TableContainer>
     </Box>
@@ -189,6 +232,8 @@ RListView.propTypes = {
   onCardClick: PropTypes.func,
   getStatusColor: PropTypes.func.isRequired,
   onDeleteSelected: PropTypes.func,
+  loading: PropTypes.bool,
+  error: PropTypes.object,
 };
 
 export default RListView;

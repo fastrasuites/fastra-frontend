@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Autocomplete, TextField, Typography } from "@mui/material";
+import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import "./ScrapForm.css";
@@ -28,18 +28,19 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
   const [selectedAdjustment, setSelectedAdjustment] = useState(
     formData.adjustmentType
   );
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationListForForm } =
+    useCustomLocation();
 
   useEffect(() => {
-    getLocationList();
-  }, [getLocationList]);
+    getActiveLocationListForForm();
+  }, [getActiveLocationListForForm]);
 
   useEffect(() => {
-    if (locationList.length <= 3 && locationList[0]) {
-      setSelectedLocation(locationList[0]);
-      handleInputChange("location", locationList[0]);
+    if (activeLocationList.length <= 1 && activeLocationList[0]) {
+      setSelectedLocation(activeLocationList[0]);
+      handleInputChange("location", activeLocationList[0]);
     }
-  }, [locationList, handleInputChange]);
+  }, [activeLocationList, handleInputChange]);
 
   // Sync local state when formData changes
   useEffect(() => {
@@ -60,16 +61,14 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
     handleInputChange("location", newValue);
   };
 
-  console.log(formData?.notes);
-
   return (
     <>
-      <div className="scrapBasicInformationInputs">
+      <Box display={"flex"} gap={4}>
         {/* <div className="scrapFormLabelAndValue">
           <label>ID</label>
           <p>{formData.id}</p>
         </div> */}
-        <div>
+        <Box flex={1} maxWidth={"400px"}>
           <label style={{ marginBottom: 6, display: "flex" }}>
             Adjustment Type
             <Asterisk />
@@ -84,26 +83,28 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
             )}
             sx={{ width: "100%", mb: 2 }}
           />
-        </div>
-        <div className="formLabelAndValue">
+        </Box>
+        <Box className="formLabelAndValue" flex={1} maxWidth={"400px"}>
           <label>Date</label>
           <p>{formData.date}</p>
-        </div>
-        <div>
+        </Box>
+        <Box flex={1} maxWidth={"400px"}>
           <label style={{ marginBottom: 6, display: "flex" }}>
             Warehouse Location
             <Asterisk />
           </label>
-          {locationList.length <= 3 ? (
+          {activeLocationList.length <= 1 ? (
             <Typography color={"gray"}>
-              {selectedLocation?.id || "N/A"}
+              {selectedLocation?.location_name || "N/A"}
             </Typography>
           ) : (
             <Autocomplete
               disablePortal
-              options={locationList}
+              options={activeLocationList}
               value={selectedLocation}
-              getOptionLabel={(option) => option.name || option.id || ""}
+              getOptionLabel={(option) =>
+                option.location_name || option.id || ""
+              }
               isOptionEqualToValue={(option, value) => option?.id === value?.id}
               onChange={handleLocationChange}
               renderInput={(params) => (
@@ -112,8 +113,8 @@ const ScrapBasicInputs = ({ formData, handleInputChange }) => {
               sx={{ width: "100%", mb: 2 }}
             />
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
       <div className="scrapNotes">
         <label style={{ marginBottom: 6, display: "flex" }}>
           Notes
@@ -137,32 +138,39 @@ const ScrapForm = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
-  const { products, fetchProducts } = usePurchase();
+  // const { products, fetchProducts } = usePurchase();
+  const { getLocationProducts, locationProducts } = useCustomLocation();
   const { createScrap } = useScrap();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  console.log(formData);
+  const locationId = formData?.location?.id;
 
-  const transformProducts = (products) =>
-    products.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
-      return {
-        ...prod,
-        unit_of_measure: {
-          url,
-          unit_category,
-          unit_name: unit_category,
-        },
-      };
-    });
+  useEffect(() => {
+    if (locationId) {
+      getLocationProducts(locationId);
+    }
+  }, [locationId, getLocationProducts]);
+
+  const transformProducts = (list) =>
+    list.map((prod) => ({
+      ...prod,
+      available_product_quantity: prod?.quantity,
+      id: prod?.product_id,
+      product_name: prod?.product_name,
+      product_description: prod?.product_name,
+      unit_of_measure: {
+        unit_name: prod?.product_unit_of_measure,
+        url: prod?.product_unit_of_measure,
+        unit_category: prod?.product_unit_of_measure,
+      },
+    }));
 
   const rowConfig = [
     {
       label: "Product Name",
       field: "product",
       type: "autocomplete",
-      options: transformProducts(products),
+      options: transformProducts(locationProducts),
       getOptionLabel: (option) => option.product_name || "",
     },
     {
@@ -176,10 +184,11 @@ const ScrapForm = () => {
       label: "Current Quantity",
       field: "available_product_quantity",
       type: "number",
-      transform: (value) => value || "",
+      disabled: true,
+      transform: (value) => value || 0,
     },
     {
-      label: "Adjusted Quantity",
+      label: "Scrap Quantity",
       field: "qty_received",
       type: "number",
     },
@@ -196,17 +205,19 @@ const ScrapForm = () => {
 
   const handleSubmit = async (filledFormData) => {
     const items = filledFormData.items.map((item) => ({
-      product: item.product.url,
-      adjusted_quantity: item.qty_received,
+      product: item.product.id,
+      scrap_quantity: item.qty_received,
     }));
-
     try {
-      const createdScrap = await createScrap({ ...filledFormData, items });
+      const createdScrap = await createScrap({
+        ...filledFormData,
+        items,
+      });
       setFormData(defaultFormData);
-      console.log(createdScrap);
       Swal.fire("Success", "Scrap created successfully", "success");
       navigateToDetail(createdScrap?.data?.id);
     } catch (err) {
+      console.error(err);
       if (err.validation) {
         Swal.fire({
           icon: "error",
@@ -227,8 +238,8 @@ const ScrapForm = () => {
 
   const handleSubmitValidate = async (filledFormData) => {
     const items = filledFormData.items.map((item) => ({
-      product: item.product.url,
-      adjusted_quantity: item.qty_received,
+      product: item.product.id,
+      scrap_quantity: item.qty_received,
     }));
 
     try {
@@ -238,10 +249,10 @@ const ScrapForm = () => {
         status: "done",
       });
       setFormData(defaultFormData);
-      console.log(createdScrap);
       Swal.fire("Success", "Scrap created successfully", "success");
       navigateToDetail(createdScrap?.data?.id);
     } catch (err) {
+      console.error(err);
       if (err.validation) {
         Swal.fire({
           icon: "error",
@@ -270,10 +281,15 @@ const ScrapForm = () => {
       setFormData={setFormData}
       rowConfig={rowConfig}
       isEdit={false}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmitValidate}
+      saveAsSubmitBtnText="Save to draft"
       submitBtnText="Validate"
       autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={handleSubmitValidate}
+      onSubmitAsDone={handleSubmit}
+      setMax={{
+        field: "qty_received",
+        limit: "available_product_quantity",
+      }}
     />
   );
 };

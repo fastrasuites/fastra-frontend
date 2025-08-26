@@ -67,7 +67,6 @@ export default function POrderform({
     }
 
     localStorage.setItem("lastGeneratedID", newID);
-    // console.log(`Generated new ID: ${newID}`);
     return newID;
   };
 
@@ -121,7 +120,6 @@ export default function POrderform({
   };
 
   const handleSave = () => {
-    console.log("Input data saved:", rows);
     alert("Data saved successfully!");
   };
 

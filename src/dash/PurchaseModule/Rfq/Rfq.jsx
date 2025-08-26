@@ -3,191 +3,133 @@ import { Link, useHistory } from "react-router-dom";
 import "./Rfq.css";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
 import { IoGrid } from "react-icons/io5";
+import { Search } from "lucide-react";
+import { Button } from "@mui/material";
+import { toast } from "react-toastify";
+
 import RListView from "./RListView";
+import Can from "../../../components/Access/Can";
+import { useRFQ } from "../../../context/RequestForQuotation";
+import { useTenant } from "../../../context/TenantContext";
+import { extractRFQID, formatDate } from "../../../helper/helper";
+
+// Status icons
 import draft from "../../../../src/image/icons/draft (1).png";
 import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
-import { extractRFQID, formatDate } from "../../../helper/helper";
-import { Button } from "@mui/material";
-import { Search } from "lucide-react";
-import { usePurchase } from "../../../context/PurchaseContext";
-import { useRFQ } from "../../../context/RequestForQuotation";
-import { toast } from "react-toastify";
-import { useTenant } from "../../../context/TenantContext";
+import Swal from "sweetalert2";
+import RfqGrid from "./RfqGrid";
 
 export default function Rfq() {
   const [searchQuery, setSearchQuery] = useState("");
   const [quotationsData, setQuotationsData] = useState([]);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
-  const [selectedStatus, setSelectedStatus] = useState(null);
-  const [refresh, setRefresh] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const itemsPerPage = 10;
+  const totalPages = Math.ceil(quotationsData.length / itemsPerPage);
 
-  const { fetchApprovedPurchaseRequests } = usePurchase();
-  const { getRFQList, deleteRFQ } = useRFQ();
   const history = useHistory();
-
+  const { getRFQList, deleteRFQ, error } = useRFQ();
   const { tenantData } = useTenant();
-  const tenant_schema_name = tenantData?.tenant_schema_name;
+  const tenantSchema = tenantData?.tenant_schema_name;
 
-  // Load data from localStorage on mount
+  // Fetch from localStorage initially
   useEffect(() => {
-    const savedQuotations = localStorage.getItem("quotationsData");
-    if (savedQuotations && savedQuotations !== "undefined") {
+    const saved = localStorage.getItem("quotationsData");
+    if (saved && saved !== "undefined") {
       try {
-        setQuotationsData(JSON.parse(savedQuotations));
-      } catch (error) {
-        console.error("Error parsing quotationsData from localStorage", error);
+        setQuotationsData(JSON.parse(saved));
+      } catch (err) {
+        console.error("Error parsing quotationsData:", err);
       }
     }
   }, []);
 
-  // Fetch RFQs and update state/localStorage
-  const fetchRequestForQuotations = useCallback(async () => {
+  // Fetch RFQ List
+  const fetchRFQs = useCallback(async () => {
     try {
-      const { success, data } = await getRFQList();
+      setLoading(true);
+      const { success, data } = await getRFQList(searchQuery);
       if (success) {
         setQuotationsData(data);
         localStorage.setItem("quotationsData", JSON.stringify(data));
+        setLoading(false);
       }
-      // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      toast.error("Failed to load purchase orders.");
+
+      if (searchQuery && (!data || data.length === 0)) {
+        Swal.fire({
+          icon: "info",
+          title: "No results found",
+          text: "Try a different search term.",
+        });
+      }
+    } catch {
+      toast.error("Failed to load RFQs.");
     }
-  }, [getRFQList]);
+  }, [getRFQList, searchQuery]);
 
-  // Initial data fetch
+  // Fetch on mount & refresh
   useEffect(() => {
-    fetchApprovedPurchaseRequests();
-    const toastId = "rfqPromise";
-    // Only trigger the toast if it's not already active.
-    if (!toast.isActive(toastId)) {
-      toast.promise(
-        fetchRequestForQuotations(),
-        {
-          pending: "Loading request for quotations...",
-          success: "Request for quotations loaded successfully",
-          error: "Failed to load request for quotations.",
-        },
-        { toastId }
-      );
-    }
-  }, [getRFQList, refresh]);
+    const debounce = setTimeout(fetchRFQs, 500);
 
-  // Reset page when search query changes
-  useEffect(() => {
-    setPage(1);
-  }, [searchQuery]);
+    return () => clearTimeout(debounce);
+  }, [fetchRFQs, searchQuery]);
 
-  // Filter quotations based on search query
-  const filteredQuotations = useMemo(() => {
-    return quotationsData.filter((item) => {
-      console.log(item);
-      if (!searchQuery) return true;
-      const lowercasedQuery = searchQuery.toLowerCase();
-      const price = item?.rfq_total_price?.toString().toLowerCase() || "";
-      const expiryDate = formatDate(item.expiry_date).toLowerCase();
-      const status = item?.status?.toLowerCase() || "";
-      const currencyName = item?.currency?.company_name?.toLowerCase() || "";
-      const purchaseID =
-        extractRFQID(item.purchase_request)?.toLowerCase() || "";
-      const vendor = item?.vendor.company_name.toLowerCase() || "";
-      const vendorCategory = item.vendor_category?.toLowerCase() || "";
-      const rfqID = item?.id?.toString().toLowerCase() || "";
-      return (
-        price.includes(lowercasedQuery) ||
-        expiryDate.includes(lowercasedQuery) ||
-        status.includes(lowercasedQuery) ||
-        currencyName.includes(lowercasedQuery) ||
-        purchaseID.includes(lowercasedQuery) ||
-        vendor.includes(lowercasedQuery) ||
-        vendorCategory.includes(lowercasedQuery) ||
-        rfqID.includes(lowercasedQuery)
-      );
-    });
-  }, [quotationsData, searchQuery]);
+  // Reset page on search
+  useEffect(() => setPage(1), [searchQuery]);
 
-  const totalPages = Math.ceil(filteredQuotations.length / itemsPerPage);
-  const paginatedRequestsForQuotations = useMemo(() => {
-    return filteredQuotations.slice(
-      (page - 1) * itemsPerPage,
-      page * itemsPerPage
-    );
-  }, [page, itemsPerPage, filteredQuotations]);
+  const paginatedRFQs = useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    return quotationsData.slice(start, start + itemsPerPage);
+  }, [page, quotationsData]);
 
-  // Group RFQs by status for status panel
   const groupedByStatus = useMemo(() => {
-    return quotationsData.reduce((acc, quotation) => {
-      const { status, url } = quotation;
+    return quotationsData.reduce((acc, rfq) => {
+      const { status, url } = rfq;
       acc[status] = acc[status] ? [...acc[status], url] : [url];
       return acc;
     }, {});
   }, [quotationsData]);
 
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
+  console.log(error);
+
+  const handleViewChange = (mode) => setViewMode(mode);
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) setPage(newPage);
   };
 
-  const handleStatusCancel = () => {
-    setSelectedStatus(null);
+  const handleDeleteSelected = async (ids) => {
+    try {
+      await Promise.all(ids.map((id) => deleteRFQ(extractRFQID(id))));
+      fetchRFQs();
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
-  const handlePageChange = useCallback(
-    (newPage) => {
-      if (newPage > 0 && newPage <= totalPages) {
-        setPage(newPage);
-      }
-    },
-    [totalPages]
-  );
+  const handleSelectRFQ = (id) => {
+    history.push(`/${tenantSchema}/purchase/request-for-quotations/${id}`);
+  };
 
-  const handleDeleteSelected = useCallback(
-    async (selectedIds) => {
-      try {
-        await Promise.all(selectedIds.map((id) => deleteRFQ(extractRFQID(id))));
-        const refreshedData = await getRFQList();
-        if (refreshedData.success) {
-          setQuotationsData(refreshedData.data);
-          localStorage.setItem(
-            "quotationsData",
-            JSON.stringify(refreshedData.data)
-          );
-        }
-      } catch (err) {
-        console.error("Error deleting selected RFQs:", err);
-      }
-    },
-    [deleteRFQ, getRFQList]
-  );
-
-  const handleSelectRfq = useCallback((id) => {
-    history.push(
-      `/${tenant_schema_name}/purchase/request-for-quotations/${id}`
-    );
-  }, []);
-
-  const handleRfqStatusClick = (urlList, status) => {
+  const handleStatusClick = (urls, status) => {
     history.push({
-      pathname: `/${tenant_schema_name}/purchase/request-for-quotations/status/${status}`,
-      state: { urlList, status, quotationsData },
+      pathname: `/${tenantSchema}/purchase/request-for-quotations/status/${status}`,
+      state: { urlList: urls, status, quotationsData },
     });
   };
 
   const getStatusColor = (status) => {
-    const formattedStatus = `${status[0].toUpperCase()}${status.slice(1)}`;
-    switch (formattedStatus) {
-      case "Approved":
-        return "#2ba24c";
-      case "Pending":
-        return "#f0b501";
-      case "Rejected":
-        return "#e43e2b";
-      default:
-        return "#3B7CED";
-    }
+    const base = status.charAt(0).toUpperCase() + status.slice(1);
+    return (
+      {
+        Approved: "#2ba24c",
+        Pending: "#f0b501",
+        Rejected: "#e43e2b",
+      }[base] || "#3B7CED"
+    );
   };
 
   const statuses = [
@@ -197,63 +139,51 @@ export default function Rfq() {
     { key: "rejected", label: "Rejected", img: rejected },
   ];
 
-  const triggerRefresh = useCallback(() => {
-    setRefresh((prev) => !prev);
-  }, []);
-
   return (
-    <div className="rfq" id="rfq">
+    <div className="rfq">
       <div className="rfq1">
         <div className="rfq2">
-          <p style={{ fontSize: "17px" }}>RFQs</p>
+          <p className="rfq-title">RFQs</p>
+
           <div className="rfq-status">
             {statuses.map(({ key, label, img }) => {
               const count = groupedByStatus[key]?.length || 0;
               return (
                 <div
-                  className={`status-field rfq-${key}`}
                   key={key}
-                  style={{ cursor: "pointer" }}
-                  onClick={() =>
-                    handleRfqStatusClick(groupedByStatus[key], key)
-                  }
+                  className={`status-field rfq-${key}`}
+                  onClick={() => handleStatusClick(groupedByStatus[key], key)}
                 >
-                  <img
-                    src={img}
-                    alt={label.toLowerCase()}
-                    className="status-img"
-                  />
+                  <img src={img} alt={label} className="status-img" />
                   <p className={`plnum ${count === 0 ? "zero" : ""}`}>
                     {count}
                   </p>
-                  <p style={{ lineHeight: "1rem" }} className="status-desc">
-                    Request for Quote
-                  </p>
-                  <p style={{ fontSize: "20px" }}>{label}</p>
+                  <p className="status-desc">Request for Quote</p>
+                  <p className="status-label">{label}</p>
                 </div>
               );
             })}
           </div>
+
           <div className="rfq3">
             <div className="r3a">
-              <Link
-                to={`/${tenant_schema_name}/purchase/request-for-quotations/new`}
-              >
-                <Button
-                  disableElevation
-                  variant="contained"
-                  sx={{ width: "auto", whiteSpace: "nowrap" }}
+              <Link to={`/${tenantSchema}/purchase/request-for-quotations/new`}>
+                <Can
+                  app="purchase"
+                  module="requestforquotation"
+                  action="create"
                 >
-                  New RFQ
-                </Button>
+                  <Button variant="contained" disableElevation>
+                    New RFQ
+                  </Button>
+                </Can>
               </Link>
               <div className="rfqsash">
                 <Search
-                  style={{ color: "#C6CCD2" }}
                   className="rfqsearch-icon"
+                  style={{ color: "#C6CCD2" }}
                 />
                 <input
-                  id="searchInput"
                   type="search"
                   placeholder="Search"
                   value={searchQuery}
@@ -262,74 +192,52 @@ export default function Rfq() {
                 />
               </div>
             </div>
+
             <div className="r3b">
-              <p className="r3bpage" style={{ whiteSpace: "nowrap" }}>
+              <p className="r3bpage">
                 {page} of {totalPages}
               </p>
               <div className="r3bnav">
                 <FaCaretLeft
-                  className="lr"
                   onClick={() => handlePageChange(page - 1)}
-                />
-                <div className="stroke"></div>
-                <FaCaretRight
                   className="lr"
+                />
+                <div className="stroke" />
+                <FaCaretRight
                   onClick={() => handlePageChange(page + 1)}
+                  className="lr"
                 />
               </div>
               <div className="r3bview">
                 <IoGrid
+                  onClick={() => handleViewChange("grid")}
                   className={`toggle ${viewMode === "grid" ? "active" : ""}`}
-                  onClick={() => toggleViewMode("grid")}
                 />
-                <div className="stroke"></div>
+                <div className="stroke" />
                 <FaBars
+                  onClick={() => handleViewChange("list")}
                   className={`toggle ${viewMode === "list" ? "active" : ""}`}
-                  onClick={() => toggleViewMode("list")}
                 />
               </div>
             </div>
           </div>
 
-          {selectedStatus ? (
-            <div className="overlay">
-              <RfqStatus
-                selectedStatus={selectedStatus}
-                getStatusColor={getStatusColor}
-                statusColor={getStatusColor}
-                formatDate={formatDate}
-                onCancel={handleStatusCancel}
-                quotationsData={quotationsData}
-                triggerRefresh={triggerRefresh}
-              />
-            </div>
-          ) : viewMode === "grid" ? (
-            <div className="rfqStatusCards" style={{ marginTop: "20px" }}>
-              {paginatedRequestsForQuotations.map((item) => (
-                <div
-                  className="rfqStatusCard"
-                  key={item.id}
-                  onClick={() => handleSelectRfq(item?.id)}
-                >
-                  <p className="cardid">{extractRFQID(item?.url)}</p>
-                  <p className="cardate">{formatDate(item.expiry_date)}</p>
-                  <p className="vendname">{item?.vendor?.company_name}</p>
-                  <p
-                    className="status"
-                    style={{ color: getStatusColor(item.status) }}
-                  >
-                    {item.status}
-                  </p>
-                </div>
-              ))}
-            </div>
+          {viewMode === "grid" ? (
+            <RfqGrid
+              quotations={paginatedRFQs}
+              handleClick={handleSelectRFQ}
+              statusColor={getStatusColor}
+              formatDate={formatDate}
+            />
           ) : (
             <div className="rfq5">
               <RListView
-                items={paginatedRequestsForQuotations}
-                onCardClick={handleSelectRfq}
+                items={paginatedRFQs}
+                onCardClick={handleSelectRFQ}
                 getStatusColor={getStatusColor}
                 onDeleteSelected={handleDeleteSelected}
+                loading={loading}
+                error={error}
               />
             </div>
           )}

@@ -91,9 +91,7 @@ export const TenantUsersProvider = ({ children }) => {
 
     setIsLoading(true);
     try {
-      console.log("Fetching Tenant Users list...");
       const response = await client.get("/users/tenant-users/");
-      console.log(response);
 
       const rawData = response.data;
 

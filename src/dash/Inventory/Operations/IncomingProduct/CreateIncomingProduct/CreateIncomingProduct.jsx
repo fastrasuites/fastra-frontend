@@ -1,5 +1,4 @@
-// CreateIncomingProduct.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Autocomplete, Box, TextField, Typography } from "@mui/material";
 import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import { formatDate } from "../../../../../helper/helper";
@@ -11,8 +10,9 @@ import { useIncomingProduct } from "../../../../../context/Inventory/IncomingPro
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 import Swal from "sweetalert2";
 import { usePurchaseOrder } from "../../../../../context/PurchaseOrderContext.";
+import BackorderModal from "../../../../../components/ui/BackorderModal";
 
-// Receipt types array (UI remains the same)
+// Receipt types array
 const receiptTypes = [
   { value: "vendor_receipt", label: "Vendor Receipt" },
   { value: "manufacturing_receipt", label: "Manufacturing Receipt" },
@@ -27,14 +27,14 @@ const REQUIRED_ASTERISK = (
   </Typography>
 );
 
-// Default formData: keep related_po and suppliersName as single selected objects
+// Default formData
 const defaultFormData = {
   receiptType: "",
   related_po: null,
   source_location: "",
   receiptDate: formatDate(Date.now()),
   suppliersName: null,
-  suppliers: [], // we'll populate this from context
+  suppliers: [],
   location: null,
   items: [],
   status: "draft",
@@ -59,21 +59,30 @@ const IncomingProductBasicInputs = ({
     formData.location || null
   );
 
-  const { locationList, getLocationList } = useCustomLocation();
-  const { vendors, fetchVendors } = usePurchase();
-  const { purchaseOrderList, getApprovedPurchaseOrderList } =
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
+  const { vendors, fetchVendorsForForm } = usePurchase();
+  const { purchaseOrderList, getPurchaseOrderUnrelatedListForForm } =
     usePurchaseOrder();
 
   useEffect(() => {
-    // fetch vendors and purchase orders if not already done
-    fetchVendors();
-    getApprovedPurchaseOrderList();
-    getLocationList();
-  }, [fetchVendors, getApprovedPurchaseOrderList, getLocationList]);
+    fetchVendorsForForm();
+    getPurchaseOrderUnrelatedListForForm();
+    getActiveLocationList();
+  }, [
+    fetchVendorsForForm,
+    getPurchaseOrderUnrelatedListForForm,
+    getActiveLocationList,
+  ]);
+
+  useEffect(() => {
+    if (activeLocationList?.length === 1 && !formData.location) {
+      handleInputChange("location", activeLocationList[0]);
+    }
+  }, [activeLocationList, formData.location, handleInputChange]);
 
   const handleReceiptChange = (e, newVal) => {
     setSelectedReceipt(newVal);
-    handleInputChange("receiptType", newVal ? newVal.value : "");
+    handleInputChange("receiptType", newVal?.value || "");
   };
 
   const handleSupplierChange = (e, newVal) => {
@@ -83,8 +92,23 @@ const IncomingProductBasicInputs = ({
 
   const handleRelatedPOChange = (e, newVal) => {
     setSelectedRelatedPO(newVal);
-    setFormData({ ...formData, items: newVal.items });
     handleInputChange("related_po", newVal);
+
+    if (newVal) {
+      const mappedItems = newVal.items.map((it) => ({
+        product: it.product_details,
+        available_product_quantity: it.qty,
+        qty_received: it.quantity_received,
+        unit_of_measure: {
+          unit_category:
+            it?.product_details?.unit_of_measure_details?.unit_name,
+          unit_name: it?.product_details?.unit_of_measure_details?.unit_name,
+        },
+      }));
+      setFormData((prev) => ({ ...prev, items: mappedItems }));
+    } else {
+      setFormData((prev) => ({ ...prev, items: [] }));
+    }
   };
 
   const handleLocationChange = (e, newVal) => {
@@ -92,17 +116,12 @@ const IncomingProductBasicInputs = ({
     handleInputChange("location", newVal);
   };
 
-  // Find the supplier source location with code "SUPP"
-  const sourceLocObj = locationList.find((loc) => loc.location_code === "SUPP");
-
-  // console.log(formData);
   return (
     <>
       <div className="receiptTypeAndID">
         <div>
-          <label style={{ marginBottom: 6, display: "block" }}>
-            Receipt Type
-            {REQUIRED_ASTERISK}
+          <label className="required-label">
+            Receipt Type {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
@@ -118,24 +137,27 @@ const IncomingProductBasicInputs = ({
           />
         </div>
         <div className="formLabelAndValue">
-          <label>Source Location {REQUIRED_ASTERISK}</label>
-          <p>{sourceLocObj?.location_name || formData.source_location}</p>
+          <label className="required-label">
+            Source Location {REQUIRED_ASTERISK}
+          </label>
+          <p>Supplier Location</p>
         </div>
         <div className="formLabelAndValue">
-          <label>Receipt Date {REQUIRED_ASTERISK}</label>
+          <label className="required-label">
+            Receipt Date {REQUIRED_ASTERISK}
+          </label>
           <p>{formData.receiptDate}</p>
         </div>
       </div>
 
-      <Box display="flex" gap={5}>
-        <Box flex={1}>
+      <Box display="flex" gap={5} flexDirection={{ xs: "column", md: "row" }}>
+        <Box flex={1} mt={1}>
           <label style={{ marginBottom: 6, display: "block" }}>
             Purchase Order
-            {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
-            options={Array.isArray(purchaseOrderList) ? purchaseOrderList : []}
+            options={purchaseOrderList || []}
             value={selectedRelatedPO}
             getOptionLabel={(opt) => opt.id || ""}
             isOptionEqualToValue={(opt, val) => opt.id === val?.id}
@@ -147,39 +169,40 @@ const IncomingProductBasicInputs = ({
           />
         </Box>
         <Box flex={1}>
-          <label style={{ marginBottom: 6, display: "block" }}>
-            Name of Supplier
-            {REQUIRED_ASTERISK}
+          <label className="required-label">
+            Name of Supplier {REQUIRED_ASTERISK}
           </label>
           <Autocomplete
             disablePortal
-            options={Array.isArray(vendors) ? vendors : []}
+            options={vendors || []}
             value={selectedSupplier}
             getOptionLabel={(opt) => opt.company_name || ""}
             isOptionEqualToValue={(opt, val) => opt.id === val?.id}
             onChange={handleSupplierChange}
             sx={{ width: "100%", mb: 2 }}
             renderInput={(params) => (
-              <TextField {...params} placeholder="Select supplier" />
+              <TextField {...params} placeholder="Select supplier" required />
             )}
           />
         </Box>
 
-        {locationList.length <= 1 ? (
+        {activeLocationList?.length === 1 ? (
           <Box flex={1}>
-            <label>Destination Location {REQUIRED_ASTERISK}</label>
-            <p>{formData.location?.id || ""}</p>
+            <label className="required-label">
+              Destination Location {REQUIRED_ASTERISK}
+            </label>
+            <p>{activeLocationList[0]?.location_name || ""}</p>
           </Box>
         ) : (
           <Box flex={1}>
-            <label style={{ marginBottom: 6, display: "block" }}>
+            <label className="required-label">
               Destination Location {REQUIRED_ASTERISK}
             </label>
             <Autocomplete
               disablePortal
-              options={Array.isArray(locationList) ? locationList : []}
+              options={activeLocationList || []}
               value={selectedLocation}
-              getOptionLabel={(opt) => opt.id || ""}
+              getOptionLabel={(opt) => opt.location_name || ""}
               isOptionEqualToValue={(opt, val) => opt.id === val?.id}
               onChange={handleLocationChange}
               sx={{ width: "100%", mb: 2 }}
@@ -198,39 +221,41 @@ const CreateIncomingProduct = () => {
   const { tenant_schema_name } = useTenant().tenantData || {};
   const history = useHistory();
   const [formData, setFormData] = useState(defaultFormData);
-  const { isLoading: incomingProductLoading, createIncomingProduct } =
-    useIncomingProduct();
-  const { products, fetchProducts } = usePurchase();
+  const [openModal, setOpenModal] = useState(false);
+  const {
+    isLoading: incomingProductLoading,
+    createIncomingProduct,
+    createIncomingProductBackOrder,
+  } = useIncomingProduct();
+  const { products, fetchProductsForForm } = usePurchase();
   const { getLocationList } = useCustomLocation();
 
-  // Fetch products and locations on mount
   useEffect(() => {
-    fetchProducts();
+    fetchProductsForForm();
     getLocationList().then((res) => {
       const src = res.data.find((loc) => loc.location_code === "SUPP");
       if (src) {
         setFormData((prev) => ({ ...prev, source_location: src.id }));
       }
     });
-  }, [fetchProducts, getLocationList]);
+  }, [fetchProductsForForm, getLocationList]);
 
   const transformProducts = (list) =>
-    list.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
-      return {
-        ...prod,
-        unit_of_measure: { url, unit_category, unit_name: unit_category },
-      };
-    });
-
-  // console.log(transformProducts(products), "transformed product");
+    (list || []).map((prod) => ({
+      ...prod,
+      unit_of_measure: {
+        url: prod.unit_of_measure,
+        unit_category: prod?.unit_of_measure_details?.unit_name,
+        unit_name: prod?.unit_of_measure_details?.unit_name,
+      },
+    }));
 
   const rowConfig = [
     {
       label: "Product Name",
       field: "product",
       type: "autocomplete",
-      options: transformProducts(products || []),
+      options: transformProducts(products),
       getOptionLabel: (opt) => opt.product_name,
     },
     {
@@ -244,127 +269,283 @@ const CreateIncomingProduct = () => {
       field: "unit_of_measure",
       type: "text",
       disabled: true,
-      transform: (val) => val.unit_category,
+      transform: (val) => val?.unit_category || "",
     },
-    { label: "QTY Received", field: "qty_received", type: "number" },
+    {
+      label: "QTY Received",
+      field: "qty_received",
+      type: "number",
+      required: true,
+    },
   ];
 
-  const navigateToDetail = (id) =>
-    setTimeout(
-      () =>
-        history.push(
-          `/${tenant_schema_name}/inventory/operations/incoming-product/${id}`
-        ),
-      1500
-    );
+  const navigateToDetail = useCallback(
+    (id) => {
+      setTimeout(
+        () =>
+          history.push(
+            `/${tenant_schema_name}/inventory/operations/incoming-product/${id}`
+          ),
+        1000
+      );
+    },
+    [history, tenant_schema_name]
+  );
 
-  const handleSubmit = async (filledFormData) => {
-    const payload = {
-      destination_location: filledFormData.location?.id,
-      receipt_type: filledFormData.receiptType,
-      related_po: filledFormData.related_po?.id,
-      source_location: filledFormData.source_location,
-      status: filledFormData.status,
-      is_hidden: false,
-      supplier: filledFormData.suppliersName?.id || null,
-      incoming_product_items: filledFormData.items.map((item) => ({
-        product: item.product.id,
-        expected_quantity: Number(item.available_product_quantity),
-        quantity_received: Number(item.qty_received),
-      })),
-      //  is_validated: true,
-      can_edit: true,
-    };
-    try {
-      const res = await createIncomingProduct(payload);
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Incoming product created successfully",
+  const validateRequiredFields = useCallback((payload) => {
+    if (!payload.receipt_type) return "Receipt Type is required.";
+    if (!payload.source_location) return "Source location is required.";
+    if (!payload.supplier) return "Name of supplier is required.";
+    if (!payload.destination_location)
+      return "Destination location is required.";
+    if (
+      !payload.incoming_product_items ||
+      payload.incoming_product_items.length === 0
+    ) {
+      return "At least one product item is required.";
+    }
+
+    for (const item of payload.incoming_product_items) {
+      if (!item.product) return "Product is required for all items";
+      if (!item.expected_quantity)
+        return "Expected quantity is required for all items";
+      if (!item.quantity_received)
+        return "Received quantity is required for all items";
+    }
+
+    return null;
+  }, []);
+
+  const handleBackorder = useCallback(
+    async (IP_ID) => {
+      const result = await Swal.fire({
+        html: `
+        <h1 class="swal-title">OOPS!</h1>
+        <div class="swal-line-container">
+          <div class="swal-line1"></div>
+          <div class="swal-line2"></div>
+        </div>
+        <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+        <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+      `,
+        showCancelButton: true,
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        customClass: {
+          popup: "custom-swal-popup",
+          title: "custom-swal-title",
+          confirmButton: "custom-swal-confirm-btn",
+          cancelButton: "custom-swal-cancel-btn",
+          htmlContainer: "custom-swal-html",
+        },
       });
-      navigateToDetail(res.data.incoming_product_id);
-    } catch (err) {
-      console.error(err);
-      if (err.validation) {
-        Swal.fire({
-          icon: "error",
-          title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
+
+      const backorderPayload = {
+        response: result.isConfirmed,
+        incoming_product: IP_ID,
+      };
+
+      try {
+        await createIncomingProductBackOrder(backorderPayload);
+        await Swal.fire({
+          icon: result.isConfirmed ? "success" : "info",
+          title: result.isConfirmed ? "Success" : "Acknowledged",
+          text: result.isConfirmed
+            ? "Backorder created successfully"
+            : "Backorder not created as per your choice.",
         });
-      } else {
-        Swal.fire({
+        navigateToDetail(IP_ID);
+      } catch (backorderErr) {
+        console.error("Backorder error:", backorderErr);
+        await Swal.fire({
           icon: "error",
           title: "Error",
-          text: err.message,
+          text: backorderErr.message || "Failed to process backorder request.",
         });
       }
-    }
-  };
+    },
+    [createIncomingProductBackOrder]
+  );
 
-  const handleSubmitValidated = async (filledFormData) => {
-    const payload = {
-      destination_location: filledFormData.location?.id,
-      receipt_type: filledFormData.receiptType,
-      related_po: filledFormData.related_po?.id,
-      source_location: filledFormData.source_location,
-      status: "validated",
-      is_hidden: false,
-      supplier: filledFormData.suppliersName?.id || null,
-      incoming_product_items: filledFormData.items.map((item) => ({
-        product: item.product.id,
-        expected_quantity: Number(item.available_product_quantity),
-        quantity_received: Number(item.qty_received),
-      })),
-    };
-
-    try {
-      const res = await createIncomingProduct(payload);
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Incoming product validated and created successfully",
-      });
-      console.log(res);
-      navigateToDetail(res.data.incoming_product_id);
-    } catch (err) {
-      console.error(err);
-      if (err.validation) {
-        Swal.fire({
-          icon: "error",
-          title: "Validation Error",
-          html: Object.values(err.validation)
-            .map((msg) => `<p>${msg}</p>`)
-            .join(""),
+  const handleReturn = useCallback(
+    async (IP_ID) => {
+      try {
+        const result = await Swal.fire({
+          html: `
+          <h1 class="swal-title">OOPS!</h1>
+          <div class="swal-line-container">
+            <div class="swal-line1"></div>
+            <div class="swal-line2"></div>
+          </div>
+          <p class="swal-subtext">
+            The received quantity is more than the expected quantity.
+          </p>
+          <p class="swal-question">
+            Do you want to return the extra goods?
+          </p>
+        `,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          customClass: {
+            popup: "custom-swal-popup",
+            title: "custom-swal-title",
+            confirmButton: "custom-swal-confirm-btn",
+            cancelButton: "custom-swal-cancel-btn",
+            htmlContainer: "custom-swal-html",
+          },
         });
-      } else {
-        Swal.fire({
+
+        if (result.isConfirmed) {
+          // Navigate to Returns page
+          history.push(
+            `/${tenant_schema_name}/inventory/operations/incoming-product/return/${IP_ID}`
+          );
+        } else {
+          // Just continue the normal process
+          navigateToDetail(IP_ID);
+        }
+      } catch (err) {
+        console.error("Return process error:", err);
+        await Swal.fire({
           icon: "error",
           title: "Error",
-          text: err.message,
+          text: err.message || "Failed to process return request.",
         });
       }
-    }
-  };
+    },
+    [history, tenant_schema_name, navigateToDetail]
+  );
 
-  // console.log(formData);
+  const handleSubmit = useCallback(
+    async (filledFormData, status = "draft") => {
+      const payload = {
+        destination_location: filledFormData.location?.id,
+        receipt_type: filledFormData.receiptType,
+        related_po: filledFormData.related_po?.id,
+        source_location: filledFormData.source_location,
+        status,
+        is_hidden: false,
+        supplier: filledFormData.suppliersName?.id || null,
+        incoming_product_items: filledFormData.items.map((item) => ({
+          product: item.product.id,
+          expected_quantity: Number(item.available_product_quantity),
+          quantity_received: Number(item.qty_received),
+        })),
+        can_edit: status === "draft",
+      };
+
+      const errorMessage = validateRequiredFields(payload);
+      if (errorMessage) {
+        Swal.fire({
+          icon: "warning",
+          title: "Missing Information",
+          text: errorMessage,
+        });
+        return;
+      }
+
+      try {
+        const res = await createIncomingProduct(payload);
+
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Incoming product created successfully",
+        });
+
+        navigateToDetail(res.data.incoming_product_id);
+      } catch (err) {
+        console.error("Submission error:", err);
+
+        // Handle backorder scenario
+        const detailRaw = err?.response?.data?.detail?.toString?.() || "";
+        const jsonMatch = detailRaw.match(/string='(.*?)'/);
+        const codeMatch = detailRaw.match(/code='(.*?)'/);
+        const backorderCode = codeMatch?.[1];
+        let IP_ID = null;
+
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            IP_ID = parsed?.IP_ID;
+          } catch (parseErr) {
+            console.warn("JSON parse error:", parseErr);
+          }
+        }
+
+        if (backorderCode === "backorder_required" && IP_ID) {
+          await handleBackorder(IP_ID);
+          return;
+        }
+        console.log(backorderCode);
+        if (backorderCode === "return_required") {
+          await handleReturn(IP_ID);
+          return;
+        }
+
+        // Handle validation errors
+        const errorMessages = [];
+        if (err?.response?.data?.non_field_errors) {
+          errorMessages.push(...err.response.data.non_field_errors);
+        }
+
+        if (err?.response?.data?.detail) {
+          if (typeof err.response.data.detail === "string") {
+            errorMessages.push(err.response.data.detail);
+          } else if (Array.isArray(err.response.data.detail)) {
+            errorMessages.push(...err.response.data.detail);
+          } else if (typeof err.response.data.detail === "object") {
+            Object.values(err.response.data.detail).forEach((errors) => {
+              if (Array.isArray(errors)) {
+                errorMessages.push(...errors);
+              }
+            });
+          }
+        }
+
+        if (errorMessages.length > 0) {
+          Swal.fire({
+            icon: "error",
+            title: "Validation Error",
+            html: errorMessages.map((msg) => `<p>${msg}</p>`).join(""),
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: err.message || "An unexpected error occurred",
+          });
+        }
+      }
+    },
+    [
+      createIncomingProduct,
+      handleBackorder,
+      navigateToDetail,
+      validateRequiredFields,
+    ]
+  );
 
   return (
-    <CommonForm
-      basicInformationTitle="Product Information"
-      basicInformationInputs={IncomingProductBasicInputs}
-      formTitle="New Incoming Product"
-      formData={formData}
-      setFormData={setFormData}
-      rowConfig={rowConfig}
-      isEdit={false}
-      onSubmit={handleSubmit}
-      submitBtnText={incomingProductLoading ? "Submitting..." : "Validate"}
-      autofillRow={["unit_of_measure", "available_product_quantity"]}
-      onSubmitAsDone={handleSubmitValidated}
-      isLoading={incomingProductLoading}
-    />
+    <div>
+      <CommonForm
+        basicInformationTitle="Product Information"
+        basicInformationInputs={IncomingProductBasicInputs}
+        formTitle="New Incoming Product"
+        formData={formData}
+        setFormData={setFormData}
+        rowConfig={rowConfig}
+        isEdit={false}
+        onSubmit={(data) => handleSubmit(data, "validated")}
+        submitBtnText={incomingProductLoading ? "Submitting..." : "Validate"}
+        saveAsSubmitBtnText="Save to Draft"
+        onSubmitAsDone={(data) => handleSubmit(data, "draft")}
+        autofillRow={["unit_of_measure", "available_product_quantity"]}
+        isLoading={incomingProductLoading}
+      />
+      {openModal && <BackorderModal />}
+    </div>
   );
 };
 

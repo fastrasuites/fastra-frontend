@@ -123,6 +123,8 @@ export const DeliveryOrderProvider = ({ children }) => {
           delivery_order_items: deliveryOrderData.items.map((item) => ({
             product_item: item.product.id,
             quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
+            unit_price: parseFloat(item.unit_price) || 0,
+            total_price: parseFloat(item.total_price) || 0,
           })),
         };
         const { data } = await client.post(
@@ -160,11 +162,26 @@ export const DeliveryOrderProvider = ({ children }) => {
         // Transform items if present
         const payload = { ...deliveryOrderData };
         if (payload.items) {
-          payload.delivery_order_items = payload.items.map((item) => ({
-            id: item.id, // Include for existing items
-            product_item: item.product,
-            quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
-          }));
+          payload.delivery_order_items = payload.items.map((item) => {
+            // id: item.id, // Include for existing items
+            // product_item: item.product,
+            // quantity_to_deliver: parseInt(item.quantity_to_deliver, 10),
+            // unit_price: parseFloat(item.unit_price) || 0,
+            // total_price: parseFloat(item.total_price) || 0,
+
+            // Calculate total_price here
+            const quantity = parseInt(item.quantity_to_deliver, 10) || 0;
+            const unitPrice = parseFloat(item.unit_price) || 0;
+            const totalPrice = quantity * unitPrice;
+
+            return {
+              id: item.id,
+              product_item: item.product.id || item.product,
+              quantity_to_deliver: quantity,
+              unit_price: unitPrice,
+              total_price: totalPrice, // Use calculated value
+            };
+          });
           delete payload.items;
         }
 
@@ -173,7 +190,6 @@ export const DeliveryOrderProvider = ({ children }) => {
           payload.source_location = payload.source_location.id;
         }
         // checking the payload
-        console.log("final Payload for update:", payload);
         const method = partial ? "patch" : "put";
         const { data } = await client[method](
           `/inventory/delivery-orders/${id}/`,
@@ -181,9 +197,9 @@ export const DeliveryOrderProvider = ({ children }) => {
         );
 
         // Update state
-        setDeliveryOrderList((prev) =>
-          prev.map((order) => (order.id === id ? data : order))
-        );
+        setDeliveryOrderList((prev) => {
+          prev.map((order) => (order.id === id ? data : order));
+        });
         if (singleDeliveryOrder?.id === id) {
           setSingleDeliveryOrder(data);
         }
@@ -345,7 +361,22 @@ export const DeliveryOrderProvider = ({ children }) => {
         setError(null);
         return { success: true, data };
       } catch (err) {
-        setError(err.message || "Failed to create delivery order return");
+        console.error("Return creation failed:", err);
+
+        // Get all error messages
+        const errorData = err.response?.data;
+        const errorMessages = errorData
+          ? Object.entries(errorData)
+              .map(
+                ([field, messages]) =>
+                  `${field}: ${
+                    Array.isArray(messages) ? messages.join(", ") : messages
+                  }`
+              )
+              .join("\n")
+          : "Return order could not be created";
+
+        setError(errorMessages);
         return Promise.reject(err);
       } finally {
         setIsLoading(false);
@@ -440,6 +471,7 @@ export const DeliveryOrderProvider = ({ children }) => {
 
         return { success: true, data };
       } catch (err) {
+        console.error("checkDeliveryOrderAvailability error: ", err);
         setError(err.message || "Failed to check order availability");
         return Promise.reject(err);
       } finally {

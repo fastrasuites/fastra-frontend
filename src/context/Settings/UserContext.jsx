@@ -82,6 +82,26 @@ export const UserProvider = ({ children }) => {
     [client]
   );
 
+  const getUserListForForm = useCallback(async () => {
+    if (!client) {
+      setError("API client not initialized.");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { data: rawData } = await client.get(
+        `/users/tenant-users/?form=true`
+      );
+      setUserList(rawData);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to load users");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   const getGroups = useCallback(async () => {
     if (!client) {
       setError("API client not initialized.");
@@ -108,7 +128,6 @@ export const UserProvider = ({ children }) => {
         return Promise.reject(new Error(msg));
       }
       setIsLoading(true);
-      console.log(id);
       try {
         const { data } = await client.get(`/users/tenant-users/${id}/`);
         setSingleUser(data);
@@ -208,8 +227,12 @@ export const UserProvider = ({ children }) => {
       setIsLoading(true);
       try {
         const { data } = await client.patch(
-          `/users/tenant-users/${id}/`,
-          userData
+          `/users/tenant-users/edit/${id}/`,
+          userData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+            transformRequest: [(data /*, headers*/) => data],
+          }
         );
         setUserList((prev) => prev.map((usr) => (usr.id === id ? data : usr)));
         setError(null);
@@ -253,6 +276,30 @@ export const UserProvider = ({ children }) => {
     [client]
   );
 
+  const resetPassword = useCallback(
+    async (email) => {
+      if (!client) {
+        throw new Error("API client not initialized.");
+      }
+      setIsLoading(true);
+      try {
+        const { data } = await client.post(
+          `/users/tenant-users/reset-password`,
+          { email }
+        );
+        setError(null);
+        return { success: true, data };
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Failed to reset password");
+        return { success: false, error: err.message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
   const getAccessGroups = useCallback(async () => {
     if (!client) {
       setError("API client not initialized.");
@@ -283,11 +330,13 @@ export const UserProvider = ({ children }) => {
       isLoading,
       error,
       getUserList,
+      getUserListForForm,
       getSingleUser,
       createUser,
       updateUser,
       patchUser,
       changePassword,
+      resetPassword,
       getAccessGroups,
       getGroups,
     }),
@@ -299,11 +348,13 @@ export const UserProvider = ({ children }) => {
       isLoading,
       error,
       getUserList,
+      getUserListForForm,
       getSingleUser,
       createUser,
       updateUser,
       patchUser,
       changePassword,
+      resetPassword,
       getAccessGroups,
       getGroups,
     ]

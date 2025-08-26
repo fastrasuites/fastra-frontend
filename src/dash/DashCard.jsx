@@ -16,6 +16,11 @@ import settings from "../image/settings.svg";
 import app from "../image/app.svg";
 import dots from "../image/dots.svg";
 import { Link } from "react-router-dom";
+import {
+  extractPermissions,
+  getPermissionsByApp,
+} from "../helper/extractPermissions";
+import { Box } from "@mui/material";
 
 const Card = ({ name, description, link }) => {
   let icon;
@@ -66,54 +71,8 @@ const Card = ({ name, description, link }) => {
       icon = null;
       break;
   }
-  let icon2;
-  switch (name) {
-    case "Account":
-      icon2 = dots;
-      break;
-    case "Purchase":
-      icon2 = dots;
-      break;
-    case "Sales":
-      icon2 = dots;
-      break;
-    case "Inventory":
-      icon2 = dots;
-      break;
-    case "HR":
-      icon2 = dots;
-      break;
-    case "Project Costing":
-      icon2 = dots;
-      break;
-    case "CRM":
-      icon2 = dots;
-      break;
-    case "Contact":
-      icon2 = dots;
-      break;
-    case "Planning":
-      icon2 = dots;
-      break;
-    case "Manufacturing":
-      icon2 = dots;
-      break;
-    case "Logistics":
-      icon2 = dots;
-      break;
-    case "Reports":
-      icon2 = dots;
-      break;
-    case "App":
-      icon2 = dots;
-      break;
-    case "Settings":
-      icon2 = dots;
-      break;
-    default:
-      icon2 = null;
-      break;
-  }
+
+  const icon2 = dots;
 
   return (
     <Link to={link} className="card">
@@ -122,7 +81,7 @@ const Card = ({ name, description, link }) => {
         <h3 className="cardhed">{name}</h3>
         <p className="cardesc">{description}</p>
       </div>
-      {icon2 && <img src={icon2} alt={name} />}
+      {icon2 && <img src={icon2} alt={`${name} menu`} />}
     </Link>
   );
 };
@@ -130,24 +89,37 @@ const Card = ({ name, description, link }) => {
 const DashCard = () => {
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
+  const permissionsMap = extractPermissions(tenantData?.user_accesses || []);
+
+  // Example:
+  const purchasePermissions =
+    Object.keys(getPermissionsByApp("purchase", permissionsMap)).length > 0;
+  const inventoryPermissions =
+    Object.keys(getPermissionsByApp("inventory", permissionsMap)).length > 0;
+  const settingsPermissions =
+    Object.keys(getPermissionsByApp("settings", permissionsMap)).length > 0;
+
   const fastra = [
     {
       name: "Purchase",
       description:
         "Streamline procurement processes by tracking purchase orders, vendor management, and inventory replenishment to optimize supply chain efficiency and cost savings.",
       link: `/${tenant_schema_name}/purchase/purchase-request`,
+      hasAccess: purchasePermissions,
     },
     {
       name: "Inventory",
       description:
         "Monitor stock levels, track inventory movements, and optimize warehouse operations to ensure optimal inventory management and minimize stockouts.",
       link: `/${tenant_schema_name}/inventory/operations`,
+      hasAccess: inventoryPermissions,
     },
     {
       name: "Settings",
       description:
         "Configure system preferences, manage user permissions, and customize application settings to align with organizational requirements and user preferences.",
       link: `/${tenant_schema_name}/settings`,
+      hasAccess: settingsPermissions,
     },
     // {
     //   name: "Account",
@@ -219,16 +191,18 @@ const DashCard = () => {
     // },
   ];
   return (
-    <div className="cardlist">
-      {fastra.map((fastra, index) => (
-        <Card
-          key={index}
-          name={fastra.name}
-          description={fastra.description}
-          link={fastra.link}
-        />
-      ))}
-    </div>
+    <Box mt={4} display={"grid"} gridTemplateColumns={"1fr 1fr 1fr"} gap={4}>
+      {fastra
+        .filter((item) => item.hasAccess)
+        .map((fastra, index) => (
+          <Card
+            key={index}
+            name={fastra.name}
+            description={fastra.description}
+            link={fastra.link}
+          />
+        ))}
+    </Box>
   );
 };
 

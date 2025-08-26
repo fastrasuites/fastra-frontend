@@ -1,5 +1,5 @@
 // src/dash/PurchaseModule/PurchOrder/POForm/POBasicInfoFields.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Autocomplete, TextField, Box, Typography } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
@@ -21,7 +21,6 @@ const POBasicInfoFieldsConverToPO = ({
   formData,
   handleInputChange,
   formUse,
-  currencies = [],
   purchaseOrder,
   rfqID,
   rfqList = [],
@@ -31,6 +30,12 @@ const POBasicInfoFieldsConverToPO = ({
 }) => {
   const { tenantData } = useTenant();
   const tenantName = tenantData?.tenant_schema_name || "";
+
+  useEffect(() => {
+    if (locationList.length <= 1) {
+      handleInputChange("destination_location", locationList[0]);
+    }
+  }, [locationList, handleInputChange]);
   // Resolve selected objects
   const selectedRfq =
     rfqList.find((r) => r.url === formData.rfq?.url) || formData.rfq || null;
@@ -38,14 +43,8 @@ const POBasicInfoFieldsConverToPO = ({
     locationList.find((l) => l.id === formData.destination_location?.id) ||
     formData.destination_location ||
     null;
-  const selectedCurrency =
-    currencies.find((c) => c.url === formData.rfq.currency?.url) ||
-    formData.rfq.currency ||
-    null;
-  const selectedVendor = formData.rfq?.vendor || purchaseOrder?.vendor || null;
 
-  // console.log(formData);
-
+  console.log("formData", formData);
   return (
     <div className="rfqBasicInfoField">
       {/* Top row: ID (if editing), Date, Created By */}
@@ -117,35 +116,32 @@ const POBasicInfoFieldsConverToPO = ({
             Vendor
             {isConvertToPO && REQUIRED_ASTERISK}
           </label>
-          {isConvertToPO ? (
-            <Typography>{selectedVendor?.company_name || "N/A"}</Typography>
-          ) : (
-            <TextField
-              fullWidth
-              value={formData.vendor || purchaseOrder?.vendor_url || ""}
-              onChange={(e) => handleInputChange("vendor", e.target.value)}
-              placeholder="Vendor"
-            />
-          )}
+          <Typography>
+            {formData?.rfq?.vendor_details?.company_name || "N/A"}
+          </Typography>
         </div>
 
         {/* Destination Location */}
         <div className="rfqBasicInfoFields1SelectFields" style={{ flex: 1 }}>
           <label style={labelStyle}>Destination Location</label>
-          <Autocomplete
-            disablePortal
-            options={locationList}
-            value={selectedLocation}
-            getOptionLabel={(option) => option.location_name || ""}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            onChange={(_, value) =>
-              handleInputChange("destination_location", value)
-            }
-            renderInput={(params) => (
-              <TextField {...params} placeholder="Select Location" />
-            )}
-            sx={{ width: "100%" }}
-          />
+          {locationList.length <= 1 ? (
+            <Typography>{locationList[0]?.location_name || "N/A"}</Typography>
+          ) : (
+            <Autocomplete
+              disablePortal
+              options={locationList}
+              value={selectedLocation}
+              getOptionLabel={(option) => option.location_name || ""}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              onChange={(_, value) =>
+                handleInputChange("destination_location", value)
+              }
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Select Location" />
+              )}
+              sx={{ width: "100%" }}
+            />
+          )}
         </div>
       </div>
 
@@ -157,13 +153,13 @@ const POBasicInfoFieldsConverToPO = ({
         <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Address</label>
           <Typography color="#353536">
-            {selectedVendor?.address || "N/A"}
+            {formData?.rfq?.vendor_details?.address || "N/A"}
           </Typography>
         </Box>
         <Box display={"grid"} gap={2}>
           <label style={labelStyle}>Vendor Email</label>
           <Typography color="#353536">
-            {selectedVendor?.email || "N/A"}
+            {formData?.rfq?.vendor_details?.email || "N/A"}
           </Typography>
         </Box>
       </div>
@@ -179,30 +175,11 @@ const POBasicInfoFieldsConverToPO = ({
             Currency
             {isConvertToPO && REQUIRED_ASTERISK}
           </label>
-          {isConvertToPO ? (
-            <Typography>
-              {selectedCurrency
-                ? `${selectedCurrency.currency_name} - ${selectedCurrency.currency_symbol}`
-                : "N/A"}
-            </Typography>
-          ) : (
-            <Autocomplete
-              disablePortal
-              options={currencies}
-              value={selectedCurrency}
-              getOptionLabel={(option) =>
-                `${option.currency_name} - ${option.currency_symbol}`
-              }
-              isOptionEqualToValue={(option, value) =>
-                option.url === value?.url
-              }
-              onChange={(_, value) => handleInputChange("currency", value)}
-              renderInput={(params) => (
-                <TextField {...params} placeholder="Select Currency" />
-              )}
-              sx={{ width: "100%" }}
-            />
-          )}
+          <Typography>
+            {formData?.rfq?.currency_details
+              ? `${formData?.rfq?.currency_details?.currency_name} - ${formData?.rfq?.currency_details?.currency_symbol}`
+              : "N/A"}
+          </Typography>
         </div>
 
         {/* Payment Terms */}
@@ -235,7 +212,7 @@ const POBasicInfoFieldsConverToPO = ({
       {/* Row 5: Delivery Terms */}
       <div className="rfqBasicInfoFields2" style={{ marginBottom: 24 }}>
         <div style={{ flex: 1 }}>
-          <label style={labelStyle}>Delivery Terms {REQUIRED_ASTERISK}</label>
+          <label style={labelStyle}>Delivery Terms</label>
           <TextField
             fullWidth
             value={

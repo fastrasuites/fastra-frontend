@@ -5,7 +5,6 @@ import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import { extractRFQID, formatDate } from "../../../../../helper/helper";
 import "./MaterialConsumptionForm.css";
 
-
 // Sample products list array
 const productsList = [
   {
@@ -74,7 +73,6 @@ const productsList = [
     },
   },
 ];
-
 
 // Row configuration for the dynamic table
 const rowConfig = [
@@ -166,7 +164,6 @@ const MaterialConsumptionForm = () => {
   const handleSubmit = (filledFormData) => {
     console.log("Final Form Data", filledFormData);
   };
-  console.log("Form Data", formData);
   return (
     <CommonForm
       basicInformationTitle="Product Information"

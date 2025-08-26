@@ -14,6 +14,7 @@ import "./PurchaseOrder.css";
 import { toast } from "react-toastify";
 import { useTenant } from "../../../context/TenantContext";
 import { Link, useHistory } from "react-router-dom";
+import Can from "../../../components/Access/Can";
 
 export default function PurchaseOrder() {
   // Local state
@@ -28,7 +29,7 @@ export default function PurchaseOrder() {
   const tenant_schema_name = tenantData?.tenant_schema_name;
 
   const itemsPerPage = 10;
-  const { getPurchaseOrderList } = usePurchaseOrder();
+  const { getPurchaseOrderList, error, isLoading } = usePurchaseOrder();
 
   // Load purchase orders from localStorage on mount
   useEffect(() => {
@@ -40,34 +41,18 @@ export default function PurchaseOrder() {
 
   // Fetch purchase orders when the refresh flag changes
   const fetchPurchaseOrders = useCallback(async () => {
-    try {
-      const { success, data } = await getPurchaseOrderList();
-      if (success) {
-        setPurchaseOrderData(data);
-        localStorage.setItem("purchaseOrderData", JSON.stringify(data));
-      }
-      // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      toast.error("Failed to load purchase orders.");
+    const { success, data } = await getPurchaseOrderList();
+    if (success) {
+      setPurchaseOrderData(data);
+      localStorage.setItem("purchaseOrderData", JSON.stringify(data));
     }
   }, [getPurchaseOrderList]);
 
   useEffect(() => {
-    const toastId = "purchaseOrdersPromise";
-
-    if (!toast.isActive(toastId)) {
-      const purchaseOrdersPromise = fetchPurchaseOrders();
-      toast.promise(
-        purchaseOrdersPromise,
-        {
-          pending: "Loading purchase orders...",
-          success: "Purchase orders loaded successfully",
-          error: "Failed to load purchase orders.",
-        },
-        { toastId }
-      );
-    }
+    fetchPurchaseOrders();
   }, [fetchPurchaseOrders]);
+
+  console.log(error);
 
   // Reset to first page on search query change
   useEffect(() => {
@@ -154,7 +139,7 @@ export default function PurchaseOrder() {
     return purchaseOrderData.reduce((acc, order) => {
       const { status } = order;
       const newStatus = statusMap[status] || status;
-       // Use the mapped status or default to the original
+      // Use the mapped status or default to the original
       if (!acc[newStatus]) {
         acc[newStatus] = [];
       }
@@ -170,7 +155,6 @@ export default function PurchaseOrder() {
       state: { urlList, status, purchaseOrderData },
     });
   };
-
 
   const toggleViewMode = useCallback((mode) => {
     setViewMode(mode);
@@ -188,10 +172,6 @@ export default function PurchaseOrder() {
     },
     [totalPages]
   );
-
-
-
-  console.log(purchaseOrderData, "purchaseOrderData in PurchaseOrder.jsx");
 
   return (
     <div className="rfq" id="rfq">
@@ -230,13 +210,15 @@ export default function PurchaseOrder() {
           <div className="rfq3">
             <div className="r3a">
               <Link to="purchase-order/new">
-                <Button
-                  variant="contained"
-                  disableElevation
-                  style={{ fontSize: "17px", whiteSpace: "nowrap" }}
-                >
-                  New Purchase Order
-                </Button>
+                <Can app="purchase" module="purchaseorder" action="create">
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    style={{ fontSize: "17px", whiteSpace: "nowrap" }}
+                  >
+                    New Purchase Order
+                  </Button>
+                </Can>
               </Link>
               <div className="rfqsash">
                 <Search
@@ -281,7 +263,7 @@ export default function PurchaseOrder() {
               </div>
             </div>
           </div>
-          { viewMode === "grid" ? (
+          {viewMode === "grid" ? (
             <div className="rfqStatusCards" style={{ marginTop: "20px" }}>
               {paginatedPurchaseOrders.map((item) => (
                 <div
@@ -308,6 +290,8 @@ export default function PurchaseOrder() {
               items={paginatedPurchaseOrders}
               onCardClick={handleCardClick}
               getStatusColor={getStatusColor}
+              error={error}
+              isLoading={isLoading}
             />
           )}
         </div>

@@ -46,11 +46,8 @@ export default function LoginForm() {
       const response = await axios.post(requestUrl, { email, password });
       setError(""); // Clear any previous error messages
       const { access_token, tenant_schema_name, ...rest } = response.data || {};
-      console.log("Login Response:", response.data);
 
       login({ access_token, tenant_schema_name, ...rest });
-
-      console.log("i got here");
 
       // Redirect to dashboard
       history.push(`/${tenant_schema_name}/dashboard`);

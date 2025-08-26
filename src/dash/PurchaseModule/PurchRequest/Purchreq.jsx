@@ -1,4 +1,3 @@
-// Purchreq.jsx
 import React, { useState, useEffect } from "react";
 import "./Purchreq.css";
 import { FaBars, FaCaretLeft, FaCaretRight } from "react-icons/fa";
@@ -11,11 +10,14 @@ import approved from "../../../../src/image/icons/approved.png";
 import rejected from "../../../../src/image/icons/rejected.png";
 import pending from "../../../../src/image/icons/pending.png";
 import { usePurchase } from "../../../context/PurchaseContext";
-import { extractRFQID, formatDate } from "../../../helper/helper";
-// import SecondaryBar.css
+import { formatDate } from "../../../helper/helper";
 import "../../Inventory/secondaryBar/SecondaryBar.css";
 import { Box, Button } from "@mui/material";
 import { Search } from "lucide-react";
+import Swal from "sweetalert2";
+import Can from "../../../components/Access/Can";
+import PurchaseRequestGrid from "./PurchaseRequestGrid";
+import { useTenant } from "../../../context/TenantContext";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
@@ -23,17 +25,32 @@ export default function Purchreq() {
   const [purchaseRequestData, setPurchaseRequestData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("list");
-
+  const [loading, setLoading] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const { tenantData } = useTenant();
+  // console.log(tenantData);
+  const isAdmin = (tenantData?.user?.username || "").startsWith("admin_");
 
-  const { fetchSinglePurchaseRequest, fetchPurchaseRequests } = usePurchase();
-
+  const { fetchSinglePurchaseRequest, fetchPurchaseRequests, error } =
+    usePurchase();
   const history = useHistory();
 
-  // Initialize wizard state properly
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const [wizardState, setWizardState] = useState(() => {
     const saved = localStorage.getItem(WIZARD_STORAGE_KEY);
+    // Only initialize wizard for admin users
+    if (!isAdmin) {
+      return {
+        hidden: true,
+        currentStep: 1,
+        skipped: false,
+        completed: false,
+      };
+    }
     return saved
       ? JSON.parse(saved)
       : {
@@ -44,26 +61,18 @@ export default function Purchreq() {
         };
   });
 
-  // Sync wizard state to localStorage AND handle storage events
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === WIZARD_STORAGE_KEY && e.newValue) {
         setWizardState(JSON.parse(e.newValue));
       }
     };
-
-    // Save to localStorage when state changes
     localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(wizardState));
-
-    // Listen for storage events (from other tabs/windows)
     window.addEventListener("storage", handleStorageChange);
-
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, [wizardState]);
-
-  // REMOVED: The useEffect that depended on location.state
+  }, [wizardState, isAdmin]);
 
   const handleCloseModal = (action) => {
     if (action === "skip") {
@@ -84,45 +93,39 @@ export default function Purchreq() {
       setWizardState((prev) => ({ ...prev, hidden: true }));
     }
   };
+
   useEffect(() => {
-    const savedPR = localStorage.getItem("purchaseRequestData");
-    if (savedPR) {
-      setPurchaseRequestData(JSON.parse(savedPR));
-    }
-  }, []);
-  useEffect(() => {
-    fetchPurchaseRequests().then((data) => {
-      if (data.success) {
-        setPurchaseRequestData(data.data);
-        localStorage.setItem("purchaseRequestData", JSON.stringify(data.data));
+    const debounce = setTimeout(async () => {
+      setLoading(true);
+      const result = await fetchPurchaseRequests(searchQuery);
+      setLoading(false);
+
+      if (result.success) {
+        setPurchaseRequestData(result.data);
+        setCurrentPage(1); // Reset to first page when search changes
       }
-    });
-  }, [fetchPurchaseRequests]);
 
-  const toggleViewMode = (mode) => {
-    setViewMode(mode);
-  };
+      if (searchQuery && (!result || result.data.length === 0)) {
+        Swal.fire({
+          icon: "info",
+          title: "No results found",
+          text: "Try a different search term.",
+        });
+      }
+    }, 500);
 
-  const filteredPurchaseRequest = purchaseRequestData.filter((item) => {
-    console.log(item);
-    if (!searchQuery) return true;
-    const lowercasedQuery = searchQuery.toLowerCase();
+    return () => clearTimeout(debounce);
+  }, [fetchPurchaseRequests, searchQuery]);
 
-    const price = item?.total_price?.toString().toLowerCase() || "";
-    const status = item?.status?.toLowerCase() || "";
-    const currencyName = item?.currency?.company_name?.toLowerCase() || "";
-    const purchaseID = item.id?.toLowerCase() || "";
-    const vendor = item?.vendor?.company_name.toLowerCase() || "";
-    const date = formatDate(item?.date_created)?.toLowerCase() || "";
-    return (
-      price.includes(lowercasedQuery) ||
-      status.includes(lowercasedQuery) ||
-      currencyName.includes(lowercasedQuery) ||
-      purchaseID.includes(lowercasedQuery) ||
-      vendor.includes(lowercasedQuery) ||
-      date.includes(lowercasedQuery)
-    );
-  });
+  // Pagination calculations
+  const totalPages = Math.ceil(purchaseRequestData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = purchaseRequestData.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  const toggleViewMode = (mode) => setViewMode(mode);
 
   const getStatusColor = (status) => {
     switch (`${status[0].toUpperCase()}${status.slice(1)}`) {
@@ -211,19 +214,21 @@ export default function Purchreq() {
                 })}
               </div>
 
-              <nav className="secondary-bar" aria-label="Secondary navigation">
-                {/* Left side */}
+              <Box className="secondary-bar" aria-label="Secondary navigation">
                 <div className="secondary-bar__left">
-                  <Link to={`purchase-request/new`}>
-                    <Button
-                      variant="contained"
-                      disableElevation
-                      className="secondary-bar__button"
-                      aria-label="Create new purchase request"
-                    >
-                      New Purchase Request
-                    </Button>
-                  </Link>
+                  <Can app="purchase" module="purchaserequest" action="create">
+                    <Link to={`purchase-request/new`}>
+                      <Button
+                        variant="contained"
+                        disableElevation
+                        className="secondary-bar__button"
+                        aria-label="Create new purchase request"
+                      >
+                        New Purchase Request
+                      </Button>
+                    </Link>
+                  </Can>
+
                   <div className="secondary-bar__search">
                     <label htmlFor="searchInput" className="visually-hidden">
                       Search Purchase requests
@@ -246,7 +251,6 @@ export default function Purchreq() {
                   </div>
                 </div>
 
-                {/* Right side */}
                 <div className="secondary-bar__right">
                   <div
                     className="secondary-bar__pagination"
@@ -254,14 +258,22 @@ export default function Purchreq() {
                     aria-label="Pagination"
                   >
                     <p className="secondary-bar__pagination-text">
-                      <span className="visually-hidden">Current page:</span>
-                      1-2 of 2
+                      {purchaseRequestData.length > 0
+                        ? `${startIndex + 1}-${Math.min(
+                            startIndex + itemsPerPage,
+                            purchaseRequestData.length
+                          )} of ${purchaseRequestData.length}`
+                        : "0 of 0"}
                     </p>
                     <div className="secondary-bar__pagination-controls">
                       <button
                         type="button"
                         className="secondary-bar__icon-button"
                         aria-label="Previous page"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
                       >
                         <FaCaretLeft aria-hidden="true" />
                       </button>
@@ -273,6 +285,14 @@ export default function Purchreq() {
                         type="button"
                         className="secondary-bar__icon-button"
                         aria-label="Next page"
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
+                        }
+                        disabled={
+                          currentPage === totalPages || totalPages === 0
+                        }
                       >
                         <FaCaretRight aria-hidden="true" />
                       </button>
@@ -298,62 +318,47 @@ export default function Purchreq() {
                       className="secondary-bar__divider"
                       aria-hidden="true"
                     />
-
                     <button
                       type="button"
                       className={`secondary-bar__icon-button ${
                         viewMode === "list" ? "active-view" : ""
                       }`}
-                      aria-label="Grid view"
+                      aria-label="List view"
                       onClick={() => toggleViewMode("list")}
                     >
                       <FaBars aria-hidden="true" />
                     </button>
                   </div>
                 </div>
-              </nav>
+              </Box>
             </div>
           )}
 
           {viewMode === "grid" ? (
-            <div className="rfqStatusCards">
-              {filteredPurchaseRequest.map((item) => {
-                return (
-                  <div
-                    className="rfqStatusCard"
-                    key={item?.id}
-                    onClick={() => handleCardClick(item)}
-                  >
-                    <p className="cardid">{extractRFQID(item?.url)}</p>
-                    <p className="cardate">{formatDate(item.date_created)}</p>
-                    <p className="vendname">{item?.vendor?.company_name}</p>
-                    <p className="cardid">{item?.purpose}</p>
-                    <p
-                      className="status"
-                      style={{
-                        color: getStatusColor(item.status),
-                      }}
-                    >
-                      {item.status}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+            <PurchaseRequestGrid
+              quotations={paginatedData}
+              handleCardClick={handleSelectedRequest}
+              formatDate={formatDate}
+              statusColor={getStatusColor}
+            />
           ) : (
             <ListView
-              items={filteredPurchaseRequest}
+              items={paginatedData}
               onCardClick={handleSelectedRequest}
               getStatusColor={getStatusColor}
+              loading={loading}
+              error={error}
             />
           )}
         </div>
       </div>
-      <PurchaseModuleWizard
-        open={!wizardState.hidden}
-        onClose={(action) => handleCloseModal(action)}
-        step={wizardState.currentStep}
-      />
+      {isAdmin && (
+        <PurchaseModuleWizard
+          open={!wizardState.hidden}
+          onClose={(action) => handleCloseModal(action)}
+          step={wizardState.currentStep}
+        />
+      )}
     </Box>
   );
 }

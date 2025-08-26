@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link, useHistory, useParams } from "react-router-dom";
-import { scraps } from "../../../data/incomingProductData";
 import {
   Box,
   Button,
@@ -13,14 +12,19 @@ import {
   TableHead,
   TableRow,
   Typography,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useTenant } from "../../../../../context/TenantContext";
 import { useScrap } from "../../../../../context/Inventory/Scrap";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
-import { usePurchase } from "../../../../../context/PurchaseContext";
-import { extractId } from "../../../../../helper/helper";
+// import { usePurchase } from "../../../../../context/PurchaseContext";
+import Swal from "sweetalert2";
+import Can from "../../../../../components/Access/Can";
 
-// Status‐to‐color mapping extracted for reuse and easy maintenance
+// Status-to-color mapping
 const STATUS_COLOR = {
   done: "#2ba24c",
   Done: "#2ba24c",
@@ -32,116 +36,280 @@ const STATUS_COLOR = {
 
 const getStatusColor = (status) => STATUS_COLOR[status] || "#9e9e9e";
 
-// Small helper to render a label + value pair consistently
+// Helper component for consistent label-value pairs
 const InfoRow = ({ label, children }) => (
   <Box>
     <Typography>{label}</Typography>
-    <Typography color="#7A8A98">{children}</Typography>
+    <Typography color="#7A8A98">{children || "N/A"}</Typography>
   </Box>
 );
 
+// Function to parse prefixed IDs (e.g., "LAGSADJ00006")
+const parsePrefixedId = (id) => {
+  if (!id) return null;
+  const match = id.match(/^([A-Za-z]+)(\d+)$/);
+  if (!match) return null;
+
+  return {
+    prefix: match[1], // "LAGSADJ"
+    number: parseInt(match[2]), // 6
+    totalLength: match[2].length, // 5 (digits)
+  };
+};
+
+// Function to generate next/prev IDs
+const generateAdjacentId = (baseId, increment) => {
+  const parts = parsePrefixedId(baseId);
+  if (!parts) return null;
+
+  const newNumber = parts.number + increment;
+  if (newNumber < 1) return null; // Prevent negative IDs
+
+  return `${parts.prefix}${String(newNumber).padStart(parts.totalLength, "0")}`;
+};
+
 const ScrapInfo = () => {
-  // useParams should not be instantiated with `new`
   const { id } = useParams();
   const history = useHistory();
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
-  const { getSingleScrap } = useScrap();
+  const { getSingleScrap, updateScrap } = useScrap();
+  const { getSingleLocation } = useCustomLocation();
+  // const { fetchSingleProduct } = usePurchase();
 
   const [scrap, setScrap] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [navigation, setNavigation] = useState({
+    nextId: null,
+    prevId: null,
+    loading: false,
+  });
 
-  const { getSingleLocation } = useCustomLocation();
-  const { fetchSingleProduct } = usePurchase();
+  // Enhanced error handling
+  const showError = useCallback((msg) => {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: msg,
+      timer: 3000,
+    });
+  }, []);
 
+  const showSuccess = useCallback((msg) => {
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: msg,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }, []);
+
+  // Load data with error handling
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const { data: raw } = await getSingleScrap(id);
       const { data: location } = await getSingleLocation(
-        extractId(raw.warehouse_location)
+        raw.warehouse_location
       );
+
       const items = await Promise.all(
         raw.scrap_items.map(async (item) => {
-          const { data: product } = await fetchSingleProduct(
-            extractId(item.product)
-          );
+          // const { data: product } = await fetchSingleProduct(item.product);
           return {
             ...item,
-            product,
+            // product,
           };
         })
       );
+
       setScrap({
         ...raw,
         warehouse_location: location,
         scrap_items: items,
       });
+      setError(null);
+
+      // Load adjacent IDs after successful data load
+      const parts = parsePrefixedId(id);
+      if (parts) {
+        setNavigation({
+          nextId: generateAdjacentId(id, 1),
+          prevId: generateAdjacentId(id, -1),
+          loading: false,
+        });
+      }
     } catch (e) {
       console.error(e);
-      setError(e);
+      setError(e.response.data.detail || "Failed to load scrap");
+      showError(e.response.data.detail || "Failed to load scrap");
     } finally {
       setLoading(false);
     }
-  }, [id, getSingleScrap, getSingleLocation, fetchSingleProduct]);
+  }, [id, getSingleScrap, getSingleLocation, showError]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (id) {
+      loadData();
+    }
+  }, [id, loadData]);
 
-  const handleNavigateToEdit = (id) => {
+  const handleNavigateToEdit = useCallback(() => {
     history.push({
       pathname: `/${tenant_schema_name}/inventory/stock/scrap/${id}/edit`,
       state: { Scrap: scrap },
     });
-  };
-  if (loading)
-    return (
-      <Box p={4} textAlign="center">
-        <CircularProgress />
-      </Box>
-    );
+  }, [history, tenant_schema_name, id, scrap]);
 
-  if (error || !scrap)
+  const handleValidate = useCallback(async () => {
+    try {
+      const items = scrap.scrap_items.map((item) => ({
+        id: parseInt(item?.id),
+        product: parseInt(item.product),
+        scrap_quantity: parseInt(item?.scrap_quantity),
+      }));
+      const payload = {
+        ...scrap,
+        location: scrap.warehouse_location.id,
+        adjustmentType: scrap.adjustment_type,
+        items,
+        status: "done",
+      };
+      // Add your validation logic here
+      // await validateScrap(id);
+      await updateScrap(payload, id);
+      showSuccess("Scrap has been validated");
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      showError(err.message || "Failed to validate scrap");
+    } finally {
+      setActionLoading(false);
+    }
+  }, [showSuccess, showError, loadData, id, updateScrap, scrap]);
+
+  const handleNavigate = useCallback(
+    (newId) => {
+      if (!newId) return;
+      history.push(`/${tenant_schema_name}/inventory/stock/scrap/${newId}`);
+    },
+    [history, tenant_schema_name]
+  );
+
+  console.log(scrap);
+
+  if (loading) {
     return (
       <Box p={4} textAlign="center">
-        <Typography variant="h6">Adjustment not found</Typography>
-        <Link to={`/${tenant_schema_name}/inventory/stock/scrap`}>
-          <Button variant="outlined" sx={{ mt: 2 }}>
-            Back to List
-          </Button>
-        </Link>
+        <CircularProgress size={64} />
+        <Typography variant="h6" mt={2}>
+          Loading scrap details...
+        </Typography>
       </Box>
     );
+  }
+
+  if (error || !scrap) {
+    return (
+      <Box p={4} textAlign="center">
+        <Typography variant="h6" color="error">
+          {error || "Scrap not found"}
+        </Typography>
+        <Button
+          variant="outlined"
+          sx={{ mt: 2 }}
+          onClick={() =>
+            history.push(`/${tenant_schema_name}/inventory/stock/scrap`)
+          }
+        >
+          Back to List
+        </Button>
+      </Box>
+    );
+  }
 
   return (
     <Box p={4} display="grid" gap={4} mr={4}>
-      {/* Action button */}
-
+      {/* Header with navigation */}
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Link to={`/${tenant_schema_name}/inventory/stock/scrap/create-scrap`}>
           <Button variant="contained" size="large" disableElevation>
             New Scrap
           </Button>
         </Link>
-        <Box display="flex" gap={4}>
-          <Link
-            to={`/${tenant_schema_name}/inventory/stock/scrap`}
+
+        <Box display="flex" alignItems="center" gap={2}>
+          {/* Navigation controls */}
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={1}
+            bgcolor="white"
+            border="1px solid #E2E6E9"
+            borderRadius={1}
+            py={0.5}
+            px={1}
           >
-            <Button variant="outlined" size="large" disableElevation>
-              Close
-            </Button>
-          </Link>
+            <Tooltip title="Previous Scrap">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.prevId)}
+                  disabled={!navigation.prevId}
+                  size="small"
+                >
+                  <ArrowBackIosIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Box
+              sx={{
+                width: "2px",
+                bgcolor: "#E2E6E9",
+                alignSelf: "stretch",
+                borderRadius: "1px",
+              }}
+            />
+
+            <Tooltip title="Next Scrap">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.nextId)}
+                  disabled={!navigation.nextId}
+                  size="small"
+                >
+                  <ArrowForwardIosIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+
+          <Button
+            variant="outlined"
+            size="large"
+            disableElevation
+            onClick={() =>
+              history.push(`/${tenant_schema_name}/inventory/stock/scrap`)
+            }
+          >
+            Close
+          </Button>
+
           {scrap.status === "draft" && (
-            <Button
-              variant="contained"
-              size="large"
-              disableElevation
-              onClick={() => handleNavigateToEdit(id)}
-            >
-              Edit
-            </Button>
+            <Can app="inventory" module="scrap" action="edit">
+              <Button
+                variant="contained"
+                size="large"
+                disableElevation
+                onClick={handleNavigateToEdit}
+                disabled={actionLoading}
+              >
+                Edit
+              </Button>
+            </Can>
           )}
         </Box>
       </Box>
@@ -160,7 +328,7 @@ const ScrapInfo = () => {
 
         {/* Status row */}
         <InfoRow label="Status">
-          <Typography color={getStatusColor(scrap.status)} textTransform={"capitalize"}>
+          <Typography color={getStatusColor(scrap.status)}>
             {scrap.status.toUpperCase()}
           </Typography>
         </InfoRow>
@@ -169,7 +337,6 @@ const ScrapInfo = () => {
         <Box display="flex" gap={14} borderBottom="1px solid #E2E6E9" pb={3}>
           <InfoRow label="ID">{scrap.id}</InfoRow>
           <InfoRow label="Adjustment Type">{scrap.adjustment_type}</InfoRow>
-          {/* <InfoRow label="Date">{scrap.date}</InfoRow> */}
           <InfoRow label="Warehouse Location">
             {scrap.warehouse_location?.location_name}
           </InfoRow>
@@ -209,36 +376,36 @@ const ScrapInfo = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {scrap.scrap_items?.map((row, idx) => (
-                <TableRow
-                  key={idx}
-                  hover
-                  sx={{ "&:nth-of-type(odd)": { bgcolor: "#f5f5f5" } }}
-                >
-                  <TableCell
-                    sx={{
-                      fontSize: "14px",
-                      color: "#7A8A98",
-                      fontWeight: 400,
-                      p: 3,
-                    }}
+              {scrap.scrap_items?.length > 0 ? (
+                scrap.scrap_items.map((row, idx) => (
+                  <TableRow
+                    key={idx}
+                    hover
+                    sx={{ "&:nth-of-type(odd)": { bgcolor: "#f5f5f5" } }}
                   >
-                    {row?.product?.product_name}
-                  </TableCell>
-                  <TableCell
-                    sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}
-                  >
-                    {row?.scrap_quantity}
-                  </TableCell>
-
-                  <TableCell
-                    sx={{ fontSize: "14px", color: "#7A8A98", fontWeight: 400 }}
-                  >
-                    {row?.adjusted_quantity}
-                    <Box borderBottom="1px solid #E2E6E9" mt={1} />
+                    <TableCell
+                      sx={{ fontSize: "14px", color: "#7A8A98", p: 3 }}
+                    >
+                      {row.product_details?.product_name || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                      {row.scrap_quantity || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: "14px", color: "#7A8A98" }}>
+                      {row.adjusted_quantity || "N/A"}
+                      <Box borderBottom="1px solid #E2E6E9" mt={1} />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
+                    <Typography variant="body2" color="textSecondary">
+                      No items found
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -249,14 +416,22 @@ const ScrapInfo = () => {
         <Typography
           variant="body1"
           color={getStatusColor(scrap.status)}
-          textTransform={"capitalize"}
+          sx={{ textTransform: "capitalize" }}
         >
           {scrap.status}
         </Typography>
         {scrap.status === "draft" && (
-          <Button variant="contained" size="large" disableElevation>
-            Validate
-          </Button>
+          <Can app="inventory" module="scrap" action="approve">
+            <Button
+              variant="contained"
+              size="large"
+              disableElevation
+              onClick={handleValidate}
+              disabled={actionLoading}
+            >
+              {actionLoading ? <CircularProgress size={24} /> : "Validate"}
+            </Button>
+          </Can>
         )}
       </Box>
     </Box>

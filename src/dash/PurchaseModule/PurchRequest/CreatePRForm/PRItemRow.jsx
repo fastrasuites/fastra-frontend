@@ -6,8 +6,7 @@ const cellStyle = (index) => ({
   fontSize: "12px",
 });
 
-const PRItemRow = ({ row, index, handleRowChange, products}) => {
-  // console.log(row)
+const PRItemRow = ({ row, index, handleRowChange, products }) => {
   return (
     <TableRow
       key={row.id || index}
@@ -28,7 +27,9 @@ const PRItemRow = ({ row, index, handleRowChange, products}) => {
           }}
           disableClearable
           isOptionEqualToValue={(option, value) => {
-            const optionName = option.product_name ? option.product_name.toLowerCase() : "";
+            const optionName = option.product_name
+              ? option.product_name.toLowerCase()
+              : "";
             let valueName = "";
             if (typeof value === "string") {
               valueName = value.toLowerCase();
@@ -43,7 +44,9 @@ const PRItemRow = ({ row, index, handleRowChange, products}) => {
               variant="standard"
               sx={{
                 width: "100%",
-                "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
+                "& .MuiInput-underline:before": {
+                  borderBottomColor: "#C6CCD2",
+                },
                 "& .MuiInputBase-input": { color: "#A9B3BC" },
               }}
             />
@@ -62,6 +65,7 @@ const PRItemRow = ({ row, index, handleRowChange, products}) => {
             "& .MuiInput-underline:before": { borderBottomColor: "#C6CCD2" },
             "& .MuiInputBase-input": { color: "#A9B3BC" },
           }}
+          disabled
         />
       </TableCell>
       <TableCell sx={cellStyle(index)}>
@@ -79,13 +83,7 @@ const PRItemRow = ({ row, index, handleRowChange, products}) => {
       </TableCell>
       <TableCell sx={cellStyle(index)}>
         <TextField
-          value={
-            Array.isArray(row.unit_of_measure)
-              ? row.unit_of_measure[1]
-              : row.unit_of_measure.
-              unit_category || ""
-          }
-          
+          value={row?.product?.unit_of_measure_details?.unit_name || ""}
           variant="standard"
           sx={{
             width: "100%",

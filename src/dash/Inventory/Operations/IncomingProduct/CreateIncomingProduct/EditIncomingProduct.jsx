@@ -40,18 +40,18 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
   const [selectedLocation, setSelectedLocation] = useState(
     formData.location || null
   );
-  const { locationList, getLocationList } = useCustomLocation();
+  const { activeLocationList, getActiveLocationList } = useCustomLocation();
 
-  const { purchaseOrderList, getApprovedPurchaseOrderList } =
+  const { purchaseOrderList, getPurchaseOrderUnrelatedListForForm } =
     usePurchaseOrder();
 
   // Ensure RFQ list is loaded
   useEffect(() => {
-    getApprovedPurchaseOrderList();
-  }, [getApprovedPurchaseOrderList]);
+    getPurchaseOrderUnrelatedListForForm();
+  }, [getPurchaseOrderUnrelatedListForForm]);
 
   useEffect(() => {
-    getLocationList();
+    getActiveLocationList();
   }, []);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
     handleInputChange("location", newVal);
   };
 
-  const sourceObj = locationList.find((l) => l.location_code === "SUPP");
+  const sourceObj = activeLocationList.find((l) => l.location_code === "SUPP");
 
   const selectedPO = getSelectedOption(
     formData.relatedPO,
@@ -157,11 +157,11 @@ function IncomingProductBasicInputs({ formData, handleInputChange }) {
           <label style={{ marginBottom: 6, display: "flex" }}>
             Destination Location
           </label>
-          {formData.location && locationList.length > 1 ? (
+          {formData.location && activeLocationList.length > 1 ? (
             <Autocomplete
-              options={locationList}
+              options={activeLocationList}
               value={selectedLocation}
-              getOptionLabel={(opt) => opt.id}
+              getOptionLabel={(opt) => opt.location_name}
               onChange={handleLocationChange}
               renderInput={(params) => (
                 <TextField {...params} placeholder="Select location" />
@@ -194,12 +194,17 @@ export default function EditIncomingProduct() {
     is_hidden: true,
   });
   const { getLocationList, locationList } = useCustomLocation();
-  const { products, fetchProducts, vendors, fetchVendors } = usePurchase();
+  const { products, fetchProductsForForm, vendors, fetchVendorsForForm } =
+    usePurchase();
   const { isLoading, updateIncomingProduct } = useIncomingProduct();
 
   // Fetch lookups
   useEffect(() => {
-    Promise.all([fetchProducts(), fetchVendors(), getLocationList()]).then(
+    Promise.all([
+      fetchProductsForForm(),
+      fetchVendorsForForm(),
+      getLocationList(),
+    ]).then(
       // eslint-disable-next-line no-unused-vars
       ([prodRes, vendRes, locRes]) => {
         setFormData((f) => ({ ...f, suppliers: vendRes }));
@@ -216,10 +221,13 @@ export default function EditIncomingProduct() {
     if (incoming && products.length && vendors.length && locationList.length) {
       const items = incoming.incoming_product_items.map((it) => ({
         ...it,
-        product: it.product,
+        product: it.product_details,
         available_product_quantity: it.expected_quantity,
         qty_received: it.quantity_received,
-        unit_of_measure: { unit_category: it.product.unit_of_measure[1] },
+        unit_of_measure: {
+          unit_category:
+            it.product_details?.unit_of_measure_details.unit_category,
+        },
       }));
       const sup = vendors.find((v) => v.id === incoming.supplier) || null;
       const loc =
@@ -241,23 +249,26 @@ export default function EditIncomingProduct() {
   }, [location.state, products, vendors, locationList]);
 
   const handleSubmit = async (data) => {
+    console.log(data);
     const payload = {
-      destination_location: data.location.id,
+      destination_location: data?.location?.id,
       receipt_type: data.receiptType,
       source_location: data.source_location,
       related_po: data.relatedPO,
       status: data.status,
       is_hidden: false,
       supplier: data.suppliersName?.id || null,
-      incoming_product_items: data.items.map((it) => ({
-        product: it.product.id,
-        expected_quantity: Number(it.available_product_quantity),
-        quantity_received: Number(it.qty_received),
+      incoming_product_items: data?.items.map((it) => ({
+        id: it?.id,
+        product: it?.product?.id,
+        expected_quantity: Number(it?.available_product_quantity),
+        quantity_received: Number(it?.qty_received),
       })),
     };
+
+    console.log(payload);
     try {
       const res = await updateIncomingProduct(id, payload);
-      console.log(res);
 
       Swal.fire("Success", "Record saved", "success");
       history.push(
@@ -272,16 +283,168 @@ export default function EditIncomingProduct() {
         : e.message;
       Swal.fire({ icon: "error", title: "Error", html });
     }
+
+    try {
+      const res = await updateIncomingProduct(id, payload);
+
+      // Show success message
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Incoming product created successfully",
+      });
+
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/incoming-product/${res.incoming_product_id}`
+      );
+    } catch (err) {
+      console.error(err);
+
+      if (
+        Array.isArray(err?.response?.data?.non_field_errors) &&
+        err.response.data.non_field_errors.length > 0
+      ) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: err.response.data.non_field_errors[0],
+        });
+        return;
+      }
+
+      const detailRaw = err?.response?.data?.detail?.toString?.() || "";
+
+      // Try to extract backorder-related info
+      const jsonMatch = detailRaw.match(/string='(.*?)'/);
+      const codeMatch = detailRaw.match(/code='(.*?)'/);
+
+      const backorderCode = codeMatch?.[1];
+      let IP_ID = null;
+
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          IP_ID = parsed?.IP_ID;
+        } catch (parseErr) {
+          console.warn("Failed to parse embedded JSON:", parseErr);
+        }
+      }
+
+      // Handle backorder_required
+      if (backorderCode === "backorder_required" && IP_ID) {
+        const result = await Swal.fire({
+          html: `
+            <h1 class="swal-title">OOPS!</h1>
+            <div class="swal-line-container">
+              <div class="swal-line1"></div>
+              <div class="swal-line2"></div>
+            </div>
+            <p class="swal-subtext">The received quantity is less than the expected quantity.</p>
+            <p class="swal-question">Would you like to place a backorder for the remaining quantity?</p>
+          `,
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "No",
+          customClass: {
+            popup: "custom-swal-popup",
+            title: "custom-swal-title",
+            confirmButton: "custom-swal-confirm-btn",
+            cancelButton: "custom-swal-cancel-btn",
+            htmlContainer: "custom-swal-html",
+          },
+        });
+
+        if (result.isConfirmed) {
+          try {
+            const backorderPayload = {
+              response: true,
+              incoming_product: IP_ID,
+            };
+
+            await createIncomingProductBackOrder(backorderPayload);
+
+            await Swal.fire({
+              icon: "success",
+              title: "Success",
+              text: "Backorder created successfully",
+            });
+          } catch (backorderErr) {
+            console.error("Backorder creation failed:", backorderErr);
+            await Swal.fire({
+              icon: "error",
+              title: "Backorder Error",
+              text: backorderErr.message || "Failed to create backorder.",
+            });
+          }
+        } else {
+          // User clicked "No"
+          const backorderPayload = {
+            response: false,
+            incoming_product: IP_ID,
+          };
+
+          try {
+            await createIncomingProductBackOrder(backorderPayload);
+
+            await Swal.fire({
+              icon: "info",
+              title: "Acknowledged",
+              text: "Backorder not created as per your choice.",
+            });
+          } catch (backorderErr) {
+            console.error(
+              "Error sending backorder decline response:",
+              backorderErr
+            );
+            await Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: backorderErr.message || "Failed to process your decision.",
+            });
+          }
+        }
+
+        return;
+      }
+
+      // Handle known validation error format (object with field errors)
+      const detailData = err?.response?.data?.detail;
+      if (
+        detailData &&
+        typeof detailData === "object" &&
+        !Array.isArray(detailData)
+      ) {
+        const messages = Object.values(detailData)
+          .flat()
+          .map((msg) => `<p>${msg}</p>`)
+          .join("");
+
+        await Swal.fire({
+          icon: "error",
+          title: "Validation Error",
+          html: messages || "An unknown validation error occurred.",
+        });
+
+        return;
+      }
+
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err?.message || "Something went wrong. Please try again.",
+      });
+    }
   };
 
   const transformProducts = (list) =>
-    list.map((prod) => {
-      const [url, unit_category] = prod.unit_of_measure;
-      return {
-        ...prod,
-        unit_of_measure: { url, unit_category, unit_name: unit_category },
-      };
-    });
+    list.map((prod) => ({
+      ...prod,
+      unit_of_measure: {
+        url: prod.unit_of_measure,
+        unit_category: prod?.unit_of_measure_details?.unit_category,
+        unit_name: prod?.unit_of_measure_details?.unit_category,
+      },
+    }));
 
   const rowConfig = [
     {

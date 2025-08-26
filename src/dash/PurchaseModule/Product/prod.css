@@ -19,9 +19,10 @@
 .pro2 {
   width: 100%;
   height: 95%;
-  position: absolute;
+  /* position: absolute; */
   margin-top: 4rem;
-  padding-right: 6rem;
+  padding-inline: 2rem;
+  /* padding-right: 6rem; */
   top: 5%;
 }
 .pro3 {

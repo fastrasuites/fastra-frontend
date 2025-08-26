@@ -43,6 +43,9 @@ const EditAccessGroup = () => {
     isLoading,
   } = useAccessGroups();
 
+  console.log("accessGroups: ", accessGroups);
+  console.log("accessRights: ", accessRights);
+  console.log("modules: ", modules);
   // Find group by access_code
   const group = accessGroups.find((g) => g.access_code === id);
   const access_code = group?.access_code;
@@ -111,7 +114,6 @@ const EditAccessGroup = () => {
     e.preventDefault();
     try {
       const success = await updateAccessGroup(access_code, formData);
-      console.log("Access group updated:", success);
       if (success) {
         await Swal.fire(
           "Success",
@@ -403,7 +405,6 @@ export default EditAccessGroup;
 //     updateAccessGroup(formData);
 //     history.push(`/${tenant_schema_name}/settings/accessgroups/${access_code}`);
 //   };
-//   console.log("tenant_schema_name", tenant_schema_name);
 //   return (
 //     <Box p={{ xs: 2, sm: 4, md: 6 }}>
 //       <AppBar

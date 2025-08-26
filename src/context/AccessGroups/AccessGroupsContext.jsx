@@ -107,7 +107,7 @@ export function AccessGroupsProvider({ children }) {
       };
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
-      Swal.fire("Error", "Failed to fetch applications", "error");
+      console.error("Error fetching applications:", error);
       throw error;
     }
   }, [client]);
@@ -120,9 +120,8 @@ export function AccessGroupsProvider({ children }) {
       dispatch({ type: "FETCH_START" });
       const response = await client.get(`/users/access-group-right/`);
 
-      // Transform API response to match our UI structure
       const groupsMap = {};
-      response.data.forEach((item) => {
+      response?.data.forEach((item) => {
         if (!groupsMap[item.access_code]) {
           groupsMap[item.access_code] = {
             access_code: item.access_code,
@@ -152,7 +151,7 @@ export function AccessGroupsProvider({ children }) {
       });
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
-      Swal.fire("Error", "Failed to fetch access groups", "error");
+      // Swal.fire("Error", "Failed to fetch access groups", "error");
       throw error;
     }
   }, [client, state.accessRights]);
@@ -164,10 +163,6 @@ export function AccessGroupsProvider({ children }) {
         await fetchApplications();
         await fetchAccessGroups();
         setIsInitialized(true);
-
-        // // Refresh groups every 5 minutes
-        // const interval = setInterval(fetchAccessGroups, 5 * 60 * 1000);
-        // return () => clearInterval(interval);
       }
     };
     initialize();
@@ -179,7 +174,6 @@ export function AccessGroupsProvider({ children }) {
     try {
       dispatch({ type: "FETCH_START" });
 
-      // Prepare API payload
       const payload = {
         application: newGroup.application.toLowerCase(),
         group_name: newGroup.groupName,
@@ -205,25 +199,21 @@ export function AccessGroupsProvider({ children }) {
 
       const response = await client.post(`/users/access-group-right/`, payload);
 
-      // Extract access_code from the response
       const access_code = response.data.access_code;
 
-      // Create the group object for our state
       const createdGroup = {
         access_code,
         groupName: response.data.group_name || newGroup.groupName,
         application: newGroup.application.toUpperCase(),
-        createdAt: new Date().toLocaleString(), // Temporary, will be updated on next fetch
+        createdAt: new Date().toLocaleString(),
         permissions: newGroup.permissions,
       };
 
-      // Update context state
       dispatch({
         type: "CREATE_ACCESS_GROUP_SUCCESS",
         payload: createdGroup,
       });
 
-      // Return the access_code for navigation
       return access_code;
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
@@ -238,7 +228,6 @@ export function AccessGroupsProvider({ children }) {
     try {
       dispatch({ type: "FETCH_START" });
 
-      // Prepare API payload
       const payload = {
         application: updatedGroup.application.toLowerCase(),
         group_name: updatedGroup.groupName,
@@ -264,28 +253,13 @@ export function AccessGroupsProvider({ children }) {
 
       await client.patch(`/users/access-group-right/${access_code}/`, payload);
       await fetchAccessGroups();
-      return true; // Indicate success
+      return true;
     } catch (error) {
       dispatch({ type: "OPERATION_FAILURE", payload: error.message });
       Swal.fire("Error", "Failed to update access group", "error");
       throw error;
     }
   };
-
-  if (state.isLoading && !isInitialized) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </div>
-    );
-  }
 
   return (
     <AccessGroupsContext.Provider
@@ -301,7 +275,20 @@ export function AccessGroupsProvider({ children }) {
         fetchAccessGroups,
       }}
     >
-      {children}
+      {state.isLoading && !isInitialized ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <CircularProgress />
+        </div>
+      ) : (
+        children
+      )}
     </AccessGroupsContext.Provider>
   );
 }

@@ -13,17 +13,21 @@ import {
   TextField,
   CircularProgress,
   Typography,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
-import autosave from "../../../../image/autosave.svg";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import approved from "../../../../../src/image/icons/approved-rfq.svg";
 import "../PoStatusModal.css";
 import "../../Rfq/RfqStatusModal.css";
-import { Bounce, toast } from "react-toastify";
 import { useHistory, useParams } from "react-router-dom";
 import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 import { useTenant } from "../../../../context/TenantContext";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
+import Can from "../../../../components/Access/Can";
+import Swal from "sweetalert2";
 
 // Shared cell style helper function to avoid repetition
 const cellStyle = (index) => ({
@@ -34,20 +38,18 @@ const cellStyle = (index) => ({
 });
 
 const statusColorMap = {
-  Completed: "#2ba24c",
-  Awaiting: "#f0b501",
-  Cancelled: "#e43e2b",
+  completed: "#2ba24c",
+  awaiting: "#f0b501",
+  cancelled: "#e43e2b",
   default: "#3B7CED",
 };
-const statusColor = (s) =>
-  statusColorMap[s.charAt(0).toUpperCase() + s.slice(1)] ||
-  statusColorMap.default;
 
 const PurchaseOrderInfo = () => {
   const { id } = useParams();
   const history = useHistory();
   const { tenantData } = useTenant();
-  const tenant_schema_name = tenantData?.tenant_schema_name;
+  const tenantSchema = tenantData?.tenant_schema_name;
+
   const {
     getPurchaseOrderById,
     updatePurchaseOrder,
@@ -60,62 +62,130 @@ const PurchaseOrderInfo = () => {
   const [item, setItem] = useState({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [navigation, setNavigation] = useState({
+    nextId: null,
+    prevId: null,
+    loading: false,
+  });
 
-  const showError = useCallback((msg, err) => console.error(msg, err), []);
-  const showSuccess = useCallback(
-    (msg) => toast.success(msg, { transition: Bounce }),
-    []
-  );
+  const statusColor = (s) => statusColorMap[s] || statusColorMap.default;
 
-  const handleConvertToInventory = () => {
-    history.push({
-      pathname: `/${tenant_schema_name}/inventory/operations/incoming-product/inventory-conversion`,
-      state: { po: item },
+  const showError = useCallback((msg) => {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: msg,
     });
-  };
+  }, []);
+
+  const showSuccess = useCallback((msg) => {
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: msg,
+      showConfirmButton: false,
+    });
+  }, []);
+
+  // Load adjacent PO IDs
+  const loadAdjacentIds = useCallback((currentId) => {
+    try {
+      setNavigation((prev) => ({ ...prev, loading: true }));
+
+      // Extract numeric portion from ID (works for formats like PO123, PO00123, etc.)
+      const numericMatch = currentId.match(/\d+/);
+      if (!numericMatch) return;
+
+      const numericStr = numericMatch[0];
+      const numericValue = parseInt(numericStr, 10);
+      const prefix = currentId.substring(0, currentId.indexOf(numericStr));
+
+      // Preserve zero padding
+      const nextId = `${prefix}${String(numericValue + 1).padStart(
+        numericStr.length,
+        "0"
+      )}`;
+      const prevId =
+        numericValue > 1
+          ? `${prefix}${String(numericValue - 1).padStart(
+              numericStr.length,
+              "0"
+            )}`
+          : null;
+
+      setNavigation({ nextId, prevId, loading: false });
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setNavigation((prev) => ({ ...prev, loading: false }));
+    }
+  }, []);
 
   // Load Purchase Order data
   const loadPO = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getPurchaseOrderById(id);
-      if (res.success) setItem(res.data);
-      else showError("Failed to load Purchase Order.");
+      if (res.success) {
+        setItem(res.data);
+        loadAdjacentIds(id);
+      } else {
+        showError(res.message || "Failed to load purchase order");
+        history.push(`/${tenantSchema}/purchase/purchase-order`);
+      }
     } catch (err) {
-      showError("Error fetching Purchase Order.", err);
+      showError(err.message || "Error loading purchase order details");
     } finally {
       setLoading(false);
     }
-  }, [getPurchaseOrderById, id, showError]);
+  }, [getPurchaseOrderById, id, showError, history, tenantSchema]);
 
   useEffect(() => {
     loadPO();
   }, [loadPO]);
 
+  // Load location data when item changes
   useEffect(() => {
-    if (item.destination_location) {
-      getSingleLocation(item?.destination_location);
+    if (item?.destination_location) {
+      getSingleLocation(item.destination_location);
     }
-  }, [getSingleLocation, item]);
+  }, [item, getSingleLocation]);
 
   // Handle status change actions
   const handleStatusChange = useCallback(
-    async (actionKey) => {
+    async (newStatus) => {
+      if (!item) return;
+
       setActionLoading(true);
       try {
-        console.log(actionKey);
-        const result = await updatePurchaseOrder({ status: actionKey }, id);
-        if (result.success) showSuccess(`Status set to ${actionKey}`);
-        else showError(`Failed to ${actionKey} purchase order.`);
-        loadPO();
+        const actionMap = {
+          completed: updatePurchaseOrder,
+          cancelled: updatePurchaseOrder,
+          awaiting: updatePurchaseOrder,
+        };
+
+        const action = actionMap[newStatus];
+        if (!action) {
+          throw new Error(`Invalid status action: ${newStatus}`);
+        }
+
+        const result = await action({ status: newStatus }, id);
+        if (result.success) {
+          showSuccess(`Purchase order status updated to ${newStatus}`);
+          await loadPO();
+        } else {
+          showError(
+            result.message || `Failed to update status to ${newStatus}`
+          );
+        }
       } catch (err) {
-        showError(`Error during ${actionKey}`, err);
+        showError(err.message || `Error during status update`);
       } finally {
         setActionLoading(false);
       }
     },
     [
       item,
+      id,
       loadPO,
       showError,
       showSuccess,
@@ -123,6 +193,25 @@ const PurchaseOrderInfo = () => {
       updatePurchaseReject,
       updatePurchaseApproved,
     ]
+  );
+
+  // Handle navigation to inventory conversion
+  const handleConvertToInventory = useCallback(() => {
+    if (!item) return;
+
+    history.push({
+      pathname: `/${tenantSchema}/inventory/operations/incoming-product/inventory-conversion`,
+      state: { po: item },
+    });
+  }, [history, tenantSchema, item]);
+
+  // Navigation handler
+  const handleNavigate = useCallback(
+    (newId) => {
+      if (!newId || navigation.loading) return;
+      history.push(`/${tenantSchema}/purchase/purchase-order/${newId}`);
+    },
+    [history, tenantSchema, navigation.loading]
   );
 
   //   // Navigate to inventory conversion
@@ -145,7 +234,7 @@ const PurchaseOrderInfo = () => {
     return rows.map((row, idx) => (
       <TableRow key={row.url || idx}>
         <TableCell sx={cellStyle(idx)}>
-          {row.product?.product_name || "N/A"}
+          {row.product_details?.product_name || "N/A"}
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
@@ -157,7 +246,7 @@ const PurchaseOrderInfo = () => {
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
-          {row.unit_of_measure?.unit_category || "N/A"}
+          {row?.product_details?.unit_of_measure_details?.unit_name || "N/A"}
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
@@ -165,7 +254,7 @@ const PurchaseOrderInfo = () => {
           <Box />
         </TableCell>
         <TableCell sx={cellStyle(idx)}>
-          {row.get_total_price || "N/A"}
+          {row.estimated_unit_price * row.qty || "N/A"}
           <Box />
         </TableCell>
       </TableRow>
@@ -184,6 +273,7 @@ const PurchaseOrderInfo = () => {
               text: "Send to Inventory",
               onClick: handleConvertToInventory,
               disabled: actionLoading,
+              action: ["inventory", "incomingproduct", "create"],
             },
           ],
         };
@@ -195,11 +285,13 @@ const PurchaseOrderInfo = () => {
               text: "Approve",
               color: "success",
               onClick: () => handleStatusChange("completed"),
+              action: ["purchase", "purchaseorder", "approve"],
             },
             {
               text: "Reject",
               color: "error",
               onClick: () => handleStatusChange("cancelled"),
+              action: ["purchase", "purchaseorder", "reject"],
             },
           ],
         };
@@ -210,6 +302,7 @@ const PurchaseOrderInfo = () => {
             {
               text: "Set Back to Draft",
               onClick: () => handleStatusChange("pending"),
+              action: ["purchase", "purchaseorder", "edit"],
             },
           ],
         };
@@ -218,8 +311,9 @@ const PurchaseOrderInfo = () => {
           label: "Drafted",
           actions: [
             {
-              text: "Set to Pending",
+              text: "Send to Approval",
               onClick: () => handleStatusChange("awaiting"),
+              action: ["purchase", "purchaseorder", "edit"],
             },
           ],
         };
@@ -242,24 +336,73 @@ const PurchaseOrderInfo = () => {
       </Box>
     );
   }
+
   console.log(item);
   return (
     <div className="rfqStatus">
       <div className="rfqHeader">
-        <div className="rfqHeaderLeft">
-          <Typography
-            variant="contained"
-            disableElevation
-            fontSize={"24px"}
-            fontWeight={500}
-          >
-            New Purchase Order
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          width="100%"
+        >
+          <Typography variant="h5" fontWeight={500}>
+            Purchase Order Details
           </Typography>
-          <div className="rfqAutosave">
-            <p>Autosave</p>
-            <img src={autosave} alt="Autosave icon" />
-          </div>
-        </div>
+
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={1}
+            bgcolor="white"
+            border="1px solid #E2E6E9"
+            borderRadius={1}
+            py={0.5}
+            px={1}
+          >
+            <Tooltip title="Previous Purchase Order">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.prevId)}
+                  disabled={!navigation.prevId || navigation.loading}
+                  size="small"
+                >
+                  {navigation.loading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <ArrowBackIosIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Box
+              sx={{
+                width: "2px",
+                bgcolor: "#E2E6E9",
+                alignSelf: "stretch",
+                borderRadius: "1px",
+              }}
+            />
+
+            <Tooltip title="Next Purchase Order">
+              <span>
+                <IconButton
+                  onClick={() => handleNavigate(navigation.nextId)}
+                  disabled={!navigation.nextId || navigation.loading}
+                  size="small"
+                >
+                  {navigation.loading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <ArrowForwardIosIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        </Box>
       </div>
 
       <div className="rfqStatusContent">
@@ -267,39 +410,46 @@ const PurchaseOrderInfo = () => {
           <h2>Basic Information</h2>
           <div className="editCancel">
             {!["awaiting", "completed", "cancelled"].includes(item.status) && (
-              <Button
-                onClick={() =>
-                  history.push({
-                    pathname: `/${tenant_schema_name}/purchase/purchase-order/${extractRFQID(
-                      item.url
-                    )}/edit`,
-                    state: {
-                      po: {
-                        item,
-                        rfq: {
-                          id: item?.related_rfq,
-                          vendor: item?.vendor,
-                          items: item?.items,
+              <Can app="purchase" module="purchaseorder" action="edit">
+                <Button
+                  onClick={() =>
+                    history.push({
+                      pathname: `/${tenantSchema}/purchase/purchase-order/${extractRFQID(
+                        item.url
+                      )}/edit`,
+                      state: {
+                        po: {
+                          item,
+                          rfq: {
+                            id: item?.related_rfq,
+                            vendor: item?.vendor,
+                            items: item?.items,
+                          },
+                          destination_location: {
+                            ...singleLocation,
+                          },
+                          currency: item?.currency,
+                          payment_terms: item?.payment_terms,
+                          purchase_policy: item?.purchase_policy,
+                          delivery_terms: item?.delivery_terms,
+                          status: "draft",
+                          is_hidden: true,
                         },
-                        destination_location: {
-                          ...singleLocation,
-                        },
-                        currency: item?.currency,
-                        payment_terms: item?.payment_terms,
-                        purchase_policy: item?.purchase_policy,
-                        delivery_terms: item?.delivery_terms,
-                        status: "draft",
-                        is_hidden: true,
+                        edit: true,
                       },
-                      edit: true,
-                    },
-                  })
-                }
-              >
-                Edit
-              </Button>
+                    })
+                  }
+                >
+                  Edit
+                </Button>
+              </Can>
             )}
-            <Button variant="outlined" onClick={() => history.goBack()}>
+            <Button
+              variant="outlined"
+              onClick={() =>
+                history.push(`/${tenantSchema}/purchase/purchase-order`)
+              }
+            >
               Close
             </Button>
           </div>
@@ -377,7 +527,13 @@ const PurchaseOrderInfo = () => {
                       fontSize: 12,
                     }}
                   >
-                    {tenant_schema_name}
+                    {" "}
+                    {item?.created_by_details.user?.first_name.trim().length <=
+                      0 &&
+                    item?.created_by_details.user?.last_name.trim().length <= 0
+                      ? item?.created_by_details.user?.username
+                      : `${item?.created_by_details?.user?.first_name}
+                    ${item?.created_by_details?.user?.last_name}`}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -394,7 +550,7 @@ const PurchaseOrderInfo = () => {
             </Typography>
 
             <Typography variant="p" color={"#353536"}>
-              {item.vendor?.company_name || ""}
+              {item?.vendor_details?.company_name || ""}
             </Typography>
           </Box>
         </div>
@@ -406,7 +562,7 @@ const PurchaseOrderInfo = () => {
                 Vendor Address
               </Typography>
               <Typography variant="p" color={"#353536"}>
-                {item.vendor?.address || "N/A"}
+                {item.vendor_details?.address || "N/A"}
               </Typography>
             </div>
             <div>
@@ -414,7 +570,7 @@ const PurchaseOrderInfo = () => {
                 Vendor Email
               </Typography>
               <Typography variant="p" color={"#353536"}>
-                {item.vendor?.email || "N/A"}
+                {item.vendor_details?.email || "N/A"}
               </Typography>
             </div>
           </div>
@@ -425,8 +581,8 @@ const PurchaseOrderInfo = () => {
                 Currency Type
               </Typography>
               <Typography variant="p" color={"#353536"}>
-                {item.currency
-                  ? `${item.currency.currency_name} - ${item.currency.currency_symbol}`
+                {item.currency_details
+                  ? `${item.currency_details.currency_name} - ${item.currency_details.currency_symbol}`
                   : "N/A"}
               </Typography>
             </div>
@@ -475,7 +631,7 @@ const PurchaseOrderInfo = () => {
                   "Description",
                   "Qty",
                   "Unit of Measure",
-                  "Estimated Unit Price",
+                  "Actual Unit Price",
                   "Total Price",
                 ].map((head) => (
                   <TableCell
@@ -507,17 +663,23 @@ const PurchaseOrderInfo = () => {
             </div>
             <div className="rfqStatusDraftFooterBtns">
               {footerConfig.actions.map((action, idx) => (
-                <Button
+                <Can
+                  app={action.action[0]}
+                  module={action.action[1]}
+                  action={action.action[2]}
                   key={idx}
-                  variant="contained"
-                  disableElevation
-                  color={action.color}
-                  onClick={action.onClick}
-                  disabled={action.disabled || actionLoading}
-                  sx={{ ml: 1 }}
                 >
-                  {action.text}
-                </Button>
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    color={action.color}
+                    onClick={action.onClick}
+                    disabled={action.disabled || actionLoading}
+                    sx={{ ml: 1 }}
+                  >
+                    {action.text}
+                  </Button>
+                </Can>
               ))}
             </div>
           </div>

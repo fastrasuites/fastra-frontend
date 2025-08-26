@@ -16,6 +16,7 @@ const CommonForm = ({
   setFormData,
   onSubmit,
   submitBtnText = "Save",
+  saveAsSubmitBtnText = "Done",
   autofillRow = [
     "product_name",
     "product_description",
@@ -25,6 +26,7 @@ const CommonForm = ({
   showSaveButton = true,
   primaryButtonVariant = "outlined",
   onSubmitAsDone,
+  setMax = null,
 }) => {
   // Update a single field in formData
   const handleInputChange = useCallback(
@@ -44,7 +46,6 @@ const CommonForm = ({
         // Auto-update related fields when product changes
         if (field === "product" && value?.product_description) {
           autofillRow.forEach((row) => {
-            // console.log(row);
             updatedItems[index][row] = value[row];
           });
           updatedItems[index].description = value.product_description;
@@ -56,22 +57,45 @@ const CommonForm = ({
     [setFormData]
   );
 
-  // Adding a new row: use the rowConfig to define default values
   const handleAddRow = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        rowConfig.reduce(
-          (acc, cfg) => {
-            acc[cfg.field] = "";
-            return acc;
-          },
-          { id: `new-${prev.items.length + 1}` }
-        ),
-      ],
-    }));
+    setFormData((prev) => {
+      const newRow = rowConfig.reduce((acc, cfg) => {
+        // Initialize fields with default values
+        let defaultValue = "";
+
+        // For calculated fields, compute initial value
+        if (cfg.value && typeof cfg.value === "function") {
+          defaultValue = cfg.value(acc);
+        }
+
+        acc[cfg.field] = defaultValue;
+        return acc;
+      }, {});
+
+      return {
+        ...prev,
+        items: [...prev.items, newRow],
+      };
+    });
   }, [rowConfig, setFormData]);
+
+  // Adding a new row: use the rowConfig to define default values
+  // const handleAddRow = useCallback(() => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     items: [
+  //       ...prev.items,
+  //       rowConfig.reduce(
+  //         (acc, cfg) => {
+  //           acc[cfg.field] = "";
+  //           return acc;
+  //         }
+  //         // ,
+  //         // { id: `new-${prev.items.length + 1}` }
+  //       ),
+  //     ],
+  //   }));
+  // }, [rowConfig, setFormData]);
 
   // Removing an existing row
   const handleRemoveRow = useCallback(
@@ -89,8 +113,6 @@ const CommonForm = ({
     e.preventDefault();
     if (onSubmit) {
       onSubmit(formData);
-    } else {
-      console.log("Submitting form data: ", formData);
     }
   };
 
@@ -139,6 +161,7 @@ const CommonForm = ({
             handleRowChange={handleRowChange}
             handleRemoveRow={handleRemoveRow}
             rowConfig={rowConfig}
+            setMax={setMax}
           />
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
             <Button variant="outlined" onClick={handleAddRow}>
@@ -162,7 +185,7 @@ const CommonForm = ({
                   disableElevation
                   onClick={handleSubmitAsDone}
                 >
-                  {/* {submitBtnText} */} Done
+                  {/* {submitBtnText} */} {saveAsSubmitBtnText}
                 </Button>
               )}
 

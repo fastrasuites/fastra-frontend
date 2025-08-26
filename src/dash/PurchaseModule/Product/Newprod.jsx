@@ -2,28 +2,23 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import autosave from "../../../image/autosave.svg";
 import "./Newprod.css";
-import { useHistory } from "react-router-dom";
-import { Grid, TextField } from "@mui/material";
+import { useHistory, useLocation } from "react-router-dom";
+import { Grid, TextField, Button } from "@mui/material";
 import styled from "styled-components";
-import PurchaseHeader from "../PurchaseHeader";
 import { getTenantClient } from "../../../services/apiService";
 import { useTenant } from "../../../context/TenantContext";
 import Swal from "sweetalert2";
+import { usePurchase } from "../../../context/PurchaseContext";
 
 const WIZARD_STORAGE_KEY = "purchaseWizardState";
 
-export default function Newprod({
-  onClose,
-  onSaveAndSubmit,
-  fromPurchaseModuleWizard,
-}) {
+export default function Newprod() {
   const history = useHistory();
   const [formState, setFormState] = useState({
     name: "",
     unt: "",
     type: "",
     category: "",
-    image: null,
     productDesc: "",
     availableProductQty: 0,
     totalQtyPurchased: 0,
@@ -37,6 +32,12 @@ export default function Newprod({
 
   const [savedUnits, setSavedUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const { createProduct } = usePurchase();
+  const location = useLocation();
+
+  const fromPurchaseModuleWizard = location.state?.openForm;
+
+  console.log("fromPurchaseModuleWizard: ", fromPurchaseModuleWizard);
 
   // Fetch saved units
   useEffect(() => {
@@ -66,11 +67,6 @@ export default function Newprod({
     if (newUnit) console.log("Selected unit:", newUnit);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0] || null;
-    setFormState((prev) => ({ ...prev, image: file }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -85,10 +81,18 @@ export default function Newprod({
       return;
     }
 
+    const extractID = (url) => {
+      if (!url) {
+        console.warn("extractRFQID: url is undefined");
+        return ""; // or handle the case appropriately
+      }
+      const segments = url.split("/").filter(Boolean);
+      return segments[segments.length - 1];
+    };
     try {
       const payload = new FormData();
       payload.append("product_name", formState.name);
-      payload.append("unit_of_measure", formState.unt);
+      payload.append("unit_of_measure", extractID(formState.unt));
       payload.append("product_category", formState.category);
       payload.append("product_description", formState.productDesc);
       payload.append(
@@ -96,25 +100,38 @@ export default function Newprod({
         formState.availableProductQty
       );
       payload.append("total_quantity_Purchased", formState.totalQtyPurchased);
-      if (formState.image) payload.append("image", formState.image);
 
-      await onSaveAndSubmit(payload);
+      // for (const [key, value] of payload.entries()) {
+      // }
+      setError(null);
+
+      const response = await createProduct(payload);
+      console.log("Full response:", response);
+
+      const id = response?.data?.id;
+      if (!id) {
+        console.warn("Product ID not returned:", response?.data);
+        throw new Error("Product creation failed: No ID returned.");
+      }
 
       Swal.fire({
         icon: "success",
         title: "Product Created",
         text: "Your new product has been saved successfully.",
       });
-      onClose();
 
       if (fromPurchaseModuleWizard) {
-        const saved =
+        const wizardState =
           JSON.parse(localStorage.getItem(WIZARD_STORAGE_KEY)) || {};
-        saved.currentStep = 3;
-        saved.hidden = false;
-        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(saved));
-        history.push(`/${tenant_schema_name}/purchase`);
+        const updatedState = { ...wizardState, currentStep: 3, hidden: false };
+
+        localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(updatedState));
+
+        history.push(`/${tenant_schema_name}/purchase/purchase-request`);
+        return;
       }
+
+      history.push(`/${tenant_schema_name}/purchase/product/${id}`);
     } catch (err) {
       console.error("Submission error:", err);
       Swal.fire({
@@ -154,7 +171,6 @@ export default function Newprod({
 
   return (
     <div className="newp-contain ">
-      <PurchaseHeader />
       <div id="newprod" className={`newp ${showForm ? "fade-in" : "fade-out"}`}>
         <div className="newp1">
           <div className="newp2">
@@ -170,14 +186,15 @@ export default function Newprod({
             <form className="newpform" onSubmit={handleSubmit}>
               <div className="newp3a">
                 <p style={{ fontSize: "20px" }}>Basic Information</p>
-                <button
-                  type="button"
-                  className="newp3but"
-                  onClick={onClose}
-                  style={{ marginTop: "1rem" }}
+
+                <Button
+                  variant="text"
+                  // color="secondary"
+                  onClick={() => window.history.back()}
+                  sx={{ mt: 2 }}
                 >
-                  Cancel
-                </button>
+                  Close
+                </Button>
               </div>
 
               <Grid container spacing={3}>
@@ -295,10 +312,15 @@ export default function Newprod({
                 </Grid>
               </Grid>
               <hr
-                style={{ border: "1.2px solid #E2E6E9", marginTop: "32px" }}
+                style={{ border: "1.2px solid #E2E6E9", marginBlock: "32px" }}
               />
 
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                variant="contained"
+                sx={{ display: "inline", alignSelf: "flex-start" }}
+                type="submit"
+                disabled={isSubmitting}
+              >
                 Create Product
               </Button>
 
@@ -310,21 +332,3 @@ export default function Newprod({
     </div>
   );
 }
-
-const Button = styled.button`
-  padding: 8px 24px 8px 24px;
-  border-radius: 4px;
-  opacity: 0px;
-  background: #3b7ced;
-  border: solid 1px #3b7ced;
-  display: inline-flex;
-  width: max-content;
-  cursor: pointer;
-  margin-top: 32px;
-
-  font-size: 16px;
-  font-weight: 400;
-  // line-height: 19.41px;
-  // text-align: center;
-  color: #ffffff;
-`;

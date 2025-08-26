@@ -12,7 +12,7 @@ const CustomScrollContainer = ({ children, maxHeight }) => {
 
     const updateThumbPosition = () => {
       const { scrollTop, clientHeight, scrollHeight } = container;
-      console.log("scrollTop:", scrollTop, "clientHeight:", clientHeight, "scrollHeight:", scrollHeight);
+
       // Only update if content overflows
       if (scrollHeight <= clientHeight) {
         setThumbTop(10);
@@ -21,7 +21,6 @@ const CustomScrollContainer = ({ children, maxHeight }) => {
       const trackHeight = clientHeight - 20; // 10px top and bottom margins
       const scrollRatio = scrollTop / (scrollHeight - clientHeight);
       const newThumbTop = 10 + scrollRatio * (trackHeight - fixedThumbHeight);
-      console.log("newThumbTop:", newThumbTop);
       setThumbTop(newThumbTop);
     };
 
@@ -35,7 +34,11 @@ const CustomScrollContainer = ({ children, maxHeight }) => {
   }, [fixedThumbHeight]);
 
   return (
-    <div className="custom-scroll-container" ref={containerRef} style={{ maxHeight }}>
+    <div
+      className="custom-scroll-container"
+      ref={containerRef}
+      style={{ maxHeight }}
+    >
       {children}
       <div className="fake-scrollbar-track">
         <div

@@ -44,36 +44,34 @@ export const ScrapProvider = ({ children }) => {
     return getTenantClient(tenant_schema_name, access_token, refresh_token);
   }, [tenant_schema_name, access_token, refresh_token]);
 
+  const fetchResource = useCallback(
+    async (url) => {
+      if (!client || !url) return null;
+      try {
+        const secureUrl = url.replace(/^http:\/\//i, "https://");
+        const response = await client.get(secureUrl);
+        return response.data;
+      } catch (err) {
+        console.error("Error fetching resource:", url, err);
+        return null;
+      }
+    },
+    [client]
+  );
 
-    const fetchResource = useCallback(
-      async (url) => {
-        if (!client || !url) return null;
-        try {
-          const secureUrl = url.replace(/^http:\/\//i, "https://");
-          const response = await client.get(secureUrl);
-          return response.data;
-        } catch (err) {
-          console.error("Error fetching resource:", url, err);
-          return null;
-        }
-      },
-      [client]
-    );
-  
-    const normalizeStockAdjustment = useCallback(
-      async (stock_adjustment) => {
-        // console.log(stock_adjustment);
-        if (!stock_adjustment) return null;
-        const warehouse = await fetchResource(
-          stock_adjustment.warehouse_location
-        );
-        return {
-          ...stock_adjustment,
-          warehouse_location: warehouse,
-        };
-      },
-      [fetchResource]
-    );
+  const normalizeStockAdjustment = useCallback(
+    async (stock_adjustment) => {
+      if (!stock_adjustment) return null;
+      const warehouse = await fetchResource(
+        stock_adjustment.warehouse_location
+      );
+      return {
+        ...stock_adjustment,
+        warehouse_location: warehouse,
+      };
+    },
+    [fetchResource]
+  );
 
   // Scrap endpoints
   const getScrapList = useCallback(async () => {
@@ -87,7 +85,7 @@ export const ScrapProvider = ({ children }) => {
       const { data: rawData } = await client.get("/inventory/scrap/");
       const normalizedData = await Promise.all(
         rawData.map(async (scrap) => await normalizeStockAdjustment(scrap))
-      )
+      );
       setScrapList(normalizedData);
       setError(null);
       return { success: true, data: normalizedData };
@@ -124,8 +122,6 @@ export const ScrapProvider = ({ children }) => {
 
   const createScrap = useCallback(
     async (scrapData) => {
-      // console.log(scrapData);
-
       if (!client) {
         const msg = "API client not initialized.";
         setError(msg);
@@ -139,7 +135,7 @@ export const ScrapProvider = ({ children }) => {
       setIsLoading(true);
       try {
         const payload = {
-          warehouse_location: scrapData.location.url,
+          warehouse_location: scrapData.location.id,
           adjustment_type: scrapData.adjustmentType?.toLowerCase(),
           // date: scrapData.date,
           notes: scrapData.notes,
@@ -148,8 +144,6 @@ export const ScrapProvider = ({ children }) => {
           is_hidden: false,
         };
 
-
-        console.log(payload);
         const { data } = await client.post("/inventory/scrap/", payload);
         setScrapList((prev) => [...prev, data]);
         setError(null);
@@ -166,8 +160,6 @@ export const ScrapProvider = ({ children }) => {
 
   const updateScrap = useCallback(
     async (scrapData, id) => {
-      // console.log(scrapData);
-
       if (!client) {
         const msg = "API client not initialized.";
         setError(msg);
@@ -190,8 +182,6 @@ export const ScrapProvider = ({ children }) => {
           is_hidden: false,
         };
 
-
-        console.log(payload);
         const { data } = await client.patch(`/inventory/scrap/${id}/`, payload);
         setScrapList((prev) => [...prev, data]);
         setError(null);

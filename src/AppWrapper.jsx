@@ -19,6 +19,7 @@ import { StockMoveProvider } from "./context/Inventory/stockMoveContext";
 import { AccessGroupsProvider } from "./context/AccessGroups/AccessGroupsContext";
 import { UserProvider } from "./context/Settings/UserContext";
 import { CompanyProvider } from "./context/Settings/CompanyContext";
+import { BackOrderProvider } from "./context/Inventory/BackOrderContext";
 
 function AppWrapper() {
   return (
@@ -32,21 +33,23 @@ function AppWrapper() {
                   <LocationConfigProvider>
                     <LocationProvider>
                       <IncomingProductProvider>
-                        <DeliveryOrderProvider>
-                          <StockAdjustmentProvider>
-                            <StockMoveProvider>
-                              <UserProvider>
-                                <CompanyProvider>
-                                  <ScrapProvider>
-                                    <Router>
-                                      <App />
-                                    </Router>
-                                  </ScrapProvider>
-                                </CompanyProvider>
-                              </UserProvider>
-                            </StockMoveProvider>
-                          </StockAdjustmentProvider>
-                        </DeliveryOrderProvider>
+                        <BackOrderProvider>
+                          <DeliveryOrderProvider>
+                            <StockAdjustmentProvider>
+                              <StockMoveProvider>
+                                <UserProvider>
+                                  <CompanyProvider>
+                                    <ScrapProvider>
+                                      <Router>
+                                        <App />
+                                      </Router>
+                                    </ScrapProvider>
+                                  </CompanyProvider>
+                                </UserProvider>
+                              </StockMoveProvider>
+                            </StockAdjustmentProvider>
+                          </DeliveryOrderProvider>
+                        </BackOrderProvider>
                       </IncomingProductProvider>
                     </LocationProvider>
                   </LocationConfigProvider>

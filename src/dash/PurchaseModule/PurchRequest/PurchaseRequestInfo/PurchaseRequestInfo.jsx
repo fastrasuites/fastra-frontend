@@ -11,13 +11,36 @@ import {
   TableRow,
   CircularProgress,
   Box,
+  Grid,
+  Typography,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import autosaveIcon from "../../../../image/autosave.svg";
 import approvedIcon from "../../../../../src/image/icons/approved-rfq.svg";
-import { extractRFQID, formatDate } from "../../../../helper/helper";
+import { extractRFQID, formatDate, parsePRId } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
+import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
+import Can from "../../../../components/Access/Can";
+import Swal from "sweetalert2";
+
+const textStyle = {
+  backgroundColor: "#fff",
+  color: "#7a8a98",
+  fontSize: 12,
+  // padding: "8px 12px",
+  // border: "1px solid #eee",
+};
+
+const labelStyle = {
+  ...textStyle,
+  fontWeight: "bold",
+  // backgroundColor: "#f5f5f5",
+};
 
 // Style constants
 const cellStyle = (index) => ({
@@ -51,23 +74,69 @@ const PurchaseRequestInfo = () => {
     updatePurchaseRequest,
   } = usePurchase();
 
+  const { getSingleLocation } = useCustomLocation();
+
   const tenantSchema = tenantData?.tenant_schema_name;
   const { id } = useParams();
   const history = useHistory();
 
   // State
-  const [item, setItem] = useState({});
+  const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [navigation, setNavigation] = useState({
+    nextId: null,
+    prevId: null,
+    loading: false,
+  });
 
-  // Placeholder notification hooks (plug in your toast library)
+  // Placeholder notification hooks
   const showError = useCallback((msg) => {
-    // e.g. enqueueSnackbar(msg, { variant: "error" });
-    console.error(msg);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      html: msg || "An unknown error occurred.",
+    });
   }, []);
+
   const showSuccess = useCallback((msg) => {
-    // e.g. enqueueSnackbar(msg, { variant: "success" });
-    console.log(msg);
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: msg,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }, []);
+
+  // Load adjacent PR IDs
+  const loadAdjacentIds = useCallback(async (currentId) => {
+    try {
+      setNavigation((prev) => ({ ...prev, loading: true }));
+
+      const parsed = parsePRId(currentId);
+      if (!parsed) return;
+
+      const { prefix, number } = parsed;
+      const nextId = `${prefix}${String(number + 1).padStart(
+        String(number).length,
+        "0"
+      )}`;
+      const prevId =
+        number > 1
+          ? `${prefix}${String(number - 1).padStart(
+              String(number).length,
+              "0"
+            )}`
+          : null;
+
+      setNavigation({ nextId, prevId, loading: false });
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setNavigation((prev) => ({ ...prev, loading: false }));
+    }
   }, []);
 
   // Centralized data loader
@@ -75,142 +144,180 @@ const PurchaseRequestInfo = () => {
     setLoading(true);
     try {
       const res = await fetchSinglePurchaseRequest(id);
-      console.log(res, "res");
       if (res.success) {
         setItem(res.data);
+        loadAdjacentIds(id);
       } else {
+        console.error(res);
         showError("Failed to load purchase request.");
       }
     } catch (err) {
-      showError("An error occurred while fetching data.");
-      console.error(err);
+      if (err?.response?.status === 403) {
+        setItem("FORBIDDEN");
+      } else {
+        showError(err.message || "An error occurred while fetching data.");
+      }
     } finally {
       setLoading(false);
     }
-  }, [fetchSinglePurchaseRequest, id, showError]);
+  }, [fetchSinglePurchaseRequest, id, showError, loadAdjacentIds]);
+
+  // Load location data
+  const loadLocation = useCallback(
+    async (locationId) => {
+      if (!locationId) return;
+
+      setLocationLoading(true);
+      try {
+        const locationData = await getSingleLocation(locationId);
+        setLocation(locationData);
+      } catch (err) {
+        console.error("Location fetch error:", err);
+        setLocation(null);
+      } finally {
+        setLocationLoading(false);
+      }
+    },
+    [getSingleLocation]
+  );
+
+  const requester = useMemo(() => {
+    if (!item) return "N/A";
+    const user = item?.requester_details?.user;
+    return user
+      ? `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+          user.username
+      : "N/A";
+  }, [item]);
 
   useEffect(() => {
     loadPurchaseRequest();
   }, [loadPurchaseRequest]);
 
+  useEffect(() => {
+    if (item?.requesting_location) {
+      loadLocation(item.requesting_location);
+    }
+  }, [item, loadLocation]);
+
   // Unified status-change handler
   const handleStatusChange = useCallback(
     async (newStatus) => {
+      if (!item) return;
+
       setActionLoading(true);
 
-      // build payload
       const prId = extractRFQID(item.url);
+      if (!prId) {
+        showError("Invalid purchase request ID");
+        setActionLoading(false);
+        return;
+      }
+
       const payload = {
-        vendor: item.vendor?.url || item.vendor,
-        currency: item.currency?.url || item.currency,
         status: newStatus,
-        purpose: item.purpose,
-        items: (item.items || []).map((it) => ({
-          product: it.product.url,
-          description: it.description,
-          qty: Number(it.qty) || 0,
-          unit_of_measure: it.unit_of_measure?.url || it.unit_of_measure?.[0],
-          estimated_unit_price: it.estimated_unit_price,
-        })),
-        is_hidden: item.is_hidden,
+        // Include other necessary fields here
       };
 
       try {
-        const actionName = statusActions[newStatus];
-        if (!actionName) throw new Error("Unknown action");
+        const actionMap = {
+          approve: approvePurchaseRequest,
+          reject: rejectPurchaseRequest,
+          pending: pendingPurchaseRequest,
+          draft: updatePurchaseRequest,
+        };
 
-        // call the appropriate context method
-        await {
-          approvePurchaseRequest,
-          rejectPurchaseRequest,
-          pendingPurchaseRequest,
-          updatePurchaseRequest,
-        }[actionName](payload, prId);
+        const action = actionMap[newStatus];
+        if (!action) throw new Error(`Unknown action: ${newStatus}`);
 
-        showSuccess(`Successfully set status to "${newStatus}"`);
+        await action(payload, prId);
+
+        showSuccess(`Purchase request status updated to ${newStatus}`);
         await loadPurchaseRequest();
       } catch (err) {
-        showError(`Could not ${newStatus} request.`);
-        console.error(err);
+        showError(err.message || `Could not ${newStatus} request.`);
       } finally {
         setActionLoading(false);
       }
     },
-    [
-      item,
-      approvePurchaseRequest,
-      rejectPurchaseRequest,
-      pendingPurchaseRequest,
-      updatePurchaseRequest,
-      loadPurchaseRequest,
-      showError,
-      showSuccess,
-    ]
+    [item, showError, showSuccess, loadPurchaseRequest]
   );
 
   // Convert to RFQ
   const handleConvertToRFQ = useCallback(() => {
-    const prToConvert = {
-      purchase_request: { id: item.id, items: item.items },
-      currency: item.currency,
-      vendor: item.vendor,
-      items: item.items,
-      status: "draft",
-      is_hidden: false,
-    };
+    if (!item) return;
+
     history.push({
       pathname: `/${tenantSchema}/purchase/request-for-quotations/new`,
-      state: { rfq: prToConvert, isConvertToRFQ: true },
+      state: { rfq: item, isConvertToRFQ: true },
     });
   }, [history, tenantSchema, item]);
 
-  const handleEditClick = (id) => {
+  const handleEditClick = useCallback(() => {
+    if (!item) return;
+
     history.push({
-      pathname: `/${tenantSchema}/purchase/purchase-request/${id}/edit`,
+      pathname: `/${tenantSchema}/purchase/purchase-request/${item.id}/edit`,
       state: { pr: item, edit: true },
     });
-  };
+  }, [history, tenantSchema, item]);
 
-  // Render items table rows
-  const renderedRows = useMemo(
-    () =>
-      (item.items || []).length
-        ? item.items.map((row, idx) => (
-            <TableRow key={row.url || idx}>
-              <TableCell sx={cellStyle(idx)}>
-                {row.product?.product_name || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.description || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>{row.qty ?? "N/A"}</TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.unit_of_measure?.unit_category || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.estimated_unit_price || "N/A"}
-              </TableCell>
-              <TableCell sx={cellStyle(idx)}>
-                {row.total_price || "N/A"}
-              </TableCell>
-            </TableRow>
-          ))
-        : [
-            <TableRow key="empty">
-              <TableCell
-                colSpan={6}
-                align="center"
-                sx={{ color: "#7a8a98", fontSize: 12 }}
-              >
-                No items available
-              </TableCell>
-            </TableRow>,
-          ],
-    [item.items]
+  const handleNavigate = useCallback(
+    (newId) => {
+      if (!newId) return;
+
+      history.push(`/${tenantSchema}/purchase/purchase-request/${newId}/`);
+    },
+    [history, tenantSchema]
   );
+  console.log(location);
+  // Render items table rows
+  const renderedRows = useMemo(() => {
+    if (!item?.items) return null;
+
+    if (item.items.length === 0) {
+      return (
+        <TableRow>
+          <TableCell
+            colSpan={6}
+            align="center"
+            sx={{ color: "#7a8a98", fontSize: 12, py: 4 }}
+          >
+            No items available
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return item.items.map((row, idx) => {
+      const uom = row.product_details?.unit_of_measure_details?.unit_name;
+      const price = parseFloat(row.estimated_unit_price || 0);
+      const qty = parseInt(row.qty || 0, 10);
+      const total = price * qty;
+
+      return (
+        <TableRow key={row.url || idx}>
+          <TableCell sx={cellStyle(idx)}>
+            {row.product_details?.product_name || "N/A"}
+          </TableCell>
+          <TableCell sx={cellStyle(idx)}>{row.description || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(idx)}>{qty || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(idx)}>{uom || "N/A"}</TableCell>
+          <TableCell sx={cellStyle(idx)}>
+            {price ? price.toFixed(2) : "N/A"}
+          </TableCell>
+          <TableCell sx={cellStyle(idx)}>
+            {total ? total.toFixed(2) : "N/A"}
+          </TableCell>
+        </TableRow>
+      );
+    });
+  }, [item]);
 
   // Footer configuration
   const footerConfig = useMemo(() => {
+    if (!item) return null;
+
     const st = item.status;
     switch (st) {
       case "approved":
@@ -224,6 +331,8 @@ const PurchaseRequestInfo = () => {
               text: "Convert to RFQ",
               onClick: handleConvertToRFQ,
               disabled: actionLoading,
+              action: "create",
+              module: "requestforquotation",
             },
           ],
         };
@@ -235,39 +344,37 @@ const PurchaseRequestInfo = () => {
               text: "Approve",
               onClick: () => handleStatusChange("approve"),
               color: "success",
+              action: "approve",
             },
             {
               text: "Reject",
               onClick: () => handleStatusChange("reject"),
               color: "error",
+              action: "reject",
             },
           ],
         };
       case "rejected":
         return {
           label: "Rejected",
-          actions: [
-            {
-              text: "Set Back to Draft",
-              onClick: () => handleStatusChange("draft"),
-            },
-          ],
+          actions: [],
         };
       case "draft":
         return {
           label: "Drafted",
           actions: [
             {
-              text: "Send to Approval",
+              text: "Send for Approval",
               onClick: () => handleStatusChange("pending"),
               disabled: actionLoading,
+              action: "edit",
             },
           ],
         };
       default:
         return null;
     }
-  }, [item.status, handleConvertToRFQ, handleStatusChange, actionLoading]);
+  }, [item, handleConvertToRFQ, handleStatusChange, actionLoading]);
 
   if (loading) {
     return (
@@ -283,16 +390,46 @@ const PurchaseRequestInfo = () => {
       </Box>
     );
   }
+
+  if (item === "FORBIDDEN") {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: 400,
+          color: "red",
+          fontWeight: "bold",
+          fontSize: 24,
+          textAlign: "center",
+          px: 2,
+        }}
+      >
+        You do not have permission to view this page.
+        <br />
+        Please request access from the admin.
+      </Box>
+    );
+  }
+
+  if (!item) {
+    return null;
+  }
+
   return (
     <div className="rfqStatus">
       {/* Header */}
       <div className="rfqHeader">
         <div className="rfqHeaderLeft">
-          <Link to={`/${tenantSchema}/purchase/purchase-request/new`}>
-            <Button variant="contained" disableElevation>
-              New Purchase Request
-            </Button>
-          </Link>
+          <Can app="purchase" module="purchaserequest" action="create">
+            <Link to={`/${tenantSchema}/purchase/purchase-request/new`}>
+              <Button variant="contained" disableElevation>
+                New Purchase Request
+              </Button>
+            </Link>
+          </Can>
           <div className="rfqAutosave">
             <p>Autosave</p>
             <img
@@ -303,6 +440,48 @@ const PurchaseRequestInfo = () => {
             />
           </div>
         </div>
+
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={1}
+          backgroundColor="white"
+          border="1px solid #E2E6E9"
+          borderRadius="4px"
+          paddingY={0.5}
+          paddingX={1}
+        >
+          <Tooltip title="Previous Purchase Request">
+            <span>
+              <IconButton
+                onClick={() => handleNavigate(navigation.prevId)}
+                disabled={!navigation.prevId || navigation.loading}
+              >
+                <ArrowBackIosIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Box
+            sx={{
+              width: "2px",
+              backgroundColor: "#E2E6E9",
+              alignSelf: "stretch",
+              borderRadius: "1px",
+            }}
+          />
+
+          <Tooltip title="Next Purchase Request">
+            <span>
+              <IconButton
+                onClick={() => handleNavigate(navigation.nextId)}
+                disabled={!navigation.nextId || navigation.loading}
+              >
+                <ArrowForwardIosIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
       </div>
 
       {/* Content */}
@@ -311,9 +490,14 @@ const PurchaseRequestInfo = () => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            {!["pending", "approved", "rejected"].includes(item.status) && (
-              <Button onClick={() => handleEditClick(item.id)}>Edit</Button>
-            )}
+            <Can app="purchase" module="purchaserequest" action="edit">
+              {!["pending", "approved", "rejected"].includes(item.status) && (
+                <Button onClick={handleEditClick} disabled={actionLoading}>
+                  Edit
+                </Button>
+              )}
+            </Can>
+
             <Link to={`/${tenantSchema}/purchase/purchase-request`}>
               <Button variant="outlined">Close</Button>
             </Link>
@@ -321,17 +505,17 @@ const PurchaseRequestInfo = () => {
         </div>
 
         {/* Status */}
-        <div className="rfqStatusInfo">
-          <p>Status</p>
-          <p
+        <Box>
+          <Typography>Status</Typography>
+          <Typography
             style={{
               color: statusColor(item.status),
               textTransform: "capitalize",
             }}
           >
             {item.status}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Details */}
         <TableContainer
@@ -342,37 +526,23 @@ const PurchaseRequestInfo = () => {
             <TableHead sx={{ backgroundColor: "#f2f2f2" }}>
               <TableRow>
                 <TableCell>ID</TableCell>
-                <TableCell>Requesting Location ID</TableCell>
+                <TableCell>Requesting Location</TableCell>
                 <TableCell>Date</TableCell>
               </TableRow>
             </TableHead>
             <TableBody sx={{ borderBottom: "1px solid #E2E6E9" }}>
               <TableRow>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
                   {extractRFQID(item.url) || "N/A"}
                 </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {item?.requesting_location}
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {locationLoading ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    location?.data?.location_name || "N/A"
+                  )}
                 </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
                   {formatDate(item.date_created) || "N/A"}
                 </TableCell>
               </TableRow>
@@ -388,32 +558,14 @@ const PurchaseRequestInfo = () => {
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {item.requester || "N/A"}
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {requester}
                 </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
                   {item.purpose || "N/A"}
                 </TableCell>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#fff",
-                    color: "#7a8a98",
-                    fontSize: 12,
-                  }}
-                >
-                  {item.vendor?.company_name || "N/A"}
+                <TableCell sx={{ color: "#7a8a98", fontSize: 12 }}>
+                  {item.vendor_details?.company_name || "N/A"}
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -460,19 +612,32 @@ const PurchaseRequestInfo = () => {
                 {footerConfig.label}
               </p>
             </div>
+
             <div className="rfqStatusDraftFooterBtns">
               {footerConfig.actions.map((action, i) => (
-                <Button
+                <Can
                   key={i}
-                  variant="contained"
-                  disableElevation
-                  color={action.color}
-                  onClick={action.onClick}
-                  disabled={action.disabled || actionLoading}
-                  sx={{ ml: 1 }}
+                  app="purchase"
+                  module={
+                    action.module ? "requestforquotation" : "purchaserequest"
+                  }
+                  action={action.action}
                 >
-                  {action.text}
-                </Button>
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    color={action.color}
+                    onClick={action.onClick}
+                    disabled={action.disabled || actionLoading}
+                    sx={{ ml: 1 }}
+                  >
+                    {actionLoading ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      action.text
+                    )}
+                  </Button>
+                </Can>
               ))}
             </div>
           </div>

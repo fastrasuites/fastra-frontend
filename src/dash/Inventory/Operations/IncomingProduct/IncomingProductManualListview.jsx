@@ -1,29 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Box, Button, Paper, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import CommonTable from "../../../../components/CommonTable/CommonTable";
 import { useTenant } from "../../../../context/TenantContext";
 import { useIncomingProduct } from "../../../../context/Inventory/IncomingProduct";
-// import { mockData } from "../../data/incomingProductData";
-// import { getStatusColor } from '../../utils';
 
 const getStatusColor = (status) => {
-  switch (status) {
+  switch (status.toLowerCase()) {
     case "validated":
-    case "Validated":
       return "#2ba24c";
     case "draft":
-    case "Drafted":
       return "#158fec";
-    case "Cancelled":
-    case "Cancel":
+    case "cancelled":
+    case "cancel":
       return "#e43e2b";
     default:
       return "#9e9e9e";
   }
 };
 
-const IncomingProductManualListview = () => {
+const IncomingProductManualListview = ({ selectedLocation }) => {
   const { tenantData } = useTenant();
   const tenantSchemaName = tenantData?.tenant_schema_name;
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,17 +26,28 @@ const IncomingProductManualListview = () => {
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
 
-  const { incomingProductList, isLoading, getIncomingProductList } =
+  const { incomingProductList, getIncomingProductList, isLoading } =
     useIncomingProduct();
 
+  console.log(selectedLocation);
+
   useEffect(() => {
-    getIncomingProductList();
-  }, [getIncomingProductList]);
+    const debounce = setTimeout(() => {
+      getIncomingProductList(searchQuery, selectedLocation);
+    }, 500);
+    return () => clearTimeout(debounce);
+  }, [searchQuery, getIncomingProductList, selectedLocation]);
+
+  const cleanedIncomingProductList = incomingProductList.map((item) => ({
+    ...item,
+    destination_location:
+      item.destination_location_details?.location_name || "N/A",
+    source_location: item.source_location_details?.location_name || "N/A",
+  }));
 
   const columns = [
     { id: "incoming_product_id", label: "Incoming Product ID" },
     { id: "receipt_type", label: "Receipt Type" },
-    // { id: "dateCreated", label: "Date Created" },
     { id: "source_location", label: "Source Location" },
     { id: "destination_location", label: "Destination Location" },
     {
@@ -71,7 +77,6 @@ const IncomingProductManualListview = () => {
     },
   ];
 
-  // Grid item renderer
   const renderGridItem = (item) => (
     <Box
       key={item.requestId}
@@ -89,13 +94,8 @@ const IncomingProductManualListview = () => {
       gap="16px"
     >
       <Typography variant="subtitle2">{item.id}</Typography>
-      <Typography
-        variant="body2"
-        color={"textSecondary"}
-        fontSize={12}
-        sx={{ textTransform: "capitalize" }}
-      >
-        {item.receipt_type.split("_").join(" ")}
+      <Typography variant="body2" color={"textSecondary"} fontSize={12}>
+        {item.receipt_type?.replace(/_/g, " ")}
       </Typography>
       <Typography variant="body2" color={"textSecondary"} fontSize={12}>
         {item.source_location}
@@ -124,15 +124,15 @@ const IncomingProductManualListview = () => {
       </Box>
     </Box>
   );
-  console.log("Incoming Product List", incomingProductList);
+
   return (
     <Box>
       <CommonTable
         columns={columns}
         rows={
           searchQuery === ""
-            ? incomingProductList
-            : incomingProductList.filter((item) =>
+            ? cleanedIncomingProductList
+            : cleanedIncomingProductList.filter((item) =>
                 Object.values(item).some((v) =>
                   String(v).toLowerCase().includes(searchQuery.toLowerCase())
                 )
@@ -143,7 +143,7 @@ const IncomingProductManualListview = () => {
         onSearchChange={setSearchQuery}
         paginated
         page={page}
-        totalPages={Math.ceil(incomingProductList.length / 5)}
+        totalPages={Math.ceil(cleanedIncomingProductList.length / 5)}
         onPageChange={setPage}
         viewModes={["list", "grid"]}
         viewMode={viewMode}
@@ -157,14 +157,17 @@ const IncomingProductManualListview = () => {
         }
         onSelectAll={() =>
           setSelectedRows((prev) =>
-            prev.length === incomingProductList.length
+            prev.length === cleanedIncomingProductList.length
               ? []
-              : incomingProductList.map((r) => r.requestId)
+              : cleanedIncomingProductList.map((r) => r.requestId)
           )
         }
         actionButton={{
           text: "New Incoming Product",
           link: `/${tenantSchemaName}/inventory/operations/creat-incoming-product`,
+          action: "create",
+          app: "inventory",
+          module: "incomingproduct",
         }}
         gridRenderItem={renderGridItem}
         path={`/${tenantSchemaName}/inventory/operations/incoming-product`}

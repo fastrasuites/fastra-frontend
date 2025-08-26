@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useHistory } from "react-router-dom";
 import { useDeliveryOrder } from "../../../../../context/Inventory/DeliveryOrderContext";
 import { useTenant } from "../../../../../context/TenantContext";
 import {
@@ -15,11 +15,21 @@ import {
   TableRow,
   Typography,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import { formatDate } from "../../../../../helper/helper";
 import Swal from "sweetalert2";
+import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
+import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
+import Can from "../../../../../components/Access/Can";
 
-const tableColumns = ["Product Name", "Quantity to Deliver", "Unit of Measure"];
+const tableColumns = [
+  "Product Name",
+  "Quantity to Deliver",
+  "Unit Price",
+  "Unit of Measure",
+  "Total",
+];
 
 const STATUS_COLOR = {
   done: "#2ba24c",
@@ -43,6 +53,7 @@ const FormGroup = ({ label, children }) => {
 };
 
 const DeliveryOrderInfo = () => {
+  const history = useHistory();
   const { id } = useParams();
   const orderId = Number(id);
 
@@ -52,12 +63,55 @@ const DeliveryOrderInfo = () => {
   const {
     getSingleDeliveryOrder,
     singleDeliveryOrder,
+    deliveryOrderList,
+    getDeliveryOrderList,
     checkDeliveryOrderAvailability,
+
     confirmDeliveryOrder,
     error,
     isLoading,
     deleteDeliveryOrder,
   } = useDeliveryOrder();
+
+  const { getSingleLocation, singleLocation } = useCustomLocation();
+
+  // Fetch delivery orders if not already loaded.
+  useEffect(() => {
+    if (!deliveryOrderList || deliveryOrderList.length === 0) {
+      getDeliveryOrderList();
+    }
+  }, [deliveryOrderList, getDeliveryOrderList]);
+
+  // Find the current order position in the list
+  const currentOrderIndex = useMemo(() => {
+    if (!deliveryOrderList || deliveryOrderList.length === 0) return -1;
+    return deliveryOrderList.findIndex((order) => order?.id === orderId);
+  }, [deliveryOrderList, orderId]);
+
+  // Navigaition handlers
+  const handlePrevOrder = () => {
+    if (currentOrderIndex > 0) {
+      const prevOrder = deliveryOrderList[currentOrderIndex - 1];
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order/${prevOrder?.id}`
+      );
+    }
+  };
+
+  const handleNextOrder = () => {
+    if (currentOrderIndex !== deliveryOrderList.length - 1) {
+      const nextOrder = deliveryOrderList[currentOrderIndex + 1];
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order/${nextOrder?.id}`
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (singleDeliveryOrder?.source_location) {
+      getSingleLocation(singleDeliveryOrder.source_location);
+    }
+  }, [singleDeliveryOrder?.source_location, getSingleLocation]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +166,6 @@ const DeliveryOrderInfo = () => {
     );
   }
 
-  console.log("Single Delivery Order:", singleDeliveryOrder);
   const status = singleDeliveryOrder?.status || "draft";
 
   const handleDelete = async () => {
@@ -132,24 +185,16 @@ const DeliveryOrderInfo = () => {
         cancelButtonText: "Cancel",
       });
       if (!result.isConfirmed) return;
-      const response = await deleteDeliveryOrder(orderId);
-      if (response.success) {
-        Swal.fire({
-          title: "Deleted",
-          text: "Delivery order has been deleted successfully.",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.href = `/${tenant_schema_name}/inventory/operations/delivery-order`;
-        });
-      } else {
-        Swal.fire({
-          title: "Error",
-          text: "Failed to delete delivery order.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      }
+      await deleteDeliveryOrder(orderId);
+      Swal.fire({
+        title: "Deleted",
+        text: "Delivery order has been deleted successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order`
+      );
     } catch (error) {
       Swal.fire({
         title: "Error",
@@ -185,7 +230,6 @@ const DeliveryOrderInfo = () => {
         }
       } else if (status === "ready") {
         const response = await confirmDeliveryOrder(orderId);
-        // Access status from response.data
         if (response.data?.status === "done") {
           Swal.fire({
             title: "Successful",
@@ -209,12 +253,17 @@ const DeliveryOrderInfo = () => {
         icon: "error",
         confirmButtonText: "OK",
       });
+    } finally {
+      getSingleDeliveryOrder(orderId); // Refresh the delivery order data
+      history.push(
+        `/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/`
+      );
     }
   };
 
   return (
     <Box p={4} display="grid" gap={4}>
-      <Box display="flex" gap={3}>
+      <Box display="flex" justifyContent="space-between" gap={3}>
         <Link
           to={`/${tenant_schema_name}/inventory/operations/delivery-order/create-delivery-order`}
         >
@@ -222,9 +271,35 @@ const DeliveryOrderInfo = () => {
             New Delivery Order
           </Button>
         </Link>
+        <Box display="flex" alignItems="center" gap={2}>
+          <Typography>
+            {currentOrderIndex === -1
+              ? "Order not in list"
+              : `${currentOrderIndex + 1} of ${deliveryOrderList?.length}`}
+          </Typography>
+          <Box
+            border="1px solid #E2E6E9"
+            borderRadius={1}
+            display="flex"
+            gap={2}
+          >
+            <IconButton
+              onClick={handlePrevOrder}
+              disabled={currentOrderIndex <= 0}
+            >
+              <FaCaretLeft />
+            </IconButton>
+            <IconButton
+              onClick={handleNextOrder}
+              disabled={currentOrderIndex >= deliveryOrderList?.length - 1}
+            >
+              <FaCaretRight />
+            </IconButton>
+          </Box>
+        </Box>
       </Box>
 
-      {/* Deliver y order details */}
+      {/* Delivery order details */}
       <Box
         p={2}
         bgcolor="white"
@@ -243,25 +318,31 @@ const DeliveryOrderInfo = () => {
             Product Information
           </Typography>
           <Box display="flex" gap={2}>
-            <Button
-              variant="text"
-              size="large"
-              disableElevation
-              onClick={() => window.history.back()}
+            <Link
+              to={`/${tenant_schema_name}/inventory/operations/delivery-order`}
             >
-              Close
-            </Button>
+              <Button
+                variant="text"
+                size="large"
+                disableElevation
+                // onClick={() => window.history.back()}
+              >
+                Close
+              </Button>
+            </Link>
 
             <Button onClick={handleDelete}>Delete</Button>
 
             {(status === "draft" || status === "waiting") && (
-              <Link
-                to={`/${tenant_schema_name}/inventory/operations/delivery-order/${id}/edit`}
-              >
-                <Button variant="contained" size="large" disableElevation>
-                  Edit
-                </Button>
-              </Link>
+              <Can app="inventory" module="deliveryorder" action="edit">
+                <Link
+                  to={`/${tenant_schema_name}/inventory/operations/delivery-order/${id}/edit`}
+                >
+                  <Button variant="contained" size="large" disableElevation>
+                    Edit
+                  </Button>
+                </Link>
+              </Can>
             )}
           </Box>
         </Box>
@@ -291,7 +372,7 @@ const DeliveryOrderInfo = () => {
 
             <Grid item xs={12} sm={6} lg={3}>
               <FormGroup label="Source Location">
-                {singleDeliveryOrder.source_location}
+                {singleLocation?.location_name || "Loading..."}
               </FormGroup>
             </Grid>
           </Grid>
@@ -359,10 +440,12 @@ const DeliveryOrderInfo = () => {
                       {row.product_details.product_name || "Product name"}
                     </TableCell>
                     <TableCell>{row.quantity_to_deliver}</TableCell>
+                    <TableCell>{row.unit_price}</TableCell>
                     <TableCell>
-                      {row.product_details.unit_of_measure_details
-                        .unit_category || "Unit of measure"}
+                      {row.product_details.unit_of_measure_details.unit_name ||
+                        "Unit of measure"}
                     </TableCell>
+                    <TableCell>{row.total_price}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -375,20 +458,24 @@ const DeliveryOrderInfo = () => {
             {transformStatus(status)}
           </Typography>
           {status !== "done" && (
-            <Button variant="contained" onClick={handleSubmit}>
-              {status === "draft" || status === "waiting"
-                ? "Check Availability"
-                : status === "ready"
-                ? "Proceed"
-                : ""}
-            </Button>
+            <Can app="inventory" module="deliveryorder" action="approve">
+              <Button variant="contained" onClick={handleSubmit}>
+                {status === "draft" || status === "waiting"
+                  ? "Check Availability"
+                  : status === "ready"
+                  ? "Proceed"
+                  : ""}
+              </Button>
+            </Can>
           )}
           {status === "done" && (
-            <Link
-              to={`/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/return`}
-            >
-              <Button>Return</Button>
-            </Link>
+            <Can app="inventory" module="deliveryorderreturn" action="create">
+              <Link
+                to={`/${tenant_schema_name}/inventory/operations/delivery-order/${orderId}/return`}
+              >
+                <Button>Return</Button>
+              </Link>
+            </Can>
           )}
         </Box>
       </Box>

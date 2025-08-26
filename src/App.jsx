@@ -8,12 +8,10 @@ import Dashboard from "./dash/Dashboard";
 import Contact from "./dash/Contact";
 import Newpr from "./dash/PurchaseModule/PurchRequest/Newpr";
 import Papr from "./dash/PurchaseModule/PurchRequest/Papr";
-import Vend from "./dash/PurchaseModule/Vendor/Vend";
 import VendorDetails from "./dash/PurchaseModule/Vendor/VendorDetails";
 import Newvendor from "./dash/PurchaseModule/Vendor/Newvendor";
 import Varcat from "./dash/PurchaseModule/Vendor/vendorcat/Varcat";
 import Edit from "./dash/PurchaseModule/Vendor/vendorcat/Edit";
-import Prod from "./dash/PurchaseModule/Product/Prod";
 import ProductDetails from "./dash/PurchaseModule/Product/ProductDetails";
 import Newprod from "./dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
@@ -72,7 +70,6 @@ function App() {
                 path="/:tenant/purchase-order/convert"
                 component={POFormWrapper}
               />
-              <ProtectedRoute exact path="/:tenant/vendor" component={Vend} />
               <ProtectedRoute
                 exact
                 path="/:tenant/vendetails"
@@ -90,7 +87,6 @@ function App() {
               />
               <ProtectedRoute exact path="/:tenant/varcat" component={Varcat} />
               <ProtectedRoute exact path="/:tenant/edit" component={Edit} />
-              <ProtectedRoute exact path="/:tenant/product" component={Prod} />
               <ProtectedRoute
                 exact
                 path="/:tenant/prodetails"

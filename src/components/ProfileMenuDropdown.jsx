@@ -9,14 +9,22 @@ import usergroupIcon from "../image/user-group.svg";
 import logoutIcon from "../image/logout-03.svg";
 
 import "./profileMenuDropdown.css";
-
+import {
+  extractPermissions,
+  getPermissionsByApp,
+} from "../helper/extractPermissions";
+//  src={`data:image/png;base64,${singleUser.user_image}`}
 const UserCard = ({ handleClickOpen, user }) => {
   return (
     <div>
       <button onClick={handleClickOpen} className="icon-and-profile">
         <img
           alt="User Avatar"
-          src={admin}
+          src={
+            user?.user_image
+              ? `data:image/png;base64,${user?.user_image}`
+              : admin
+          }
           className="avatar"
           title={`Administrator\ninfo@companyname.com`}
         />
@@ -37,12 +45,28 @@ const ProfileConfigs = ({ url, icon, desc, handleClose }) => {
     </Link>
   );
 };
-
+{
+  /* <Can app="purchase" module="purchaseorder" action="create"></Can> */
+}
 const ProfileMenuDropdown = () => {
   const { tenantData, logout } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
   const user = tenantData?.user;
   const [open, setOpen] = useState(false);
+
+  console.log(tenantData);
+
+  const permissionsMap = extractPermissions(tenantData?.user_accesses || {});
+  const settingsPermissions = getPermissionsByApp("settings", permissionsMap);
+
+  const isAdmin = permissionsMap["*:*:*"] === true;
+
+  // Utility to check permission
+  const hasPermission = (key) => {
+    return isAdmin || !!settingsPermissions[key];
+  };
+
+  const userHasPermission = hasPermission("settings:company:view");
 
   // Profile menu list for configurations
   const configs = [
@@ -50,6 +74,7 @@ const ProfileMenuDropdown = () => {
       url: `/${tenant_schema_name}/settings/company`,
       desc: "Company Profile",
       icon: userIcon,
+      hasPermission: userHasPermission,
     },
     {
       url: `/${tenant_schema_name}/changePassword`,
@@ -57,8 +82,8 @@ const ProfileMenuDropdown = () => {
       icon: settingIcon,
     },
     {
-      url: `/${tenant_schema_name}/settings/user`,
-      desc: "Users",
+      url: `/${tenant_schema_name}/settings/user/${tenantData?.tenant_id}`,
+      desc: "User",
       icon: usergroupIcon,
     },
   ];
@@ -74,7 +99,6 @@ const ProfileMenuDropdown = () => {
   const handlelogout = () => {
     logout(); // from useTenant
     setOpen(false);
-    console.log("logged out user");
   };
 
   return (
@@ -100,15 +124,19 @@ const ProfileMenuDropdown = () => {
         <DialogContent>
           <UserCard user={user} />
           <ul className="config-wrapper">
-            {configs.map((item) => (
-              <ProfileConfigs
-                key={item.desc}
-                desc={item.desc}
-                icon={item.icon}
-                url={item.url}
-                handleClose={handleClose}
-              />
-            ))}
+            {configs.map((item) => {
+              if (item.hasPermission === false) return null;
+
+              return (
+                <ProfileConfigs
+                  key={item.desc}
+                  desc={item.desc}
+                  icon={item.icon}
+                  url={item.url}
+                  handleClose={handleClose}
+                />
+              );
+            })}
           </ul>
           <hr
             style={{

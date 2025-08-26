@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Autocomplete, TextField, Typography } from "@mui/material";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
+import { useTenant } from "../../../../context/TenantContext";
 
 const REQUIRED_ASTERISK = (
   <Typography component="span" color="#D32F2F" ml={0.5}>
@@ -9,10 +10,10 @@ const REQUIRED_ASTERISK = (
 );
 
 // Helper: resolve a formValue (string URL/ID or object) into the matching object
-const getSelectedOption = (formValue, list = [], key) => {
+const getSelectedOption = (formValue, list = [], key = "id") => {
   if (formValue && typeof formValue === "object") return formValue;
-  if (typeof formValue === "string") {
-    return list.find((item) => item[key] === formValue) || null;
+  if (typeof formValue === "string" || typeof formValue === "number") {
+    return list.find((item) => String(item[key]) === String(formValue)) || null;
   }
   return null;
 };
@@ -23,33 +24,36 @@ const PRBasicInfoFields = ({
   formUse,
   currencies = [],
   vendors = [],
-  requester,
   rfqID,
   locationList = [],
 }) => {
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const { tenantData } = useTenant();
 
-  // Sync currency when formData.currency or currencies change
   useEffect(() => {
-    setSelectedCurrency(
-      getSelectedOption(formData.currency, currencies, "url")
-    );
+    setSelectedCurrency(getSelectedOption(formData.currency, currencies, "id"));
   }, [formData.currency, currencies]);
 
-  // Sync vendor when formData.vendor or vendors change
+  // Vendor
   useEffect(() => {
-    setSelectedVendor(getSelectedOption(formData.vendor, vendors, "url"));
+    setSelectedVendor(getSelectedOption(formData.vendor, vendors, "id"));
   }, [formData.vendor, vendors]);
 
-  // Sync location when formData.requesting_location or locationList change
+  // Location already uses id, so no change
   useEffect(() => {
     setSelectedLocation(
       getSelectedOption(formData.requesting_location, locationList, "id")
     );
   }, [formData.requesting_location, locationList]);
 
+  useEffect(() => {
+    if (locationList.length <= 1) {
+      handleInputChange("requesting_location", locationList[0]);
+    }
+  }, [locationList]);
+  console.log(tenantData);
   return (
     <div className="rfqBasicInfoField">
       <div className="rfqBasicInfoFields1">
@@ -66,7 +70,7 @@ const PRBasicInfoFields = ({
           </div>
           <div className="refDate">
             <label>Requester</label>
-            <p>{requester || "N/A"}</p>
+            <p>{tenantData?.user?.username}</p>
           </div>
         </div>
       </div>
@@ -87,7 +91,7 @@ const PRBasicInfoFields = ({
             isOptionEqualToValue={(opt, val) => opt.url === val?.url}
             onChange={(e, value) => {
               setSelectedCurrency(value);
-              handleInputChange("currency", value?.url || "");
+              handleInputChange("currency", value?.id || "");
             }}
             renderInput={(params) => <TextField {...params} />}
           />
@@ -111,18 +115,22 @@ const PRBasicInfoFields = ({
           <label style={{ marginBottom: 6, display: "block" }}>
             Requesting Location {REQUIRED_ASTERISK}
           </label>
-          <Autocomplete
-            disablePortal
-            options={locationList}
-            value={selectedLocation}
-            getOptionLabel={(option) => option.location_name || ""}
-            isOptionEqualToValue={(opt, val) => opt.id === val?.id}
-            onChange={(e, value) => {
-              setSelectedLocation(value);
-              handleInputChange("requesting_location", value?.id || "");
-            }}
-            renderInput={(params) => <TextField {...params} />}
-          />
+          {locationList.length <= 1 ? (
+            <Typography>{locationList[0]?.location_name || "N/A"}</Typography>
+          ) : (
+            <Autocomplete
+              disablePortal
+              options={locationList}
+              value={selectedLocation}
+              getOptionLabel={(option) => option.location_name || ""}
+              isOptionEqualToValue={(opt, val) => opt.id === val?.id}
+              onChange={(e, value) => {
+                setSelectedLocation(value);
+                handleInputChange("requesting_location", value?.id || "");
+              }}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          )}
         </div>
 
         {/* Select Vendor */}
@@ -138,7 +146,7 @@ const PRBasicInfoFields = ({
             isOptionEqualToValue={(opt, val) => opt.url === val?.url}
             onChange={(e, value) => {
               setSelectedVendor(value);
-              handleInputChange("vendor", value?.url || "");
+              handleInputChange("vendor", value?.id || "");
             }}
             renderInput={(params) => <TextField {...params} />}
           />

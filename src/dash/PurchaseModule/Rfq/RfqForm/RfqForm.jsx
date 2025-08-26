@@ -1,45 +1,44 @@
 // src/dash/PurchaseModule/Rfq/RfqForm.js
 import "./RfqForm.css";
-import PurchaseHeader from "../../PurchaseHeader";
 import autosave from "../../../../image/autosave.svg";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { Button } from "@mui/material";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { Button, Stack } from "@mui/material";
 import Swal from "sweetalert2";
-import { usePurchase } from "../../../../context/PurchaseContext";
-import RfqBasicInfoFields from "./RfqBasicInfoFields";
-import RfqItemsTable from "./RfqItemsTable";
-import { useRFQ } from "../../../../context/RequestForQuotation";
-import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
 import { useHistory, useLocation } from "react-router-dom";
+
+import { usePurchase } from "../../../../context/PurchaseContext";
+import { useRFQ } from "../../../../context/RequestForQuotation";
 import { useTenant } from "../../../../context/TenantContext";
+
+import RfqBasicInfoFields from "./RfqBasicInfoFields";
 import RfqBasicInfoFieldsConvertToRFQ from "./RFQBasisInfoConvert";
+import RfqItemsTable from "./RfqItemsTable";
+
+import { extractRFQID, normalizedRFQ } from "../../../../helper/helper";
+import Can from "../../../../components/Access/Can";
 
 const RfqForm = () => {
   const {
     products,
-    fetchProducts,
+    fetchProductsForForm,
     vendors,
     currencies,
     fetchCurrencies,
     fetchVendors,
-    fetchApprovedPurchaseRequests,
+    fetchApprovedPurchaseRequestsForForm,
     purchaseRequests,
   } = usePurchase();
 
   const { createRFQ, updateRFQ } = useRFQ();
-  const { state } = useLocation();
-  const { rfq = {}, edit = false, isConvertToRFQ } = state || {};
-
-  const formUse = edit ? "Edit RFQ" : "Create RFQ";
-  const quotation = rfq || {};
-  const conversionRFQ = rfq || {};
-  console.log(rfq);
-  const isEdit = formUse === "Edit RFQ";
   const { tenant_schema_name } = useTenant().tenantData || {};
+  const { state } = useLocation();
   const history = useHistory();
 
-  // ─── Default and initial form data ──────────────────────────────────────────
+  const { rfq = {}, edit = false, isConvertToRFQ = false } = state || {};
+  const isEdit = edit;
+  const formTitle = isEdit ? "Edit RFQ" : "Create RFQ";
+
   const defaultForm = {
     purchase_request: "",
     expiry_date: "",
@@ -51,34 +50,28 @@ const RfqForm = () => {
   };
 
   const initial =
-    conversionRFQ && Object.keys(conversionRFQ).length > 0
-      ? { ...defaultForm, ...conversionRFQ }
-      : isEdit
-      ? { ...defaultForm, ...quotation }
-      : defaultForm;
+    Object.keys(rfq).length > 0 ? { ...defaultForm, ...rfq } : defaultForm;
 
   const [formData, setFormData] = useState(initial);
-  // eslint-disable-next-line no-unused-vars
   const [prIDList, setPrIDList] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ─── Fetch required data on mount ──────────────────────────────────────────
+  const minExpiryDate = useMemo(
+    () => new Date().toISOString().split("T")[0],
+    []
+  );
+
   useEffect(() => {
     fetchVendors();
     fetchCurrencies();
-    fetchProducts();
-    fetchApprovedPurchaseRequests();
-  }, [
-    fetchVendors,
-    fetchCurrencies,
-    fetchProducts,
-    fetchApprovedPurchaseRequests,
-  ]);
+    fetchProductsForForm();
+    fetchApprovedPurchaseRequestsForForm();
+  }, []);
 
   useEffect(() => {
     setPrIDList(normalizedRFQ(purchaseRequests));
   }, [purchaseRequests]);
 
-  // ─── Handlers for formData updates ─────────────────────────────────────────
   const handleInputChange = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
@@ -87,102 +80,150 @@ const RfqForm = () => {
     setFormData((prev) => {
       const items = [...prev.items];
       items[idx] = { ...items[idx], [field]: value };
+
       if (field === "product" && value?.product_description) {
         items[idx].description = value.product_description;
         items[idx].unit_of_measure = value.unit_of_measure;
       }
+
       return { ...prev, items };
     });
   }, []);
 
-  console.log(formData);
+  const cleanData = (status) => {
+    const sourceItems =
+      formData.purchase_request?.items?.length > 0
+        ? formData.purchase_request.items
+        : formData.items;
 
-  // ─── Determine which items array to display ───────────────────────────────
-  const rfqItems =
-    formUse === "Edit RFQ"
-      ? formData?.items
-      : formData?.purchase_request?.items || [];
+    const items = sourceItems.map((item) => ({
+      product: item.product,
+      description: item.description,
+      qty: Number(item.qty) || 0,
+      unit_of_measure: item.unit_of_measure || "",
+      estimated_unit_price: item.estimated_unit_price,
+    }));
 
-  // ─── Prepare payload by cleaning formData (string URLs ↔ objects) ─────────
-  const cleanData = (status) => ({
-    ...formData,
-    status,
-    vendor: formData.vendor?.url || formData.vendor,
-    currency: formData.currency?.url || formData.currency,
-    purchase_request:
-      formData.purchase_request?.id || formData.purchase_request,
-    items: rfqItems.map((i) => ({
-      product: i.product?.url || i.product || "",
-      description: i.description,
-      qty: Number(i.qty) || 0,
-      unit_of_measure:
-        i.unit_of_measure?.url ||
-        (Array.isArray(i.unit_of_measure)
-          ? i.unit_of_measure[0]
-          : i.unit_of_measure),
-      estimated_unit_price: i.estimated_unit_price,
-    })),
-    is_submitted: true,
-    can_edit: true,
-    is_hidden: false,
-  });
-
-  const navigateToDetail = (id) => {
-    setTimeout(() => {
-      history.push(
-        `/${tenant_schema_name}/purchase/request-for-quotations/${id}`
-      );
-    }, 1500);
+    return {
+      expiry_date: formData.expiry_date,
+      status,
+      vendor: formData?.purchase_request?.vendor || formData?.vendor,
+      currency: formData?.purchase_request?.currency || formData?.currency,
+      purchase_request: formData.purchase_request?.id || formData?.id,
+      items,
+      is_submitted: true,
+      can_edit: true,
+    };
   };
 
-  // ─── Handle Save Draft or Save Changes ─────────────────────────────────────
+  const validateRequiredFields = (payload) => {
+    if (!payload.currency) return "Currency is required.";
+    if (!payload.vendor) return "Vendor is required.";
+    if (!payload.expiry_date) return "Expiry date is required.";
+    if (!payload.purchase_request) return "Purchase Request is required.";
+    if (!payload.items || payload.items.length === 0)
+      return "At least one product item is required.";
+    return null;
+  };
+
+  const extractErrorMessage = (res) => {
+    const data = res?.response?.data;
+    if (!data) return "An unexpected error occurred.";
+    return (
+      data.non_field_errors?.join(", ") ||
+      data.detail ||
+      data.message ||
+      "An unexpected error occurred."
+    );
+  };
+
+  const handleError = (err) => {
+    Swal.fire({
+      title: "Error",
+      text: extractErrorMessage(err),
+      icon: "error",
+    });
+    console.error("Error:", err);
+  };
+
+  const navigateToDetail = (id) => {
+    history.push(
+      `/${tenant_schema_name}/purchase/request-for-quotations/${id}`
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = cleanData("draft");
-    console.log(payload, "payload");
+    const errorMessage = validateRequiredFields(payload);
+    if (errorMessage) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: errorMessage,
+      });
+    }
+
+    setIsSubmitting(true);
     try {
       if (isEdit) {
-        const id = extractRFQID(quotation.url);
-        const res = await updateRFQ(payload, id);
-        console.log(res);
-
-        if (res.success) Swal.fire("Updated!", "RFQ updated.", "success");
-        else Swal.fire("Error", res.message, "error");
-        navigateToDetail(id);
+        const res = await updateRFQ(payload, rfq.id);
+        if (res.success) {
+          Swal.fire("Updated!", "RFQ updated.", "success").then(() =>
+            navigateToDetail(rfq.id)
+          );
+        } else {
+          Swal.fire("Error", extractErrorMessage(res), "error");
+        }
       } else {
         const res = await createRFQ(payload);
         if (res.success) {
-          Swal.fire("Created!", "RFQ saved as draft.", "success");
-          navigateToDetail(extractRFQID(res.data.url));
-        } else Swal.fire("Error", res.message, "error");
+          Swal.fire("Created!", "RFQ saved as draft.", "success").then(() =>
+            navigateToDetail(extractRFQID(res.data.url))
+          );
+        } else {
+          Swal.fire("Error", extractErrorMessage(res), "error");
+        }
       }
-      // setFormData(defaultForm);
     } catch (err) {
-      console.error(err);
-      const errMsg = err.message || "Unexpected error occurred.";
-      Swal.fire("Error", errMsg, "error");
+      handleError(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // ─── Handle Save & Send (only in Create mode) ──────────────────────────────
   const saveAndShare = async () => {
     const payload = cleanData("pending");
+    const errorMessage = validateRequiredFields(payload);
+    if (errorMessage) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: errorMessage,
+      });
+    }
+
+    setIsSubmitting(true);
     try {
       const res = await createRFQ(payload);
       if (res.success) {
-        Swal.fire("Shared!", "RFQ created and shared.", "success");
-        navigateToDetail(extractRFQID(res.data.url));
-      } else Swal.fire("Error", res.message, "error");
+        Swal.fire("Shared!", "RFQ created and shared.", "success").then(() =>
+          navigateToDetail(extractRFQID(res.data.url))
+        );
+      } else {
+        Swal.fire("Error", extractErrorMessage(res), "error");
+      }
     } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "Unexpected error on share.", "error");
+      handleError(err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="RfqForm">
       <div className="rfqAutoSave">
-        <p className="raprhed">{formUse}</p>
+        <p className="raprhed">{formTitle}</p>
         <div className="rfqauto">
           <p>Autosaved</p>
           <img src={autosave} alt="Autosaved" />
@@ -204,61 +245,53 @@ const RfqForm = () => {
             <RfqBasicInfoFieldsConvertToRFQ
               formData={formData}
               handleInputChange={handleInputChange}
-              formUse={formUse}
+              formUse={formTitle}
               currencies={currencies}
               vendors={vendors}
               purchaseIdList={purchaseRequests}
-              rfqID={quotation?.url}
-              isConvertToRFQ={!!conversionRFQ}
+              rfqID={rfq?.url}
+              isConvertToRFQ={!!rfq}
+              minDate={minExpiryDate}
             />
           ) : (
             <RfqBasicInfoFields
               formData={formData}
               handleInputChange={handleInputChange}
-              formUse={formUse}
+              formUse={formTitle}
               currencies={currencies}
               vendors={vendors}
               purchaseIdList={purchaseRequests}
-              rfqID={quotation?.url}
+              rfqID={rfq?.url}
+              minDate={minExpiryDate}
             />
           )}
 
-          {/** Show existing RFQ items in Edit mode, or associated PR items in Create mode */}
-          {formUse === "Edit RFQ" ? (
-            <RfqItemsTable
-              items={formData?.items}
-              handleRowChange={handleRowChange}
-              products={products}
-            />
-          ) : (
-            <RfqItemsTable
-              items={formData?.purchase_request?.items || formData?.items}
-              handleRowChange={handleRowChange}
-              products={products}
-            />
-          )}
+          <RfqItemsTable
+            items={
+              formTitle === "Edit RFQ"
+                ? formData?.items
+                : formData?.purchase_request?.items || formData?.items
+            }
+            handleRowChange={handleRowChange}
+            products={products}
+          />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "end",
-              alignItems: "center",
-            }}
-          >
-            {/* <Button variant="outlined" onClick={handleAddRow}>
-              Add Item
-            </Button> */}
-            <div style={{ display: "flex", gap: 16 }}>
-              <Button variant="outlined" type="submit">
-                {isEdit ? "Save Changes" : "Save Draft"}
-              </Button>
-              {!isEdit && (
-                <Button variant="contained" onClick={saveAndShare}>
+          <Stack direction="row" spacing={2} justifyContent="flex-end" mt={3}>
+            <Button variant="outlined" type="submit" disabled={isSubmitting}>
+              {isEdit ? "Save Changes" : "Save Draft"}
+            </Button>
+            {!isEdit && (
+              <Can app="purchase" module="requestforquotation" action="edit">
+                <Button
+                  variant="contained"
+                  onClick={saveAndShare}
+                  disabled={isSubmitting}
+                >
                   Save & Send
                 </Button>
-              )}
-            </div>
-          </div>
+              </Can>
+            )}
+          </Stack>
         </form>
       </div>
     </div>

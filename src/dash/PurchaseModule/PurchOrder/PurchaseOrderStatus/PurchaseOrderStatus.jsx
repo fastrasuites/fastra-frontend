@@ -13,7 +13,6 @@ import { useTenant } from "../../../../context/TenantContext";
 const PurchaseOrderStatus = () => {
   const history = useHistory();
   const location = useLocation();
-  console.log(location);
   const { status: selectedStatus, purchaseOrderData } = location.state || {};
   const [purchaseOrder, setPurchaseOrder] = useState([]);
   const [page, setPage] = useState(1);

@@ -1,125 +1,154 @@
 .dash-Head {
   width: 100%;
-  position: relative;
   background: #fff;
+  position: relative;
 }
-.header {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background-color: white;
-    border-bottom: 1px solid #ddd;
-    z-index: 12;
-  }
-  
-  .leftSection {
-    display: flex;
-    align-items: center;
-    width: 70%;
-  }
-  
-  .menuButton {
-    font-size: 24px;
-    margin-right: 8px;
-    cursor: pointer;
-    font-weight: 700;
-    border: none;
-    color: #3b7ced;
-    background-color: transparent;
-  }
-  
-  .title {
-    font-size: 24px;
-    margin: 0 15px;
-    font-weight: 580;
-    letter-spacing: 1px;
-  }
-  
-  .strokeRight {
-    margin-left: 0.5rem;
-    margin-right: 0.7rem;
-    border: none;
-    text-align: center;
-    width: 1px;
-    height: 50px; 
-    background-color: #ddd; 
-  }
-  .nav {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-  }
-  
-  .navItem {
-    position: relative;
-    color: #868d93;
-    font-weight: 500;
-  }
-  
-  .navLink, .navLinkWithArrow {
-    text-decoration: none;
-    color: #868d93;
-    font-weight: 500;
-  }
-  .navLinkWithArrow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .navLink:hover {
-    color: #3b7ced;
-  }
-  .dropdown {
-    position: absolute;
-    top: 100%;
-    margin-top: 1rem;
-    left: 0;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .dropdownItem {
-    padding: 10px 16px;
-    white-space: nowrap;
-    text-decoration: none;
-    color: #868d93;
-    font-weight: 500;
-  }
-  .dropdownItem:hover {
-    color: #3b7ced;
-  }
-  .rightSection {
-    display: flex;
-    align-items: center;
-    z-index: 12;
-    width: 20%;
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+}
+
+.menuButton {
+  font-size: 24px;
+  margin-right: 8px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #3b7ced;
+  cursor: pointer;
+}
+
+.mobileNavToggle {
+  display: none;
+  font-size: 24px;
+  border: none;
+  background: transparent;
+  color: #3b7ced;
+  cursor: pointer;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 580;
+  margin-right: 10px;
+}
+
+.strokeRight {
+  margin: 0 10px;
+  width: 1px;
+  height: 30px;
+  background-color: #ddd;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  transition: max-height 0.3s ease;
+}
+
+.navItem {
+  position: relative;
+}
+
+.navLink,
+.navLinkWithArrow {
+  text-decoration: none;
+  color: #868d93;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.navLink:hover {
+  color: #3b7ced;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownItem {
+  padding: 10px 16px;
+  color: #868d93;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dropdownItem:hover {
+  color: #3b7ced;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification {
+  font-size: 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* ------------------------- Responsive ------------------------- */
+
+@media (max-width: 1024px) {
+  .nav {
+    gap: 15px;
   }
-  
-  .notification {
+
+  .title {
     font-size: 18px;
-    cursor: pointer;
-    margin-right: 15px;
-    background-color: transparent;
-    border: none;
   }
-  
-  .profile {
-    display: flex;
-    align-items: center;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
   }
-  
-  .profileImage {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 5px;
+
+  .nav.open {
+    max-height: 1000px;
+    margin-top: 10px;
   }
-  
+
+  .mobileNavToggle {
+    display: block;
+  }
+
+  .leftSection {
+    width: auto;
+  }
+
+  .rightSection {
+    margin-top: 10px;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

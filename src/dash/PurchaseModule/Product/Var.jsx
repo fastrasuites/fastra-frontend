@@ -106,13 +106,11 @@ export default function Var({ formData, onUpdateStatus }) {
 
   const handleRejection = () => {
     onUpdateStatus(formData.id, "Rejected");
-    console.log("Rejected with reason: ", rejectionReason);
     // Implement rejection logic here
   };
 
   const handleApproval = () => {
     onUpdateStatus(formData.id, "Approved");
-    console.log("Approved");
     // Implement approval logic here
   };
 

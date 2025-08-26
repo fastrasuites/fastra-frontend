@@ -42,39 +42,6 @@ export const StockMoveProvider = ({ children }) => {
     return getTenantClient(tenant_schema_name, access_token, refresh_token);
   }, [tenant_schema_name, access_token, refresh_token]);
 
-  const fetchResource = useCallback(
-    async (url) => {
-      if (!client || !url) return null;
-      try {
-        const secureUrl = url.replace(/^http:\/\//i, "https://");
-        const response = await client.get(secureUrl);
-        return response.data;
-      } catch (err) {
-        console.error("Error fetching resource:", url, err);
-        return null;
-      }
-    },
-    [client]
-  );
-
-  const normalizeStockMove = useCallback(
-    async (stockMove) => {
-      if (!stockMove) return null;
-
-      const [sourceLocation, destinationLocation] = await Promise.all([
-        fetchResource(stockMove.source_location),
-        fetchResource(stockMove.destination_location),
-      ]);
-
-      return {
-        ...stockMove,
-        source_location: sourceLocation,
-        destination_location: destinationLocation,
-      };
-    },
-    [fetchResource]
-  );
-
   // Stock move endpoints
   const getStockMoveList = useCallback(
     async (filters = {}) => {
@@ -96,14 +63,11 @@ export const StockMoveProvider = ({ children }) => {
         const url = `/inventory/stock-move/${
           queryParams.toString() ? `?${queryParams}` : ""
         }`;
-        const { data: rawData } = await client.get(url);
+        const { data } = await client.get(url);
 
-        const normalized = await Promise.all(
-          rawData.map((move) => normalizeStockMove(move))
-        );
-        setStockMoveList(normalized.filter(Boolean));
+        setStockMoveList(data);
         setError(null);
-        return { success: true, data: normalized };
+        return { success: true, data };
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to load stock moves");
@@ -112,7 +76,7 @@ export const StockMoveProvider = ({ children }) => {
         setIsLoading(false);
       }
     },
-    [client, normalizeStockMove]
+    [client]
   );
 
   const getSingleStockMove = useCallback(
@@ -126,10 +90,9 @@ export const StockMoveProvider = ({ children }) => {
       setIsLoading(true);
       try {
         const { data } = await client.get(`/inventory/stock-move/${id}/`);
-        const normalized = await normalizeStockMove(data);
-        setSingleStockMove(normalized);
+        setSingleStockMove(data);
         setError(null);
-        return { success: true, data: normalized };
+        return { success: true, data };
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to load stock move");
@@ -138,7 +101,7 @@ export const StockMoveProvider = ({ children }) => {
         setIsLoading(false);
       }
     },
-    [client, normalizeStockMove]
+    [client]
   );
 
   const createStockMove = useCallback(
@@ -163,11 +126,10 @@ export const StockMoveProvider = ({ children }) => {
         };
 
         const { data } = await client.post("/inventory/stock-move/", payload);
-        const normalized = await normalizeStockMove(data);
 
-        setStockMoveList((prev) => [...prev, normalized]);
+        setStockMoveList((prev) => [...prev, data]);
         setError(null);
-        return { success: true, data: normalized };
+        return { success: true, data: data };
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to create stock move");
@@ -176,7 +138,7 @@ export const StockMoveProvider = ({ children }) => {
         setIsLoading(false);
       }
     },
-    [client, normalizeStockMove]
+    [client]
   );
 
   const contextValue = useMemo(

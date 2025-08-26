@@ -10,6 +10,7 @@ import {
   Checkbox,
   Button,
   Box,
+  Typography,
 } from "@mui/material";
 import PropTypes from "prop-types";
 import { extractRFQID, formatDate } from "../../../helper/helper";
@@ -33,8 +34,16 @@ const Orderlistview = ({
   onCardClick,
   getStatusColor,
   onDeleteSelected,
+  error,
+  isLoading,
 }) => {
   const [selected, setSelected] = useState([]);
+
+  const isForbidden = error?.message === "Request failed with status code 403";
+  const showEmpty = !isLoading && !error && items.length === 0;
+  const showError = !isLoading && error && !isForbidden;
+
+  console.log(error);
 
   // Handler to select/deselect all items.
   const handleSelectAll = useCallback(
@@ -95,7 +104,7 @@ const Orderlistview = ({
           {formatDate(item?.date_created)}
         </TableCell>
         <TableCell sx={cellStyle(index)}>
-          {item?.vendor?.company_name}
+          {item?.vendor_details?.company_name}
         </TableCell>
         <TableCell sx={statusCellStyle(index, getStatusColor, item.status)}>
           <div style={{ display: "flex", alignItems: "center" }}>
@@ -121,8 +130,25 @@ const Orderlistview = ({
     ));
   }, [items, selected, handleSelect, onCardClick, getStatusColor]);
 
-  if (items.length === 0) {
-    return <p>No items available. Please fill the form to add items.</p>;
+  if (isForbidden) {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          You do not have permission to view this page. <br />
+          <strong>Request access from an administrator.</strong>
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (showError) {
+    return (
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          An unexpected error occurred. Please try again later.
+        </Typography>
+      </Box>
+    );
   }
 
   return (

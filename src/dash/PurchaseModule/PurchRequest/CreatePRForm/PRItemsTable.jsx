@@ -1,4 +1,12 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
 import { useMemo } from "react";
 import PRItemRow from "./PRItemRow";
 // import RfqItemRow from "./PRItemRow";
@@ -19,7 +27,7 @@ const PRItemsTable = ({ items, handleRowChange, products }) => {
     return (
       <TableRow>
         <TableCell
-          colSpan={6}
+          // colSpan={6}
           align="center"
           sx={{ color: "#7a8a98", fontSize: "12px" }}
         >
@@ -30,7 +38,10 @@ const PRItemsTable = ({ items, handleRowChange, products }) => {
   }, [items, handleRowChange, products]);
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: "none", borderRadius: "10px" }}>
+    <TableContainer
+      component={Paper}
+      sx={{ boxShadow: "none", borderRadius: "10px" }}
+    >
       <Table
         sx={{
           "&.MuiTable-root": { border: "none" },
@@ -52,7 +63,5 @@ const PRItemsTable = ({ items, handleRowChange, products }) => {
     </TableContainer>
   );
 };
-
-
 
 export default PRItemsTable;

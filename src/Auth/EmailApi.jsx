@@ -17,7 +17,6 @@ export const verifyEmail = async (tenant, token) => {
     }
 
     const data = await response.json();
-    console.log("checking data content from emailApi: ", data);
     return data; // Successful verification response
   } catch (error) {
     throw new Error(`Verification failed: ${error.message}`, { cause: error });

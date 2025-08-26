@@ -9,49 +9,19 @@ import { useScrap } from "../../../../context/Inventory/Scrap";
 
 const getStatusColor = (status) => {
   switch (status) {
-    case "DONE":
+    case "done":
     case "Done":
       return "#2ba24c";
-    case "DRAFT":
+    case "draft":
     case "Drafted":
       return "#158fec";
-    case "Cancelled":
+    case "cancelled":
     case "Cancel":
       return "#e43e2b";
     default:
       return "#9e9e9e";
   }
 };
-
-const columns = [
-  { id: "id", label: "ID" },
-  { id: "adjustment_type", label: "Adjustment Type" },
-  { id: "warehouse_location", label: "Location" },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <Box display="flex" alignItems="center">
-        <Box
-          sx={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            backgroundColor: getStatusColor(row.status),
-            mr: 1,
-          }}
-        />
-        <Typography
-          variant="caption"
-          color={getStatusColor(row.status)}
-          fontSize={12}
-        >
-          {row.status}
-        </Typography>
-      </Box>
-    ),
-  },
-];
 
 function Scrap() {
   const { tenantData } = useTenant();
@@ -63,17 +33,45 @@ function Scrap() {
 
   const { scrapList, isLoading, error, getScrapList } = useScrap();
 
+  const columns = [
+    { id: "id", label: "ID" },
+    { id: "adjustment_type", label: "Adjustment Type" },
+    { id: "warehouse_location", label: "Location" },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => (
+        <Box display="flex" alignItems="center">
+          <Box
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              backgroundColor: getStatusColor(row.status),
+              mr: 1,
+            }}
+          />
+          <Typography
+            variant="caption"
+            color={getStatusColor(row?.status)}
+            fontSize={12}
+          >
+            {row.status}
+          </Typography>
+        </Box>
+      ),
+    },
+  ];
+
   useEffect(() => {
     getScrapList();
   }, []);
 
   const arrangeScrap = scrapList.map((item) => ({
     ...item,
-    status: item.status.toUpperCase(),
-    warehouse_location: item.warehouse_location?.location_name ?? "—",
+    warehouse_location: item.warehouse_location_details?.location_name ?? "—",
   }));
 
-  console.log("arrangeScrap", arrangeScrap);
   const renderGridItem = (item) => (
     <Box
       key={item.requestId}
@@ -145,6 +143,8 @@ function Scrap() {
     );
   }
 
+  console.log(scrapList);
+
   return (
     <Box padding={"20px"} marginRight={"20px"}>
       <Typography
@@ -190,6 +190,9 @@ function Scrap() {
         actionButton={{
           text: "New Scrap",
           link: `/${tenant_schema_name}/inventory/stock/scrap/create-scrap`,
+          action: "create",
+          app: "inventory",
+          module: "scrap",
         }}
         gridRenderItem={renderGridItem}
         path={`/${tenant_schema_name}/inventory/stock/scrap`}
