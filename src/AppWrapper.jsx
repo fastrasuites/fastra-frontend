@@ -15,7 +15,7 @@ import { DeliveryOrderProvider } from "./context/Inventory/DeliveryOrderContext"
 import { StockAdjustmentProvider } from "./context/Inventory/StockAdjustment";
 import { ScrapProvider } from "./context/Inventory/Scrap";
 import { PurchaseOrderProvider } from "./context/PurchaseOrderContext.";
-import { StockMoveProvider } from "./context/Inventory/stockMoveContext";
+import { StockMoveProvider } from "./context/Inventory/StockMoveContext_temp";
 import { AccessGroupsProvider } from "./context/AccessGroups/AccessGroupsContext";
 import { UserProvider } from "./context/Settings/UserContext";
 import { CompanyProvider } from "./context/Settings/CompanyContext";
