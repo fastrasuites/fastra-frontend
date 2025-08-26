@@ -46,7 +46,10 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/ # The folder React created
-          server-dir: ./app.fastrasuite.com/ # The target folder on the server
+          server-dir: ./ # The target folder on the server
           # The following options are important for a clean deploy
           dangerous-clean-slate: true # Deletes ALL files on the server-dir before uploading
           # set-ftp-flags: true       # Uncomment if you have permission issues
+          exclude: |
+            .well-known/*
+            .ftpquota
