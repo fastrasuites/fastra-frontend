@@ -25,6 +25,8 @@ import VendorDetails from "./Vendor/VendorDetails";
 import EditRfqForm from "./Rfq/RfqForm/EditRFQForm";
 import EditProduct from "./Product/EditProduct";
 import EditVendor from "./Vendor/EditVendor";
+import CurrencyPage from "../Configurations/CurrencyList";
+import UnitOfMeasurePage from "../Configurations/UnitOfMeasureList";
 // import Newprod from "./Product/Newprod";
 
 export default function PurchaseLayout() {
@@ -131,8 +133,19 @@ export default function PurchaseLayout() {
 
           <Route
             exact
-            path={`${path}/configurations`}
+            path={`${path}/configurations/new`}
             component={ConfigurationSettings}
+          />
+          <Route
+            exact
+            path={`${path}/configurations/currencies`}
+            component={CurrencyPage}
+          />
+
+          <Route
+            exact
+            path={`${path}/configurations/unit_of_measure`}
+            component={UnitOfMeasurePage}
           />
         </Switch>
       </Purcont>

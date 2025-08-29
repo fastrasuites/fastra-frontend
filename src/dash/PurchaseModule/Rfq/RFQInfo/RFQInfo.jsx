@@ -24,8 +24,9 @@ import { useTenant } from "../../../../context/TenantContext";
 import { useRFQ } from "../../../../context/RequestForQuotation";
 import Can from "../../../../components/Access/Can";
 import Swal from "sweetalert2";
+import PdfTemplate from "../../../../components/PDFTemplate/RFQPDFTemplate";
 
-// Style constants
+// ---------- RFQInfo Component ----------
 const cellStyle = (index) => ({
   backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#fff",
   color: "#353536",
@@ -46,18 +47,14 @@ const RFQInfo = () => {
   const { id } = useParams();
   const history = useHistory();
 
-  const { getRFQById, approveRFQ, rejectRFQ, pendingRFQ } = useRFQ();
+  const { getRFQById, approveRFQ, rejectRFQ, pendingRFQ, sendRFQMail } =
+    useRFQ();
 
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [navigation, setNavigation] = useState({
-    nextId: null,
-    prevId: null,
-    loading: false,
-  });
+  const [sendingMail, setSendingMail] = useState(false);
 
-  // Enhanced error handling
   const showError = useCallback((msg) => {
     Swal.fire({
       icon: "error",
@@ -72,71 +69,182 @@ const RFQInfo = () => {
       title: "Success",
       text: msg,
       showConfirmButton: false,
+      timer: 1700,
     });
   }, []);
 
-  // Improved RFQ data loading
   const loadRFQ = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getRFQById(id);
-      if (res.success) {
+      if (res && res.success) {
         setItem(res.data);
-        // Load adjacent IDs after successful fetch
-        loadAdjacentIds(id);
-      } else {
+      } else if (res && !res.success) {
         showError("Failed to load RFQ");
         history.push(`/${tenantSchema}/purchase/request-for-quotations`);
+      } else {
+        // fallback: if hook returns raw data
+        setItem(res);
       }
     } catch (err) {
       if (err?.response?.status === 403) {
         setItem("FORBIDDEN");
       } else {
-        showError(err.response.data.detail || "Error loading RFQ details");
+        showError(err?.response?.data?.detail || "Error loading RFQ details");
       }
     } finally {
       setLoading(false);
     }
   }, [getRFQById, id, showError, history, tenantSchema]);
 
-  // Simplified adjacent ID loading without parsePRId
-  const loadAdjacentIds = useCallback((currentId) => {
-    try {
-      setNavigation((prev) => ({ ...prev, loading: true }));
-
-      // Extract numeric portion from ID (works for formats like RFQ123, RFQ00123, etc.)
-      const numericMatch = currentId.match(/\d+/);
-      if (!numericMatch) return;
-
-      const numericStr = numericMatch[0];
-      const numericValue = parseInt(numericStr, 10);
-      const prefix = currentId.substring(0, currentId.indexOf(numericStr));
-
-      // Preserve zero padding
-      const nextId = `${prefix}${String(numericValue + 1).padStart(
-        numericStr.length,
-        "0"
-      )}`;
-      const prevId =
-        numericValue > 1
-          ? `${prefix}${String(numericValue - 1).padStart(
-              numericStr.length,
-              "0"
-            )}`
-          : null;
-
-      setNavigation({ nextId, prevId, loading: false });
-    } catch (error) {
-      console.error("Navigation error:", error);
-      setNavigation((prev) => ({ ...prev, loading: false }));
-    }
-  }, []);
-
   useEffect(() => {
     loadRFQ();
   }, [loadRFQ]);
 
-  // Enhanced status change handler
+  console.log(item);
+
+  // Add this utility function to generate PDF from the PdfTemplate component
+  const generatePDFBlob = async (item) => {
+    // Create a temporary container
+    const tempContainer = document.createElement("div");
+    tempContainer.style.position = "absolute";
+    tempContainer.style.left = "-9999px";
+    tempContainer.style.top = "-9999px";
+    document.body.appendChild(tempContainer);
+
+    try {
+      // Import React DOM for rendering
+      const { createRoot } = await import("react-dom/client");
+
+      // Create the PDF template element
+      const PdfTemplateElement = React.createElement(PdfTemplate, { item });
+
+      // Render the component
+      const root = createRoot(tempContainer);
+      root.render(PdfTemplateElement);
+
+      // Wait for rendering to complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Use html2canvas and jsPDF to generate PDF
+      const html2canvas = (await import("html2canvas")).default;
+      const jsPDF = (await import("jspdf")).jsPDF;
+
+      const canvas = await html2canvas(tempContainer.firstChild, {
+        scale: 1.2, // Reduced from 2 to 1.2 for smaller file size
+        useCORS: true,
+        allowTaint: true,
+        width: 794,
+        height: tempContainer.firstChild.scrollHeight,
+        backgroundColor: "#ffffff",
+        removeContainer: true,
+        imageTimeout: 15000,
+        logging: false, // Disable logging for performance
+      });
+
+      const imgData = canvas.toDataURL("image/png", 0.7);
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 295; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Convert to blob
+      const pdfBlob = pdf.output("blob");
+      const fileSizeMB = pdfBlob.size / (1024 * 1024);
+      console.log(`PDF size: ${fileSizeMB.toFixed(2)} MB`);
+
+      if (fileSizeMB > 4.5) {
+        // Leave some buffer below 5MB limit
+        throw new Error(
+          `PDF file too large (${fileSizeMB.toFixed(
+            2
+          )} MB). Please reduce content or contact support.`
+        );
+      }
+
+      return pdfBlob;
+    } finally {
+      // Cleanup
+      document.body.removeChild(tempContainer);
+    }
+  };
+
+  // Updated handleManualSendMail function with PDF attachment
+  const handleManualSendMail = useCallback(async () => {
+    if (!item) {
+      showError("No RFQ loaded to send");
+      return;
+    }
+    const rfqId = extractRFQID(item.url);
+    if (!rfqId) {
+      showError("Invalid RFQ ID");
+      return;
+    }
+
+    setSendingMail(true);
+    try {
+      // Validate that we have recipients
+      const recipients = item?.vendor_details?.email || [];
+      if (!recipients.length) {
+        showError(
+          "No supplier email addresses found. Please add suppliers to this RFQ first."
+        );
+        return;
+      }
+
+      // Generate PDF attachment
+      const pdfBlob = await generatePDFBlob(item);
+
+      // Create FormData for multipart/form-data request
+      const formData = new FormData();
+      formData.append("email_subject", `Request for Quotation - ${rfqId}`);
+      formData.append(
+        "email_body",
+        `Dear Supplier,\n\nPlease find attached our Request for Quotation (${rfqId}).\n\nWe look forward to receiving your competitive quotation.\n\nBest regards,\nProcurement Team`
+      );
+      formData.append("recipient_list", [recipients]);
+
+      // Add PDF attachment
+      formData.append("email_attachment", pdfBlob, `RFQ-${rfqId}.pdf`);
+
+      const res = await sendRFQMail(rfqId, formData);
+
+      // support both shapes (hook returns { success: true } or raw Response)
+      if (res && typeof res === "object" && "success" in res) {
+        if (res.success === false) {
+          throw new Error(res.message || "Failed to send email");
+        }
+      } else if (res && typeof res === "object" && "ok" in res) {
+        // fetch Response case
+        if (!res.ok) {
+          throw new Error("Failed to send email");
+        }
+      }
+      showSuccess("Email with PDF attachment sent successfully");
+      await loadRFQ();
+    } catch (err) {
+      console.error("Manual send email error:", err);
+      showError(err?.message || "Failed to send RFQ email");
+    } finally {
+      setSendingMail(false);
+    }
+  }, [item, sendRFQMail, showError, showSuccess, loadRFQ]);
+
+  // Updated handleStatusChange function with PDF attachment for pending status
   const handleStatusChange = useCallback(
     async (newStatus) => {
       if (!item) return;
@@ -161,20 +269,190 @@ const RFQInfo = () => {
         }
 
         const payload = { status: newStatus };
+
+        // perform status update
         await action(payload, rfqId);
 
-        showSuccess(`RFQ status updated to ${newStatus}`);
+        // when moved to pending, automatically send email with PDF attachment
+        if (newStatus === "pending") {
+          try {
+            const recipients =
+              item.suppliers?.map((s) => s.email).filter(Boolean) || [];
+
+            if (recipients.length > 0) {
+              // Generate PDF attachment
+              const pdfBlob = await generatePDFBlob(item);
+
+              // Create FormData for email with attachment
+              const formData = new FormData();
+              formData.append(
+                "email_subject",
+                `Request for Quotation - ${rfqId} (Pending Approval)`
+              );
+              formData.append(
+                "email_body",
+                `Dear Supplier,\n\nOur Request for Quotation (${rfqId}) is now pending approval.\n\nPlease find the details attached and provide your quotation at your earliest convenience.\n\nBest regards,\nProcurement Team`
+              );
+
+              // Add recipients
+              recipients.forEach((email) => {
+                formData.append("recipient_list", email);
+              });
+
+              // Add PDF attachment
+              formData.append("attachment", pdfBlob, `RFQ-${rfqId}.pdf`);
+
+              const mailRes = await sendRFQMail(rfqId, formData);
+              if (
+                mailRes &&
+                typeof mailRes === "object" &&
+                "success" in mailRes
+              ) {
+                if (mailRes.success === false) {
+                  throw new Error(
+                    mailRes.message || "Failed to send RFQ email"
+                  );
+                }
+              } else if (
+                mailRes &&
+                typeof mailRes === "object" &&
+                "ok" in mailRes
+              ) {
+                if (!mailRes.ok) {
+                  throw new Error("Failed to send RFQ email");
+                }
+              }
+            } else {
+              // No suppliers to email, just show warning
+              showError(
+                "RFQ moved to pending but no supplier emails found for notification."
+              );
+              setActionLoading(false);
+              return;
+            }
+          } catch (mailErr) {
+            // status change succeeded; inform user about mail failure
+            showError(
+              mailErr?.message ||
+                "RFQ moved to pending but failed to send notification email."
+            );
+            setActionLoading(false);
+            return;
+          }
+        }
+
+        showSuccess(
+          `RFQ status updated to ${newStatus} ${
+            newStatus === "pending"
+              ? "and notification email with PDF sent"
+              : ""
+          }`.trim()
+        );
+
         await loadRFQ();
       } catch (err) {
-        showError(err.message || `Failed to ${newStatus} RFQ`);
+        console.error("Status change error:", err);
+        showError(err?.message || `Failed to ${newStatus} RFQ`);
       } finally {
         setActionLoading(false);
       }
     },
-    [item, approveRFQ, rejectRFQ, pendingRFQ, loadRFQ, showError, showSuccess]
+    [
+      item,
+      approveRFQ,
+      rejectRFQ,
+      pendingRFQ,
+      loadRFQ,
+      showError,
+      showSuccess,
+      sendRFQMail,
+    ]
   );
+  // Status change handler
+  // const handleStatusChange = useCallback(
+  //   async (newStatus) => {
+  //     if (!item) return;
 
-  // Improved Convert to PO handler
+  //     setActionLoading(true);
+  //     try {
+  //       const rfqId = extractRFQID(item.url);
+  //       if (!rfqId) {
+  //         showError("Invalid RFQ ID");
+  //         return;
+  //       }
+
+  //       const actionMap = {
+  //         approve: approveRFQ,
+  //         reject: rejectRFQ,
+  //         pending: pendingRFQ,
+  //       };
+
+  //       const action = actionMap[newStatus];
+  //       if (!action) {
+  //         throw new Error(`Invalid status action: ${newStatus}`);
+  //       }
+
+  //       const payload = { status: newStatus };
+
+  //       // perform status update
+  //       await action(payload, rfqId);
+
+  //       // when moved to pending, automatically send email via hook
+  //       if (newStatus === "pending") {
+  //         try {
+  //           const mailRes = await sendRFQMail(rfqId);
+  //           if (
+  //             mailRes &&
+  //             typeof mailRes === "object" &&
+  //             "success" in mailRes
+  //           ) {
+  //             if (mailRes.success === false) {
+  //               throw new Error(mailRes.message || "Failed to send RFQ email");
+  //             }
+  //           } else if (
+  //             mailRes &&
+  //             typeof mailRes === "object" &&
+  //             "ok" in mailRes
+  //           ) {
+  //             if (!mailRes.ok) {
+  //               throw new Error("Failed to send RFQ email");
+  //             }
+  //           }
+  //         } catch (mailErr) {
+  //           // status change succeeded; inform user about mail failure
+  //           showError(
+  //             mailErr?.message ||
+  //               "RFQ moved to pending but failed to send notification email."
+  //           );
+  //         }
+  //       }
+
+  //       showSuccess(
+  //         `RFQ status updated to ${newStatus} ${
+  //           newStatus === "pending" ? "and notification email sent" : ""
+  //         }`.trim()
+  //       );
+
+  //       await loadRFQ();
+  //     } catch (err) {
+  //       console.error("Status change error:", err);
+  //       showError(err?.message || `Failed to ${newStatus} RFQ`);
+  //     } finally {
+  //       setActionLoading(false);
+  //     }
+  //   },
+  //   [
+  //     item,
+  //     approveRFQ,
+  //     rejectRFQ,
+  //     pendingRFQ,
+  //     loadRFQ,
+  //     showError,
+  //     showSuccess,
+  //     sendRFQMail,
+  //   ]
+  // );
+
   const handleConvertToPO = useCallback(() => {
     if (!item) return;
 
@@ -188,16 +466,14 @@ const RFQInfo = () => {
     });
   }, [history, tenantSchema, item]);
 
-  // Navigation handler with validation
   const handleNavigate = useCallback(
-    (newId) => {
-      if (!newId || navigation.loading) return;
-      history.push(`/${tenantSchema}/purchase/request-for-quotations/${newId}`);
+    (id) => {
+      if (!id) return;
+      history.push(`/${tenantSchema}/purchase/request-for-quotations/${id}`);
     },
-    [history, tenantSchema, navigation.loading]
+    [history, tenantSchema]
   );
 
-  // Memoized table rows with better empty state
   const renderedRows = useMemo(() => {
     if (!item?.items) return null;
 
@@ -241,10 +517,8 @@ const RFQInfo = () => {
     });
   }, [item]);
 
-  // Footer configuration with loading states
   const footerConfig = useMemo(() => {
     if (!item?.status) return null;
-    console.log(item);
 
     const baseConfig = {
       icon:
@@ -361,7 +635,7 @@ const RFQInfo = () => {
 
   return (
     <div className="rfqStatus">
-      {/* Header with improved navigation */}
+      {/* Header */}
       <div className="rfqHeader">
         <Box
           display="flex"
@@ -369,7 +643,7 @@ const RFQInfo = () => {
           alignItems="center"
           width="100%"
         >
-          <Box display="flex" gap={4}>
+          <Box display="flex" gap={4} alignItems="center">
             <Can app="purchase" module="requestforquotation" action="create">
               <Link to={`/${tenantSchema}/purchase/request-for-quotations/new`}>
                 <Button variant="contained" disableElevation>
@@ -377,10 +651,23 @@ const RFQInfo = () => {
                 </Button>
               </Link>
             </Can>
+
             <div className="rfqAutosave">
               <p>Autosave</p>
               <img src={autosaveIcon} alt="Autosave" width={20} height={20} />
             </div>
+
+            {/* Manual send button */}
+            <Can app="purchase" module="requestforquotation" action="edit">
+              <Button
+                variant="outlined"
+                onClick={handleManualSendMail}
+                disabled={!item || sendingMail || actionLoading}
+                startIcon={sendingMail ? <CircularProgress size={16} /> : null}
+              >
+                {sendingMail ? "Sending..." : "Send RFQ Email"}
+              </Button>
+            </Can>
           </Box>
 
           <Box
@@ -396,15 +683,11 @@ const RFQInfo = () => {
             <Tooltip title="Previous RFQ">
               <span>
                 <IconButton
-                  onClick={() => handleNavigate(navigation.prevId)}
-                  disabled={!navigation.prevId || navigation.loading}
+                  onClick={() => handleNavigate(item?.prev_id)}
+                  disabled={!item.prev_id}
                   size="small"
                 >
-                  {navigation.loading ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <ArrowBackIosIcon fontSize="small" />
-                  )}
+                  <ArrowBackIosIcon fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -421,15 +704,11 @@ const RFQInfo = () => {
             <Tooltip title="Next RFQ">
               <span>
                 <IconButton
-                  onClick={() => handleNavigate(navigation.nextId)}
-                  disabled={!navigation.nextId || navigation.loading}
+                  onClick={() => handleNavigate(item.next_id)}
+                  disabled={!item.next_id}
                   size="small"
                 >
-                  {navigation.loading ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <ArrowForwardIosIcon fontSize="small" />
-                  )}
+                  <ArrowForwardIosIcon fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -479,7 +758,6 @@ const RFQInfo = () => {
           </p>
         </div>
 
-        {/* Improved table layout */}
         <Box width="80%">
           <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
             <Table sx={{ "& .MuiTableCell-root": { borderBottom: "none" } }}>
@@ -543,7 +821,7 @@ const RFQInfo = () => {
           </Table>
         </TableContainer>
 
-        {/* Footer with loading states */}
+        {/* Footer actions */}
         {footerConfig && (
           <div className="rfqStatusFooter">
             <div className="approvedIcon">

@@ -62,11 +62,6 @@ const PurchaseOrderInfo = () => {
   const [item, setItem] = useState({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [navigation, setNavigation] = useState({
-    nextId: null,
-    prevId: null,
-    loading: false,
-  });
 
   const statusColor = (s) => statusColorMap[s] || statusColorMap.default;
 
@@ -87,39 +82,6 @@ const PurchaseOrderInfo = () => {
     });
   }, []);
 
-  // Load adjacent PO IDs
-  const loadAdjacentIds = useCallback((currentId) => {
-    try {
-      setNavigation((prev) => ({ ...prev, loading: true }));
-
-      // Extract numeric portion from ID (works for formats like PO123, PO00123, etc.)
-      const numericMatch = currentId.match(/\d+/);
-      if (!numericMatch) return;
-
-      const numericStr = numericMatch[0];
-      const numericValue = parseInt(numericStr, 10);
-      const prefix = currentId.substring(0, currentId.indexOf(numericStr));
-
-      // Preserve zero padding
-      const nextId = `${prefix}${String(numericValue + 1).padStart(
-        numericStr.length,
-        "0"
-      )}`;
-      const prevId =
-        numericValue > 1
-          ? `${prefix}${String(numericValue - 1).padStart(
-              numericStr.length,
-              "0"
-            )}`
-          : null;
-
-      setNavigation({ nextId, prevId, loading: false });
-    } catch (error) {
-      console.error("Navigation error:", error);
-      setNavigation((prev) => ({ ...prev, loading: false }));
-    }
-  }, []);
-
   // Load Purchase Order data
   const loadPO = useCallback(async () => {
     setLoading(true);
@@ -127,7 +89,6 @@ const PurchaseOrderInfo = () => {
       const res = await getPurchaseOrderById(id);
       if (res.success) {
         setItem(res.data);
-        loadAdjacentIds(id);
       } else {
         showError(res.message || "Failed to load purchase order");
         history.push(`/${tenantSchema}/purchase/purchase-order`);
@@ -207,11 +168,11 @@ const PurchaseOrderInfo = () => {
 
   // Navigation handler
   const handleNavigate = useCallback(
-    (newId) => {
-      if (!newId || navigation.loading) return;
-      history.push(`/${tenantSchema}/purchase/purchase-order/${newId}`);
+    (id) => {
+      if (!id) return;
+      history.push(`/${tenantSchema}/purchase/purchase-order/${id}`);
     },
-    [history, tenantSchema, navigation.loading]
+    [history, tenantSchema]
   );
 
   //   // Navigate to inventory conversion
@@ -364,15 +325,11 @@ const PurchaseOrderInfo = () => {
             <Tooltip title="Previous Purchase Order">
               <span>
                 <IconButton
-                  onClick={() => handleNavigate(navigation.prevId)}
-                  disabled={!navigation.prevId || navigation.loading}
+                  onClick={() => handleNavigate(item?.prev_id)}
+                  disabled={!item?.prev_id}
                   size="small"
                 >
-                  {navigation.loading ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <ArrowBackIosIcon fontSize="small" />
-                  )}
+                  <ArrowBackIosIcon fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -389,15 +346,11 @@ const PurchaseOrderInfo = () => {
             <Tooltip title="Next Purchase Order">
               <span>
                 <IconButton
-                  onClick={() => handleNavigate(navigation.nextId)}
-                  disabled={!navigation.nextId || navigation.loading}
+                  onClick={() => handleNavigate(item?.next_id)}
+                  disabled={!item.next_id}
                   size="small"
                 >
-                  {navigation.loading ? (
-                    <CircularProgress size={20} />
-                  ) : (
-                    <ArrowForwardIosIcon fontSize="small" />
-                  )}
+                  <ArrowForwardIosIcon fontSize="small" />
                 </IconButton>
               </span>
             </Tooltip>

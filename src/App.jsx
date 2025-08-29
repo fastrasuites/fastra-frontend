@@ -16,7 +16,7 @@ import ProductDetails from "./dash/PurchaseModule/Product/ProductDetails";
 import Newprod from "./dash/PurchaseModule/Product/Newprod";
 import Procat from "./dash/PurchaseModule/Product/Prodcat/Procat";
 import Pedit from "./dash/PurchaseModule/Product/Prodcat/Pedit";
-import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
+// import ConfigurationSettings from "./dash/Configurations/ConfigurationSettings";
 import ResendEmailVerification from "./Auth/ResendEmailVerification";
 import NoHeaderLayout from "./notFound/NoHeaderLayout";
 import NotFound from "./notFound/NotFound";
@@ -80,11 +80,11 @@ function App() {
                 path="/:tenant/Newvendor"
                 component={Newvendor}
               />
-              <ProtectedRoute
+              {/* <ProtectedRoute
                 exact
                 path="/:tenant/purchase-configuration-settings"
                 component={ConfigurationSettings}
-              />
+              /> */}
               <ProtectedRoute exact path="/:tenant/varcat" component={Varcat} />
               <ProtectedRoute exact path="/:tenant/edit" component={Edit} />
               <ProtectedRoute

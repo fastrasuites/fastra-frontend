@@ -72,6 +72,75 @@ export const RFQProvider = ({ children }) => {
     [client]
   );
 
+  const sendRFQMail = useCallback(
+    async (arg1, arg2) => {
+      let id = null;
+      let payload = null;
+
+      if (typeof arg1 === "string") {
+        id = arg1;
+        payload = arg2 || null;
+      } else if (typeof arg2 === "string") {
+        payload = arg1 || null;
+        id = arg2;
+      } else if (arg1 && typeof arg1 === "object" && arg1.id) {
+        // allow an object like { id, payload }
+        id = arg1.id;
+        payload = arg1.payload || null;
+      } else {
+        // invalid args
+        const errMsg =
+          "Invalid arguments to sendRFQMail. Expected (id) or (id, payload) or (payload, id).";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+
+      if (!client) {
+        const errMsg =
+          "API client is not available. Please check tenant configuration.";
+        setError(errMsg);
+        return Promise.reject(new Error(errMsg));
+      }
+
+      const url = `/purchase/request-for-quotation/${id}/send_email/`;
+
+      try {
+        setIsLoading(true);
+
+        // Determine content type & call client.post accordingly.
+        // If payload is a FormData instance (for attachments), send as multipart/form-data
+        let response;
+        if (!payload) {
+          // existing behavior: no body
+          response = await client.post(url);
+        } else if (payload instanceof FormData) {
+          response = await client.post(url, payload, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        } else {
+          // payload is plain object -> send as JSON
+          response = await client.post(url, payload);
+        }
+
+        return { success: true, data: response.data };
+      } catch (err) {
+        // Normalize error return so UI can show validation errors neatly
+        const res = err?.response;
+        const status = res?.status;
+        const errors = res?.data || err?.message || "Unknown error";
+
+        // Save error in context state for debugging / UI consumption
+        setError(errors);
+
+        // Return structured failure object
+        return { success: false, errors, status };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [client]
+  );
+
   const getRFQList = useCallback(
     async (search) => {
       if (!client) {
@@ -339,6 +408,7 @@ export const RFQProvider = ({ children }) => {
       deleteRFQ,
       approvedGetRFQList,
       approvedGetRFQListForForm,
+      sendRFQMail,
       singleRFQ,
       error,
       rfqList,
@@ -355,6 +425,7 @@ export const RFQProvider = ({ children }) => {
       deleteRFQ,
       approvedGetRFQList,
       approvedGetRFQListForForm,
+      sendRFQMail,
       singleRFQ,
       error,
       rfqList,

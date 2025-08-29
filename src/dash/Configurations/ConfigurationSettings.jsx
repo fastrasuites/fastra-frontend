@@ -1,20 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { MenuItem, Button, TextField, Box } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Box,
+  Autocomplete,
+  CircularProgress,
+} from "@mui/material";
 import "./ConfigurationForm.css";
 import PurchaseHeader from "../PurchaseModule/PurchaseHeader";
 import { getTenantClient } from "../../services/apiService";
 import { useTenant } from "../../context/TenantContext";
 import { usePurchase } from "../../context/PurchaseContext";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 const ConfigurationSettings = () => {
   const [selectedCurrency, setSelectedCurrency] = useState({
     currency_name: "",
+    currency_code: "",
     currency_symbol: "",
+    is_hidden: false,
   });
+
   const [unitName, setUnitName] = useState("");
+  const [unitSymbol, setUnitSymbol] = useState("");
   const [unitCategory, setUnitCategory] = useState("");
   const [savedUnits, setSavedUnits] = useState([]);
+  const [currencyOptions, setCurrencyOptions] = useState([]);
+
+  const [loadingCurrencies, setLoadingCurrencies] = useState(false);
+  const [errorCurrencies, setErrorCurrencies] = useState(null);
 
   const { tenantData } = useTenant();
   const { tenant_schema_name, access_token } = tenantData || {};
@@ -22,35 +37,87 @@ const ConfigurationSettings = () => {
 
   const { createCurrency } = usePurchase();
 
-  const currencyOptions = [
-    { currency_name: "NGN", currency_symbol: "₦" },
-    { currency_name: "USD", currency_symbol: "$" },
-    { currency_name: "EUR", currency_symbol: "€" },
-    { currency_name: "GBP", currency_symbol: "£" },
-    { currency_name: "JPY", currency_symbol: "¥" },
-  ];
-
+  /** Fetch currencies from RestCountries */
   useEffect(() => {
+    const fetchCurrencies = async () => {
+      setLoadingCurrencies(true);
+      setErrorCurrencies(null);
+
+      try {
+        const res = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name,currencies"
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch currencies");
+
+        const data = await res.json();
+        const options = [];
+
+        data.forEach((country) => {
+          const countryName = country?.name?.common;
+          const currencies = country?.currencies || {};
+
+          Object.entries(currencies).forEach(([code, cur]) => {
+            options.push({
+              country: countryName,
+              currency_name: cur.name,
+              currency_code: code,
+              currency_symbol: cur.symbol || "",
+            });
+          });
+        });
+
+        // Remove duplicates by currency code
+        const unique = Object.values(
+          options.reduce((acc, cur) => {
+            acc[cur.currency_code] = cur;
+            return acc;
+          }, {})
+        );
+
+        unique.sort((a, b) => a.currency_name.localeCompare(b.currency_name));
+        setCurrencyOptions(unique);
+      } catch (err) {
+        console.error("Error fetching currencies:", err);
+        setErrorCurrencies("Could not load currency list.");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to fetch currency data. Please refresh.",
+        });
+      } finally {
+        setLoadingCurrencies(false);
+      }
+    };
+
+    fetchCurrencies();
+
     const saved = JSON.parse(localStorage.getItem("savedUnits")) || [];
     setSavedUnits(saved);
   }, []);
 
+  /** Submit Currency */
   const handleCurrencySubmit = async (event) => {
     event.preventDefault();
 
-    const { currency_name, currency_symbol } = selectedCurrency;
-
-    if (!currency_name || !currency_symbol) {
+    const { currency_name, currency_code, currency_symbol } = selectedCurrency;
+    if (!currency_name || !currency_code || !currency_symbol) {
       return Swal.fire({
         icon: "warning",
         title: "Incomplete Fields",
-        text: "Please select or type a valid currency name and symbol.",
+        text: "Please select or type a valid currency name, code, and symbol.",
       });
     }
 
     try {
       await createCurrency(selectedCurrency);
-      setSelectedCurrency({ currency_name: "", currency_symbol: "" });
+
+      setSelectedCurrency({
+        currency_name: "",
+        currency_code: "",
+        currency_symbol: "",
+        is_hidden: false,
+      });
 
       Swal.fire({
         icon: "success",
@@ -58,31 +125,44 @@ const ConfigurationSettings = () => {
         text: "Currency created successfully!",
       });
     } catch (err) {
+      console.error("Currency creation failed:", err);
+
+      let message = "Error creating currency. Please try again.";
+
+      if (err.response?.data) {
+        // Collect all error messages into a string
+        const errors = err.response.data;
+        message = Object.values(errors).flat().join("\n");
+      }
+
       Swal.fire({
         icon: "error",
         title: "Creation Failed",
-        text: "Error creating currency. Please try again.",
+        text: message,
       });
     }
   };
 
+  /** Submit Unit of Measure */
   const handleUnitSubmit = async (event) => {
     event.preventDefault();
 
-    if (!unitName.trim() || !unitCategory.trim()) {
+    if (!unitName.trim() || !unitCategory.trim() || !unitSymbol.trim()) {
       return Swal.fire({
         icon: "warning",
         title: "Missing Fields",
-        text: "Please fill in both Unit Name and Unit Category.",
+        text: "Please fill in Unit Name, Symbol and Category.",
       });
     }
 
     const newUnit = {
       unit_name: unitName.trim(),
+      unit_symbol: unitSymbol.trim(),
       unit_category: unitCategory.trim(),
+      is_hidden: false,
     };
-    const updatedUnits = [...savedUnits, newUnit];
 
+    const updatedUnits = [...savedUnits, newUnit];
     localStorage.setItem("savedUnits", JSON.stringify(updatedUnits));
     setSavedUnits(updatedUnits);
 
@@ -97,25 +177,34 @@ const ConfigurationSettings = () => {
       });
     } catch (err) {
       console.error("Error saving unit-measure:", err);
+
+      let message = "Failed to save unit of measure. Please try again.";
+
+      if (err.response?.data) {
+        // Collect backend validation messages
+        const errors = err.response.data;
+        message = Object.values(errors).flat().join("\n");
+      }
+
       Swal.fire({
         icon: "error",
         title: "Save Failed",
-        text: "Failed to save unit of measure. Please try again.",
+        text: message,
       });
     }
-
     setUnitName("");
+    setUnitSymbol("");
     setUnitCategory("");
   };
 
   return (
     <Box>
-      <PurchaseHeader />
       <Box pr={6} py={4}>
         <div className="configuration-header">
           <h1>Configuration</h1>
         </div>
 
+        {/* Currency Form */}
         <Box
           component="form"
           onSubmit={handleCurrencySubmit}
@@ -124,40 +213,63 @@ const ConfigurationSettings = () => {
           <h2>Currency</h2>
           <hr /> <br /> <br />
           <div className="configuration-card">
-            <div className="form-section currency-form-group">
-              <TextField
-                label="Currency Name"
-                value={selectedCurrency.currency_name}
-                onChange={(e) =>
-                  setSelectedCurrency({
-                    ...selectedCurrency,
-                    currency_name: e.target.value,
-                  })
+            {loadingCurrencies && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <CircularProgress size={20} />
+                <span>Loading currencies...</span>
+              </div>
+            )}
+            {errorCurrencies && (
+              <p style={{ color: "red" }}>{errorCurrencies}</p>
+            )}
+
+            <div
+              className="form-section currency-form-group"
+              style={{ gap: 16 }}
+            >
+              {/* Currency Dropdown */}
+              <Autocomplete
+                options={currencyOptions.map(
+                  (c) =>
+                    `${c.currency_name} (${c.currency_code}) - ${c.country}`
+                )}
+                value={
+                  selectedCurrency.currency_name
+                    ? `${selectedCurrency.currency_name} (${selectedCurrency.currency_code})`
+                    : ""
                 }
-                fullWidth
+                onChange={(event, newValue) => {
+                  const match = currencyOptions.find(
+                    (c) =>
+                      `${c.currency_name} (${c.currency_code}) - ${c.country}` ===
+                      newValue
+                  );
+                  if (match) {
+                    setSelectedCurrency({
+                      currency_name: match.currency_name,
+                      currency_code: match.currency_code,
+                      currency_symbol: match.currency_symbol,
+                      is_hidden: false,
+                    });
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Currency" fullWidth />
+                )}
               />
 
+              {/* Currency Symbol */}
               <TextField
-                select
                 label="Currency Symbol"
                 value={selectedCurrency.currency_symbol}
                 onChange={(e) =>
-                  setSelectedCurrency({
-                    ...selectedCurrency,
+                  setSelectedCurrency((prev) => ({
+                    ...prev,
                     currency_symbol: e.target.value,
-                  })
+                  }))
                 }
                 fullWidth
-              >
-                {currencyOptions.map((currency) => (
-                  <MenuItem
-                    key={currency.currency_symbol}
-                    value={currency.currency_symbol}
-                  >
-                    {currency.currency_symbol}
-                  </MenuItem>
-                ))}
-              </TextField>
+              />
             </div>
 
             <div className="create-button">
@@ -165,9 +277,24 @@ const ConfigurationSettings = () => {
                 Create Currency
               </Button>
             </div>
+            <Box
+              sx={{ pt: 2, mt: 3 }}
+              display={"flex"}
+              justifyContent={"end"}
+              borderTop={"1px solid #dedcdcff"}
+            >
+              <Link
+                to={`/${tenantData.tenant_schema_name}/purchase/configurations/currencies`}
+              >
+                <Button variant="contained" disableElevation>
+                  View Currency List
+                </Button>
+              </Link>
+            </Box>
           </div>
         </Box>
 
+        {/* Unit of Measure Form */}
         <Box
           component="form"
           onSubmit={handleUnitSubmit}
@@ -184,6 +311,12 @@ const ConfigurationSettings = () => {
                 fullWidth
               />
               <TextField
+                label="Unit Symbol"
+                value={unitSymbol}
+                onChange={(e) => setUnitSymbol(e.target.value)}
+                fullWidth
+              />
+              <TextField
                 label="Unit Category"
                 value={unitCategory}
                 onChange={(e) => setUnitCategory(e.target.value)}
@@ -196,6 +329,20 @@ const ConfigurationSettings = () => {
                 Create Unit of Measure
               </Button>
             </div>
+            <Box
+              sx={{ pt: 2, mt: 3 }}
+              display={"flex"}
+              justifyContent={"end"}
+              borderTop={"1px solid #dedcdcff"}
+            >
+              <Link
+                to={`/${tenantData.tenant_schema_name}/purchase/configurations/unit_of_measure`}
+              >
+                <Button variant="contained" disableElevation>
+                  View Unit of Measure List
+                </Button>
+              </Link>
+            </Box>
           </div>
         </Box>
       </Box>
