@@ -37,7 +37,7 @@ const PurchaseHeader = () => {
     },
     {
       label: "Configurations",
-      link: `/${tenant_schema_name}/purchase-configuration-settings`,
+      link: `/${tenant_schema_name}/purchase/configurations/new`,
     },
   ];
 

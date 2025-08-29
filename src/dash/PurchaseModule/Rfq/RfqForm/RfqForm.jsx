@@ -30,7 +30,7 @@ const RfqForm = () => {
     purchaseRequests,
   } = usePurchase();
 
-  const { createRFQ, updateRFQ } = useRFQ();
+  const { createRFQ, updateRFQ, sendRFQMail } = useRFQ();
   const { tenant_schema_name } = useTenant().tenantData || {};
   const { state } = useLocation();
   const history = useHistory();
@@ -207,8 +207,11 @@ const RfqForm = () => {
     try {
       const res = await createRFQ(payload);
       if (res.success) {
-        Swal.fire("Shared!", "RFQ created and shared.", "success").then(() =>
-          navigateToDetail(extractRFQID(res.data.url))
+        sendRFQMail(res.data.id);
+        Swal.fire("Shared!", "RFQ created and shared to mail.", "success").then(
+          () => {
+            navigateToDetail(extractRFQID(res.data.url));
+          }
         );
       } else {
         Swal.fire("Error", extractErrorMessage(res), "error");

@@ -20,6 +20,15 @@ export const PurchaseProvider = ({ children }) => {
   const [singleVendors, setSingleVendors] = useState([]);
   const [error, setError] = useState(null);
 
+  const [loadingCurrencies, setLoadingCurrencies] = useState(false);
+  const [savingCurrencyId, setSavingCurrencyId] = useState(null);
+  const [deletingCurrencyId, setDeletingCurrencyId] = useState(null);
+
+  const [unitsOfMeasure, setUnitsOfMeasure] = useState([]);
+  const [loadingUnits, setLoadingUnits] = useState(false);
+  const [savingUnitId, setSavingUnitId] = useState(null);
+  const [deletingUnitId, setDeletingUnitId] = useState(null);
+
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
   const client = useMemo(
@@ -30,14 +39,36 @@ export const PurchaseProvider = ({ children }) => {
     [tenantData, tenant_schema_name, access_token, refresh_token]
   );
 
-  const fetchCurrencies = useCallback(async () => {
-    try {
-      const response = await client.get("/purchase/currency/");
-      setCurrencies(response.data);
-    } catch (err) {
-      setError(err);
-    }
-  }, [client]);
+  const fetchCurrencies = useCallback(
+    async (search = "") => {
+      if (!client) return;
+      try {
+        setLoadingCurrencies(true);
+        const params = {};
+        if (search && typeof search === "string" && search.trim()) {
+          params.search = search.trim();
+        }
+
+        const response = await client.get("/purchase/currency/", { params });
+
+        // DRF sometimes returns paginated object (results) or a flat array.
+        const data = Array.isArray(response.data)
+          ? response.data
+          : response.data?.results ?? [];
+
+        setCurrencies(data);
+        setError(null);
+        return data;
+      } catch (err) {
+        setError(err);
+        // rethrow if caller expects it
+        throw err;
+      } finally {
+        setLoadingCurrencies(false);
+      }
+    },
+    [client]
+  );
 
   const createCurrency = useCallback(
     async (newCurrency) => {
@@ -47,6 +78,182 @@ export const PurchaseProvider = ({ children }) => {
         return response.data;
       } catch (err) {
         setError(err);
+        throw err;
+      }
+    },
+    [client]
+  );
+
+  const updateCurrency = useCallback(
+    async (id, payload) => {
+      if (!client) throw new Error("No API client available");
+      try {
+        setSavingCurrencyId(id);
+        const response = await client.patch(
+          `/purchase/currency/${id}/`,
+          payload
+        );
+        const updated = response?.data ?? { id, ...payload };
+
+        // update local state
+        setCurrencies((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
+        );
+
+        setError(null);
+        return updated;
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setSavingCurrencyId(null);
+      }
+    },
+    [client]
+  );
+
+  const softDeleteCurrency = useCallback(
+    async (id, { removeFromList = true } = {}) => {
+      if (!client) throw new Error("No API client available");
+      try {
+        setDeletingCurrencyId(id);
+        // The endpoint in your spec is a DELETE to /.../{id}/soft_delete/
+        const response = await client.delete(
+          `/purchase/currency/${id}/soft_delete/`
+        );
+
+        // Most backends return 204 No Content. Treat any 2xx as success.
+        if (response.status >= 200 && response.status < 300) {
+          if (removeFromList) {
+            setCurrencies((prev) => prev.filter((c) => c.id !== id));
+          } else {
+            // alternatively mark hidden so UI keeps row but flagged
+            setCurrencies((prev) =>
+              prev.map((c) => (c.id === id ? { ...c, is_hidden: true } : c))
+            );
+          }
+          setError(null);
+          return true;
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setDeletingCurrencyId(null);
+      }
+    },
+    [client]
+  );
+
+  /**
+   * fetchUnits({ search })
+   * - GET /purchase/unit-of-measure/
+   * - Optional search string
+   */
+
+  const fetchUnits = useCallback(
+    async ({ search = "" } = {}) => {
+      if (!client) return [];
+      try {
+        setLoadingUnits(true);
+        const params = {};
+        if (search && typeof search === "string" && search.trim())
+          params.search = search.trim();
+
+        const resp = await client.get("/purchase/unit-of-measure/", { params });
+
+        // Accept DRF paginated or plain array; we only care about items list
+        const items = Array.isArray(resp.data)
+          ? resp.data
+          : resp.data.results ?? [];
+        setUnitsOfMeasure(items);
+        setError(null);
+        return items;
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setLoadingUnits(false);
+      }
+    },
+    [client]
+  );
+
+  /**
+   * createUnit(newUnit)
+   * - POST /purchase/unit-of-measure/
+   */
+  const createUnit = useCallback(
+    async (newUnit) => {
+      if (!client) throw new Error("No API client available");
+      try {
+        const resp = await client.post("/purchase/unit-of-measure/", newUnit);
+        const created = resp.data;
+        setUnitsOfMeasure((prev) => [...prev, created]);
+        return created;
+      } catch (err) {
+        setError(err);
+        throw err;
+      }
+    },
+    [client]
+  );
+
+  /**
+   * updateUnit(id, payload)
+   * - PATCH /purchase/unit-of-measure/{id}/
+   */
+  const updateUnit = useCallback(
+    async (id, payload) => {
+      if (!client) throw new Error("No API client available");
+      try {
+        setSavingUnitId(id);
+        const resp = await client.patch(
+          `/purchase/unit-of-measure/${id}/`,
+          payload
+        );
+        const updated = resp.data ?? { id, ...payload };
+        setUnitsOfMeasure((prev) =>
+          prev.map((u) => (u.id === id ? { ...u, ...updated } : u))
+        );
+        setError(null);
+        return updated;
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setSavingUnitId(null);
+      }
+    },
+    [client]
+  );
+
+  /**
+   * softDeleteUnit(id)
+   * - DELETE /purchase/unit-of-measure/{id}/soft_delete/
+   * - On success removes the item from local list
+   */
+  const softDeleteUnit = useCallback(
+    async (id) => {
+      if (!client) throw new Error("No API client available");
+      try {
+        setDeletingUnitId(id);
+        const resp = await client.delete(
+          `/purchase/unit-of-measure/${id}/soft_delete/`
+        );
+        if (resp.status >= 200 && resp.status < 300) {
+          setUnitsOfMeasure((prev) => prev.filter((u) => u.id !== id));
+          setError(null);
+          return true;
+        }
+        throw new Error(`Unexpected status ${resp.status}`);
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setDeletingUnitId(null);
       }
     },
     [client]
@@ -439,6 +646,10 @@ export const PurchaseProvider = ({ children }) => {
 
   const providerValue = useMemo(
     () => ({
+      unitsOfMeasure,
+      loadingUnits,
+      savingUnitId,
+      deletingUnitId,
       currencies,
       purchaseRequests,
       products,
@@ -446,8 +657,13 @@ export const PurchaseProvider = ({ children }) => {
       singleVendors,
       vendors,
       error,
+      loadingCurrencies,
+      savingCurrencyId,
+      deletingCurrencyId,
       fetchCurrencies,
       createCurrency,
+      updateCurrency,
+      softDeleteCurrency,
       uploadFile,
       downloadExcelTemplate,
       fetchVendors,
@@ -471,8 +687,17 @@ export const PurchaseProvider = ({ children }) => {
       pendingPurchaseRequest,
       rejectPurchaseRequest,
       updateProduct,
+
+      fetchUnits,
+      createUnit,
+      updateUnit,
+      softDeleteUnit,
     }),
     [
+      unitsOfMeasure,
+      loadingUnits,
+      savingUnitId,
+      deletingUnitId,
       currencies,
       purchaseRequests,
       products,
@@ -480,8 +705,13 @@ export const PurchaseProvider = ({ children }) => {
       singleVendors,
       vendors,
       error,
+      loadingCurrencies,
+      savingCurrencyId,
+      deletingCurrencyId,
       fetchCurrencies,
       createCurrency,
+      updateCurrency,
+      softDeleteCurrency,
       uploadFile,
       downloadExcelTemplate,
       fetchVendors,
@@ -505,6 +735,11 @@ export const PurchaseProvider = ({ children }) => {
       pendingPurchaseRequest,
       rejectPurchaseRequest,
       updateProduct,
+
+      fetchUnits,
+      createUnit,
+      updateUnit,
+      softDeleteUnit,
     ]
   );
 
