@@ -49,7 +49,8 @@ jobs:
           server-dir: ./ # The target folder on the server
           # The following options are important for a clean deploy
           dangerous-clean-slate: true # Deletes ALL files on the server-dir before uploading
-          # set-ftp-flags: true       # Uncomment if you have permission issues
           exclude: |
-            .well-known/*
-            .ftpquota
+            **/.ftpquota
+            **/.well-known/**
+            **/cgi-bin/**
+          # set-ftp-flags: true       # Uncomment if you have permission issues

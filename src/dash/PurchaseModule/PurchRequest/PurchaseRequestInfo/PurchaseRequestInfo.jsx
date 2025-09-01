@@ -21,26 +21,12 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import autosaveIcon from "../../../../image/autosave.svg";
 import approvedIcon from "../../../../../src/image/icons/approved-rfq.svg";
-import { extractRFQID, formatDate, parsePRId } from "../../../../helper/helper";
+import { extractRFQID, formatDate } from "../../../../helper/helper";
 import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
 import { useCustomLocation } from "../../../../context/Inventory/LocationContext";
 import Can from "../../../../components/Access/Can";
 import Swal from "sweetalert2";
-
-const textStyle = {
-  backgroundColor: "#fff",
-  color: "#7a8a98",
-  fontSize: 12,
-  // padding: "8px 12px",
-  // border: "1px solid #eee",
-};
-
-const labelStyle = {
-  ...textStyle,
-  fontWeight: "bold",
-  // backgroundColor: "#f5f5f5",
-};
 
 // Style constants
 const cellStyle = (index) => ({
@@ -55,14 +41,6 @@ const statusColorMap = {
   default: "#3B7CED",
 };
 const statusColor = (s) => statusColorMap[s] || statusColorMap.default;
-
-// Status → handler mapping
-const statusActions = {
-  approve: "approvePurchaseRequest",
-  reject: "rejectPurchaseRequest",
-  pending: "pendingPurchaseRequest",
-  draft: "updatePurchaseRequest",
-};
 
 const PurchaseRequestInfo = () => {
   const { tenantData } = useTenant();
@@ -86,11 +64,6 @@ const PurchaseRequestInfo = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [location, setLocation] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
-  const [navigation, setNavigation] = useState({
-    nextId: null,
-    prevId: null,
-    loading: false,
-  });
 
   // Placeholder notification hooks
   const showError = useCallback((msg) => {
@@ -111,34 +84,6 @@ const PurchaseRequestInfo = () => {
     });
   }, []);
 
-  // Load adjacent PR IDs
-  const loadAdjacentIds = useCallback(async (currentId) => {
-    try {
-      setNavigation((prev) => ({ ...prev, loading: true }));
-
-      const parsed = parsePRId(currentId);
-      if (!parsed) return;
-
-      const { prefix, number } = parsed;
-      const nextId = `${prefix}${String(number + 1).padStart(
-        String(number).length,
-        "0"
-      )}`;
-      const prevId =
-        number > 1
-          ? `${prefix}${String(number - 1).padStart(
-              String(number).length,
-              "0"
-            )}`
-          : null;
-
-      setNavigation({ nextId, prevId, loading: false });
-    } catch (error) {
-      console.error("Navigation error:", error);
-      setNavigation((prev) => ({ ...prev, loading: false }));
-    }
-  }, []);
-
   // Centralized data loader
   const loadPurchaseRequest = useCallback(async () => {
     setLoading(true);
@@ -146,7 +91,6 @@ const PurchaseRequestInfo = () => {
       const res = await fetchSinglePurchaseRequest(id);
       if (res.success) {
         setItem(res.data);
-        loadAdjacentIds(id);
       } else {
         console.error(res);
         showError("Failed to load purchase request.");
@@ -160,7 +104,7 @@ const PurchaseRequestInfo = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchSinglePurchaseRequest, id, showError, loadAdjacentIds]);
+  }, [fetchSinglePurchaseRequest, id, showError]);
 
   // Load location data
   const loadLocation = useCallback(
@@ -180,6 +124,8 @@ const PurchaseRequestInfo = () => {
     },
     [getSingleLocation]
   );
+
+  console.log(item);
 
   const requester = useMemo(() => {
     if (!item) return "N/A";
@@ -232,7 +178,11 @@ const PurchaseRequestInfo = () => {
 
         await action(payload, prId);
 
-        showSuccess(`Purchase request status updated to ${newStatus}`);
+        showSuccess(
+          `Purchase request status updated to ${newStatus}${
+            newStatus === "reject" && "ed"
+          }`
+        );
         await loadPurchaseRequest();
       } catch (err) {
         showError(err.message || `Could not ${newStatus} request.`);
@@ -263,14 +213,13 @@ const PurchaseRequestInfo = () => {
   }, [history, tenantSchema, item]);
 
   const handleNavigate = useCallback(
-    (newId) => {
-      if (!newId) return;
+    (id) => {
+      if (!id) return;
 
-      history.push(`/${tenantSchema}/purchase/purchase-request/${newId}/`);
+      history.push(`/${tenantSchema}/purchase/purchase-request/${id}/`);
     },
     [history, tenantSchema]
   );
-  console.log(location);
   // Render items table rows
   const renderedRows = useMemo(() => {
     if (!item?.items) return null;
@@ -454,8 +403,8 @@ const PurchaseRequestInfo = () => {
           <Tooltip title="Previous Purchase Request">
             <span>
               <IconButton
-                onClick={() => handleNavigate(navigation.prevId)}
-                disabled={!navigation.prevId || navigation.loading}
+                onClick={() => handleNavigate(item.prev_id)}
+                disabled={!item.prev_id}
               >
                 <ArrowBackIosIcon fontSize="small" />
               </IconButton>
@@ -474,8 +423,8 @@ const PurchaseRequestInfo = () => {
           <Tooltip title="Next Purchase Request">
             <span>
               <IconButton
-                onClick={() => handleNavigate(navigation.nextId)}
-                disabled={!navigation.nextId || navigation.loading}
+                onClick={() => handleNavigate(item.next_id)}
+                disabled={!item.next_id}
               >
                 <ArrowForwardIosIcon fontSize="small" />
               </IconButton>
