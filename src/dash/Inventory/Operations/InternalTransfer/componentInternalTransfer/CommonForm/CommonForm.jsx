@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import { Box, Button, Grid } from "@mui/material";
 import autosave from "../../../../../../image/autosave-text.svg";
-import "./CommonForm.css";
 import DynamicItemsTable from "./DynamicItemsTable";
 
 const CommonForm = ({
@@ -14,20 +13,12 @@ const CommonForm = ({
   setFormData,
   onSubmit,
   submitBtnText = "Save",
-  saveAsSubmitBtnText = "Done",
-  autofillRow = [
-    "product_name",
-    "product_description",
-    "unit_of_measure",
-    "available_product_quantity",
-  ],
   showSaveButton = true,
   primaryButtonVariant = "contained",
-  onSubmitAsDone,
-  setMax = null,
   onSendForApproval = false,
   sendForApprovalBtnText = "Send for Approval",
   handleSendForApproval,
+  setMax = null,
 }) => {
   // Update a single field in formData
   const handleInputChange = useCallback(
@@ -46,32 +37,20 @@ const CommonForm = ({
 
         // Auto-update related fields when product changes
         if (field === "product" && value) {
-          autofillRow.forEach((row) => {
-            if (row === "unit_of_measure") {
-              // Explicitly handle product_unit_of_measure for InternalTransferForm
-              updatedItems[index][row] =
-                value.product_unit_of_measure || value.unit_of_measure || "";
-            } else {
-              updatedItems[index][row] =
-                value[row] || value[`product_${row}`] || "";
-            }
-          });
-          updatedItems[index].description = value.product_description || "";
+          updatedItems[index].unit_of_measure =
+            value.product_unit_of_measure || "";
+          updatedItems[index].product_name = value.product_name || "";
         }
         return { ...prev, items: updatedItems };
       });
     },
-    [setFormData, autofillRow]
+    [setFormData]
   );
 
   const handleAddRow = useCallback(() => {
     setFormData((prev) => {
       const newRow = rowConfig.reduce((acc, cfg) => {
-        let defaultValue = "";
-        if (cfg.value && typeof cfg.value === "function") {
-          defaultValue = cfg.value(acc);
-        }
-        acc[cfg.field] = defaultValue;
+        acc[cfg.field] = "";
         return acc;
       }, {});
       return {
@@ -95,13 +74,6 @@ const CommonForm = ({
     e.preventDefault();
     if (onSubmit) {
       onSubmit(formData);
-    }
-  };
-
-  const handleSubmitAsDone = (e) => {
-    e.preventDefault();
-    if (onSubmitAsDone) {
-      onSubmitAsDone(formData);
     }
   };
 
@@ -163,15 +135,6 @@ const CommonForm = ({
                   Add Item
                 </Button>
                 <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                  {onSubmitAsDone && (
-                    <Button
-                      variant="contained"
-                      disableElevation
-                      onClick={handleSubmitAsDone}
-                    >
-                      {saveAsSubmitBtnText}
-                    </Button>
-                  )}
                   {showSaveButton && (
                     <Button
                       variant={primaryButtonVariant}

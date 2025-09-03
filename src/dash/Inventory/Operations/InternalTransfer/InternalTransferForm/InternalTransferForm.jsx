@@ -5,7 +5,9 @@ import Swal from "sweetalert2";
 import InternalTransferFormBasicInputs from "./InternalTransferFormBasicInputs";
 import CommonForm from "../componentInternalTransfer/CommonForm/CommonForm";
 import { formatDate } from "../../../../../helper/helper";
-import "./InternalTransferForm.css";
+import { useHistory } from "react-router-dom";
+import { useTenant } from "../../../../../context/TenantContext";
+// import "./InternalTransferForm.css";
 
 // Default form data structure
 const defaultFormData = {
@@ -22,7 +24,10 @@ const InternalTransferForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { locationProducts } = useCustomLocation();
   const { createInternalTransfer } = useInternalTransfer();
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
 
+  const history = useHistory();
   // Row configuration for the dynamic table
   const rowConfig = [
     {
@@ -93,27 +98,91 @@ const InternalTransferForm = () => {
       };
 
       const response = await createInternalTransfer(payload);
-      setFormData(defaultFormData); // Reset form after successful submission
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Internal transfer created successfully!",
-      });
-    } catch (error) {
-      let errorMessage = error.message || "Failed to create transfer";
-      if (error.response?.data?.non_field_errors) {
-        errorMessage = error.response.data.non_field_errors.includes(
-          "Insufficient stock for the product in the source location."
-        )
-          ? "Insufficient stock for one or more products. Please adjust the quantity requested or restock and try again."
-          : error.response.data.non_field_errors.join("; ");
+      if (response.success) {
+        await Swal.fire({
+          title: "Success!",
+          text: "Transfer order created successfully",
+          icon: "success",
+          confirmButtonText: "View tranfer order",
+          showCancelButton: true,
+          cancelButtonText: "Create Another",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const transferId = response.data?.id;
+            history.push(
+              `/${tenant_schema_name}/inventory/operations/internal-transfer/${transferId}`
+            );
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // Reset form for new entry
+            setFormData(defaultFormData);
+          }
+        });
       }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: errorMessage,
-      });
+    } catch (error) {
+      const apiError = error?.error;
+
+      if (Array.isArray(apiError)) {
+        // Build table rows dynamically
+        const rows = apiError
+          .map((item) => {
+            const [product, message] = Object.entries(item).find(
+              ([key]) => key !== "Quantity left in location"
+            );
+            const quantity = item["Quantity left in location"];
+
+            return `
+          <tr>
+            <td style="padding:6px; border:1px solid #ddd;">${product}</td>
+            <td style="padding:6px; border:1px solid #ddd; color:#b91c1c;">${message}</td>
+            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${quantity}</td>
+          </tr>
+        `;
+          })
+          .join("");
+
+        Swal.fire({
+          icon: "error",
+          title: "Insufficient Stock",
+          html: `
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
+          <thead>
+            <tr style="background:#f3f4f6;">
+              <th style="padding:8px; border:1px solid #ddd;">Product</th>
+              <th style="padding:8px; border:1px solid #ddd;">Message</th>
+              <th style="padding:8px; border:1px solid #ddd;">Qty Left</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+        <p>Please adjust Qty or restock product</p>
+      `,
+          confirmButtonText: "Okay",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.message || "Something went wrong",
+        });
+      }
     } finally {
+      // catch (error) {
+      //   let errorMessage = error.message || "Failed to create transfer";
+      //   if (error.response?.data?.non_field_errors) {
+      //     errorMessage = error.response.data.non_field_errors.includes(
+      //       "Insufficient stock for the product in the source location."
+      //     )
+      //       ? "Insufficient stock for one or more products. Please adjust the quantity requested or restock and try again."
+      //       : error.response.data.non_field_errors.join("; ");
+      //   }
+      //   Swal.fire({
+      //     icon: "error",
+      //     title: "Error",
+      //     text: errorMessage,
+      //   });
+      // }
       setIsSubmitting(false);
     }
   };
@@ -137,52 +206,75 @@ const InternalTransferForm = () => {
       };
 
       const response = await createInternalTransfer(payload);
-      setFormData(defaultFormData); // Reset form after successful submission
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Internal transfer sent for approval!",
-      });
-    } catch (error) {
-      let errorMessage = "Failed to send for approval";
-      if (error?.error?.non_field_errors) {
-        if (
-          error?.error?.non_field_errors.includes(
-            "Insufficient stock for the product in the source location."
-          )
-        ) {
-          // Find items with insufficient stock
-          const insufficientItems = formData.items
-            .map((item) => {
-              const productInLocation = locationProducts.find(
-                (p) => p.product_id === item.product?.product_id
-              );
-              if (
-                productInLocation &&
-                Number(item.quantity_requested) >
-                  Number(productInLocation.quantity)
-              ) {
-                return `${item.product.product_name} (Available: ${productInLocation.quantity} Unit(s))`;
-              }
-              return null;
-            })
-            .filter(Boolean);
-
-          errorMessage =
-            insufficientItems.length > 0
-              ? `Insufficient stock for: ${insufficientItems.join(
-                  ", "
-                )}. Please adjust the quantity requested or restock and try again.`
-              : "Insufficient stock for one or more products. Please adjust the quantity requested or restock and try again.";
-        } else {
-          errorMessage = error?.error?.non_field_errors.join("; ");
-        }
+      if (response.success) {
+        await Swal.fire({
+          title: "Success!",
+          text: "Transfer order sent. Awaiting approval.",
+          icon: "success",
+          confirmButtonText: "View tranfer order",
+          showCancelButton: true,
+          cancelButtonText: "Create Another",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const transferId = response.data?.id;
+            history.push(
+              `/${tenant_schema_name}/inventory/operations/internal-transfer/${transferId}`
+            );
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // Reset form for new entry
+            setFormData(defaultFormData);
+          }
+        });
       }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: errorMessage,
-      });
+    } catch (error) {
+      const apiError = error?.error;
+
+      if (Array.isArray(apiError)) {
+        // Build table rows dynamically
+        const rows = apiError
+          .map((item) => {
+            const [product, message] = Object.entries(item).find(
+              ([key]) => key !== "Quantity left in location"
+            );
+            const quantity = item["Quantity left in location"];
+
+            return `
+          <tr>
+            <td style="padding:6px; border:1px solid #ddd;">${product}</td>
+            <td style="padding:6px; border:1px solid #ddd; color:#b91c1c;">${message}</td>
+            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${quantity}</td>
+          </tr>
+        `;
+          })
+          .join("");
+
+        Swal.fire({
+          icon: "error",
+          title: "Insufficient Stock",
+          html: `
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
+          <thead>
+            <tr style="background:#f3f4f6;">
+              <th style="padding:8px; border:1px solid #ddd;">Product</th>
+              <th style="padding:8px; border:1px solid #ddd;">Message</th>
+              <th style="padding:8px; border:1px solid #ddd;">Qty Left</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+        <p>Please adjust Qty or restock product</p>
+      `,
+          confirmButtonText: "Okay",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.message || "Something went wrong",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

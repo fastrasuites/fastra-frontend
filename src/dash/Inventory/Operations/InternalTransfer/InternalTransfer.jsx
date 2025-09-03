@@ -10,6 +10,7 @@ import { formatDate } from "../../../../helper/helper";
 // Status color mapping
 const getStatusColor = (status) => {
   const s = String(status).toLowerCase();
+  if (s === "approved") return "#2899B2";
   if (s === "done") return "#158048";
   if (s === "draft") return "#2899B2";
   if (s === "release") return "#8B21DF";
@@ -111,8 +112,6 @@ export default function InternalTransfer() {
   useEffect(() => {
     getInternalTransferList(); // Initial load
   }, [getInternalTransferList]);
-
-  console.log("internalTransfers: ", internalTransfers);
 
   return (
     <Box p={2} mr={2}>
