@@ -1,25 +1,26 @@
-.materialbasicInformationInputs{
+.materialbasicInformationInputs {
   display: grid;
-  grid-template-columns: 80px 80px 400px 400px;
-  gap: 120px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 50px;
 }
 
 .supplierNameAndLocation {
-    display: grid;
-    grid-template-columns: 1fr 1fr 130px;
-    gap: 110px
+  display: grid;
+  grid-template-columns: 1fr 1fr 130px;
+  gap: 110px;
 }
 
 .formLabelAndValue {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-.formLabelAndValue > p, .formLabelAndValue > p {
+.formLabelAndValue > p,
+.formLabelAndValue > p {
   font-weight: 500;
   font-size: 16px;
   line-height: 100%;
-  color: #7A8A98;
+  color: #7a8a98;
   white-space: nowrap;
 }

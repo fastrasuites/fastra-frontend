@@ -136,6 +136,9 @@ const CreateAccessGroup = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
 
+  console.log("applications", applications);
+  console.log("modules", modules);
+
   return (
     <Box p={{ xs: 2, sm: 4, md: 6 }}>
       <AppBar

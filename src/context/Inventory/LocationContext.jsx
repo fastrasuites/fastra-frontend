@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { useTenant } from "../TenantContext";
 import { getTenantClient } from "../../services/apiService";
+import axios from "axios";
 
 // Create context
 const LocationContext = createContext(null);
@@ -34,6 +35,8 @@ export const LocationProvider = ({ children }) => {
   const [locationProducts, setLocationProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState(null);
+  const [locationsForOtherUser, setLocationsForOtherUser] = useState([]);
+  const [allUserLocations, setAllUserLocations] = useState([]);
 
   const { tenant_schema_name, access_token, refresh_token } = tenantData || {};
 
@@ -271,8 +274,65 @@ export const LocationProvider = ({ children }) => {
     [client]
   );
 
+  //GET: /inventory/location/get-other-locations-for-user/
+  const getLocationsForOtherUser = useCallback(async () => {
+    if (!client) {
+      const errMsg =
+        "API client not available. Please check tenant configuration.";
+      console.log(errMsg);
+      setError(errMsg);
+      return Promise.reject(new Error(errMsg));
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await client.get(
+        "/inventory/location/get-other-locations-for-user/"
+      );
+      const data = await response.data;
+      setLocationsForOtherUser(data);
+      setError(null);
+      return { message: "Success", data };
+    } catch (err) {
+      console.log(err);
+      setError(err.message || "failed to load user location");
+      return Promise.reject(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
+  // GET: /inventory/location/get-all-user-locations/
+  const getAllUserLocations = useCallback(async () => {
+    if (!client) {
+      const errMsg =
+        "API client not available. Please check tenant configuration.";
+      console.log(errMsg);
+      setError(errMsg);
+      return Promise.reject(new Error(errMsg));
+    }
+    setIsLoading(true);
+    try {
+      const response = await client.get(
+        "/inventory/location/get-all-user-locations/"
+      );
+      const data = await response.data;
+      setAllUserLocations(data);
+      setError(null);
+      return { message: "success", data };
+    } catch (err) {
+      console.log(err.message || "Failed to load user locations");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [client]);
+
   const contextValue = useMemo(
     () => ({
+      getAllUserLocations,
+      allUserLocations,
+      getLocationsForOtherUser,
+      locationsForOtherUser,
       locationList,
       activeLocationList,
       singleLocation,
@@ -291,6 +351,10 @@ export const LocationProvider = ({ children }) => {
       getLocationProducts,
     }),
     [
+      getAllUserLocations,
+      allUserLocations,
+      getLocationsForOtherUser,
+      locationsForOtherUser,
       activeLocationList,
       locationList,
       singleLocation,

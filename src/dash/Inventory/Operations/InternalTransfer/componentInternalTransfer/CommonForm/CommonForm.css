@@ -1,0 +1,39 @@
+/* .common-form {
+  margin: 40px;
+  display: grid;
+  gap: 24px;
+}
+
+.common-form-header {
+  display: flex;
+  justify-content: start;
+  gap: 34px;
+  align-items: center;
+}
+
+.common-form-new-product-btn {
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 100%;
+}
+
+.common-form-body {
+  display: grid;
+  background-color: #ffffff;
+  border-radius: 4px;
+  gap: 32px;
+  padding: 24px;
+  border: 1px solid #e2e6e9;
+}
+
+.common-form-title-section {
+    display: flex;
+    justify-content: space-between;
+}
+
+.common-form-title {
+  font-weight: 500;
+  font-size: 20px;
+  color: #3b7ced;
+}
+ */

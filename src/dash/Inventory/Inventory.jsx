@@ -36,6 +36,7 @@ import BackOrderDetails from "./Operations/BackOrder/BackOrderDetails/BackOrderD
 import ReturnForm from "./Operations/Returns/ReturnForm";
 import ReturnIncomingProductForm from "./Operations/Returns/ReturnForm";
 import ReturnList from "./Operations/Returns/ReturnsList";
+import InternalTransferEditForm from "./Operations/InternalTransfer/InternalTransferForm/InternalTransferEditForm";
 
 const InventoryLayout = () => {
   const { path } = useRouteMatch();
@@ -112,6 +113,12 @@ const InventoryLayout = () => {
             exact
             path={`${path}/operations/internal-transfer/:id`}
             component={InternalTransferInfo}
+          />
+
+          <Route
+            exact
+            path={`${path}/operations/internal-transfer/:id/edit`}
+            component={InternalTransferEditForm}
           />
 
           <Route

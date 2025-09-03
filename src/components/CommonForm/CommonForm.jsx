@@ -27,6 +27,9 @@ const CommonForm = ({
   primaryButtonVariant = "outlined",
   onSubmitAsDone,
   setMax = null,
+  onSendForApproval = false,
+  sendForApprovalBtnText = "Send for Approval",
+  handleSendForApproval,
 }) => {
   // Update a single field in formData
   const handleInputChange = useCallback(
@@ -78,24 +81,6 @@ const CommonForm = ({
       };
     });
   }, [rowConfig, setFormData]);
-
-  // Adding a new row: use the rowConfig to define default values
-  // const handleAddRow = useCallback(() => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     items: [
-  //       ...prev.items,
-  //       rowConfig.reduce(
-  //         (acc, cfg) => {
-  //           acc[cfg.field] = "";
-  //           return acc;
-  //         }
-  //         // ,
-  //         // { id: `new-${prev.items.length + 1}` }
-  //       ),
-  //     ],
-  //   }));
-  // }, [rowConfig, setFormData]);
 
   // Removing an existing row
   const handleRemoveRow = useCallback(
@@ -168,17 +153,6 @@ const CommonForm = ({
               Add Item
             </Button>
             <Box sx={{ display: "flex", gap: 2 }}>
-              {/* <Button variant={primaryButtonVariant} type="submit">
-                {isEdit ? "Save Changes" : submitBtnText}
-              </Button> */}
-              {/* {!isEdit && showSaveButton ? (
-                <Button variant="contained" onClick={handleSubmit}>
-                  Save
-                </Button>
-                ""
-              ) : (
-                
-              )} */}
               {onSubmitAsDone && (
                 <Button
                   variant="contained"
@@ -196,6 +170,17 @@ const CommonForm = ({
               >
                 {isEdit ? "Update" : submitBtnText}
               </Button>
+
+              {/* used by internal transferForm */}
+              {onSendForApproval && (
+                <Button
+                  variant="contained"
+                  disableElevation
+                  onClick={handleSendForApproval}
+                >
+                  {sendForApprovalBtnText}
+                </Button>
+              )}
             </Box>
           </Box>
         </div>

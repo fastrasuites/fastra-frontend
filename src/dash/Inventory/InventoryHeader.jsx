@@ -54,6 +54,17 @@ const InventoryHeader = () => {
       });
     }
 
+    // --------- INTERNAL TRANSFER -----------
+
+    if (hasPermission("inventory:deliveryorder:view")) {
+      subItems.push({
+        label: "Internal Transfer",
+        link: `/${tenant_schema_name}/inventory/operations/internal-transfer`,
+      });
+    }
+
+    // ----------------------------------------
+
     subItems.push({
       label: "Back Order",
       link: `/${tenant_schema_name}/inventory/operations/back-orders`,
