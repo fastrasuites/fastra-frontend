@@ -1,211 +1,301 @@
-// CreateIncomingProduct.jsx
-import React, { useEffect, useState } from "react";
-import { Autocomplete, TextField } from "@mui/material";
-import CommonForm from "../../../../../components/CommonForm/CommonForm";
-import { extractRFQID, formatDate } from "../../../../../helper/helper";
-import "./InternalTransferForm.css";
+import React, { useState } from "react";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
-
-// Sample products list array
-const productsList = [
-  {
-    id: 3,
-    product_name: "Meat Burger",
-    product_description: "Delicious Meat",
-    product_category: "consumable",
-    available_product_quantity: 2,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/3/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/2/",
-      unit_name: "centimeter",
-      unit_category: "cm",
-    },
-  },
-  {
-    id: 4,
-    product_name: "Vegetable Mix",
-    product_description: "Assorted fresh vegetables",
-    product_category: "perishable",
-    available_product_quantity: 50,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/4/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/3/",
-      unit_name: "kilogram",
-      unit_category: "kg",
-    },
-  },
-  {
-    id: 5,
-    product_name: "Wheat Bread",
-    product_description: "Freshly baked wheat bread",
-    product_category: "bakery",
-    available_product_quantity: 100,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/5/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/4/",
-      unit_name: "loaf",
-      unit_category: "unit",
-    },
-  },
-  {
-    id: 6,
-    product_name: "Organic Whole Milk",
-    product_description: "Fresh organic whole milk",
-    product_category: "dairy",
-    available_product_quantity: 75,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/6/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/5/",
-      unit_name: "liter",
-      unit_category: "L",
-    },
-  },
-  {
-    id: 7,
-    product_name: "Premium Cheese",
-    product_description: "High quality premium cheese",
-    product_category: "dairy",
-    available_product_quantity: 20,
-    url: "http://tega.fastrasuiteapi.com.ng/purchase/products/7/",
-    unit_of_measure: {
-      url: "http://tega.fastrasuiteapi.com.ng/purchase/unit-of-measure/6/",
-      unit_name: "slice",
-      unit_category: "unit",
-    },
-  },
-];
-
-// Row configuration for the dynamic table
-const rowConfig = [
-  {
-    label: "Product Name",
-    field: "product",
-    type: "autocomplete",
-    options: productsList,
-    getOptionLabel: (option) => option?.product_name || "",
-  },
-  {
-    label: "Expected QTY",
-    field: "available_product_quantity",
-    type: "number",
-    transform: (value) => value || "",
-  },
-  {
-    label: "Unit of Measure",
-    field: "unit_of_measure",
-    type: "text",
-    disabled: true,
-    transform: (value) => value?.unit_category || "",
-  },
-  {
-    label: "QTY Received",
-    field: "qty_received",
-    type: "number",
-  },
-];
+import { useInternalTransfer } from "../../../../../context/Inventory/InternalTransferContext";
+import Swal from "sweetalert2";
+import InternalTransferFormBasicInputs from "./InternalTransferFormBasicInputs";
+import CommonForm from "../componentInternalTransfer/CommonForm/CommonForm";
+import { formatDate } from "../../../../../helper/helper";
+import { useHistory } from "react-router-dom";
+import { useTenant } from "../../../../../context/TenantContext";
+// import "./InternalTransferForm.css";
 
 // Default form data structure
 const defaultFormData = {
-  id: extractRFQID("MCN0001"),
-  dateCreated: formatDate(Date.now()),
-  createdBy: "John Doe",
-  location: "Location 1",
-  items: [],
+  id: "",
   status: "draft",
-  is_hidden: true,
-};
-
-// Basic input component for the incoming product form
-const InternalTransferFormBasicInputs = ({ formData, handleInputChange }) => {
-  const [selectedReceipt, setSelectedReceipt] = React.useState(null);
-  const [selectedLoaction, setSelectedLocation] = useState(null);
-
-  const { locationList, getLocationList } = useCustomLocation();
-
-  useEffect(() => {
-    getLocationList();
-  }, []);
-
-  // Sync with parent state upon selection change
-  const handleReceiptChange = (event, newValue) => {
-    setSelectedReceipt(newValue);
-    handleInputChange("receiptTypes", newValue);
-  };
-
-  return (
-    <>
-      <div className="materialbasicInformationInputs">
-        <div className="formLabelAndValue">
-          <label>ID</label>
-          <p>{formData.id}</p>
-        </div>
-        <div className="formLabelAndValue">
-          <label>Date</label>
-          <p>{formData.dateCreated}</p>
-        </div>
-        {locationList.length <= 1 ? (
-          <div className="formLabelAndValue">
-            <label>Location</label>
-            <p>{formData.location}</p>
-          </div>
-        ) : (
-          <div className="">
-            <label style={{ marginBottom: "6px", display: "block" }}>
-              Source Location
-            </label>
-            <Autocomplete
-              disablePortal
-              options={locationList}
-              value={selectedLoaction}
-              getOptionLabel={(option) => option?.id || ""}
-              isOptionEqualToValue={(option, value) =>
-                option?.receiptType === value?.id
-              }
-              onChange={handleReceiptChange}
-              sx={{ width: "100%", mb: 2 }}
-              renderInput={(params) => (
-                <TextField {...params} placeholder="Input Source Location" />
-              )}
-            />
-          </div>
-        )}
-
-        <div className="supplierName">
-          <label style={{ marginBottom: "6px", display: "block" }}>
-            Destination Location
-          </label>
-          <TextField
-            type="text"
-            value={formData.notes}
-            onChange={(e) => handleInputChange("notes", e.target.value)}
-            sx={{ width: "100%" }}
-            placeholder="Input Destination Location"
-          />
-        </div>
-      </div>
-    </>
-  );
+  dateCreated: formatDate(Date.now()),
+  sourceLocation: null,
+  destinationLocation: null,
+  items: [],
 };
 
 const InternalTransferForm = () => {
   const [formData, setFormData] = useState(defaultFormData);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { locationProducts } = useCustomLocation();
+  const { createInternalTransfer } = useInternalTransfer();
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+
+  const history = useHistory();
+  // Row configuration for the dynamic table
+  const rowConfig = [
+    {
+      label: "Product Name",
+      field: "product",
+      type: "autocomplete",
+      options: locationProducts,
+      getOptionLabel: (option) => option?.product_name || "",
+      isOptionEqualToValue: (option, value) =>
+        option.product_id === value?.product_id,
+    },
+    {
+      label: "Quantity",
+      field: "quantity_requested",
+      type: "number",
+      transform: (value) => (value ? Number(value).toLocaleString() : ""),
+      render: (value) => (value ? Number(value).toLocaleString() : ""),
+    },
+    {
+      label: "Unit of Measure",
+      field: "unit_of_measure",
+      type: "text",
+      disabled: true,
+      transform: (value) => value || "",
+    },
+  ];
+
+  // Validate form data
+  const validateFormData = (data) => {
+    const errors = [];
+    if (!data.sourceLocation?.id || !data.destinationLocation?.id) {
+      errors.push("Source and destination locations are required");
+    }
+    if (data.sourceLocation?.id === data.destinationLocation?.id) {
+      errors.push("Source and destination locations cannot be the same");
+    }
+    if (data.items.length === 0) {
+      errors.push("At least one item is required");
+    }
+    data.items.forEach((item, index) => {
+      if (!item.product?.product_id) {
+        errors.push(`Item ${index + 1}: Product is required`);
+      }
+      if (!item.quantity_requested || Number(item.quantity_requested) <= 0) {
+        errors.push(`Item ${index + 1}: Valid quantity is required`);
+      }
+    });
+    return errors;
+  };
 
   // Callback to process the final filled form data
-  const handleSubmit = (filledFormData) => {
-    console.log("Final Form Data", filledFormData);
+  const handleSubmit = async (filledFormData) => {
+    setIsSubmitting(true);
+    try {
+      const errors = validateFormData(filledFormData);
+      if (errors.length > 0) {
+        throw new Error(errors.join("; "));
+      }
+
+      const payload = {
+        source_location: filledFormData.sourceLocation?.id,
+        destination_location: filledFormData.destinationLocation?.id,
+        status: filledFormData.status || "draft",
+        internal_transfer_items: filledFormData.items.map((item) => ({
+          product: item.product?.product_id,
+          quantity_requested: String(item.quantity_requested),
+        })),
+      };
+
+      const response = await createInternalTransfer(payload);
+      if (response.success) {
+        await Swal.fire({
+          title: "Success!",
+          text: "Transfer order created successfully",
+          icon: "success",
+          confirmButtonText: "View tranfer order",
+          showCancelButton: true,
+          cancelButtonText: "Create Another",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const transferId = response.data?.id;
+            history.push(
+              `/${tenant_schema_name}/inventory/operations/internal-transfer/${transferId}`
+            );
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // Reset form for new entry
+            setFormData(defaultFormData);
+          }
+        });
+      }
+    } catch (error) {
+      const apiError = error?.error;
+
+      if (Array.isArray(apiError)) {
+        // Build table rows dynamically
+        const rows = apiError
+          .map((item) => {
+            const [product, message] = Object.entries(item).find(
+              ([key]) => key !== "Quantity left in location"
+            );
+            const quantity = item["Quantity left in location"];
+
+            return `
+          <tr>
+            <td style="padding:6px; border:1px solid #ddd;">${product}</td>
+            <td style="padding:6px; border:1px solid #ddd; color:#b91c1c;">${message}</td>
+            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${quantity}</td>
+          </tr>
+        `;
+          })
+          .join("");
+
+        Swal.fire({
+          icon: "error",
+          title: "Insufficient Stock",
+          html: `
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
+          <thead>
+            <tr style="background:#f3f4f6;">
+              <th style="padding:8px; border:1px solid #ddd;">Product</th>
+              <th style="padding:8px; border:1px solid #ddd;">Message</th>
+              <th style="padding:8px; border:1px solid #ddd;">Qty Left</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+        <p>Please adjust Qty or restock product</p>
+      `,
+          confirmButtonText: "Okay",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.message || "Something went wrong",
+        });
+      }
+    } finally {
+      // catch (error) {
+      //   let errorMessage = error.message || "Failed to create transfer";
+      //   if (error.response?.data?.non_field_errors) {
+      //     errorMessage = error.response.data.non_field_errors.includes(
+      //       "Insufficient stock for the product in the source location."
+      //     )
+      //       ? "Insufficient stock for one or more products. Please adjust the quantity requested or restock and try again."
+      //       : error.response.data.non_field_errors.join("; ");
+      //   }
+      //   Swal.fire({
+      //     icon: "error",
+      //     title: "Error",
+      //     text: errorMessage,
+      //   });
+      // }
+      setIsSubmitting(false);
+    }
   };
-  console.log("Form Data", formData);
+
+  const handleSendForApproval = async () => {
+    setIsSubmitting(true);
+    try {
+      const errors = validateFormData(formData);
+      if (errors.length > 0) {
+        throw new Error(errors.join("; "));
+      }
+
+      const payload = {
+        source_location: formData.sourceLocation?.id,
+        destination_location: formData.destinationLocation?.id,
+        status: "awaiting_approval",
+        internal_transfer_items: formData.items.map((item) => ({
+          product: item.product?.product_id,
+          quantity_requested: String(item.quantity_requested),
+        })),
+      };
+
+      const response = await createInternalTransfer(payload);
+      if (response.success) {
+        await Swal.fire({
+          title: "Success!",
+          text: "Transfer order sent. Awaiting approval.",
+          icon: "success",
+          confirmButtonText: "View tranfer order",
+          showCancelButton: true,
+          cancelButtonText: "Create Another",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const transferId = response.data?.id;
+            history.push(
+              `/${tenant_schema_name}/inventory/operations/internal-transfer/${transferId}`
+            );
+          } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // Reset form for new entry
+            setFormData(defaultFormData);
+          }
+        });
+      }
+    } catch (error) {
+      const apiError = error?.error;
+
+      if (Array.isArray(apiError)) {
+        // Build table rows dynamically
+        const rows = apiError
+          .map((item) => {
+            const [product, message] = Object.entries(item).find(
+              ([key]) => key !== "Quantity left in location"
+            );
+            const quantity = item["Quantity left in location"];
+
+            return `
+          <tr>
+            <td style="padding:6px; border:1px solid #ddd;">${product}</td>
+            <td style="padding:6px; border:1px solid #ddd; color:#b91c1c;">${message}</td>
+            <td style="padding:6px; border:1px solid #ddd; text-align:center;">${quantity}</td>
+          </tr>
+        `;
+          })
+          .join("");
+
+        Swal.fire({
+          icon: "error",
+          title: "Insufficient Stock",
+          html: `
+        <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
+          <thead>
+            <tr style="background:#f3f4f6;">
+              <th style="padding:8px; border:1px solid #ddd;">Product</th>
+              <th style="padding:8px; border:1px solid #ddd;">Message</th>
+              <th style="padding:8px; border:1px solid #ddd;">Qty Left</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+        <p>Please adjust Qty or restock product</p>
+      `,
+          confirmButtonText: "Okay",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.message || "Something went wrong",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <CommonForm
       basicInformationTitle="Product Information"
       basicInformationInputs={InternalTransferFormBasicInputs}
-      formTitle="New Material Consumption"
+      formTitle="New Transfer Order"
       formData={formData}
       setFormData={setFormData}
       rowConfig={rowConfig}
       isEdit={false}
       onSubmit={handleSubmit}
-      submitBtnText="Validate"
+      submitBtnText={isSubmitting ? "Saving..." : "Save"}
+      onSendForApproval={true}
+      sendForApprovalBtnText={isSubmitting ? "Sending..." : "Send for Approval"}
+      handleSendForApproval={handleSendForApproval}
+      showSaveButton={!isSubmitting}
+      primaryButtonVariant="outlined"
     />
   );
 };

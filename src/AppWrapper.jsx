@@ -20,6 +20,7 @@ import { AccessGroupsProvider } from "./context/AccessGroups/AccessGroupsContext
 import { UserProvider } from "./context/Settings/UserContext";
 import { CompanyProvider } from "./context/Settings/CompanyContext";
 import { BackOrderProvider } from "./context/Inventory/BackOrderContext";
+import { InternalTransferProvider } from "./context/Inventory/InternalTransferContext";
 
 function AppWrapper() {
   return (
@@ -36,17 +37,19 @@ function AppWrapper() {
                         <BackOrderProvider>
                           <DeliveryOrderProvider>
                             <StockAdjustmentProvider>
-                              <StockMoveProvider>
-                                <UserProvider>
-                                  <CompanyProvider>
-                                    <ScrapProvider>
-                                      <Router>
-                                        <App />
-                                      </Router>
-                                    </ScrapProvider>
-                                  </CompanyProvider>
-                                </UserProvider>
-                              </StockMoveProvider>
+                              <InternalTransferProvider>
+                                <StockMoveProvider>
+                                  <UserProvider>
+                                    <CompanyProvider>
+                                      <ScrapProvider>
+                                        <Router>
+                                          <App />
+                                        </Router>
+                                      </ScrapProvider>
+                                    </CompanyProvider>
+                                  </UserProvider>
+                                </StockMoveProvider>
+                              </InternalTransferProvider>
                             </StockAdjustmentProvider>
                           </DeliveryOrderProvider>
                         </BackOrderProvider>
