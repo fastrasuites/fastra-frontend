@@ -65,6 +65,15 @@ const PurchaseRequestInfo = () => {
   const [location, setLocation] = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
 
+  // Check if all items have prices
+  const hasAllPrices = useMemo(() => {
+    if (!item?.items || item.items.length === 0) return false;
+    return item.items.every(
+      (row) =>
+        row.estimated_unit_price && parseFloat(row.estimated_unit_price) > 0
+    );
+  }, [item]);
+
   // Placeholder notification hooks
   const showError = useCallback((msg) => {
     Swal.fire({
@@ -160,6 +169,15 @@ const PurchaseRequestInfo = () => {
         return;
       }
 
+      // Check for prices before approving
+      if (newStatus === "approve" && !hasAllPrices) {
+        showError(
+          "All purchase request items must have prices before approval."
+        );
+        setActionLoading(false);
+        return;
+      }
+
       const payload = {
         status: newStatus,
         // Include other necessary fields here
@@ -190,7 +208,17 @@ const PurchaseRequestInfo = () => {
         setActionLoading(false);
       }
     },
-    [item, showError, showSuccess, loadPurchaseRequest]
+    [
+      item,
+      showError,
+      showSuccess,
+      loadPurchaseRequest,
+      hasAllPrices,
+      approvePurchaseRequest,
+      pendingPurchaseRequest,
+      rejectPurchaseRequest,
+      updatePurchaseRequest,
+    ]
   );
 
   // Convert to RFQ
@@ -323,7 +351,13 @@ const PurchaseRequestInfo = () => {
       default:
         return null;
     }
-  }, [item, handleConvertToRFQ, handleStatusChange, actionLoading]);
+  }, [
+    item,
+    handleConvertToRFQ,
+    handleStatusChange,
+    actionLoading,
+    hasAllPrices,
+  ]);
 
   if (loading) {
     return (
@@ -439,8 +473,14 @@ const PurchaseRequestInfo = () => {
         <div className="rfqBasicInfo">
           <h2>Basic Information</h2>
           <div className="editCancel">
-            <Can app="purchase" module="purchaserequest" action="edit">
-              {!["pending", "approved", "rejected"].includes(item.status) && (
+            <Can
+              app="purchase"
+              module="purchaserequest"
+              action={
+                ["draft", "pending"].includes(item.status) ? "approve" : "edit"
+              }
+            >
+              {!["approved", "rejected"].includes(item.status) && (
                 <Button onClick={handleEditClick} disabled={actionLoading}>
                   Edit
                 </Button>
