@@ -7,6 +7,7 @@ import InternalTransferFormBasicInputs from "./InternalTransferFormBasicInputs";
 import CommonForm from "../componentInternalTransfer/CommonForm/CommonForm";
 import { formatDate } from "../../../../../helper/helper";
 import { Grid, Typography } from "@mui/material";
+import { useTenant } from "../../../../../context/TenantContext";
 
 // Status color mapping
 const getStatusColor = (status) => {
@@ -42,9 +43,12 @@ const InternalTransferEditForm = () => {
   const history = useHistory();
   const { singleTransfer, getInternalTransfer, updateInternalTransfer } =
     useInternalTransfer();
-  const { locationProducts } = useCustomLocation();
+  const { locationProducts, allUserLocations, locationsForOtherUser } =
+    useCustomLocation();
   const [formData, setFormData] = useState(defaultFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { tenantData } = useTenant();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
 
   // Fetch transfer data
   useEffect(() => {
@@ -56,13 +60,27 @@ const InternalTransferEditForm = () => {
   // Prefill form data only when singleTransfer is available and formData is default
   useEffect(() => {
     if (singleTransfer && formData.id === "") {
+      // normalize to match options from context
+      const normalizeLocation = (apiLocation, options) => {
+        if (!apiLocation) return null;
+        return (
+          options.find((opt) => String(opt.id) === String(apiLocation.id)) ||
+          apiLocation
+        );
+      };
+
       setFormData({
         id: singleTransfer.id || "",
         status: singleTransfer.status || "draft",
         dateCreated: formatDate(singleTransfer.date_created) || "",
-        sourceLocation: singleTransfer.source_location_details || null,
-        destinationLocation:
-          singleTransfer.destination_location_details || null,
+        sourceLocation: normalizeLocation(
+          singleTransfer.source_location_details,
+          locationsForOtherUser
+        ),
+        destinationLocation: normalizeLocation(
+          singleTransfer.destination_location_details,
+          allUserLocations
+        ),
         items:
           singleTransfer.internal_transfer_items?.map((item) => ({
             product: {
@@ -79,7 +97,7 @@ const InternalTransferEditForm = () => {
         tenant_schema_name: singleTransfer.tenant_schema_name || "",
       });
     }
-  }, [singleTransfer, formData.id]);
+  }, [singleTransfer, formData.id, locationsForOtherUser, allUserLocations]);
 
   // Row configuration for the dynamic table
   const rowConfig = [
@@ -112,10 +130,14 @@ const InternalTransferEditForm = () => {
   const validateFormData = (data) => {
     const errors = [];
     if (!data.sourceLocation?.id || !data.destinationLocation?.id) {
-      errors.push("Source and destination locations are required");
+      errors.push(
+        "Source and destination locations are required. You need to enable multilocation"
+      );
     }
     if (data.sourceLocation?.id === data.destinationLocation?.id) {
-      errors.push("Source and destination locations cannot be the same");
+      errors.push(
+        "Source and destination locations cannot be the same. You need to enable multilocation"
+      );
     }
     if (data.items.length === 0) {
       errors.push("At least one item is required");
@@ -157,22 +179,57 @@ const InternalTransferEditForm = () => {
         text: "Internal transfer updated successfully!",
       });
       history.push(
-        `/${filledFormData.tenant_schema_name}/inventory/operations/internal-transfer/${id}`
+        `/${tenant_schema_name}/inventory/operations/internal-transfer/${id}`
       );
     } catch (error) {
-      let errorMessage = error.message || "Failed to update transfer";
-      if (error.response?.data?.non_field_errors) {
-        errorMessage = error.response.data.non_field_errors.includes(
-          "Insufficient stock for the product in the source location."
-        )
-          ? "Insufficient stock for one or more products. Please adjust the quantity requested or restock and try again."
-          : error.response.data.non_field_errors.join("; ");
+      const apiError = error?.error;
+
+      if (Array.isArray(apiError)) {
+        // Build table rows dynamically
+        const rows = apiError
+          .map((item) => {
+            const [product, message] = Object.entries(item).find(
+              ([key]) => key !== "Quantity left in location"
+            );
+            const quantity = item["Quantity left in location"];
+
+            return `
+               <tr>
+                 <td style="padding:6px; border:1px solid #ddd;">${product}</td>
+                 <td style="padding:6px; border:1px solid #ddd; color:#b91c1c;">${message}</td>
+                 <td style="padding:6px; border:1px solid #ddd; text-align:center;">${quantity}</td>
+               </tr>
+             `;
+          })
+          .join("");
+
+        Swal.fire({
+          icon: "error",
+          title: "Insufficient Stock",
+          html: `
+             <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
+               <thead>
+                 <tr style="background:#f3f4f6;">
+                   <th style="padding:8px; border:1px solid #ddd;">Product</th>
+                   <th style="padding:8px; border:1px solid #ddd;">Message</th>
+                   <th style="padding:8px; border:1px solid #ddd;">Qty Left</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 ${rows}
+               </tbody>
+             </table>
+             <p>Please adjust Qty or restock product</p>
+           `,
+          confirmButtonText: "Okay",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.message || "Something went wrong",
+        });
       }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: errorMessage,
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -204,22 +261,57 @@ const InternalTransferEditForm = () => {
         text: "Internal transfer sent for approval!",
       });
       history.push(
-        `/${formData.tenant_schema_name}/inventory/operations/internal-transfer/${id}`
+        `/${tenant_schema_name}/inventory/operations/internal-transfer/${id}`
       );
     } catch (error) {
-      let errorMessage = "Failed to send for approval";
-      if (error.response?.data?.non_field_errors) {
-        errorMessage = error.response.data.non_field_errors.includes(
-          "Insufficient stock for the product in the source location."
-        )
-          ? "Insufficient stock for one or more products. Please adjust the quantity requested or restock and try again."
-          : error.response.data.non_field_errors.join("; ");
+      const apiError = error?.error;
+
+      if (Array.isArray(apiError)) {
+        // Build table rows dynamically
+        const rows = apiError
+          .map((item) => {
+            const [product, message] = Object.entries(item).find(
+              ([key]) => key !== "Quantity left in location"
+            );
+            const quantity = item["Quantity left in location"];
+
+            return `
+               <tr>
+                 <td style="padding:6px; border:1px solid #ddd;">${product}</td>
+                 <td style="padding:6px; border:1px solid #ddd; color:#b91c1c;">${message}</td>
+                 <td style="padding:6px; border:1px solid #ddd; text-align:center;">${quantity}</td>
+               </tr>
+             `;
+          })
+          .join("");
+
+        Swal.fire({
+          icon: "error",
+          title: "Insufficient Stock",
+          html: `
+             <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:14px;">
+               <thead>
+                 <tr style="background:#f3f4f6;">
+                   <th style="padding:8px; border:1px solid #ddd;">Product</th>
+                   <th style="padding:8px; border:1px solid #ddd;">Message</th>
+                   <th style="padding:8px; border:1px solid #ddd;">Qty Left</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 ${rows}
+               </tbody>
+             </table>
+             <p>Please adjust Qty or restock product</p>
+           `,
+          confirmButtonText: "Okay",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.message || "Something went wrong",
+        });
       }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: errorMessage,
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -231,18 +323,19 @@ const InternalTransferEditForm = () => {
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={4} lg={3}>
           <div className="formLabelAndValue">
-            <label>ID</label>
-            <Typography variant="body1">{formData.id}</Typography>
-          </div>
-        </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
-          <div className="formLabelAndValue">
             <label>Status</label>
             <Typography variant="body1" color={getStatusColor(formData.status)}>
               {getStatusDisplay(formData.status)}
             </Typography>
           </div>
         </Grid>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
+          <div className="formLabelAndValue">
+            <label>ID</label>
+            <Typography variant="body1">{formData.id}</Typography>
+          </div>
+        </Grid>
+
         <InternalTransferFormBasicInputs
           formData={formData}
           handleInputChange={handleInputChange}

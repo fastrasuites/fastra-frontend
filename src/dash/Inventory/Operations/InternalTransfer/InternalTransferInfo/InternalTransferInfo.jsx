@@ -323,7 +323,7 @@ const InternalTransferInfo = () => {
                 size="large"
                 disableElevation
                 onClick={handleEdit}
-                disabled
+                // disabled
               >
                 Edit
               </Button>
