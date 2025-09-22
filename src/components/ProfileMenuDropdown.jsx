@@ -54,8 +54,6 @@ const ProfileMenuDropdown = () => {
   const user = tenantData?.user;
   const [open, setOpen] = useState(false);
 
-  console.log(tenantData);
-
   const permissionsMap = extractPermissions(tenantData?.user_accesses || {});
   const settingsPermissions = getPermissionsByApp("settings", permissionsMap);
 
