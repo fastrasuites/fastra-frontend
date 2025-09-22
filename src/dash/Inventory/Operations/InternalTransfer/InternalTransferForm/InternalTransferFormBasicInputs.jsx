@@ -9,7 +9,7 @@ import {
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
 
 const InternalTransferFormBasicInputs = React.memo(
-  ({ formData, handleInputChange }) => {
+  ({ formData, handleInputChange, isEdit = false }) => {
     const {
       locationsForOtherUser,
       getLocationsForOtherUser,
@@ -19,70 +19,64 @@ const InternalTransferFormBasicInputs = React.memo(
       isLoading,
     } = useCustomLocation();
 
-    // Use refs to track API call status
+    // Use refs to track API call status and prevent infinite loops
     const locationsFetched = useRef(false);
     const allLocationsFetched = useRef(false);
     const sourceLocationRef = useRef(formData.sourceLocation?.id ?? null);
-    const prefilledDone = useRef(false);
+    const prefilledSource = useRef(false);
+    const prefilledDestination = useRef(false);
+    const initialLoad = useRef(true);
 
-    // Fetch locations once on mount
+    // Fetch locations only once on component mount for create form
     useEffect(() => {
-      if (!locationsFetched.current) {
-        (async () => {
-          await getLocationsForOtherUser();
-          locationsFetched.current = true;
-        })();
+      if (!isEdit && initialLoad.current) {
+        initialLoad.current = false;
+
+        if (!locationsFetched.current) {
+          getLocationsForOtherUser().then(() => {
+            locationsFetched.current = true;
+          });
+        }
+
+        if (!allLocationsFetched.current) {
+          getAllUserLocations().then(() => {
+            allLocationsFetched.current = true;
+          });
+        }
       }
-    }, []);
+    }, [isEdit, getLocationsForOtherUser, getAllUserLocations]);
 
+    // Prefill locations if only one option exists (only in create mode)
     useEffect(() => {
-      if (!allLocationsFetched.current) {
-        (async () => {
-          await getAllUserLocations();
-          allLocationsFetched.current = true;
-        })();
-      }
-    }, []);
-
-    // Prefill locations if only one option exists
-    useEffect(() => {
-      // if (!prefilledDone.current) {
-      if (locationsForOtherUser.length === 1 && !formData.sourceLocation) {
+      if (
+        !isEdit &&
+        locationsForOtherUser.length === 1 &&
+        !formData.sourceLocation &&
+        !prefilledSource.current
+      ) {
         handleInputChange("sourceLocation", locationsForOtherUser[0]);
-        // prefilledDone.current = true;
+        prefilledSource.current = true;
       }
-      if (allUserLocations.length === 1 && !formData.destinationLocation) {
+
+      if (
+        !isEdit &&
+        allUserLocations.length === 1 &&
+        !formData.destinationLocation &&
+        !prefilledDestination.current
+      ) {
         handleInputChange("destinationLocation", allUserLocations[0]);
-        // prefilledDone.current = true;
+        prefilledDestination.current = true;
       }
-      // }
     }, [
-      // locationsForOtherUser,
+      isEdit,
+      locationsForOtherUser,
       allUserLocations,
-      // formData.sourceLocation,
+      formData.sourceLocation,
       formData.destinationLocation,
       handleInputChange,
     ]);
 
-    // Debounced fetch for location products
-    const fetchLocationProducts = useCallback(() => {
-      if (
-        formData.sourceLocation?.id &&
-        formData.sourceLocation?.id !== sourceLocationRef.current
-      ) {
-        getLocationProducts(formData.sourceLocation.id).then(() => {
-          sourceLocationRef.current = formData.sourceLocation?.id;
-          if (formData.items.length > 0) {
-            handleInputChange("items", []);
-          }
-        });
-      }
-    }, [formData.sourceLocation?.id, getLocationProducts, handleInputChange]);
-
-    // useEffect(() => {
-    //   const timeoutId = setTimeout(fetchLocationProducts, 300);
-    //   return () => clearTimeout(timeoutId);
-    // }, [fetchLocationProducts]);
+    // Fetch location products when source location changes
     useEffect(() => {
       const currentId = formData.sourceLocation?.id;
 
@@ -90,12 +84,18 @@ const InternalTransferFormBasicInputs = React.memo(
       if (currentId && currentId !== sourceLocationRef.current) {
         getLocationProducts(currentId).then(() => {
           sourceLocationRef.current = currentId;
-          if (formData.items.length > 0) {
+          if (formData.items.length > 0 && !isEdit) {
             handleInputChange("items", []);
           }
         });
       }
-    }, [formData.sourceLocation?.id]); // only depend on the ID, not the whole formData
+    }, [
+      formData.sourceLocation?.id,
+      getLocationProducts,
+      handleInputChange,
+      formData.items.length,
+      isEdit,
+    ]);
 
     // Check if source and destination locations are the same
     const isSameLocation =
@@ -127,7 +127,6 @@ const InternalTransferFormBasicInputs = React.memo(
             }
             value={formData.sourceLocation || null}
             onChange={(event, newValue) => {
-              // handleInputChange("sourceLocation", newValue);
               // only act if id actually changed
               if (
                 String(newValue?.id ?? "") !==
@@ -154,10 +153,6 @@ const InternalTransferFormBasicInputs = React.memo(
               />
             )}
             isOptionEqualToValue={optEq}
-            // isOptionEqualToValue={(option, value) =>
-            //   option.id === (value?.id || "")
-            // }
-            onFocus={(e) => e.stopPropagation()} // Prevent focus loss
           />
           {isSameLocation && (
             <Typography color="error" variant="caption">
@@ -176,7 +171,6 @@ const InternalTransferFormBasicInputs = React.memo(
             }
             value={formData.destinationLocation || null}
             onChange={(event, newValue) => {
-              // handleInputChange("destinationLocation", newValue);
               // only act if id actually changed
               if (
                 String(newValue?.id ?? "") !==
@@ -202,11 +196,7 @@ const InternalTransferFormBasicInputs = React.memo(
                 }}
               />
             )}
-            // isOptionEqualToValue={(option, value) =>
-            //   option.id === (value?.id || "")
-            // }
             isOptionEqualToValue={optEq}
-            onFocus={(e) => e.stopPropagation()} // Prevent focus loss
           />
           {isSameLocation && (
             <Typography color="error" variant="caption">

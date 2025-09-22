@@ -6,26 +6,14 @@ import Swal from "sweetalert2";
 import InternalTransferFormBasicInputs from "./InternalTransferFormBasicInputs";
 import CommonForm from "../componentInternalTransfer/CommonForm/CommonForm";
 import { formatDate } from "../../../../../helper/helper";
-import { Grid, Typography } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  CircularProgress,
+  Box,
+  Divider,
+} from "@mui/material";
 import { useTenant } from "../../../../../context/TenantContext";
-
-// Status color mapping
-const getStatusColor = (status) => {
-  const s = String(status).toLowerCase();
-  if (s === "done") return "#158048";
-  if (s === "draft") return "#2899B2";
-  if (s === "released") return "#8B21DF";
-  if (s === "cancelled") return "#B13022";
-  if (s === "awaiting_approval") return "#BE8706";
-  return "#9e9e9e";
-};
-
-// Normalize status display
-const getStatusDisplay = (status) => {
-  const s = String(status).toLowerCase();
-  if (s === "awaiting_approval") return "Awaiting Approval";
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
 
 // Default form data structure
 const defaultFormData = {
@@ -43,44 +31,76 @@ const InternalTransferEditForm = () => {
   const history = useHistory();
   const { singleTransfer, getInternalTransfer, updateInternalTransfer } =
     useInternalTransfer();
-  const { locationProducts, allUserLocations, locationsForOtherUser } =
-    useCustomLocation();
+  const {
+    locationProducts,
+    allUserLocations,
+    locationsForOtherUser,
+    getLocationsForOtherUser,
+    getAllUserLocations,
+    getLocationProducts,
+    isLoading: locationsLoading,
+  } = useCustomLocation();
   const [formData, setFormData] = useState(defaultFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { tenantData } = useTenant();
   const tenant_schema_name = tenantData?.tenant_schema_name;
 
-  // Fetch transfer data
+  // Fetch transfer data and locations
   useEffect(() => {
-    if (id) {
-      getInternalTransfer(id);
-    }
-  }, [id, getInternalTransfer]);
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch locations first
+        await Promise.all([getLocationsForOtherUser(), getAllUserLocations()]);
 
-  // Prefill form data only when singleTransfer is available and formData is default
+        // Then fetch transfer data
+        if (id) {
+          await getInternalTransfer(id);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, getInternalTransfer, getLocationsForOtherUser, getAllUserLocations]);
+
+  // Prefill form data when both singleTransfer and locations are available
   useEffect(() => {
-    if (singleTransfer && formData.id === "") {
-      // normalize to match options from context
+    if (
+      singleTransfer &&
+      allUserLocations.length > 0 &&
+      locationsForOtherUser.length > 0 &&
+      formData.id === ""
+    ) {
       const normalizeLocation = (apiLocation, options) => {
         if (!apiLocation) return null;
+        // Find matching location by ID in the options
         return (
           options.find((opt) => String(opt.id) === String(apiLocation.id)) ||
-          apiLocation
+          null
         );
       };
+
+      const normalizedSourceLocation = normalizeLocation(
+        singleTransfer.source_location_details,
+        locationsForOtherUser
+      );
+
+      const normalizedDestinationLocation = normalizeLocation(
+        singleTransfer.destination_location_details,
+        allUserLocations
+      );
 
       setFormData({
         id: singleTransfer.id || "",
         status: singleTransfer.status || "draft",
         dateCreated: formatDate(singleTransfer.date_created) || "",
-        sourceLocation: normalizeLocation(
-          singleTransfer.source_location_details,
-          locationsForOtherUser
-        ),
-        destinationLocation: normalizeLocation(
-          singleTransfer.destination_location_details,
-          allUserLocations
-        ),
+        sourceLocation: normalizedSourceLocation,
+        destinationLocation: normalizedDestinationLocation,
         items:
           singleTransfer.internal_transfer_items?.map((item) => ({
             product: {
@@ -96,8 +116,19 @@ const InternalTransferEditForm = () => {
           })) || [],
         tenant_schema_name: singleTransfer.tenant_schema_name || "",
       });
+
+      // Fetch products for the source location after setting form data
+      if (normalizedSourceLocation?.id) {
+        getLocationProducts(normalizedSourceLocation.id);
+      }
     }
-  }, [singleTransfer, formData.id, locationsForOtherUser, allUserLocations]);
+  }, [
+    singleTransfer,
+    formData.id,
+    locationsForOtherUser,
+    allUserLocations,
+    getLocationProducts,
+  ]);
 
   // Row configuration for the dynamic table
   const rowConfig = [
@@ -319,30 +350,68 @@ const InternalTransferEditForm = () => {
 
   // Update InternalTransferFormBasicInputs to include read-only id and status
   const EditFormBasicInputs = ({ formData, handleInputChange }) => {
-    return (
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
-          <div className="formLabelAndValue">
-            <label>Status</label>
-            <Typography variant="body1" color={getStatusColor(formData.status)}>
-              {getStatusDisplay(formData.status)}
-            </Typography>
-          </div>
-        </Grid>
-        <Grid item xs={12} sm={6} md={4} lg={3}>
-          <div className="formLabelAndValue">
-            <label>ID</label>
-            <Typography variant="body1">{formData.id}</Typography>
-          </div>
-        </Grid>
+    // Status color mapping
+    const getStatusColor = (status) => {
+      const s = String(status).toLowerCase();
+      if (s === "done") return "#158048";
+      if (s === "draft") return "#2899B2";
+      if (s === "released") return "#8B21DF";
+      if (s === "cancelled") return "#B13022";
+      if (s === "awaiting_approval") return "#BE8706";
+      return "#9e9e9e";
+    };
 
+    // Normalize status display
+    const getStatusDisplay = (status) => {
+      const s = String(status).toLowerCase();
+      if (s === "awaiting_approval") return "Awaiting Approval";
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    };
+
+    return (
+      <Box>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
+            <div className="formLabelAndValue">
+              <label>Status</label>
+              <Typography
+                // variant="body1"
+                color={getStatusColor(formData.status)}
+              >
+                {getStatusDisplay(formData.status)}
+              </Typography>
+            </div>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
+            <div className="formLabelAndValue">
+              <label>ID</label>
+              <Typography variant="body1">{formData.id}</Typography>
+            </div>
+          </Grid>
+        </Grid>
+        <Divider sx={{ marginBlock: "18px" }} />
         <InternalTransferFormBasicInputs
           formData={formData}
           handleInputChange={handleInputChange}
+          isEdit={true} // Pass isEdit prop as true for edit mode
         />
-      </Grid>
+      </Box>
     );
   };
+
+  // Show loading state while data is being fetched
+  if (isLoading || locationsLoading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <CommonForm

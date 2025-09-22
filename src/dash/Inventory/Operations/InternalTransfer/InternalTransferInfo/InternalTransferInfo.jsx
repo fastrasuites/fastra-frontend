@@ -503,7 +503,7 @@ const InternalTransferInfo = () => {
                 Confirm Receipt
               </Button>
             )}
-            {singleTransfer.status.toLowerCase() === "canceled" && (
+            {singleTransfer.status.toLowerCase() === "cancelled" && (
               <Button
                 variant="contained"
                 size="large"
