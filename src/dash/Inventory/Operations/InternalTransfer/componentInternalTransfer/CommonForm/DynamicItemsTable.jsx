@@ -18,9 +18,6 @@ const DynamicItemsTable = ({
   setMax,
 }) => {
   const headers = rowConfig.map((cfg) => cfg.label);
-
-  console.log(rowConfig);
-  console.log(handleRowChange);
   const renderedRows = useMemo(() => {
     if (items.length > 0) {
       return items.map((row, index) => (
