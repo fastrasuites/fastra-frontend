@@ -20,7 +20,6 @@ import {
   extractPermissions,
   getPermissionsByApp,
 } from "../helper/extractPermissions";
-import { Box } from "@mui/material";
 
 const Card = ({ name, description, link }) => {
   let icon;
@@ -67,6 +66,9 @@ const Card = ({ name, description, link }) => {
     case "Settings":
       icon = settings;
       break;
+    case "Invoicing":
+      icon = account;
+      break;
     default:
       icon = null;
       break;
@@ -98,6 +100,8 @@ const DashCard = () => {
     Object.keys(getPermissionsByApp("inventory", permissionsMap)).length > 0;
   const settingsPermissions =
     Object.keys(getPermissionsByApp("settings", permissionsMap)).length > 0;
+  const invoicingPermissions =
+    Object.keys(getPermissionsByApp("Invoicing", permissionsMap)).length > 0;
 
   const fastra = [
     {
@@ -121,6 +125,14 @@ const DashCard = () => {
       link: `/${tenant_schema_name}/settings`,
       hasAccess: settingsPermissions,
     },
+    {
+      name: "Invoicing",
+      description:
+        "Manage all financial transactions, including invoicing, billing, and ledger entries, to ensure accurate accounting records and financial reporting. ",
+      link: `/${tenant_schema_name}/invoicing/invoices`,
+      hasAccess: invoicingPermissions,
+    },
+
     // {
     //   name: "Account",
     //   description:
@@ -191,7 +203,7 @@ const DashCard = () => {
     // },
   ];
   return (
-    <Box mt={4} display={"grid"} gridTemplateColumns={"1fr 1fr 1fr"} gap={4}>
+    <>
       {fastra
         .filter((item) => item.hasAccess)
         .map((fastra, index) => (
@@ -202,7 +214,7 @@ const DashCard = () => {
             link={fastra.link}
           />
         ))}
-    </Box>
+    </>
   );
 };
 

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import "./sidebar.css";
 import arrowLeft from "../image/sidebar/arrow-left.svg";
 import home from "../image/sidebar/home.svg";
-// import accounts from "../image/sidebar/accounts.svg";
+import accounts from "../image/sidebar/accounts.svg";
 import purchase from "../image/sidebar/purchase.svg";
 // import sales from "../image/sidebar/sales.svg";
 import inventory from "../image/sidebar/inventory.svg";
@@ -32,6 +32,8 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
     Object.keys(getPermissionsByApp("inventory", permissionsMap)).length > 0;
   const settingsPermissions =
     Object.keys(getPermissionsByApp("settings", permissionsMap)).length > 0;
+  const invoicingPermissions =
+    Object.keys(getPermissionsByApp("invoicing", permissionsMap)).length > 0;
 
   // Ref and click-outside handler
   const sidebarRef = useRef(null);
@@ -117,6 +119,19 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
             >
               <img src={inventory} alt="Inventory" className="sidebar-icon" />
               <span>Inventory</span>
+            </Link>
+          )}
+
+          {/* Invoicing: It's setup is still in progress */}
+          {/* I still need to update the Link "to" path */}
+          {invoicingPermissions && (
+            <Link
+              to={`/${tenant_schema_name}/invoicing/`}
+              className="sidebar-item"
+              onClick={handleCloseSidebar}
+            >
+              <img src={accounts} alt="Invoicing" className="sidebar-icon" />
+              <span>Invoicing</span>
             </Link>
           )}
 

@@ -28,6 +28,7 @@ import Register from "./Auth/Register/Register";
 import Login from "./Auth/Login/Login";
 import IdleManager from "./components/IdleManager/IdleManager";
 import Change from "./Auth/ChangePassword/change";
+import InvoicingLayout from "./dash/Invoicing/Invoicing";
 
 function App() {
   return (
@@ -117,6 +118,12 @@ function App() {
               <ProtectedRoute
                 path="/:tenant/changePassword"
                 component={Change}
+              />
+
+              {/* Inventory Route - allows nested routes */}
+              <ProtectedRoute
+                path="/:tenant/invoicing"
+                component={InvoicingLayout}
               />
 
               {/* Additional tenant routes can be defined here */}
