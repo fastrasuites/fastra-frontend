@@ -154,5 +154,6 @@
 
   .dropdown {
     position: static;
+    border-radius: 4px;
   }
 }
