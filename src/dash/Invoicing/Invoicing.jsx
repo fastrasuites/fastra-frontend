@@ -7,6 +7,7 @@ import PaidInvoices from "./Invoices/PaidInvoices/PaidInvoices";
 import PartiallyPaidInvoices from "./Invoices/PartiallyPaidInvoices/PartiallyPaidInvoices";
 import UnpaidInvoices from "./Invoices/UnpaidInvoices/UnpaidInvoices";
 import Payments from "./Payments/Payments";
+import InvoiceCreateForm from "./Invoices/InvoiceCreateForms/InvoiceCreateForm";
 
 const InvoicingLayout = () => {
   const { path } = useRouteMatch();
@@ -16,10 +17,11 @@ const InvoicingLayout = () => {
       <div id="invoices">
         <Switch>
           {/* Redirect from /invoices to /invoicing/paid-invoices */}
-          <Redirect exact from={path} to={`${path}/invoices`} />
+          {/* <Redirect exact from={path} to={`${path}/invoices`} /> */}
 
           {/* Invoices Routes */}
           <Route exact path={`${path}/invoices`} component={Invoices} />
+
           <Route
             exact
             path={`${path}/invoices/paid-invoices`}
@@ -38,6 +40,12 @@ const InvoicingLayout = () => {
 
           {/* Payments routes */}
           <Route exact path={`${path}/payments`} component={Payments} />
+
+          <Route
+            exact
+            path={`${path}/invoices/new`}
+            component={InvoiceCreateForm}
+          />
 
           {/* Additional invoicing routes can be added here */}
         </Switch>
