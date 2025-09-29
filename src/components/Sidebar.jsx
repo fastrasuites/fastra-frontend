@@ -126,7 +126,7 @@ const Sidebar = ({ sidebarOpen, handleCloseSidebar }) => {
           {/* I still need to update the Link "to" path */}
           {invoicingPermissions && (
             <Link
-              to={`/${tenant_schema_name}/invoicing/`}
+              to={`/${tenant_schema_name}/invoicing/invoices`}
               className="sidebar-item"
               onClick={handleCloseSidebar}
             >
