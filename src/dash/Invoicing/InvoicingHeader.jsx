@@ -12,7 +12,7 @@ const InvoicingHeader = () => {
 
   subItems.push({
     label: "Paid Invoices",
-    link: `/${tenant_schema_name}/invoicing/invoices`,
+    link: `/${tenant_schema_name}/invoicing/invoices/paid-invoices`,
   });
 
   subItems.push({

@@ -3,10 +3,11 @@ import React from "react";
 import { Switch, Route, useRouteMatch, Redirect } from "react-router-dom";
 import Invoices from "./Invoices/Invoices";
 import InvoicingHeader from "./InvoicingHeader";
-import PaidInvoices from "./Invoices/PaidInvoices/PaidInvoices";
+import PaidInvoices from "./Invoices/PaidInvoices/Invoices";
 import PartiallyPaidInvoices from "./Invoices/PartiallyPaidInvoices/PartiallyPaidInvoices";
 import UnpaidInvoices from "./Invoices/UnpaidInvoices/UnpaidInvoices";
 import Payments from "./Payments/Payments";
+import PaidInvoiceDetails from "./Invoices/PaidInvoices/InvoiceDetails";
 
 const InvoicingLayout = () => {
   const { path } = useRouteMatch();
@@ -24,6 +25,11 @@ const InvoicingLayout = () => {
             exact
             path={`${path}/invoices/paid-invoices`}
             component={PaidInvoices}
+          />
+          <Route
+            exact
+            path={`${path}/invoices/paid-invoices/:invoiceId`}
+            component={PaidInvoiceDetails}
           />
           <Route
             exact

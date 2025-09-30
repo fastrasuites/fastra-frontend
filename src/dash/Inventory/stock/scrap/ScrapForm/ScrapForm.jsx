@@ -5,7 +5,6 @@ import CommonForm from "../../../../../components/CommonForm/CommonForm";
 import "./ScrapForm.css";
 import { useScrap } from "../../../../../context/Inventory/Scrap";
 import { useCustomLocation } from "../../../../../context/Inventory/LocationContext";
-import { usePurchase } from "../../../../../context/PurchaseContext";
 import Swal from "sweetalert2";
 import { useTenant } from "../../../../../context/TenantContext";
 import { useHistory } from "react-router-dom";
@@ -204,6 +203,45 @@ const ScrapForm = () => {
   };
 
   const handleSubmit = async (filledFormData) => {
+    // Validation
+    if (filledFormData.items.length === 0) {
+      Swal.fire("Error", "No items added to scrap", "error");
+      return;
+    }
+    for (const item of filledFormData.items) {
+      if (!item.product || !item.product.product_name) {
+        Swal.fire("Error", "Product name is required for all items", "error");
+        return;
+      }
+      if (!item.unit_of_measure || !item.unit_of_measure.unit_category) {
+        Swal.fire(
+          "Error",
+          "Unit of measure is required for all items",
+          "error"
+        );
+        return;
+      }
+      if (
+        !item.available_product_quantity ||
+        item.available_product_quantity <= 0
+      ) {
+        Swal.fire(
+          "Error",
+          "Current quantity must be greater than 0 for all items",
+          "error"
+        );
+        return;
+      }
+      if (!item.qty_received || item.qty_received <= 0) {
+        Swal.fire(
+          "Error",
+          "Scrap quantity must be greater than 0 for all items",
+          "error"
+        );
+        return;
+      }
+    }
+
     const items = filledFormData.items.map((item) => ({
       product: item.product.id,
       scrap_quantity: item.qty_received,
@@ -237,6 +275,45 @@ const ScrapForm = () => {
   };
 
   const handleSubmitValidate = async (filledFormData) => {
+    // Validation
+    if (filledFormData.items.length === 0) {
+      Swal.fire("Error", "No items added to scrap", "error");
+      return;
+    }
+    for (const item of filledFormData.items) {
+      if (!item.product || !item.product.product_name) {
+        Swal.fire("Error", "Product name is required for all items", "error");
+        return;
+      }
+      if (!item.unit_of_measure || !item.unit_of_measure.unit_category) {
+        Swal.fire(
+          "Error",
+          "Unit of measure is required for all items",
+          "error"
+        );
+        return;
+      }
+      if (
+        !item.available_product_quantity ||
+        item.available_product_quantity <= 0
+      ) {
+        Swal.fire(
+          "Error",
+          "Current quantity must be greater than 0 for all items",
+          "error"
+        );
+        return;
+      }
+      if (!item.qty_received || item.qty_received <= 0) {
+        Swal.fire(
+          "Error",
+          "Scrap quantity must be greater than 0 for all items",
+          "error"
+        );
+        return;
+      }
+    }
+
     const items = filledFormData.items.map((item) => ({
       product: item.product.id,
       scrap_quantity: item.qty_received,

@@ -21,6 +21,7 @@ import { UserProvider } from "./context/Settings/UserContext";
 import { CompanyProvider } from "./context/Settings/CompanyContext";
 import { BackOrderProvider } from "./context/Inventory/BackOrderContext";
 import { InternalTransferProvider } from "./context/Inventory/InternalTransferContext";
+import { InvoiceProvider } from "./context/Invoice/InvoiceContext";
 
 function AppWrapper() {
   return (
@@ -34,25 +35,27 @@ function AppWrapper() {
                   <LocationConfigProvider>
                     <LocationProvider>
                       <IncomingProductProvider>
-                        <BackOrderProvider>
-                          <DeliveryOrderProvider>
-                            <StockAdjustmentProvider>
-                              <InternalTransferProvider>
-                                <StockMoveProvider>
-                                  <UserProvider>
-                                    <CompanyProvider>
-                                      <ScrapProvider>
-                                        <Router>
-                                          <App />
-                                        </Router>
-                                      </ScrapProvider>
-                                    </CompanyProvider>
-                                  </UserProvider>
-                                </StockMoveProvider>
-                              </InternalTransferProvider>
-                            </StockAdjustmentProvider>
-                          </DeliveryOrderProvider>
-                        </BackOrderProvider>
+                        <InvoiceProvider>
+                          <BackOrderProvider>
+                            <DeliveryOrderProvider>
+                              <StockAdjustmentProvider>
+                                <InternalTransferProvider>
+                                  <StockMoveProvider>
+                                    <UserProvider>
+                                      <CompanyProvider>
+                                        <ScrapProvider>
+                                          <Router>
+                                            <App />
+                                          </Router>
+                                        </ScrapProvider>
+                                      </CompanyProvider>
+                                    </UserProvider>
+                                  </StockMoveProvider>
+                                </InternalTransferProvider>
+                              </StockAdjustmentProvider>
+                            </DeliveryOrderProvider>
+                          </BackOrderProvider>
+                        </InvoiceProvider>
                       </IncomingProductProvider>
                     </LocationProvider>
                   </LocationConfigProvider>
