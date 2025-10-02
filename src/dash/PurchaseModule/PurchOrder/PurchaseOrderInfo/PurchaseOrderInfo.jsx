@@ -21,7 +21,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import approved from "../../../../../src/image/icons/approved-rfq.svg";
 import "../PoStatusModal.css";
 import "../../Rfq/RfqStatusModal.css";
-import { useHistory, useParams } from "react-router-dom";
+import { Link, useHistory, useParams } from "react-router-dom";
 import { usePurchaseOrder } from "../../../../context/PurchaseOrderContext.";
 import { useTenant } from "../../../../context/TenantContext";
 import { extractRFQID, formatDate } from "../../../../helper/helper";
@@ -634,6 +634,15 @@ const PurchaseOrderInfo = () => {
                   </Button>
                 </Can>
               ))}
+
+              {/* Create Invoice Button */}
+              {item.status === "completed" && (
+                <Link
+                  to={`/${tenantSchema}/invoicing/invoices/${item.id}/new-from-po/`}
+                >
+                  <Button variant="outlined">Create Invoice</Button>
+                </Link>
+              )}
             </div>
           </div>
         )}
