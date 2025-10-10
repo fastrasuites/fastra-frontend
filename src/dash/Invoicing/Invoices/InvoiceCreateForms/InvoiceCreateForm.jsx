@@ -34,6 +34,7 @@ import { useTenant } from "../../../../context/TenantContext";
 import { usePurchase } from "../../../../context/PurchaseContext";
 import { useInvoices } from "../../../../context/Invoicing/InvoicesContext";
 import { formatDate } from "../../../../helper/helper";
+import { width } from "@mui/system";
 
 const InvoiceCreateForm = () => {
   // Context hooks
@@ -363,7 +364,7 @@ const InvoiceCreateForm = () => {
   }
 
   return (
-    <Box p={3}>
+    <Box p={3} sx={{ maxWidth: "1400px", marginInline: "auto" }}>
       {/* Header Section */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Box display="flex" alignItems="center" gap={2}>
@@ -400,7 +401,7 @@ const InvoiceCreateForm = () => {
         }}
       >
         {/* Basic Information Section */}
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ my: 2 }}>
           <Box
             display="flex"
             alignItems="center"
@@ -412,7 +413,7 @@ const InvoiceCreateForm = () => {
               Basic Information
             </Typography>
             <Link to={`/${tenant_schema_name}/invoicing/invoices/`}>
-              <Button variant="outlined">Cancel</Button>
+              <Button variant="text">Cancel</Button>
             </Link>
           </Box>
 
@@ -456,19 +457,10 @@ const InvoiceCreateForm = () => {
                   </Typography>
                 )}
               </FormControl>
-              {/* Show vendor contact details when selected */}
-              {getSelectedVendor() && (
-                <Box mt={1}>
-                  <Typography variant="caption" color="textSecondary">
-                    {getSelectedVendor().email} •{" "}
-                    {getSelectedVendor().phone_number}
-                  </Typography>
-                </Box>
-              )}
             </Grid>
 
             {/* Date Created (Read-only) */}
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} md={3}>
               <Typography variant="body2" color="textSecondary">
                 Date Created
               </Typography>
@@ -504,6 +496,7 @@ const InvoiceCreateForm = () => {
           </Grid>
         </Box>
 
+        <Divider />
         {/* Product Information Section */}
         <Box sx={{ mt: 4 }}>
           <Box
@@ -554,9 +547,9 @@ const InvoiceCreateForm = () => {
                           size="small"
                           error={!!errors[`product_${index}_id`]}
                         >
-                          <InputLabel>Select Product</InputLabel>
                           <Select
-                            value={product.id}
+                            variant="standard"
+                            value={product.id || ""}
                             onChange={(e) =>
                               handleNewInvoiceProductChange(
                                 index,
@@ -564,26 +557,27 @@ const InvoiceCreateForm = () => {
                                 e.target.value
                               )
                             }
-                            label="Select Product"
+                            displayEmpty
                           >
+                            {/* Placeholder */}
+                            <MenuItem value="" disabled>
+                              <Typography variant="body2" color="textSecondary">
+                                Select Product
+                              </Typography>
+                            </MenuItem>
+
+                            {/* Real options */}
                             {products.map((prod) => (
                               <MenuItem key={prod.id} value={prod.id}>
                                 <Box>
                                   <Typography variant="body2">
                                     {prod.product_name}
                                   </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    color="textSecondary"
-                                  >
-                                    {prod.product_description} • Available:{" "}
-                                    {prod.available_product_quantity}{" "}
-                                    {prod.unit_of_measure_details?.unit_symbol}
-                                  </Typography>
                                 </Box>
                               </MenuItem>
                             ))}
                           </Select>
+
                           {errors[`product_${index}_id`] && (
                             <Typography variant="caption" color="error">
                               {errors[`product_${index}_id`]}
@@ -595,6 +589,7 @@ const InvoiceCreateForm = () => {
                       {/* Quantity Input */}
                       <TableCell>
                         <TextField
+                          variant="standard"
                           size="small"
                           type="number"
                           placeholder="0"
@@ -636,6 +631,7 @@ const InvoiceCreateForm = () => {
                       {/* Unit Price Input */}
                       <TableCell>
                         <TextField
+                          variant="standard"
                           size="small"
                           placeholder="0"
                           error={!!errors[`product_${index}_unitPrice`]}
@@ -736,7 +732,7 @@ const InvoiceCreateForm = () => {
                   <Divider sx={{ my: 1 }} />
 
                   {/* Balance (Calculated) */}
-                  <Box display="flex" justifyContent="space-between">
+                  <Box display="flex" justifyContent="space-between" mb={1}>
                     <Typography
                       color={newInvoiceData.balance > 0 ? "error" : "success"}
                     >
