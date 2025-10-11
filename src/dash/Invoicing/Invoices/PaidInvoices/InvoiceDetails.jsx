@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -14,10 +14,13 @@ import InvoiceInfo from "./components/InvoiceInfo";
 import InvoiceItemsTable from "./components/InvoiceItemsTable";
 import InvoiceSummary from "./components/InvoiceSummary";
 import InvoiceActions from "./components/InvoiceActions";
+import PaymentModal from "./components/PaymentModal";
 
 const InvoiceDetailsPage = () => {
-  const { id } = useParams();
-  const { singleInvoice, getSingleInvoice, isLoading, error } = useInvoice();
+  const { invoiceId: id } = useParams();
+  const { singleInvoice, getSingleInvoice, isLoading, error, makePayment } =
+    useInvoice();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -72,6 +75,26 @@ const InvoiceDetailsPage = () => {
     );
   }
 
+  // Helper function to get status info
+  const getStatusInfo = (status) => {
+    switch (status) {
+      case "unpaid":
+        return { text: "Unpaid Invoice", color: "#E43D2B" };
+      case "partially_paid":
+        return { text: "Partially Paid Invoice", color: "#F0B501" };
+      case "paid":
+        return { text: "Paid Invoice", color: "#2BA24D" };
+      default:
+        return {
+          text:
+            status.charAt(0).toUpperCase() +
+            status.slice(1).replace(/_/g, " ") +
+            " Invoice",
+          color: "#FFA500",
+        };
+    }
+  };
+
   // Transform API data to component expected format
   const transformedInvoice = {
     id: invoice.id,
@@ -79,15 +102,7 @@ const InvoiceDetailsPage = () => {
     dateCreated: new Date(invoice.date_created).toLocaleString(),
     dueDate: invoice.due_date,
     totalAmount: parseFloat(invoice.total_amount || 0),
-    status: {
-      text:
-        invoice.status === "paid"
-          ? "Paid Invoice"
-          : invoice.status.charAt(0).toUpperCase() +
-            invoice.status.slice(1) +
-            " Invoice",
-      color: invoice.status === "paid" ? "#2BA24D" : "#FFA500", // green for paid, orange for others
-    },
+    status: getStatusInfo(invoice.status),
     items: (invoice.invoice_items || []).map((item) => ({
       name: item.product_details?.product_name || "Unknown Product",
       qty: item.quantity,
@@ -98,23 +113,6 @@ const InvoiceDetailsPage = () => {
   };
 
   const balance = parseFloat(invoice.balance || 0);
-
-  const handleSave = async () => {
-    // For details page, save might not be applicable, but keeping placeholder
-    Swal.fire({
-      title: "Info",
-      text: "Save functionality not implemented for details view.",
-      icon: "info",
-    });
-  };
-
-  const handleCancel = () => {
-    Swal.fire({
-      title: "Info",
-      text: "Cancel functionality not applicable for details view.",
-      icon: "info",
-    });
-  };
 
   const handleViewPaymentHistory = () => {
     // Example mock payment history — adapt to your actual data.
@@ -158,10 +156,47 @@ const InvoiceDetailsPage = () => {
     });
   };
 
+  const handleCompletePayment = () => {
+    Swal.fire({
+      title: "Complete Payment",
+      text: "Process the remaining balance payment?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Complete",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // TODO: Implement complete payment logic
+        Swal.fire({
+          title: "Payment Completed",
+          text: "The remaining balance has been processed.",
+          icon: "success",
+        });
+      }
+    });
+  };
+
+  const handleMakePayment = () => {
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleMakePartialPayment = () => {
+    setIsPaymentModalOpen(true);
+  };
+
   return (
     <Box sx={{ minHeight: "100vh" }}>
       {/* Header */}
-
+      <PaymentModal
+        open={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        invoiceId={invoice.id}
+        makePayment={makePayment}
+        onSuccess={() => {
+          setIsPaymentModalOpen(false);
+          getSingleInvoice(id); // Refetch invoice
+        }}
+      />
       <Container maxWidth="xl" sx={{ py: 3 }}>
         <InvoiceHeader
           onNewInvoice={() =>
@@ -216,10 +251,11 @@ const InvoiceDetailsPage = () => {
           <InvoiceSummary invoice={transformedInvoice} balance={balance} />
 
           <InvoiceActions
+            status={invoice.status}
             onViewPaymentHistory={handleViewPaymentHistory}
-            onCancel={handleCancel}
-            onSave={handleSave}
-            isSaving={false}
+            onCompletePayment={handleCompletePayment}
+            onMakePayment={handleMakePayment}
+            onMakePartialPayment={handleMakePartialPayment}
           />
         </Box>
 

@@ -313,15 +313,15 @@ export default function InvoiceListPage() {
                             width: 8,
                             height: 8,
                             borderRadius: "50%",
-                            bgcolor: "success.main",
+                            bgcolor: "#2BA24D",
                             display: "inline-block",
-                            boxShadow: "0 0 0 4px rgba(34,197,94,0.06)",
+                            boxShadow: "0 0 0 4px rgba(43,162,77,0.06)",
                           }}
                         />
                         <Typography
                           sx={{
                             fontSize: 13,
-                            color: "success.main",
+                            color: "#2BA24D",
                             fontWeight: 500,
                           }}
                         >
