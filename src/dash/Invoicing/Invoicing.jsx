@@ -10,6 +10,7 @@ import Payments from "./Payments/Payments";
 import PaidInvoiceDetails from "./Invoices/PaidInvoices/InvoiceDetails";
 import InvoiceCreateForm from "./Invoices/InvoiceCreateForms/InvoiceCreateForm";
 import InvoiceListPage from "./Invoices/PaidInvoices/Invoices";
+import InvoiceCreateFromPO from "./Invoices/InvoiceCreateForms/InvoiceCreateFromPO";
 
 const InvoicingLayout = () => {
   const { path } = useRouteMatch();
@@ -52,6 +53,12 @@ const InvoicingLayout = () => {
             exact
             path={`${path}/invoices/new`}
             component={InvoiceCreateForm}
+          />
+
+          <Route
+            exact
+            path={`${path}/invoices/:id/new-from-po/`}
+            component={InvoiceCreateFromPO}
           />
 
           {/* Additional invoicing routes can be added here */}
