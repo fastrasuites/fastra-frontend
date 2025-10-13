@@ -1,0 +1,74 @@
+// InvoicingLayout.js
+import React from "react";
+import { Switch, Route, useRouteMatch, Redirect } from "react-router-dom";
+import Invoices from "./Invoices/Invoices";
+import InvoicingHeader from "./InvoicingHeader";
+import PaidInvoices from "./Invoices/PaidInvoices/Invoices";
+import PartiallyPaidInvoices from "./Invoices/PartiallyPaidInvoices/PartiallyPaidInvoices";
+import UnpaidInvoices from "./Invoices/UnpaidInvoices/UnpaidInvoices";
+import Payments from "./Payments/Payments";
+import PaidInvoiceDetails from "./Invoices/PaidInvoices/InvoiceDetails";
+import InvoiceCreateForm from "./Invoices/InvoiceCreateForms/InvoiceCreateForm";
+import InvoiceListPage from "./Invoices/PaidInvoices/Invoices";
+import InvoiceCreateFromPO from "./Invoices/InvoiceCreateForms/InvoiceCreateFromPO";
+import PaymentHistory from "./Invoices/PaymentHistory/PaymentHistory";
+
+const InvoicingLayout = () => {
+  const { path } = useRouteMatch();
+  return (
+    <div>
+      <InvoicingHeader />
+      <div id="invoices">
+        <Switch>
+          {/* Redirect from /invoices to /invoicing/paid-invoices */}
+          {/* <Redirect exact from={path} to={`${path}/invoices`} /> */}
+
+          {/* Invoices Routes */}
+          <Route exact path={`${path}/invoices`} component={Invoices} />
+
+          <Route exact path={`${path}/paid`} component={InvoiceListPage} />
+          <Route
+            exact
+            path={`${path}/invoices/new`}
+            component={InvoiceCreateForm}
+          />
+          <Route
+            exact
+            path={`${path}/invoices/:invoiceId`}
+            component={PaidInvoiceDetails}
+          />
+
+          <Route
+            exact
+            path={`${path}/payment-history`}
+            component={PaymentHistory}
+          />
+
+          <Route
+            exact
+            path={`${path}/invoices/partially-paid-invoices`}
+            component={PartiallyPaidInvoices}
+          />
+          <Route
+            exact
+            path={`${path}/invoices/unpaid-invoices`}
+            component={UnpaidInvoices}
+          />
+
+          {/* Payments routes */}
+          <Route exact path={`${path}/payments`} component={Payments} />
+
+          <Route
+            exact
+            path={`${path}/invoices/:id/new-from-po/`}
+            component={InvoiceCreateFromPO}
+          />
+
+          {/* Additional invoicing routes can be added here */}
+        </Switch>
+      </div>
+    </div>
+  );
+};
+
+export default InvoicingLayout;
