@@ -40,7 +40,7 @@ import {
 } from "@mui/icons-material";
 import DraftIcon from "../../../image/icons/draft.png";
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
 import { useInvoices } from "../../../context/Invoicing/InvoicesContext";
 import { formatDate } from "../../../helper/helper";
@@ -63,7 +63,15 @@ const paymentStatus = {
   unpaid: "Unpaid",
 };
 
-const SummaryCard = ({ title, count, color1, color2, viewAll, draftIcon }) => (
+const SummaryCard = ({
+  title,
+  count,
+  color1,
+  color2,
+  viewAll,
+  draftIcon,
+  onClick,
+}) => (
   <Card
     sx={{
       minHeight: 150,
@@ -76,6 +84,7 @@ const SummaryCard = ({ title, count, color1, color2, viewAll, draftIcon }) => (
       transition: "transform 0.2s",
       "&:hover": { transform: "translateY(-4px)" },
     }}
+    onClick={onClick}
   >
     <CardContent>
       <img src={draftIcon} alt="Draft Icon" />
@@ -95,9 +104,15 @@ const SummaryCard = ({ title, count, color1, color2, viewAll, draftIcon }) => (
   </Card>
 );
 
-const InvoiceCard = ({ invoice }) => {
+const InvoiceCard = ({ invoice, tenant_schema_name }) => {
+  const history = useHistory();
+
+  const handleCardClick = () => {
+    history.push(`/${tenant_schema_name}/invoicing/invoices/${invoice.id}`);
+  };
+
   return (
-    <Card sx={{ mb: 2 }}>
+    <Card sx={{ mb: 2, cursor: "pointer" }} onClick={handleCardClick}>
       <CardContent>
         <Box
           display="flex"
@@ -157,6 +172,7 @@ const Invoices = () => {
   const { activeInvoiceList, getActiveInvoiceList, isLoading, error } =
     useInvoices();
   const tenant_schema_name = tenantData?.tenant_schema_name;
+  const history = useHistory();
 
   // Fetch active invoices on mount
   useEffect(() => {
@@ -168,9 +184,8 @@ const Invoices = () => {
   // Summary statistics
   const summaryStats = {
     paid: activeInvoiceList.filter((inv) => inv.status === "paid").length,
-    partiallyPaid: activeInvoiceList.filter(
-      (inv) => inv.status === "partially_paid"
-    ).length,
+    partiallyPaid: activeInvoiceList.filter((inv) => inv.status === "partial")
+      .length,
     unpaid: activeInvoiceList.filter((inv) => inv.status === "unpaid").length,
   };
 
@@ -239,6 +254,11 @@ const Invoices = () => {
               color1="#0DBF6A"
               color2="#1E4226"
               viewAll="View all"
+              onClick={() =>
+                history.push(
+                  `/${tenant_schema_name}/invoicing/paid?status=paid`
+                )
+              }
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -249,6 +269,11 @@ const Invoices = () => {
               color1="#F0B501"
               color2="#8D590B"
               viewAll="View all"
+              onClick={() =>
+                history.push(
+                  `/${tenant_schema_name}/invoicing/paid?status=partial`
+                )
+              }
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -259,6 +284,11 @@ const Invoices = () => {
               color1="#E43E2B"
               color2="#7E2218"
               viewAll="View all"
+              onClick={() =>
+                history.push(
+                  `/${tenant_schema_name}/invoicing/paid?status=unpaid`
+                )
+              }
             />
           </Grid>
         </Grid>
@@ -322,7 +352,10 @@ const Invoices = () => {
           <Grid container spacing={3}>
             {filteredInvoices.map((invoice) => (
               <Grid item xs={12} sm={6} md={4} key={invoice.id}>
-                <InvoiceCard invoice={invoice} />
+                <InvoiceCard
+                  invoice={invoice}
+                  tenant_schema_name={tenant_schema_name}
+                />
               </Grid>
             ))}
           </Grid>
@@ -347,6 +380,12 @@ const Invoices = () => {
               </TableHead>
               <TableBody>
                 {filteredInvoices.map((invoice, index) => {
+                  const handleRowClick = () => {
+                    history.push(
+                      `/${tenant_schema_name}/invoicing/invoices/${invoice.id}`
+                    );
+                  };
+
                   return (
                     <TableRow
                       key={invoice.id}
@@ -354,7 +393,12 @@ const Invoices = () => {
                         backgroundColor: `${
                           index % 2 === 0 ? "rgba(242, 242, 242, 0.7)" : ""
                         }`,
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)",
+                        },
                       }}
+                      onClick={handleRowClick}
                     >
                       <TableCell padding="checkbox">
                         <input type="checkbox" />

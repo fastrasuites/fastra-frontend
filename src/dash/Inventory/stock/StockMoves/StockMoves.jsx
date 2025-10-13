@@ -32,13 +32,15 @@ export default function StockMoves() {
     getStockMoveList();
   }, [getStockMoveList]);
 
+  console.log(stockMoveList);
+
   // Transform API data to UI-friendly shape
   const stockMoves = useMemo(
     () =>
       stockMoveList.map((item) => ({
         productName: item.product?.product_name || "",
         qty: item.quantity,
-        unitOfMeasure: item.product?.unit_of_measure || "",
+        unitOfMeasure: item.product?.unit_of_measure_details?.unit_name || "",
         sourceId: item.id,
         dateCreated: new Date(item.date_created).toLocaleString(),
         sourceLocation:
