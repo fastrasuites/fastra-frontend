@@ -300,7 +300,7 @@ const InvoiceCreateForm = () => {
         total_amount: Number(newInvoiceData.total),
         amount_paid: Number(newInvoiceData.amountPaid) || 0,
         balance: Number(newInvoiceData.balance),
-        status: "unpaid",
+        // status: "unpaid",
       };
 
       console.log("Invoice payload:", payload);
@@ -372,22 +372,6 @@ const InvoiceCreateForm = () => {
           <Typography variant="body2" color="textSecondary">
             Autosaved
           </Typography>
-        </Box>
-
-        <Box display="flex" alignItems="center" gap={2}>
-          <Typography variant="body2">1 of 6</Typography>
-          <Box
-            display="flex"
-            gap={1}
-            sx={{ border: "solid 1px #f1ececff", borderRadius: "4px" }}
-          >
-            <IconButton size="small">
-              <NavigateBefore />
-            </IconButton>
-            <IconButton size="small">
-              <NavigateNext />
-            </IconButton>
-          </Box>
         </Box>
       </Box>
 
@@ -706,9 +690,15 @@ const InvoiceCreateForm = () => {
                       {formatCurrency(newInvoiceData.total)}
                     </Typography>
                   </Box>
+                  <Box display="flex" justifyContent="space-between" mb={1}>
+                    <Typography>Amount Paid</Typography>
+                    <Typography fontWeight="bold">
+                      {formatCurrency(0)}
+                    </Typography>
+                  </Box>
 
                   {/* Amount Paid Input */}
-                  <Box
+                  {/* <Box
                     display="flex"
                     justifyContent="space-between"
                     mb={1}
@@ -716,18 +706,23 @@ const InvoiceCreateForm = () => {
                   >
                     <Typography>Amount Paid</Typography>
                     <TextField
+                      variant="standard"
                       size="small"
                       placeholder="0"
                       value={newInvoiceData.amountPaid}
                       onChange={(e) => handleAmountPaidChange(e.target.value)}
-                      sx={{ width: 150 }}
+                      sx={{
+                        width: 150,
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">₦</InputAdornment>
                         ),
+                        readOnly: true,
+                        disableUnderline: true,
                       }}
                     />
-                  </Box>
+                  </Box> */}
 
                   <Divider sx={{ my: 1 }} />
 
@@ -736,7 +731,8 @@ const InvoiceCreateForm = () => {
                     <Typography
                       color={newInvoiceData.balance > 0 ? "error" : "success"}
                     >
-                      {newInvoiceData.balance > 0 ? "To Balance" : "Overpaid"}
+                      {newInvoiceData.balance > 0 ? "To Balance" : "To Balance"}
+                      {/* {newInvoiceData.balance > 0 ? "To Balance" : "Overpaid"} */}
                     </Typography>
                     <Typography
                       color={newInvoiceData.balance > 0 ? "error" : "success"}
