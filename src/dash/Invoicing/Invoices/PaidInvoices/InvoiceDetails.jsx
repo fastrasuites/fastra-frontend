@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -8,7 +8,8 @@ import {
   CircularProgress,
 } from "@mui/material";
 import Swal from "sweetalert2";
-import { useInvoice } from "../../../../context/Invoice/InvoiceContext";
+import { useTenant } from "../../../../context/TenantContext";
+import { useInvoices } from "../../../../context/Invoicing/InvoicesContext";
 import InvoiceHeader from "./components/InvoiceHeader";
 import InvoiceInfo from "./components/InvoiceInfo";
 import InvoiceItemsTable from "./components/InvoiceItemsTable";
@@ -18,9 +19,14 @@ import PaymentModal from "./components/PaymentModal";
 
 const InvoiceDetailsPage = () => {
   const { invoiceId: id } = useParams();
+  const history = useHistory();
+  const { tenantData } = useTenant();
   const { singleInvoice, getSingleInvoice, isLoading, error, makePayment } =
-    useInvoice();
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    useInvoices();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState({
+    open: false,
+    type: null,
+  });
 
   useEffect(() => {
     if (id) {
@@ -80,6 +86,7 @@ const InvoiceDetailsPage = () => {
     switch (status) {
       case "unpaid":
         return { text: "Unpaid Invoice", color: "#E43D2B" };
+      case "partial":
       case "partially_paid":
         return { text: "Partially Paid Invoice", color: "#F0B501" };
       case "paid":
@@ -115,85 +122,43 @@ const InvoiceDetailsPage = () => {
   const balance = parseFloat(invoice.balance || 0);
 
   const handleViewPaymentHistory = () => {
-    // Example mock payment history — adapt to your actual data.
-    const payments = [
-      { date: "2024-04-10", amount: 100000, method: "Bank Transfer" },
-      { date: "2024-04-20", amount: 100000, method: "POS" },
-    ];
-    const html = payments
-      .map(
-        (p) =>
-          `<div style="margin-bottom:8px;"><strong>${p.date}</strong> — ${
-            "₦" + p.amount.toLocaleString()
-          } <em>(${p.method})</em></div>`
-      )
-      .join("");
-
-    Swal.fire({
-      title: "Payment history",
-      html: html || "<div>No payments found.</div>",
-      confirmButtonText: "Close",
-    });
+    // Navigate to payment history page with invoice filter
+    history.push(
+      `/${
+        tenantData?.tenant_schema_name || "default"
+      }/invoicing/payment-history?invoice=${id}`
+    );
   };
 
   const handleClose = () => {
-    Swal.fire({
-      title: "Close",
-      text: "Close invoice details?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Close",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Navigate back or close modal - adapt to your routing
-        Swal.fire({
-          title: "Closed",
-          text: "Invoice details closed.",
-          icon: "success",
-        });
-      }
-    });
+    window.history.back();
   };
 
   const handleCompletePayment = () => {
-    Swal.fire({
-      title: "Complete Payment",
-      text: "Process the remaining balance payment?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Complete",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // TODO: Implement complete payment logic
-        Swal.fire({
-          title: "Payment Completed",
-          text: "The remaining balance has been processed.",
-          icon: "success",
-        });
-      }
-    });
+    setIsPaymentModalOpen({ open: true, type: "complete" });
   };
 
   const handleMakePayment = () => {
-    setIsPaymentModalOpen(true);
+    setIsPaymentModalOpen({ open: true, type: "full" });
   };
 
   const handleMakePartialPayment = () => {
-    setIsPaymentModalOpen(true);
+    setIsPaymentModalOpen({ open: true, type: "partial" });
   };
 
   return (
     <Box sx={{ minHeight: "100vh" }}>
       {/* Header */}
       <PaymentModal
-        open={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
+        open={isPaymentModalOpen.open}
+        onClose={() => setIsPaymentModalOpen({ open: false, type: null })}
         invoiceId={invoice.id}
         makePayment={makePayment}
+        paymentType={isPaymentModalOpen.type}
+        totalAmount={transformedInvoice.totalAmount}
+        balance={balance}
         onSuccess={() => {
-          setIsPaymentModalOpen(false);
+          setIsPaymentModalOpen({ open: false, type: null });
           getSingleInvoice(id); // Refetch invoice
         }}
       />
@@ -257,21 +222,6 @@ const InvoiceDetailsPage = () => {
             onMakePayment={handleMakePayment}
             onMakePartialPayment={handleMakePartialPayment}
           />
-        </Box>
-
-        {/* Bottom Right Link */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-          <Button
-            sx={{
-              color: "#666",
-              textTransform: "none",
-              "&:hover": { backgroundColor: "transparent" },
-            }}
-            onClick={handleViewPaymentHistory}
-            endIcon={<Box sx={{ ml: 1 }}>📋</Box>}
-          >
-            View Payment History
-          </Button>
         </Box>
       </Container>
     </Box>

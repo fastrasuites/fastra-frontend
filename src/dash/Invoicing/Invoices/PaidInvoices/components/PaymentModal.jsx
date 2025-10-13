@@ -36,6 +36,9 @@ export default function PaymentModal({
   invoiceId,
   makePayment,
   onSuccess,
+  paymentType,
+  totalAmount,
+  balance,
 }) {
   const [amount, setAmount] = React.useState("");
   const [date, setDate] = React.useState("");
@@ -43,6 +46,17 @@ export default function PaymentModal({
   const [reference, setReference] = React.useState(invoiceId || "");
   const [notes, setNotes] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  // Prefill amount based on payment type
+  React.useEffect(() => {
+    if (paymentType === "full") {
+      setAmount(totalAmount?.toString() || "");
+    } else if (paymentType === "partial") {
+      setAmount(""); // Leave empty for partial payments
+    } else if (paymentType === "complete") {
+      setAmount(balance?.toString() || "");
+    }
+  }, [paymentType, totalAmount, balance]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

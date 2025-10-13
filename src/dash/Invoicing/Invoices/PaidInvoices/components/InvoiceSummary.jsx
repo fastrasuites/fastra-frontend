@@ -39,7 +39,7 @@ const InvoiceSummary = ({ invoice, balance }) => {
             </Typography>
 
             <Typography variant="body1" sx={{ fontWeight: 400 }}>
-              {formatCurrency(invoice.totalAmount)}
+              {formatCurrency(invoice.amountPaid)}
             </Typography>
           </Box>
 

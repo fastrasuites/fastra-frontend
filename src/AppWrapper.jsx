@@ -22,7 +22,6 @@ import { CompanyProvider } from "./context/Settings/CompanyContext";
 import { BackOrderProvider } from "./context/Inventory/BackOrderContext";
 import { InternalTransferProvider } from "./context/Inventory/InternalTransferContext";
 import { InvoicesProvider } from "./context/Invoicing/InvoicesContext";
-import { InvoiceProvider } from "./context/Invoice/InvoiceContext";
 
 function AppWrapper() {
   return (
@@ -42,17 +41,15 @@ function AppWrapper() {
                               <InternalTransferProvider>
                                 <StockMoveProvider>
                                   <InvoicesProvider>
-                                    <InvoiceProvider>
-                                      <UserProvider>
-                                        <CompanyProvider>
-                                          <ScrapProvider>
-                                            <Router>
-                                              <App />
-                                            </Router>
-                                          </ScrapProvider>
-                                        </CompanyProvider>
-                                      </UserProvider>
-                                    </InvoiceProvider>
+                                    <UserProvider>
+                                      <CompanyProvider>
+                                        <ScrapProvider>
+                                          <Router>
+                                            <App />
+                                          </Router>
+                                        </ScrapProvider>
+                                      </CompanyProvider>
+                                    </UserProvider>
                                   </InvoicesProvider>
                                 </StockMoveProvider>
                               </InternalTransferProvider>

@@ -25,6 +25,11 @@ const InvoicingHeader = () => {
     link: `/${tenant_schema_name}/invoicing/invoices/unpaid-invoices`,
   });
 
+  subItems.push({
+    label: "Payment History",
+    link: `/${tenant_schema_name}/invoicing/payment-history`,
+  });
+
   if (subItems.length > 0) {
     menuItems.push({
       label: "Invoices",

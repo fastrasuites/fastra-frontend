@@ -1,5 +1,9 @@
 // InvoiceListPagePixelPerfect.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useHistory, useLocation } from "react-router-dom";
+import { useTenant } from "../../../../context/TenantContext";
+import { useInvoices } from "../../../../context/Invoicing/InvoicesContext";
+import { formatDate } from "../../../../helper/helper";
 import {
   Box,
   AppBar,
@@ -22,6 +26,7 @@ import {
   Stack,
   Chip,
   Pagination,
+  CircularProgress,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -35,56 +40,49 @@ import {
 } from "@mui/icons-material";
 
 export default function InvoiceListPage() {
-  const [view] = useState("table");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState([]);
 
-  // sample data (replace with your data)
-  const invoices = [
-    {
-      id: "INV0001",
-      vendor: "xyz Vendor",
-      amountDue: "00.00",
-      currency: "Naira",
-      status: "Paid Invoice",
-    },
-    {
-      id: "INV0002",
-      vendor: "xyz Vendor",
-      amountDue: "00.00",
-      currency: "Naira",
-      status: "Paid Invoice",
-    },
-    {
-      id: "INV0003",
-      vendor: "xyz Vendor",
-      amountDue: "00.00",
-      currency: "Naira",
-      status: "Paid Invoice",
-    },
-    {
-      id: "INV0004",
-      vendor: "xyz Vendor",
-      amountDue: "00.00",
-      currency: "Naira",
-      status: "Paid Invoice",
-    },
-    {
-      id: "INV0005",
-      vendor: "xyz Vendor",
-      amountDue: "00.00",
-      currency: "Naira",
-      status: "Paid Invoice",
-    },
-    {
-      id: "INV0006",
-      vendor: "xyz Vendor",
-      amountDue: "00.00",
-      currency: "Naira",
-      status: "Paid Invoice",
-    },
-  ];
+  const history = useHistory();
+  const location = useLocation();
+  const { tenantData } = useTenant();
+  const { getInvoiceListFiltered, invoiceList, isLoading, error } =
+    useInvoices();
+  const tenant_schema_name = tenantData?.tenant_schema_name;
+
+  // Get status from query params
+  const queryParams = new URLSearchParams(location.search);
+  const statusFilter = queryParams.get("status") || "";
+
+  useEffect(() => {
+    if (statusFilter) {
+      getInvoiceListFiltered({ status: statusFilter }).catch((err) => {
+        console.error("Failed to fetch filtered invoices:", err);
+        // Error will be handled by the error state in the component
+      });
+    }
+  }, [statusFilter, getInvoiceListFiltered]);
+
+  // Use real data from context
+  const invoices = invoiceList.map((invoice) => ({
+    id: invoice.id,
+    vendor: invoice.vendor_details?.company_name || "Unknown Vendor",
+    amountDue: invoice.balance || "0.00",
+    currency: "Naira",
+    status:
+      invoice.status === "paid"
+        ? "Paid Invoice"
+        : invoice.status === "partial"
+        ? "Partially Paid Invoice"
+        : invoice.status === "unpaid"
+        ? "Unpaid Invoice"
+        : invoice.status,
+    date_created: invoice.date_created,
+    due_date: invoice.due_date,
+    total_amount: invoice.total_amount,
+    amount_paid: invoice.amount_paid,
+  }));
 
   const rowsPerPage = 6;
   const filtered = invoices.filter(
@@ -97,6 +95,76 @@ export default function InvoiceListPage() {
     (page - 1) * rowsPerPage,
     page * rowsPerPage
   );
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Box
+        p={3}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+        flexDirection="column"
+      >
+        <CircularProgress size={40} />
+        <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
+          Loading invoices...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Box
+        p={3}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+        flexDirection="column"
+      >
+        <Typography color="error" variant="h6" gutterBottom>
+          Failed to load invoices
+        </Typography>
+        <Typography color="textSecondary" variant="body2">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Show empty state
+  if (!isLoading && !error && invoices.length === 0) {
+    const statusText =
+      statusFilter === "paid"
+        ? "paid"
+        : statusFilter === "partial"
+        ? "partially paid"
+        : statusFilter === "unpaid"
+        ? "unpaid"
+        : "";
+
+    return (
+      <Box
+        p={3}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+        flexDirection="column"
+      >
+        <Typography variant="h6" color="textSecondary" gutterBottom>
+          No {statusText} invoices found
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          There are currently no {statusText} invoices to display.
+        </Typography>
+      </Box>
+    );
+  }
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -122,7 +190,13 @@ export default function InvoiceListPage() {
           mb={2}
         >
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Paid Invoice
+            {statusFilter === "paid"
+              ? "Paid Invoices"
+              : statusFilter === "partial"
+              ? "Partially Paid Invoices"
+              : statusFilter === "unpaid"
+              ? "Unpaid Invoices"
+              : "Invoices"}
           </Typography>
           <Button
             variant="contained"
@@ -229,24 +303,30 @@ export default function InvoiceListPage() {
                   />
                 </TableCell>
 
-                {["ID", "Vendor", "Amount Due", "Currency", "Status"].map(
-                  (h) => (
-                    <TableCell
-                      key={h}
-                      sx={{
-                        color: "text.secondary",
-                        fontWeight: 600,
-                        fontSize: 13,
-                        textTransform: "none",
-                        borderBottom: "1px solid #f0f2f4",
-                        pb: 0,
-                        pt: 0,
-                      }}
-                    >
-                      {h}
-                    </TableCell>
-                  )
-                )}
+                {[
+                  "ID",
+                  "Vendor",
+                  "Date Created",
+                  "Due Date",
+                  "Amount Due",
+                  "Total Amount",
+                  "Status",
+                ].map((h) => (
+                  <TableCell
+                    key={h}
+                    sx={{
+                      color: "text.secondary",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      textTransform: "none",
+                      borderBottom: "1px solid #f0f2f4",
+                      pb: 0,
+                      pt: 0,
+                    }}
+                  >
+                    {h}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
 
@@ -283,7 +363,13 @@ export default function InvoiceListPage() {
                         fontSize: 13,
                         fontWeight: 500,
                         color: "text.primary",
+                        cursor: "pointer",
                       }}
+                      onClick={() =>
+                        history.push(
+                          `/${tenant_schema_name}/invoicing/invoices/${invoice.id}`
+                        )
+                      }
                     >
                       {invoice.id}
                     </TableCell>
@@ -298,11 +384,19 @@ export default function InvoiceListPage() {
                     </TableCell>
 
                     <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
-                      {invoice.amountDue}
+                      {formatDate(invoice.date_created)}
+                    </TableCell>
+
+                    <TableCell sx={{ fontSize: 13, color: "warning.main" }}>
+                      {formatDate(invoice.due_date)}
                     </TableCell>
 
                     <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
-                      {invoice.currency}
+                      ₦{Number(invoice.amountDue || 0).toLocaleString()}
+                    </TableCell>
+
+                    <TableCell sx={{ fontSize: 13, color: "text.secondary" }}>
+                      ₦{Number(invoice.total_amount || 0).toLocaleString()}
                     </TableCell>
 
                     <TableCell>
@@ -313,15 +407,31 @@ export default function InvoiceListPage() {
                             width: 8,
                             height: 8,
                             borderRadius: "50%",
-                            bgcolor: "#2BA24D",
+                            bgcolor:
+                              invoice.status === "Paid Invoice"
+                                ? "#2BA24D"
+                                : invoice.status === "Partially Paid Invoice"
+                                ? "#BF8706"
+                                : "#e43e2b",
                             display: "inline-block",
-                            boxShadow: "0 0 0 4px rgba(43,162,77,0.06)",
+                            boxShadow: `0 0 0 4px rgba(${
+                              invoice.status === "Paid Invoice"
+                                ? "43,162,77"
+                                : invoice.status === "Partially Paid Invoice"
+                                ? "191,135,6"
+                                : "228,62,43"
+                            },0.06)`,
                           }}
                         />
                         <Typography
                           sx={{
                             fontSize: 13,
-                            color: "#2BA24D",
+                            color:
+                              invoice.status === "Paid Invoice"
+                                ? "#2BA24D"
+                                : invoice.status === "Partially Paid Invoice"
+                                ? "#BF8706"
+                                : "#e43e2b",
                             fontWeight: 500,
                           }}
                         >
@@ -335,7 +445,7 @@ export default function InvoiceListPage() {
 
               {/* filler bottom-row to reproduce the light footer band in screenshot */}
               <TableRow sx={{ height: 40, backgroundColor: "#f1f2f3" }}>
-                <TableCell colSpan={6} />
+                <TableCell colSpan={7} />
               </TableRow>
             </TableBody>
           </Table>

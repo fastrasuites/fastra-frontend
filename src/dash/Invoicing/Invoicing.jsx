@@ -11,6 +11,7 @@ import PaidInvoiceDetails from "./Invoices/PaidInvoices/InvoiceDetails";
 import InvoiceCreateForm from "./Invoices/InvoiceCreateForms/InvoiceCreateForm";
 import InvoiceListPage from "./Invoices/PaidInvoices/Invoices";
 import InvoiceCreateFromPO from "./Invoices/InvoiceCreateForms/InvoiceCreateFromPO";
+import PaymentHistory from "./Invoices/PaymentHistory/PaymentHistory";
 
 const InvoicingLayout = () => {
   const { path } = useRouteMatch();
@@ -25,16 +26,24 @@ const InvoicingLayout = () => {
           {/* Invoices Routes */}
           <Route exact path={`${path}/invoices`} component={Invoices} />
 
+          <Route exact path={`${path}/paid`} component={InvoiceListPage} />
           <Route
             exact
-            path={`${path}/invoices/paid-invoices`}
-            component={InvoiceListPage}
+            path={`${path}/invoices/new`}
+            component={InvoiceCreateForm}
           />
           <Route
             exact
             path={`${path}/invoices/:invoiceId`}
             component={PaidInvoiceDetails}
           />
+
+          <Route
+            exact
+            path={`${path}/payment-history`}
+            component={PaymentHistory}
+          />
+
           <Route
             exact
             path={`${path}/invoices/partially-paid-invoices`}
@@ -48,12 +57,6 @@ const InvoicingLayout = () => {
 
           {/* Payments routes */}
           <Route exact path={`${path}/payments`} component={Payments} />
-
-          <Route
-            exact
-            path={`${path}/invoices/new`}
-            component={InvoiceCreateForm}
-          />
 
           <Route
             exact

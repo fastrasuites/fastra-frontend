@@ -27,9 +27,17 @@ const InvoiceActions = ({
             View Payment History
           </Button>
         );
+      case "partial":
       case "partially_paid":
         return (
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              width: "100%",
+              justifyContent: "space-between",
+            }}
+          >
             <Button
               variant="contained"
               sx={{
@@ -44,20 +52,32 @@ const InvoiceActions = ({
             >
               View Payment History
             </Button>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#4caf50",
-                textTransform: "none",
-                px: 3,
-                py: 1,
-                borderRadius: 1,
-                "&:hover": { backgroundColor: "#388e3c" },
-              }}
-              onClick={onCompletePayment}
-            >
-              Complete Payment
-            </Button>
+            <Box sx={{ display: "flex", gap: 4 }}>
+              <Button
+                variant="outlined"
+                sx={{
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  borderRadius: 1,
+                }}
+                onClick={() => window.history.back()}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                sx={{
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  borderRadius: 1,
+                }}
+                onClick={onCompletePayment}
+              >
+                Complete Payment
+              </Button>
+            </Box>
           </Box>
         );
       case "unpaid":
