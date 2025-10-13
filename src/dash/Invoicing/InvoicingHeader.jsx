@@ -12,17 +12,17 @@ const InvoicingHeader = () => {
 
   subItems.push({
     label: "Paid Invoices",
-    link: `/${tenant_schema_name}/invoicing/invoices/paid-invoices`,
+    link: `/${tenant_schema_name}/invoicing/paid?status=paid`,
   });
 
   subItems.push({
     label: "Partially Paid Invoices",
-    link: `/${tenant_schema_name}/invoicing/invoices/partially-paid-invoices`,
+    link: `/${tenant_schema_name}/invoicing/paid?status=partial`,
   });
 
   subItems.push({
     label: "Unpaid Invoices",
-    link: `/${tenant_schema_name}/invoicing/invoices/unpaid-invoices`,
+    link: `/${tenant_schema_name}/invoicing/paid?status=unpaid`,
   });
 
   subItems.push({
